@@ -119,7 +119,7 @@ namespace TMVA {
       void TestAllMethods();
 
       // performance evaluation
-      void EvaluateAllMethods( void );
+      void EvaluateAllMethods();
       void EvaluateAllVariables(DataLoader *loader, TString options = "" ); 
   
       TH1F* EvaluateImportance( DataLoader *loader,VIType vitype, Types::EMVA theMethod,  TString methodTitle, const char *theOption = "" );

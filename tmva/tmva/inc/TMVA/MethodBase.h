@@ -106,6 +106,24 @@ namespace TMVA {
        Int_t fIndex;
    };
 
+   struct RegressionKeyFigures {
+      // ...T = 2 sigma truncated
+      /// bias = average deviation
+      Double_t bias = 0;
+      Double_t biasT = 0;
+      /// dev = average absolute deviation (seems unused)
+      Double_t dev = 0;
+      Double_t devT = 0;
+      /// rms = rms of deviation
+      Double_t rms = 0;
+      Double_t rmsT = 0;
+      /// mInf = mutual information
+      Double_t mInf = 0;
+      Double_t mInfT = 0;
+      /// corr = correlation (seems unused)
+      Double_t corr = 0;
+   };
+
    class MethodBase : virtual public IMethod, public Configurable {
 
       friend class CrossValidation;
@@ -171,12 +189,7 @@ namespace TMVA {
       virtual void     TestMulticlass();
 
       // performs regression testing
-      virtual void     TestRegression( Double_t& bias, Double_t& biasT,
-                                       Double_t& dev,  Double_t& devT,
-                                       Double_t& rms,  Double_t& rmsT,
-                                       Double_t& mInf, Double_t& mInfT, // mutual information
-                                       Double_t& corr,
-                                       Types::ETreeType type );
+      virtual RegressionKeyFigures TestRegression(Types::ETreeType type);
 
       // options treatment
       virtual void     Init()           = 0;

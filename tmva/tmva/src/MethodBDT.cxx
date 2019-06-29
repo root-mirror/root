@@ -2563,34 +2563,39 @@ const std::vector<Float_t> & TMVA::MethodBDT::GetRegressionValues()
       //   added enough tree weights to have more than half of the sum of all tree weights.
       // choose as response of the forest that one which belongs to this "t"
 
-      vector< Double_t > response(fForest.size());
-      vector< Double_t > weight(fForest.size());
-      Double_t           totalSumOfWeights = 0;
+      struct ResponseWeightPair {
+         double response;
+         double weight;
+      };
+
+      std::vector<ResponseWeightPair> rw(fForest.size());
+      Double_t totalSumOfWeights = 0;
 
       for (UInt_t itree=0; itree<fForest.size(); itree++) {
-         response[itree]    = fForest[itree]->CheckEvent(ev,kFALSE);
-         weight[itree]      = fBoostWeights[itree];
+         rw[itree].response = fForest[itree]->CheckEvent(ev,kFALSE);
+         rw[itree].weight = fBoostWeights[itree];
          totalSumOfWeights += fBoostWeights[itree];
       }
 
-      std::vector< std::vector<Double_t> > vtemp;
-      vtemp.push_back( response ); // this is the vector that will get sorted
-      vtemp.push_back( weight );
-      gTools().UsefulSortAscending( vtemp );
+      std::sort(begin(rw), end(rw),
+                [](const ResponseWeightPair &a, const ResponseWeightPair &b) {
+                   return a.response < b.response;
+                });
 
-      Int_t t=0;
+      Int_t t = 0;
       Double_t sumOfWeights = 0;
       while (sumOfWeights <= totalSumOfWeights/2.) {
-         sumOfWeights += vtemp[1][t];
+         sumOfWeights += rw[t].weight;
          t++;
       }
 
-      Double_t rVal=0;
-      Int_t    count=0;
-      for (UInt_t i= TMath::Max(UInt_t(0),UInt_t(t-(fForest.size()/6)-0.5));
-           i< TMath::Min(UInt_t(fForest.size()),UInt_t(t+(fForest.size()/6)+0.5)); i++) {
-         count++;
-         rVal+=vtemp[0][i];
+      // TODO: needs a comment why there is a division by 6!
+      auto lo = TMath::Max(UInt_t(0), UInt_t(t - (fForest.size()/6) - 0.5));
+      auto hi = TMath::Min(UInt_t(fForest.size()), UInt_t(t + (fForest.size()/6) + 0.5));
+      Int_t count = hi - lo;
+      Double_t rVal = 0;
+      for (UInt_t i = lo; i < hi; i++) {
+         rVal += rw[i].response;
       }
       //      fRegressionReturnVal->push_back( rVal/Double_t(count));
       evT->SetTarget(0, rVal/Double_t(count) );

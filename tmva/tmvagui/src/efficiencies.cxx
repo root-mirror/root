@@ -19,7 +19,7 @@ void TMVA::plot_efficiencies(TString dataset, TFile* /*file*/, Int_t type , TDir
    Float_t x1 = 0;
    Float_t x2 = 1;
    Float_t y1 = 0;
-   Float_t y2 = 0.8;
+   Float_t y2 = 1;
 
    // reverse order if "rejection"
    if (type == 2) {
