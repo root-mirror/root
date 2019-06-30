@@ -43,8 +43,6 @@ protected:
   RooListProxy _coefList ;
   Int_t _lowestOrder ;
 
-  mutable std::vector<Double_t> _wksp; //! do not persist
-
   /// Evaluation
   Double_t evaluate() const;
 

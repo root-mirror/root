@@ -132,9 +132,10 @@ Double_t RooPower::evaluate() const
   const unsigned sz = _coefList.getSize();
   if (!sz) return 0.;
 
-  std::vector<double> coefs(sz);
-  std::vector<double> exps(sz);  
-  
+  std::vector<double> coefs;
+  std::vector<double> exps;  
+  coefs.reserve(sz);
+  exps.reserve(sz);  
   {
     const RooArgSet* nset = _coefList.nset();
     RooAbsReal* c;

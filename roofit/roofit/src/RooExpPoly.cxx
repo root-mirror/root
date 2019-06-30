@@ -17,13 +17,10 @@
 /** \class RooExpPoly
     \ingroup Roofit
 
-RooExpPoly implements a polynomial p.d.f of the form
-\f[ f(x) = \mathcal{N} \cdot \sum_{i} a_{i} * x^i \f]
-By default, the coefficient \f$ a_0 \f$ is chosen to be 1, as polynomial
-probability density functions have one degree of freedom
-less than polynomial functions due to the normalisation condition. \f$ \mathcal{N} \f$
-is a normalisation constant that is automatically calculated when the polynomial is used
-in computations.
+RooExpPoly implements a polynomial p.d.f of the form \f[ f(x) =
+\mathcal{N} \cdot \exp( \sum_{i} a_{i} * x^{i} ) \f] \f$ \mathcal{N}
+\f$ is a normalisation constant that is automatically calculated when
+the function is used in computations.
 
 The sum can be truncated at the low end. See the main constructor
 RooExpPoly::RooExpPoly(const char*, const char*, RooAbsReal&, const RooArgList&, Int_t)
@@ -132,16 +129,20 @@ Double_t RooExpPoly::evaluate() const
   const unsigned sz = _coefList.getSize();
   const int lowestOrder = _lowestOrder;
   if (!sz) return lowestOrder ? 1. : 0.;
-  _wksp.clear();
-  _wksp.reserve(sz);
+  std::vector<double> coefs;
+  coefs.reserve(sz);
   {
     const RooArgSet* nset = _coefList.nset();
     RooFIter it = _coefList.fwdIterator();
     RooAbsReal* c;
-    while ((c = (RooAbsReal*) it.next())) _wksp.push_back(c->getVal(nset));
+    while ((c = (RooAbsReal*) it.next())) coefs.push_back(c->getVal(nset));
   }
   const Double_t x = _x;
-  Double_t retVal = _wksp[sz - 1];
-  for (unsigned i = sz - 1; i--; ) retVal = _wksp[i] + x * retVal;
-  return exp(retVal * std::pow(x, lowestOrder) + (lowestOrder ? 1.0 : 0.0));
+  double xpow = std::pow(x, lowestOrder);
+  double retval = 0;
+  for(size_t i=0; i<sz; ++i){
+    retval += coefs[i]*xpow;
+    xpow *= x;
+  }
+  return exp(retval);
 }
