@@ -69,7 +69,7 @@ RooExpPoly::RooExpPoly()
 
 
 RooExpPoly::RooExpPoly(const char* name, const char* title,
-              RooAbsReal& x, const RooArgList& coefList, Int_t lowestOrder) :
+                       RooAbsReal& x, const RooArgList& coefList, Int_t lowestOrder) :
   RooAbsPdf(name, title),
   _x("x", "Dependent", this, x),
   _coefList("coefList","List of coefficients",this),
@@ -82,12 +82,10 @@ RooExpPoly::RooExpPoly(const char* name, const char* title,
     _lowestOrder=0 ;
   }
 
-  RooFIter coefIter = coefList.fwdIterator() ;
-  RooAbsArg* coef ;
-  while((coef = (RooAbsArg*)coefIter.next())) {
+  for(auto coef:coefList){
     if (!dynamic_cast<RooAbsReal*>(coef)) {
       coutE(InputArguments) << "RooExpPoly::ctor(" << GetName() << ") ERROR: coefficient " << coef->GetName()
-             << " is not of type RooAbsReal" << endl ;
+                            << " is not of type RooAbsReal" << endl ;
       R__ASSERT(0) ;
     }
     _coefList.add(*coef) ;
@@ -125,18 +123,15 @@ RooExpPoly::~RooExpPoly()
 Double_t RooExpPoly::evaluate() const
 {
   // Calculate and return value of polynomial
-
+  
   const unsigned sz = _coefList.getSize();
   const int lowestOrder = _lowestOrder;
   if (!sz) return lowestOrder ? 1. : 0.;
   std::vector<double> coefs;
   coefs.reserve(sz);
-  {
-    const RooArgSet* nset = _coefList.nset();
-    RooFIter it = _coefList.fwdIterator();
-    RooAbsReal* c;
-    while ((c = (RooAbsReal*) it.next())) coefs.push_back(c->getVal(nset));
-  }
+
+  const RooArgSet* nset = _coefList.nset();
+  for(auto coef:_coefList) { coefs.push_back(static_cast<RooAbsReal*>(coef)->getVal(nset)); };
   const Double_t x = _x;
   double xpow = std::pow(x, lowestOrder);
   double retval = 0;
