@@ -17,16 +17,8 @@
 /** \class RooPower
     \ingroup Roofit
 
-RooPower implements a polynomial p.d.f of the form
-\f[ f(x) = \mathcal{N} \cdot \sum_{i} a_{i} * x^i \f]
-By default, the coefficient \f$ a_0 \f$ is chosen to be 1, as polynomial
-probability density functions have one degree of freedom
-less than polynomial functions due to the normalisation condition. \f$ \mathcal{N} \f$
-is a normalisation constant that is automatically calculated when the polynomial is used
-in computations.
-
-The sum can be truncated at the low end. See the main constructor
-RooPower::RooPower(const char*, const char*, RooAbsReal&, const RooArgList&, Int_t)
+RooPower implements a power law p.d.f of the form
+\f[ f(x) = \mathcal{N} \cdot \sum_{i} a_{i} * x^{b_i} \f]
 **/
 
 #include <cmath>
@@ -58,12 +50,12 @@ RooPower::RooPower()
 /// \param[in] coefList The coefficients \f$ a_i \f$
 /// \param[in] expList The exponentials \f$ b_i \f$
 /// \f[
-///     1. + \sum_{i=0}^{n} a_{i} * x^{b_{i}}
+///     \sum_{i=0}^{n} a_{i} * x^{b_{i}}
 /// \f]
 ///
 /// This means that
 /// \code{.cpp}
-/// RooPower pol("pow", "pow", x, RooArgList(a1, a2), RooArgList(b1,b2))
+/// RooPower powl("pow", "pow", x, RooArgList(a1, a2), RooArgList(b1,b2))
 /// \endcode
 /// computes
 /// \f[
@@ -78,21 +70,24 @@ RooPower::RooPower(const char* name, const char* title,
   _coefList("coefList","List of coefficients",this),
   _expList("expList","List of exponents",this)  
 {
-  RooFIter coefIter = coefList.fwdIterator() ;
-  RooFIter expIter = expList.fwdIterator() ;
-  RooAbsArg* coef, * exp ;
-  while((coef = (RooAbsArg*)coefIter.next()) && (exp = (RooAbsArg*)expIter.next())) {
+  if(coefList.getSize() != expList.getSize()){
+    coutE(InputArguments) << "RooPower::ctor(" << GetName() << ") ERROR: coefficient list and exponent list must be of same length" << endl;
+    return;
+  }
+  for(auto coef : coefList){
     if (!dynamic_cast<RooAbsReal*>(coef)) {
       coutE(InputArguments) << "RooPower::ctor(" << GetName() << ") ERROR: coefficient " << coef->GetName()
-             << " is not of type RooAbsReal" << endl ;
+                            << " is not of type RooAbsReal" << endl ;
       R__ASSERT(0) ;
     }
+    _coefList.add(*coef) ;    
+  }
+  for(auto exp : expList){
     if (!dynamic_cast<RooAbsReal*>(exp)) {
       coutE(InputArguments) << "RooPower::ctor(" << GetName() << ") ERROR: coefficient " << exp->GetName()
              << " is not of type RooAbsReal" << endl ;
       R__ASSERT(0) ;
     }
-    _coefList.add(*coef) ;    
     _expList.add(*exp) ;
   }
 }
@@ -136,19 +131,50 @@ Double_t RooPower::evaluate() const
   std::vector<double> exps;  
   coefs.reserve(sz);
   exps.reserve(sz);  
-  {
-    const RooArgSet* nset = _coefList.nset();
-    RooAbsReal* c;
-    RooFIter coef_it = _coefList.fwdIterator();
-    while ((c = (RooAbsReal*) coef_it.next())) coefs.push_back(c->getVal(nset));
-    RooFIter exp_it = _expList.fwdIterator();
-    while ((c = (RooAbsReal*) exp_it.next())) exps.push_back(c->getVal(nset));
-    
-  }
+  const RooArgSet* nset = _coefList.nset();
+  for(auto c:_coefList){ coefs.push_back(static_cast<RooAbsReal*>(c)->getVal(nset)); }
+  for(auto c:_expList ) { exps.push_back(static_cast<RooAbsReal*>(c)->getVal(nset)); }    
   double x = this->_x;
   Double_t retval = 0;
   for(unsigned int i=0; i<sz; ++i){
     retval += coefs[i] * pow(x,exps[i]);
+  }
+  return retval;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Advertise to RooFit that this function can be analytically integrated.
+Int_t RooPower::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const
+{
+  if (matchArgs(allVars, analVars, _x)) return 1;
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Do the analytical integral according to the code that was returned by getAnalyticalIntegral().
+Double_t RooPower::analyticalIntegral(Int_t code, const char* rangeName) const
+{
+  R__ASSERT(code==1) ;
+  
+  const Double_t xmin = _x.min(rangeName), xmax = _x.max(rangeName);
+  const unsigned sz = _coefList.getSize();
+  if (!sz) return xmax - xmin;
+  
+  std::vector<double> coefs;
+  std::vector<double> exps;  
+  coefs.reserve(sz);
+  exps.reserve(sz);  
+  const RooArgSet* nset = _coefList.nset();
+  for(auto c:_coefList){ coefs.push_back(static_cast<RooAbsReal*>(c)->getVal(nset)); }
+  for(auto c:_expList ) { exps.push_back(static_cast<RooAbsReal*>(c)->getVal(nset)); }    
+  
+  Double_t retval = 0;
+  for(unsigned int i=0; i<sz; ++i){
+    if(exps[i] == -1){
+      retval += coefs[i] * (log(xmax)-log(xmin));
+    } else {
+      retval += coefs[i]/(exps[i]+1) * (pow(xmax,(exps[i]+1))-pow(xmin,(exps[i]+1)));
+    }
   }
   return retval;
 }

@@ -37,6 +37,9 @@ public:
   virtual TObject* clone(const char* newname) const { return new RooPower(*this, newname); }
   virtual ~RooPower() ;
 
+  Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
+  Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ; 
+
 protected:
 
   RooRealProxy _x;
