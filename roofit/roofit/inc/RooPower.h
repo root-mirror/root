@@ -37,8 +37,8 @@ public:
   virtual TObject* clone(const char* newname) const { return new RooPower(*this, newname); }
   virtual ~RooPower() ;
 
-  Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
-  Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ; 
+  Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const override;
+  Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const override; 
 
 protected:
 
@@ -49,7 +49,7 @@ protected:
   mutable std::vector<Double_t> _wksp; //! do not persist
 
   /// Evaluation
-  Double_t evaluate() const;
+  Double_t evaluate() const override;
 
   ClassDef(RooPower,1) // Power PDF
 };
