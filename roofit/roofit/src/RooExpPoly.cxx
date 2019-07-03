@@ -120,7 +120,7 @@ RooExpPoly::~RooExpPoly()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Double_t RooExpPoly::evaluate() const
+Double_t RooExpPoly::evaluateLog() const
 {
   // Calculate and return value of polynomial
   
@@ -139,5 +139,82 @@ Double_t RooExpPoly::evaluate() const
     retval += coefs[i]*xpow;
     xpow *= x;
   }
-  return exp(retval);
+  return retval;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Double_t RooExpPoly::evaluate() const {
+  return exp(this->evaluateLog());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Double_t RooExpPoly::getLogVal(const RooArgSet* nset) const 
+{
+  return RooAbsPdf::getLogVal(nset);
+  return this->evaluateLog();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Int_t RooExpPoly::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const
+{
+  if ((_coefList.getSize() + _lowestOrder < 4) && matchArgs(allVars,analVars,_x)){
+    return 1;
+  }
+  return 0 ;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#define PI 3.1415926
+
+Double_t RooExpPoly::analyticalIntegral(Int_t code, const char* rangeName) const
+{
+  assert(code==1);
+
+  const Double_t xmin = _x.min(rangeName), xmax = _x.max(rangeName);
+  const unsigned sz = _coefList.getSize();
+  if (!sz) return xmax - xmin;
+  
+  std::vector<double> coefs;
+  coefs.reserve(sz);
+  const RooArgSet* nset = _coefList.nset();
+  for(auto c:_coefList){ coefs.push_back(static_cast<RooAbsReal*>(c)->getVal(nset)); }
+  
+  switch(_coefList.getSize()+_lowestOrder){
+  case 1:
+    return xmax - xmin;    
+  case 2: {
+    const double a = coefs[1-_lowestOrder];
+    if(a!=0){
+      return 1./a * (exp(a*xmax)-exp(a*xmin)) * (_lowestOrder == 0 ? exp(coefs[0]) : 1 );
+    } else {
+      return xmax - xmin;
+    }
+  }
+  case 3: {
+    const double a = coefs[2-_lowestOrder];
+    const double b = _lowestOrder == 2 ? 0. : coefs[1-_lowestOrder];
+    const double c = _lowestOrder == 0 ? coefs[0] : 0.;
+    const double absa = std::abs(a);
+    const double sqrta = sqrt(absa);
+    if(a < 0){
+      double rightVal  = std::erf((-b + 2 * absa * xmax)/(2 * sqrta));
+      double leftVal   = std::erf((-b + 2 * absa * xmin)/(2 * sqrta));
+      double retval = exp(b*b/(4 * absa) + c) * sqrt(PI) * (rightVal - leftVal) /(2 * sqrta);
+      if(leftVal == rightVal){
+        coutE(Fitting) << "WARNING in calculation of analytical integral of RooExpPoly::" << GetName() << ": accuracy limited by numerical precision, values are c0=" << c << ", c1=" << b << ", c2" << -absa << std::endl;
+      }
+      return exp(b*b/(4 * absa) + c) * sqrt(PI) * (std::erf((-b + 2 * absa * xmax)/(2 * sqrta)) - std::erf((-b + 2 * absa * xmin)/(2 * sqrta)) )     /(2 * sqrta);
+    } else if(a>0){
+      throw std::runtime_error("dawson integral not yet implemented!");
+    } else if(b!=0){
+      return 1./b * (exp(b*xmax)-exp(b*xmin)) * exp(c);
+    } else {      
+      return xmax - xmin;
+    }
+  }
+  }
 }

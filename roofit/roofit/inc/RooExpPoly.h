@@ -37,6 +37,11 @@ public:
   virtual TObject* clone(const char* newname) const { return new RooExpPoly(*this, newname); }
   virtual ~RooExpPoly() ;
 
+  Double_t getLogVal(const RooArgSet* nset) const override;
+
+  Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const override;
+  Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const override; 
+  
 protected:
 
   RooRealProxy _x;
@@ -44,7 +49,8 @@ protected:
   Int_t _lowestOrder ;
 
   /// Evaluation
-  Double_t evaluate() const;
+  Double_t evaluate() const override;
+  Double_t evaluateLog() const;  
 
   ClassDef(RooExpPoly,1) // ExpPoly PDF
 };
