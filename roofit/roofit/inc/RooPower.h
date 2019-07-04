@@ -36,7 +36,9 @@ public:
   RooPower(const RooPower& other, const char* name = 0);
   virtual TObject* clone(const char* newname) const { return new RooPower(*this, newname); }
   virtual ~RooPower() ;
-
+  
+  std::string getFormulaExpression() const;
+  
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const override;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const override; 
 

@@ -23,6 +23,7 @@ RooPower implements a power law p.d.f of the form
 
 #include <cmath>
 #include <cassert>
+#include <sstream>
 
 #include "RooPower.h"
 #include "RooAbsReal.h"
@@ -177,4 +178,13 @@ Double_t RooPower::analyticalIntegral(Int_t code, const char* rangeName) const
     }
   }
   return retval;
+}
+
+std::string RooPower::getFormulaExpression() const {
+  std::stringstream ss;
+  for(int i=0; i<_coefList.getSize(); ++i){
+    if(i!=0) ss << "+";
+    ss << _coefList.at(i)->GetName() << "*pow(" << _x.GetName() << "," << _expList.at(i)->GetName() << ")";
+  }
+  return ss.str().c_str();
 }
