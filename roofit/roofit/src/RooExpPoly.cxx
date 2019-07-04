@@ -27,7 +27,10 @@ RooExpPoly::RooExpPoly(const char*, const char*, RooAbsReal&, const RooArgList&,
 **/
 
 #include <cmath>
+#include <sstream>
 #include <cassert>
+
+#include "TMath.h"
 
 #include "RooExpPoly.h"
 #include "RooAbsReal.h"
@@ -153,14 +156,15 @@ Double_t RooExpPoly::evaluate() const {
 Double_t RooExpPoly::getLogVal(const RooArgSet* nset) const 
 {
   return RooAbsPdf::getLogVal(nset);
-  return this->evaluateLog();
+  //  return this->evaluateLog();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 Int_t RooExpPoly::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const
 {
-  if ((_coefList.getSize() + _lowestOrder < 4) && matchArgs(allVars,analVars,_x)){
+  
+  if ((_coefList.getSize() + _lowestOrder < 4) && (( _coefList.getSize() + _lowestOrder < 3) || (static_cast<RooAbsReal*>(_coefList.at(2-_lowestOrder))->getVal() <= 0)) && matchArgs(allVars,analVars,_x)){
     return 1;
   }
   return 0 ;
@@ -168,7 +172,23 @@ Int_t RooExpPoly::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#define PI 3.1415926
+#define PI TMath::Pi()
+
+namespace {
+  double deltaerf(double x1, double x2){
+    // several things happening here
+    // 1. use "erf(x) = -erf(-x)" to evaluate the function only ever for the positive side (higher precision)
+    // 2. use "erf(x) = 1.-erfc(x)" and, instead of "erf(x1) - erf(x2)", do "(1.-erfc(x1)) - (1.-erfc(x2)) = erfc(x2) - erfc(x1)"
+    double y2 = x1 > 0 ? erfc(x1) : -erfc(-x1);
+    double y1 = x2 > 0 ? erfc(x2) : -erfc(-x2);
+    if(y1 == y2){
+      std::cout << "WARNING in calculation of analytical integral limited by numerical precision" << std::endl;
+      std::cout << "x: " << x1 << " , " << x2 << std::endl;
+      std::cout << "y: " << y1 << " , " << y2 << std::endl;
+    } 
+    return y1 - y2;
+  }
+}
 
 Double_t RooExpPoly::analyticalIntegral(Int_t code, const char* rangeName) const
 {
@@ -201,13 +221,9 @@ Double_t RooExpPoly::analyticalIntegral(Int_t code, const char* rangeName) const
     const double absa = std::abs(a);
     const double sqrta = sqrt(absa);
     if(a < 0){
-      double rightVal  = std::erf((-b + 2 * absa * xmax)/(2 * sqrta));
-      double leftVal   = std::erf((-b + 2 * absa * xmin)/(2 * sqrta));
-      double retval = exp(b*b/(4 * absa) + c) * sqrt(PI) * (rightVal - leftVal) /(2 * sqrta);
-      if(leftVal == rightVal){
-        coutE(Fitting) << "WARNING in calculation of analytical integral of RooExpPoly::" << GetName() << ": accuracy limited by numerical precision, values are c0=" << c << ", c1=" << b << ", c2" << -absa << std::endl;
-      }
-      return exp(b*b/(4 * absa) + c) * sqrt(PI) * (std::erf((-b + 2 * absa * xmax)/(2 * sqrta)) - std::erf((-b + 2 * absa * xmin)/(2 * sqrta)) )     /(2 * sqrta);
+      double d = ::deltaerf((-b + 2 * absa * xmax)/(2 * sqrta),(-b + 2 * absa * xmin)/(2 * sqrta));
+      double retval = exp(b*b/(4 * absa) + c) * sqrt(PI) * d /(2 * sqrta);
+      return retval;  
     } else if(a>0){
       throw std::runtime_error("dawson integral not yet implemented!");
     } else if(b!=0){
@@ -217,4 +233,18 @@ Double_t RooExpPoly::analyticalIntegral(Int_t code, const char* rangeName) const
     }
   }
   }
+  return 0.;
+}
+
+std::string RooExpPoly::getFormulaExpression() const {
+  std::stringstream ss;
+  ss << "exp(" ;
+  int order = _lowestOrder;
+  for(auto coef:_coefList) {
+    if(order != _lowestOrder) ss << "+";
+    ss << coef->GetName() << "*pow(" << _x.GetName() << "," << order << ")";
+    ++order;
+  }
+  ss << ")";
+  return ss.str();
 }

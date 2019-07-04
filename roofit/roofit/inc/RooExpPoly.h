@@ -39,6 +39,8 @@ public:
 
   Double_t getLogVal(const RooArgSet* nset) const override;
 
+  std::string getFormulaExpression() const;
+  
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const override;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const override; 
   
