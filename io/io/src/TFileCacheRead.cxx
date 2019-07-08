@@ -1,8 +1,5 @@
-// @(#)root/io:$Id$
-// Author: Rene Brun   18/05/2006
-
 /*************************************************************************
- * Copyright (C) 1995-2000, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2018, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -31,13 +28,14 @@
 #include "TFileCacheWrite.h"
 #include "TFilePrefetch.h"
 #include "TMathBase.h"
+#include "TFileBufferRead.h"
 
 ClassImp(TFileCacheRead);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Default Constructor.
 
-TFileCacheRead::TFileCacheRead() : TObject()
+TFileCacheRead::TFileCacheRead() : TObject(), fEnableBuffering(false)
 {
    fBufferSizeMin = 0;
    fBufferSize  = 0;
@@ -90,7 +88,7 @@ TFileCacheRead::TFileCacheRead() : TObject()
 /// Creates a TFileCacheRead data structure.
 
 TFileCacheRead::TFileCacheRead(TFile *file, Int_t buffersize, TObject *tree)
-           : TObject()
+           : TObject(), fEnableBuffering(false)
 {
    if (buffersize <=10000) fBufferSize = 100000;
    else fBufferSize = buffersize;
@@ -137,9 +135,14 @@ TFileCacheRead::TFileCacheRead(TFile *file, Int_t buffersize, TObject *tree)
    //initialise the prefetch object and set the cache directory
    // start the thread only if the file is not local
    fEnablePrefetching = gEnv->GetValue("TFile.AsyncPrefetching", 0);
+   fEnableBuffering   = gEnv->GetValue("TFile.LocalBuffer", 0);
+   bool remoteFile = strcmp(file->GetEndpointUrl()->GetProtocol(), "file");
 
-   if (fEnablePrefetching && strcmp(file->GetEndpointUrl()->GetProtocol(), "file")){
+   if (fEnablePrefetching && remoteFile) {
       SetEnablePrefetchingImpl(true);
+   } else if (file && fEnableBuffering && remoteFile) {
+      SetEnablePrefetchingImpl(false);
+      SetEnableBufferRead(true);
    }
    else { //disable the async pref for local files
       SetEnablePrefetchingImpl(false);
@@ -338,6 +341,9 @@ void TFileCacheRead::Print(Option_t *option) const
      printf("Prefetching .......................: %lli blocks\n", fPrefetchedBlocks);
      printf("Prefetching Wait Time..............: %f seconds\n", fPrefetch->GetWaitTime() / 1e+6);
    }
+   if (fBufferFile) {
+     printf("Buffer file chunks ................: %u blocks\n", fBufferFile->GetCount());
+   }
 
    if (!opt.Contains("a")) return;
    for (Int_t i=0;i<fNseek;i++) {
@@ -380,10 +386,14 @@ Int_t TFileCacheRead::ReadBuffer(char *buf, Long64_t pos, Int_t len)
 
 Int_t TFileCacheRead::ReadBufferExt(char *buf, Long64_t pos, Int_t len, Int_t &loc)
 {
-   if (fEnablePrefetching)
+   if (fEnablePrefetching) {
       return ReadBufferExtPrefetch(buf, pos, len, loc);
-   else
+   } else if (fBufferFile) {
+      auto retval = fBufferFile->Pread(buf, len, pos);
+      return (retval == -1) ? retval : (len == retval);
+   } else {
       return ReadBufferExtNormal(buf, pos, len, loc);
+   }
 }
 
 
@@ -757,6 +767,27 @@ Int_t TFileCacheRead::SetBufferSize(Int_t buffersize)
    return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Set the buffer mode of this file.
+///
+/// If setBuffer is `true`, then the TFileCacheRead will store a remote file's
+/// contents on a local disk directory (can be controlled by Cache.Directory).
+/// When the TFile is closed, the buffer is automatically cleaned up by the
+/// operating system.
+///
+void TFileCacheRead::SetEnableBufferRead(bool setBuffer) {
+   if (setBuffer && !fBufferFile) {fBufferFile.reset(new TFileBufferRead(fFile));}
+   else if (!setBuffer) {fBufferFile.release();}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Return the number of blocks fetched to the local disk buffer.
+///
+/// If local disk buffering is disabled, this returns 0.
+///
+Long_t TFileCacheRead::GetBufferedBlocks() const {
+   return fBufferFile ? fBufferFile->GetCount() : 0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the prefetching mode of this file.

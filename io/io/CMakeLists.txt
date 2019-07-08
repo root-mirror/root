@@ -21,6 +21,7 @@ set(headers ROOT/TBufferMerger.hxx
    TEmulatedMapProxy.h
    TEmulatedCollectionProxy.h
    TDirectoryFile.h
+   TFileBufferRead.h
    TFileCacheRead.h
    TFileMerger.h
    TFree.h
@@ -59,6 +60,7 @@ set(sources src/TArchiveFile.cxx
    src/TFileCacheRead.cxx
    src/TFileMerger.cxx
    src/TFree.cxx
+   TFileBufferRead.cxx
    src/TFileCacheWrite.cxx
    src/TFilePrefetch.cxx
    src/TFile.cxx

@@ -493,6 +493,14 @@ RSA.KeyType:  1
 # of the TFile implementation. By default it is disabled.
 #TFile.AsyncPrefetching:   no
 
+# Control the use of local file buffering.  If a file is being read from
+# a remote filesystem, then there may be significant speedup from downloading
+# it locally in large chunks and having ROOT access those chunks directly
+# For example, this may provide significant speedup if accessing files from
+# a shared filesystem that prefers block-aligned reads but there is a local
+# SSD on the worker node.
+# TFile.LocalBuffer: no
+
 # Enable cross-protocol redirects
 TFile.CrossProtocolRedirects:  yes
 
