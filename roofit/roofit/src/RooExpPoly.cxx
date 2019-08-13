@@ -175,7 +175,7 @@ Int_t RooExpPoly::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars,
 #define PI TMath::Pi()
 
 namespace {
-  double deltaerf(double x1, double x2){
+  double deltaerf(long double x1, long double x2){
     // several things happening here
     // 1. use "erf(x) = -erf(-x)" to evaluate the function only ever for the positive side (higher precision)
     // 2. use "erf(x) = 1.-erfc(x)" and, instead of "erf(x1) - erf(x2)", do "(1.-erfc(x1)) - (1.-erfc(x2)) = erfc(x2) - erfc(x1)"
@@ -236,13 +236,15 @@ Double_t RooExpPoly::analyticalIntegral(Int_t code, const char* rangeName) const
   return 0.;
 }
 
-std::string RooExpPoly::getFormulaExpression() const {
+std::string RooExpPoly::getFormulaExpression(bool expand) const {
   std::stringstream ss;
   ss << "exp(" ;
   int order = _lowestOrder;
   for(auto coef:_coefList) {
     if(order != _lowestOrder) ss << "+";
-    ss << coef->GetName() << "*pow(" << _x.GetName() << "," << order << ")";
+    if(expand) ss << ((RooAbsReal*)coef)->getVal();
+    else       ss << coef->GetName();
+    ss << "*pow(" << _x.GetName() << "," << order << ")";
     ++order;
   }
   ss << ")";

@@ -180,11 +180,13 @@ Double_t RooPower::analyticalIntegral(Int_t code, const char* rangeName) const
   return retval;
 }
 
-std::string RooPower::getFormulaExpression() const {
+std::string RooPower::getFormulaExpression(bool expand) const {
   std::stringstream ss;
   for(int i=0; i<_coefList.getSize(); ++i){
     if(i!=0) ss << "+";
-    ss << _coefList.at(i)->GetName() << "*pow(" << _x.GetName() << "," << _expList.at(i)->GetName() << ")";
+    if(expand) ss << ((RooAbsReal*)_coefList.at(i))->getVal();
+    else       ss << _coefList.at(i)->GetName();
+    ss << "*pow(" << _x.GetName() << "," << _expList.at(i)->GetName() << ")";
   }
   return ss.str().c_str();
 }
