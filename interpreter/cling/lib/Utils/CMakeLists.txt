@@ -15,6 +15,7 @@ set( LIBS
   clangLex
   clangBasic
   clangParse
+  clangTooling
 )
 
 find_library(DL_LIBRARY_PATH dl)
