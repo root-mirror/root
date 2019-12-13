@@ -371,6 +371,209 @@ void TCpu<AFloat>::ConvLayerBackward(std::vector<TCpuMatrix<AFloat>> &activation
 
 //____________________________________________________________________________
 template <typename AFloat>
+void TCpu<AFloat>::GenerateConvMatrix(TCpuMatrix<AFloat> weights, 
+                                    std::vector< TCpuMatrix<AFloat> > & modifiedWeightMatrix){
+  //TCpuMatrix<AFloat> modifiedWeightMatrix(rows,cols);
+  size_t rows = modifiedWeightMatrix[0].GetNrows();
+  size_t cols = modifiedWeightMatrix[0].GetNcols();
+  TCpuMatrix<AFloat> columnarWeightMatrix(weights.GetNrows()*weights.GetNcols(),1);
+  std::vector< TCpuMatrix<AFloat> > columnarVector;
+  columnarVector.emplace_back(columnarWeightMatrix);
+  GenerateColumnarMatrix(weights,columnarVector);
+  size_t padRow = 0;
+  for(size_t i = 0 ; i < cols;){
+    size_t j = 0;
+    while(j < rows){
+      size_t count = 1;
+      for(size_t k = 0; k < padRow; k++){
+        modifiedWeightMatrix[0](k,i) = 0 ;
+        j++;
+      }
+      size_t weightIndex = 0;
+      for( ; weightIndex < columnarVector[0].GetNrows() and j<rows;){
+        
+        if(count%(weights.GetNcols()+1)==0){
+          modifiedWeightMatrix[0](j,i) = 0;
+        }
+        else{
+          modifiedWeightMatrix[0](j,i) = columnarVector[0](weightIndex,0);  
+          weightIndex+=1;
+        }
+        j++;
+        count +=1;
+      }
+      
+      for(size_t k = j; k < rows; k++)
+      {
+        modifiedWeightMatrix[0](j,i) = 0;
+        j++;
+      }
+    } 
+    i++;
+    if(i >= (cols/2)){
+      int newPadRow =  (rows - 1 - columnarVector[0].GetNrows() - (weights.GetNrows() - 1)) - (cols - 1 - i);
+      if(newPadRow<0){
+        newPadRow = 0;
+      }
+      padRow = newPadRow;
+    }
+    else{
+      padRow = i ;
+    }
+  }
+}
+
+//____________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::GenerateTransConvMatrix(TCpuMatrix<AFloat> weights, 
+                                    std::vector< TCpuMatrix<AFloat> > & modifiedWeightMatrix){
+  //TCpuMatrix<AFloat> modifiedWeightMatrix(rows,cols);
+  size_t rows = modifiedWeightMatrix[0].GetNrows();
+  size_t cols = modifiedWeightMatrix[0].GetNcols();
+  TCpuMatrix<AFloat> columnarWeightMatrix(weights.GetNrows()*weights.GetNcols(),1);
+  std::vector< TCpuMatrix<AFloat> > columnarVector;
+  columnarVector.emplace_back(columnarWeightMatrix);
+  GenerateColumnarMatrix(weights,columnarVector);
+  size_t padCol = 0;
+  for(size_t i = 0 ; i < rows;){
+    size_t j = 0;
+    while(j < cols){
+      size_t count = 1;
+      for(size_t k = 0; k < padCol; k++){
+        modifiedWeightMatrix[0](i,k) = 0 ;
+        j++;
+      }
+      size_t weightIndex = 0;
+      for( ; weightIndex < columnarVector[0].GetNrows() and j<cols;){
+        
+        if(count%(weights.GetNcols()+1)==0){
+          modifiedWeightMatrix[0](i,j) = 0;
+        }
+        else{
+          modifiedWeightMatrix[0](i,j) = columnarVector[0](weightIndex,0);  
+          weightIndex+=1;
+        }
+        j++;
+        count +=1;
+      }
+      
+      for(size_t k = j; k < cols; k++)
+      {
+        modifiedWeightMatrix[0](i,j) = 0;
+        j++;
+      }
+    } 
+    i++;
+    if(i >= (rows/2)){
+      int newPadCol =  (cols - 1 - columnarVector[0].GetNrows() - (weights.GetNrows() - 1)) - (rows - 1 - i);
+      if(newPadCol<0){
+        newPadCol = 0;
+      }
+      padCol = newPadCol;
+    }
+    else{
+      padCol = i ;
+    }
+  }
+}
+
+//____________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::GenerateColumnarMatrix(TCpuMatrix<AFloat> input,
+                                    std::vector< TCpuMatrix<AFloat> > & inputColumnar){
+  //TCpuMatrix<AFloat> inputColumnar(input.GetNrows()*input.GetNrows(),1);
+  for(size_t i = 0 ; i < input.GetNrows(); i++){
+    for(size_t j = 0 ; j < input.GetNcols(); j++){
+      
+      inputColumnar[0](i*input.GetNcols()+j,0) = input(i,j);
+    }
+  }
+}
+
+//____________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::TransConvLayerForward(std::vector<TCpuMatrix<AFloat>> & output,
+                                    std::vector<TCpuMatrix<AFloat>> & derivatives,
+                                    const std::vector<TCpuMatrix<AFloat>> &input,
+                                    const TCpuMatrix<AFloat> &weights, const TCpuMatrix<AFloat> & biases,
+                                    const DNN::CNN::TConvParams & params, EActivationFunction activFunc,
+                                    std::vector<TCpuMatrix<AFloat>> & /*  */)
+{
+  for(size_t i = 0; i < output.size(); i++){
+
+    TCpuMatrix<AFloat> outputTr(output[i].GetNcols()*output[i].GetNrows(),1);
+    
+    TCpuMatrix<AFloat> inputTr(input[i].GetNrows()*input[i].GetNcols(),1);
+    std::vector< TCpuMatrix<AFloat> > inputTrVector;
+    inputTrVector.emplace_back(inputTr);
+    GenerateColumnarMatrix(input[i],inputTrVector);
+    
+    TCpuMatrix<AFloat> convMatrix(output[i].GetNcols(),inputTr.GetNrows());
+    std::vector< TCpuMatrix<AFloat>> convMatrices;
+    convMatrices.emplace_back(convMatrix);
+    
+    GenerateConvMatrix(weights,convMatrices);
+    
+    Multiply(outputTr,convMatrices[i],inputTr);
+
+    for(size_t j = 0 ; j < output[i].GetNrows(); j++){
+      for(size_t k = 0; k < output[i].GetNcols(); k++){
+        output[i](j,k) = outputTr(j*output[i].GetNcols()+k,0);
+      }
+    }
+
+    AddConvBiases(output[i], biases);
+  }
+
+   //evaluateDerivative<TCpu<AFloat>>(derivatives[i], activFunc, output[i]);
+   //evaluate<TCpu<AFloat>>(output[i], activFunc);
+
+   //TCpuMatrix<AFloat>::GetThreadExecutor().Foreach(f, ROOT::TSeqI(input.size()));*/
+}
+
+//____________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::TransConvLayerBackward(std::vector<TCpuMatrix<AFloat>> & output,
+                                    std::vector<TCpuMatrix<AFloat>> & derivatives,
+                                    const std::vector<TCpuMatrix<AFloat>> &input,
+                                    const TCpuMatrix<AFloat> &weights, const TCpuMatrix<AFloat> & biases,
+                                    const DNN::CNN::TConvParams & params, EActivationFunction activFunc,
+                                    std::vector<TCpuMatrix<AFloat>> & /*  */)
+{
+  for(size_t i = 0; i < output.size(); i++){
+
+    TCpuMatrix<AFloat> outputTr(output[i].GetNcols()*output[i].GetNrows(),1);
+
+    TCpuMatrix<AFloat> inputTr(input[i].GetNrows()*input[i].GetNcols(),1);
+    std::vector< TCpuMatrix<AFloat> > inputTrVector;
+    inputTrVector.emplace_back(inputTr);
+    GenerateColumnarMatrix(input[i],inputTrVector);
+    
+    TCpuMatrix<AFloat> convMatrix(output[i].GetNcols(),inputTr.GetNrows());
+    std::vector< TCpuMatrix<AFloat>> convMatrices;
+    convMatrices.emplace_back(convMatrix);
+    
+    GenerateTransConvMatrix(weights,convMatrices);
+    
+    Multiply(outputTr,convMatrices[i],inputTr);
+
+    for(size_t j = 0 ; j < output[i].GetNrows(); j++){
+      for(size_t k = 0; k < output[i].GetNcols(); k++){
+        output[i](j,k) = outputTr(j*output[i].GetNcols()+k,0);
+      }
+    }
+
+    AddConvBiases(output[i], biases);
+  }
+
+   //evaluateDerivative<TCpu<AFloat>>(derivatives[i], activFunc, output[i]);
+   //evaluate<TCpu<AFloat>>(output[i], activFunc);
+
+   //TCpuMatrix<AFloat>::GetThreadExecutor().Foreach(f, ROOT::TSeqI(input.size()));*/
+}
+
+//____________________________________________________________________________
+template <typename AFloat>
 void TCpu<AFloat>::CalculateConvActivationGradients(std::vector<TCpuMatrix<AFloat>> &activationGradientsBackward,
                                                     const std::vector<TCpuMatrix<AFloat>> &df,
                                                     const TCpuMatrix<AFloat> &weights, size_t batchSize,
@@ -607,6 +810,59 @@ void TCpu<AFloat>::MaxPoolLayerBackward(TCpuMatrix<AFloat> &activationGradientsB
    }
 }
 
+//______________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::Upsample(std::vector< TCpuMatrix<AFloat> > &A, const TCpuMatrix<AFloat> &C)
+{
+
+   // image index ratio
+   double imgRowRatio = ( double ) C.GetNrows()/A[0].GetNrows();
+   double imgColRatio = ( double ) C.GetNcols()/A[0].GetNcols();
+
+   // coordinates of the neighbor pixels
+   size_t neighbourRow = 0;
+   size_t neighbourCol = 0;
+
+   // calculate the upsampled matrix
+   for(size_t i = 0; i < A[0].GetNrows(); i++){
+      for(size_t j = 0; j < A[0].GetNcols(); j++){
+
+         // define the row and column positions of the nearest neighbours
+         neighbourRow = Int_t(imgRowRatio*i);
+         neighbourCol = Int_t(imgColRatio*j);
+
+         // assign the neighbour values to each position
+         A[0](i,j) = C(neighbourRow,neighbourCol);
+      }
+   }
+}
+
+//______________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::UpsampleLayerBackward(std::vector< TCpuMatrix<AFloat> > &A, const TCpuMatrix<AFloat> &C)
+{
+   // image index ratio
+   double imgRowRatio = ( double ) C.GetNrows()/A[0].GetNrows();
+   double imgColRatio = ( double ) C.GetNcols()/A[0].GetNcols();
+
+   // coordinates of the neighbor pixels
+   size_t neighbourRow = 0;
+   size_t neighbourCol = 0;
+
+   // calculate the upsampled matrix
+   for(size_t i = 0; i < A[0].GetNrows(); i++){
+      for(size_t j = 0; j < A[0].GetNcols(); j++){
+
+         // define the row and column positions of the nearest neighbours
+         neighbourRow = Int_t(imgRowRatio*i);
+         neighbourCol = Int_t(imgColRatio*j);
+
+         // assign the neighbour values to each position
+         A[0](i,j) = C(neighbourRow,neighbourCol);
+      }
+   }
+}
+
 //____________________________________________________________________________
 template <typename AFloat>
 void TCpu<AFloat>::Reshape(TCpuMatrix<AFloat> &A, const TCpuMatrix<AFloat> &B)
@@ -651,8 +907,8 @@ void TCpu<AFloat>::Deflatten(std::vector<TCpuMatrix<AFloat>> &A, const TCpuMatri
 }
 
 //______________________________________________________________________________
-template <typename AReal>
-void TCpu<AReal>::Rearrange(std::vector<TCpuMatrix<AReal>> &out, const std::vector<TCpuMatrix<AReal>> &in)
+template <typename AFloat>
+void TCpu<AFloat>::Rearrange(std::vector<TCpuMatrix<AFloat>> &out, const std::vector<TCpuMatrix<AFloat>> &in)
 {
    // B x T x D out --- T x B x D in*/
    size_t B = out.size();

@@ -365,6 +365,31 @@ public:
                                  size_t inputHeight, size_t inputWidth, size_t depth, size_t height, size_t width,
                                  size_t filterDepth, size_t filterHeight, size_t filterWidth, size_t nLocalViews);
 
+   /** Generate a columnar input vector for transpose convolution */
+   static void GenerateColumnarMatrix(TCpuMatrix<Scalar_t> input,std::vector<TCpuMatrix<Scalar_t> > & inputColumnar);
+   
+   /** Generate a transpose convolutional matrix from the weight matrix */
+   static void GenerateConvMatrix(TCpuMatrix<Scalar_t> weights, std::vector<TCpuMatrix<Scalar_t> > & modifiedWeightMatrix);
+
+   /** Convert the weight matrix to transpose convolution matrix */
+   static void GenerateTransConvMatrix(TCpuMatrix<Scalar_t> weights, std::vector<TCpuMatrix<Scalar_t> > & modifiedWeightMatrix);
+
+   /** Forward propagation in the Transpose Convolutional layer */
+   static void TransConvLayerForward(std::vector<TCpuMatrix<Scalar_t>> & output,
+                                std::vector<TCpuMatrix<Scalar_t>> & derivatives,
+                                const std::vector<TCpuMatrix<Scalar_t>> &input,
+                                const TCpuMatrix<Scalar_t> &weights, const TCpuMatrix<Scalar_t> & biases,
+                                const DNN::CNN::TConvParams & params, EActivationFunction activFunc,
+                                std::vector<TCpuMatrix<Scalar_t>> & /* inputPrime */);
+
+   /** Backward propagation in the Convolutional layer */
+   static void TransConvLayerBackward(std::vector<TCpuMatrix<Scalar_t>> & output,
+                                std::vector<TCpuMatrix<Scalar_t>> & derivatives,
+                                const std::vector<TCpuMatrix<Scalar_t>> &input,
+                                const TCpuMatrix<Scalar_t> &weights, const TCpuMatrix<Scalar_t> & biases,
+                                const DNN::CNN::TConvParams & params, EActivationFunction activFunc,
+                                std::vector<TCpuMatrix<Scalar_t>> & /* inputPrime */);
+
    /** Utility function for calculating the activation gradients of the layer
     *  before the convolutional layer. */
    static void CalculateConvActivationGradients(std::vector<TCpuMatrix<Scalar_t>> &activationGradientsBackward,
@@ -422,6 +447,29 @@ public:
                                     size_t strideCols,
                                     size_t nLocalViews);
 
+   ///@}
+
+   //____________________________________________________________________________
+   //
+   //  Upsampling Layer Propagation
+   //____________________________________________________________________________
+   /** @name Forward Propagation in Upsampling Layer
+    */
+   ///@{
+
+  /** Upsample the matrix \p C to the matrix \p A, using max
+    *  nearest neighbor interpolation method. */
+   static void Upsample(std::vector< TCpuMatrix<AReal> > &A, const TCpuMatrix<AReal> &C);
+
+   ///@}
+
+   /** @name Backward Propagation in Upsampling Layer
+    */
+   ///@{
+
+   /** Perform the complete backward propagation step in a Upsampling Layer. Based on the
+    *  exact opposite method of nearest neighbor interpolation. */
+   static void UpsampleLayerBackward(std::vector< TCpuMatrix<AReal> > &A, const TCpuMatrix<AReal> &C);
    ///@}
 
    //____________________________________________________________________________

@@ -390,6 +390,59 @@ void TReference<AReal>::MaxPoolLayerBackward(TMatrixT<AReal> &activationGradient
 
 //______________________________________________________________________________
 template <typename AReal>
+void TReference<AReal>::Upsample(std::vector< TMatrixT<AReal> > &A, const TMatrixT<AReal> &C)
+{
+
+   // image index ratio
+   double imgRowRatio = ( double ) C.GetNrows()/A[0].GetNrows();
+   double imgColRatio = ( double ) C.GetNcols()/A[0].GetNcols();
+
+   // coordinates of the neighbor pixels
+   size_t neighbourRow = 0;
+   size_t neighbourCol = 0;
+
+   // calculate the upsampled matrix
+   for(size_t i = 0; i < A[0].GetNrows(); i++){
+      for(size_t j = 0; j < A[0].GetNcols(); j++){
+
+         // define the row and column positions of the nearest neighbours
+         neighbourRow = Int_t(imgRowRatio*i);
+         neighbourCol = Int_t(imgColRatio*j);
+
+         // assign the neighbour values to each position
+         A[0](i,j) = C(neighbourRow,neighbourCol);
+      }
+   }
+}
+
+//______________________________________________________________________________
+template <typename AReal>
+void TReference<AReal>::UpsampleLayerBackward(std::vector< TMatrixT<AReal> > &A, const TMatrixT<AReal> &C)
+{
+   // image index ratio
+   double imgRowRatio = ( double ) C.GetNrows()/A[0].GetNrows();
+   double imgColRatio = ( double ) C.GetNcols()/A[0].GetNcols();
+
+   // coordinates of the neighbor pixels
+   size_t neighbourRow = 0;
+   size_t neighbourCol = 0;
+
+   // calculate the upsampled matrix
+   for(size_t i = 0; i < A[0].GetNrows(); i++){
+      for(size_t j = 0; j < A[0].GetNcols(); j++){
+
+         // define the row and column positions of the nearest neighbours
+         neighbourRow = Int_t(imgRowRatio*i);
+         neighbourCol = Int_t(imgColRatio*j);
+
+         // assign the neighbour values to each position
+         A[0](i,j) = C(neighbourRow,neighbourCol);
+      }
+   }
+}
+
+//______________________________________________________________________________
+template <typename AReal>
 void TReference<AReal>::Reshape(TMatrixT<AReal> &A, const TMatrixT<AReal> &B)
 {
    auto nColsA = A.GetNcols();

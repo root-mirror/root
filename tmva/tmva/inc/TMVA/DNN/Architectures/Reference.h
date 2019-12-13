@@ -435,6 +435,30 @@ public:
                                     size_t strideCol,
                                     size_t nLocalViews);
    ///@}
+
+   //____________________________________________________________________________
+   //
+   //  Upsampling Layer Propagation
+   //____________________________________________________________________________
+   /** @name Forward Propagation in Upsampling Layer
+    */
+   ///@{
+
+  /** Upsample the matrix \p C to the matrix \p A, using max
+    *  nearest neighbor interpolation method. */
+   static void Upsample(std::vector< TMatrixT<AReal> > &A, const TMatrixT<AReal> &C);
+
+   ///@}
+
+   /** @name Backward Propagation in Upsampling Layer
+    */
+   ///@{
+
+   /** Perform the complete backward propagation step in a Upsampling Layer. Based on the
+    *  exact opposite method of nearest neighbor interpolation. */
+   static void UpsampleLayerBackward(std::vector< TMatrixT<AReal> > &A, const TMatrixT<AReal> &C);
+   ///@}
+
    //____________________________________________________________________________
    //
    //  Reshape Layer Propagation
