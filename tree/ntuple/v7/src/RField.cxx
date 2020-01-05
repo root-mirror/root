@@ -22,6 +22,7 @@
 #include <ROOT/RLogger.hxx>
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RNTupleModel.hxx>
+#include <ROOT/RNTupleUtil.hxx>
 
 #include <TClass.h>
 #include <TCollection.h>
@@ -130,6 +131,9 @@ ROOT::Experimental::Detail::RFieldBase::Create(const std::string &fieldName, con
    if (normalizedType == "std::uint64_t") return new RField<std::uint64_t>(fieldName);
    if (normalizedType == "float") return new RField<float>(fieldName);
    if (normalizedType == "double") return new RField<double>(fieldName);
+   if (normalizedType == "float24_t") return new RField<float24_t>(fieldName);
+   if (normalizedType == "float16_t") return new RField<float16_t>(fieldName);
+   if (normalizedType == "float8_t") return new RField<float8_t>(fieldName);
    if (normalizedType == "std::string") return new RField<std::string>(fieldName);
    if (normalizedType == "std::vector<bool>") return new RField<std::vector<bool>>(fieldName);
    if (normalizedType.substr(0, 12) == "std::vector<") {
@@ -161,6 +165,22 @@ ROOT::Experimental::Detail::RFieldBase::Create(const std::string &fieldName, con
       return new RFieldVariant(fieldName, items);
    }
 #endif
+   if (normalizedType.substr(0, 12) == "float(nBits(") {
+      std::size_t pos1{normalizedType.find(")/min(")};
+      std::size_t pos2{normalizedType.find(")/max(")};
+      const std::size_t nBits = std::stoull(normalizedType.substr(12, pos1-12));
+      const std::int64_t min = std::stoll(normalizedType.substr(pos1+6, pos2-pos1-6));
+      const std::int64_t max = std::stoll(normalizedType.substr(pos2+6));
+      return new RField<float, RCustomSizedFloat>(fieldName, nBits, min, max);
+   }
+   if (normalizedType.substr(0, 13) == "double(nBits(") {
+      std::size_t pos1{normalizedType.find(")/min(")};
+      std::size_t pos2{normalizedType.find(")/max(")};
+      const std::size_t nBits = std::stoull(normalizedType.substr(13, pos1-13));
+      const std::int64_t min = std::stoll(normalizedType.substr(pos1+6, pos2-pos1-6));
+      const std::int64_t max = std::stoll(normalizedType.substr(pos2+6));
+      return new RField<double, RCustomSizedFloat>(fieldName, nBits, min, max);
+   }
    // TODO: create an RFieldCollection?
    if (normalizedType == ":Collection:") return new RField<ClusterSize_t>(fieldName);
    auto cl = TClass::GetClass(normalizedType.c_str());
@@ -335,6 +355,36 @@ void ROOT::Experimental::RField<float>::DoGenerateColumns()
    RColumnModel model(EColumnType::kReal32, false /* isSorted*/);
    fColumns.emplace_back(std::unique_ptr<Detail::RColumn>(
       Detail::RColumn::Create<float, EColumnType::kReal32>(model, 0)));
+   fPrincipalColumn = fColumns[0].get();
+}
+
+//------------------------------------------------------------------------------
+
+void ROOT::Experimental::RField<ROOT::Experimental::float24_t>::DoGenerateColumns()
+{
+   RColumnModel model(EColumnType::kReal24, false /* isSorted*/);
+   fColumns.emplace_back(std::unique_ptr<Detail::RColumn>(
+      Detail::RColumn::Create<float, EColumnType::kReal24>(model, 0)));
+   fPrincipalColumn = fColumns[0].get();
+}
+
+//------------------------------------------------------------------------------
+
+void ROOT::Experimental::RField<ROOT::Experimental::float16_t>::DoGenerateColumns()
+{
+   RColumnModel model(EColumnType::kReal16, false /* isSorted*/);
+   fColumns.emplace_back(std::unique_ptr<Detail::RColumn>(
+      Detail::RColumn::Create<float, EColumnType::kReal16>(model, 0)));
+   fPrincipalColumn = fColumns[0].get();
+}
+
+//------------------------------------------------------------------------------
+
+void ROOT::Experimental::RField<ROOT::Experimental::float8_t>::DoGenerateColumns()
+{
+   RColumnModel model(EColumnType::kReal8, false /* isSorted*/);
+   fColumns.emplace_back(std::unique_ptr<Detail::RColumn>(
+      Detail::RColumn::Create<float, EColumnType::kReal8>(model, 0)));
    fPrincipalColumn = fColumns[0].get();
 }
 

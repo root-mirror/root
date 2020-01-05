@@ -75,6 +75,15 @@ public:
       return column;
    }
 
+   /// Used when storing data, where number of bits is defined by the user.
+   template <typename CppT, EColumnType ColumnT>
+   static RColumn *CreateCustom(const RColumnModel& model, std::uint32_t index, std::size_t nBits, std::int64_t min, std::int64_t max) {
+      R__ASSERT(model.GetType() == ColumnT);
+      auto column = new RColumn(model, index);
+      column->fElement = std::unique_ptr<RColumnElementBase>(new RColumnElement<CppT, ColumnT>(nullptr, nBits, min, max));
+      return column;
+   }
+
    RColumn(const RColumn&) = delete;
    RColumn &operator =(const RColumn&) = delete;
    ~RColumn();

@@ -87,6 +87,16 @@ static std::string GetColumnTypeName(ROOT::Experimental::EColumnType type)
       return "Index";
    case ROOT::Experimental::EColumnType::kSwitch:
       return "Switch";
+   case ROOT::Experimental::EColumnType::kReal24:
+      return "kReal24";
+   case ROOT::Experimental::EColumnType::kReal16:
+      return "kReal16";
+   case ROOT::Experimental::EColumnType::kReal8:
+      return "kReal8";
+   case ROOT::Experimental::EColumnType::kCustomDouble:
+      return "CustomDouble";
+   case ROOT::Experimental::EColumnType::kCustomFloat:
+      return "CustomFloat";
    default:
       return "UNKNOWN";
    }

@@ -120,7 +120,7 @@ to end().
 For simple types, template specializations let the reading become a pure mapping into a page buffer.
 */
 // clang-format on
-template <typename T>
+template <typename T, typename T2=void>
 class RNTupleView {
    friend class RNTupleReader;
    friend class RNTupleViewCollection;
@@ -129,7 +129,7 @@ protected:
    /**
     * fFieldId has fParent always set to null; views access nested fields without looking at the parent
     */
-   RField<T> fField;
+   RField<T, T2> fField;
    Detail::RFieldValue fValue;
 
    RNTupleView(DescriptorId_t fieldId, Detail::RPageSource* pageSource)
@@ -189,6 +189,31 @@ public:
    float operator()(const RClusterIndex &clusterIndex) { return *fField.Map(clusterIndex); }
 };
 
+/// Used when reading from RField<float, RCustomSizedFloat>
+template<>
+class RNTupleView<float, RCustomSizedFloat> {
+   friend class RNTupleReader;
+   friend class RNTupleViewCollection;
+
+protected:
+   RField<float, RCustomSizedFloat> fField;
+   RNTupleView(DescriptorId_t fieldId, Detail::RPageSource* pageSource, std::size_t nBits, std::int64_t min,
+               std::int64_t max)
+      : fField(pageSource->GetDescriptor().GetFieldDescriptor(fieldId).GetFieldName(), nBits, min, max)
+   {
+      Detail::RFieldFuse::Connect(fieldId, *pageSource, fField);
+   }
+
+public:
+   RNTupleView(const RNTupleView& other) = delete;
+   RNTupleView(RNTupleView&& other) = default;
+   RNTupleView& operator=(const RNTupleView& other) = delete;
+   RNTupleView& operator=(RNTupleView&& other) = default;
+   ~RNTupleView() = default;
+
+   double operator()(NTupleSize_t globalIndex) { return *fField.Map(globalIndex); }
+   double operator()(const RClusterIndex &clusterIndex) { return *fField.Map(clusterIndex); }
+};
 
 template <>
 class RNTupleView<double> {
@@ -214,6 +239,31 @@ public:
    double operator()(const RClusterIndex &clusterIndex) { return *fField.Map(clusterIndex); }
 };
 
+/// Used when reading from RField<double, RCustomSizedFloat>
+template<>
+class RNTupleView<double, RCustomSizedFloat> {
+   friend class RNTupleReader;
+   friend class RNTupleViewCollection;
+
+protected:
+   RField<double, RCustomSizedFloat> fField;
+   RNTupleView(DescriptorId_t fieldId, Detail::RPageSource* pageSource, std::size_t nBits, std::int64_t min,
+               std::int64_t max)
+      : fField(pageSource->GetDescriptor().GetFieldDescriptor(fieldId).GetFieldName(), nBits, min, max)
+   {
+      Detail::RFieldFuse::Connect(fieldId, *pageSource, fField);
+   }
+
+public:
+   RNTupleView(const RNTupleView& other) = delete;
+   RNTupleView(RNTupleView&& other) = default;
+   RNTupleView& operator=(const RNTupleView& other) = delete;
+   RNTupleView& operator=(RNTupleView&& other) = default;
+   ~RNTupleView() = default;
+
+   double operator()(NTupleSize_t globalIndex) { return *fField.Map(globalIndex); }
+   double operator()(const RClusterIndex &clusterIndex) { return *fField.Map(clusterIndex); }
+};
 
 template <>
 class RNTupleView<std::int32_t> {
@@ -263,6 +313,48 @@ public:
    ClusterSize_t operator()(const RClusterIndex &clusterIndex) { return *fField.Map(clusterIndex); }
 };
 
+/// Used when reading from RField<std::vector<T>, RCustomSizedFloat> or RField<std::array<T, N>, RCustomSizedFloat>
+template <typename T>
+class RNTupleView<T, RCustomSizedFloat> {
+   friend class RNTupleReader;
+   friend class RNTupleViewCollection;
+
+protected:
+   RField<T, RCustomSizedFloat> fField;
+   Detail::RFieldValue fValue;
+
+   RNTupleView(DescriptorId_t fieldId, Detail::RPageSource* pageSource, std::size_t nBits, std::int64_t min, std::int64_t max)
+      : fField(pageSource->GetDescriptor().GetFieldDescriptor(fieldId).GetFieldName(), nBits, min, max),
+      fValue(fField.GenerateValue())
+   {
+      Detail::RFieldFuse::Connect(fieldId, *pageSource, fField);
+      std::unordered_map<const Detail::RFieldBase *, DescriptorId_t> field2Id;
+      field2Id[&fField] = fieldId;
+      for (auto &f : fField) {
+         auto subFieldId = pageSource->GetDescriptor().FindFieldId(f.GetName(), field2Id[f.GetParent()]);
+         Detail::RFieldFuse::Connect(subFieldId, *pageSource, f);
+         field2Id[&f] = subFieldId;
+      }
+   }
+
+public:
+   RNTupleView(const RNTupleView& other) = delete;
+   RNTupleView(RNTupleView&& other) = default;
+   RNTupleView& operator=(const RNTupleView& other) = delete;
+   RNTupleView& operator=(RNTupleView&& other) = default;
+   ~RNTupleView() = default;
+
+   const T& operator()(NTupleSize_t globalIndex) {
+      fField.Read(globalIndex, &fValue);
+      return *fValue.Get<T>();
+   }
+
+   const T& operator()(const RClusterIndex &clusterIndex) {
+      fField.Read(clusterIndex, &fValue);
+      return *fValue.Get<T>();
+   }
+};
+
 
 // clang-format off
 /**
@@ -310,6 +402,12 @@ public:
    RNTupleView<T> GetView(std::string_view fieldName) {
       auto fieldId = fSource->GetDescriptor().FindFieldId(fieldName, fCollectionFieldId);
       return RNTupleView<T>(fieldId, fSource);
+   }
+   /// ViewCreator for floating point fields where the number of bits used to store data in storage is user-defined.
+   template <typename T, std::size_t nBits, std::int64_t min, std::int64_t max>
+   RNTupleView<T, RCustomSizedFloat> GetView(std::string_view fieldName) {
+      auto fieldId = fSource->GetDescriptor().FindFieldId(fieldName, fCollectionFieldId);
+      return RNTupleView<T, RCustomSizedFloat>(fieldId, fSource, nBits, min, max);
    }
    RNTupleViewCollection GetViewCollection(std::string_view fieldName) {
       auto fieldId = fSource->GetDescriptor().FindFieldId(fieldName, fCollectionFieldId);

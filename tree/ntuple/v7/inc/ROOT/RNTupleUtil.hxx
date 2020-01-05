@@ -138,6 +138,33 @@ public:
    NTupleFlags_t GetFlags() const { return fFlags; }
 };
 
+/// Used as a template parameter in RField for 8bit-float.
+struct RFloat8 {
+   using FloatingPointType = float;
+   FloatingPointType fValue;
+   operator FloatingPointType() const { return fValue; } // casting to float
+   RFloat8(float x = 0.0f) { fValue = x; } // casting from float
+};
+using float8_t = RFloat8;
+
+/// Used as a template parameter in RField for 16-bit float.
+struct RFloat16 {
+   using FloatingPointType = float;
+   FloatingPointType fValue;
+   operator FloatingPointType() const { return fValue; } // casting to float
+   RFloat16(float x = 0.0f) { fValue = x; } // casting from float
+};
+using float16_t = RFloat16;
+
+/// Used as a template parameter in RField for 24-bit float.
+struct RFloat24 {
+   using FloatingPointType = float;
+   FloatingPointType fValue;
+   operator FloatingPointType() const { return fValue; } // casting to float
+   RFloat24(float x = 0.0f) { fValue = x; } // casting from float
+};
+using float24_t = RFloat24;
+
 } // namespace Experimental
 } // namespace ROOT
 

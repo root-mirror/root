@@ -43,11 +43,14 @@ enum class EColumnType {
    kBit,
    kReal64,
    kReal32,
+   kReal24,
    kReal16,
    kReal8,
    kInt64,
    kInt32,
    kInt16,
+   kCustomDouble,
+   kCustomFloat,
 };
 
 // clang-format off

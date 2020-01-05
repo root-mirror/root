@@ -60,6 +60,22 @@ public:
    static std::unique_ptr<RNTupleModel> Create() { return std::make_unique<RNTupleModel>(); }
 
    /// Creates a new field and a corresponding tree value that is managed by a shared pointer.
+   template <typename T, std::size_t nBits, std::int64_t min, std::int64_t max, typename... ArgsT>
+   std::shared_ptr<T> MakeField(std::string_view fieldName, ArgsT&&... args) {
+      if (nBits > 64) {
+         std::cout << "The number of bits should be 64 or lower. Nothing was attached to the model and a nullptr was returned." << std::endl;
+         return nullptr;
+      } else if (nBits < 3) {
+         std::cout << "The number of bits should be 3 or higher. Nothing was attached to the model and a nullptr was returned." << std::endl;
+         return nullptr;
+      }
+      auto field = std::make_unique<RField<T, RCustomSizedFloat> >(fieldName, nBits, min, max);
+      auto ptr = fDefaultEntry->AddValueEncoder<T>(field.get(), std::forward<ArgsT>(args)...);
+      fRootField->Attach(std::move(field));
+      return ptr;
+   }
+
+   /// Creates a new field and a corresponding tree value that is managed by a shared pointer.
    template <typename T, typename... ArgsT>
    std::shared_ptr<T> MakeField(std::string_view fieldName, ArgsT&&... args) {
       auto field = std::make_unique<RField<T>>(fieldName);
@@ -74,6 +90,12 @@ public:
    template <typename T>
    void AddField(std::string_view fieldName, T* fromWhere) {
       auto field = std::make_unique<RField<T>>(fieldName);
+      fDefaultEntry->CaptureValue(field->CaptureValue(fromWhere));
+      fRootField->Attach(std::move(field));
+   }
+   template <typename T, std::size_t nBits, std::int64_t min, std::int64_t max>
+   void AddField(std::string_view fieldName, T* fromWhere) {
+      auto field = std::make_unique<RField<T, RCustomSizedFloat>>(fieldName, nBits, min, max);
       fDefaultEntry->CaptureValue(field->CaptureValue(fromWhere));
       fRootField->Attach(std::move(field));
    }

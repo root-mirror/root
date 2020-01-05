@@ -147,6 +147,7 @@ protected:
    virtual void DoReadInCluster(const RClusterIndex &clusterIndex, RFieldValue *value) {
       DoReadGlobal(fPrincipalColumn->GetGlobalIndex(clusterIndex), value);
    }
+   void SetType(const std::string &newType) { fType = newType; }
 
 public:
    /// Iterates over the sub fields in depth-first search order
@@ -596,6 +597,169 @@ public:
    size_t GetValueSize() const final { return sizeof(float); }
 };
 
+template <>
+class RField<float24_t> : public Detail::RFieldBase {
+public:
+   static std::string TypeName() { return "float24_t"; }
+   explicit RField(std::string_view name)
+     : Detail::RFieldBase(name, TypeName(), ENTupleStructure::kLeaf, true /* isSimple */) {}
+   RField(RField&& other) = default;
+   RField& operator =(RField&& other) = default;
+   ~RField() = default;
+   RFieldBase* Clone(std::string_view newName) final { return new RField(newName); }
+
+   void DoGenerateColumns() final;
+
+   float *Map(NTupleSize_t globalIndex) {
+      return fPrincipalColumn->Map<float, EColumnType::kReal24>(globalIndex);
+   }
+   float *Map(const RClusterIndex &clusterIndex) {
+      return fPrincipalColumn->Map<float, EColumnType::kReal24>(clusterIndex);
+   }
+
+   using Detail::RFieldBase::GenerateValue;
+   template <typename... ArgsT>
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where, ArgsT&&... args)
+   {
+      return Detail::RFieldValue(
+         Detail::RColumnElement<float, EColumnType::kReal24>(static_cast<float*>(where)),
+         this, static_cast<float*>(where), std::forward<ArgsT>(args)...);
+   }
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where) final { return GenerateValue(where, 0.0); }
+   Detail::RFieldValue CaptureValue(void *where) final {
+      return Detail::RFieldValue(true /* captureFlag */,
+         Detail::RColumnElement<float, EColumnType::kReal24>(static_cast<float*>(where)), this, where);
+   }
+   size_t GetValueSize() const final { return sizeof(float); }
+};
+
+template <>
+class RField<float16_t> : public Detail::RFieldBase {
+public:
+   static std::string TypeName() { return "float16_t"; }
+   explicit RField(std::string_view name)
+     : Detail::RFieldBase(name, TypeName(), ENTupleStructure::kLeaf, true /* isSimple */) {}
+   RField(RField&& other) = default;
+   RField& operator =(RField&& other) = default;
+   ~RField() = default;
+   RFieldBase* Clone(std::string_view newName) final { return new RField(newName); }
+
+   void DoGenerateColumns() final;
+
+   float *Map(NTupleSize_t globalIndex) {
+      return fPrincipalColumn->Map<float, EColumnType::kReal16>(globalIndex);
+   }
+   float *Map(const RClusterIndex &clusterIndex) {
+      return fPrincipalColumn->Map<float, EColumnType::kReal16>(clusterIndex);
+   }
+
+   using Detail::RFieldBase::GenerateValue;
+   template <typename... ArgsT>
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where, ArgsT&&... args)
+   {
+      return Detail::RFieldValue(
+         Detail::RColumnElement<float, EColumnType::kReal16>(static_cast<float*>(where)),
+         this, static_cast<float*>(where), std::forward<ArgsT>(args)...);
+   }
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where) final { return GenerateValue(where, 0.0); }
+   Detail::RFieldValue CaptureValue(void *where) final {
+      return Detail::RFieldValue(true /* captureFlag */,
+         Detail::RColumnElement<float, EColumnType::kReal16>(static_cast<float*>(where)), this, where);
+   }
+   size_t GetValueSize() const final { return sizeof(float); }
+};
+
+template <>
+class RField<float8_t> : public Detail::RFieldBase {
+public:
+   static std::string TypeName() { return "float8_t"; }
+   explicit RField(std::string_view name)
+     : Detail::RFieldBase(name, TypeName(), ENTupleStructure::kLeaf, true /* isSimple */) {}
+   RField(RField&& other) = default;
+   RField& operator =(RField&& other) = default;
+   ~RField() = default;
+   RFieldBase* Clone(std::string_view newName) final { return new RField(newName); }
+
+   void DoGenerateColumns() final;
+
+   float *Map(NTupleSize_t globalIndex) {
+      return fPrincipalColumn->Map<float, EColumnType::kReal8>(globalIndex);
+   }
+   float *Map(const RClusterIndex &clusterIndex) {
+      return fPrincipalColumn->Map<float, EColumnType::kReal8>(clusterIndex);
+   }
+
+   using Detail::RFieldBase::GenerateValue;
+   template <typename... ArgsT>
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where, ArgsT&&... args)
+   {
+      return Detail::RFieldValue(
+         Detail::RColumnElement<float, EColumnType::kReal8>(static_cast<float*>(where)),
+         this, static_cast<float*>(where), std::forward<ArgsT>(args)...);
+   }
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where) final { return GenerateValue(where, 0.0); }
+   Detail::RFieldValue CaptureValue(void *where) final {
+      return Detail::RFieldValue(true /* captureFlag */,
+         Detail::RColumnElement<float, EColumnType::kReal8>(static_cast<float*>(where)), this, where);
+   }
+   size_t GetValueSize() const final { return sizeof(float); }
+};
+
+/// Dummy class to produce a different template specialization for custom-bit float and double.
+class RCustomSizedFloat{ }; // Members can be added later if required.
+
+/// Special version of RField<float> where the number of bits of a double-value in storage is defined by the user.
+template<>
+class RField<float, RCustomSizedFloat> : public Detail::RFieldBase {
+private:
+   std::size_t fNBits;
+   // integers were used to express the minimum and maximum instead of floating point numbers, because these fields
+   // are constructed by MakeField<double, nbits, min, max>(...), where it is not possible to write a floating point
+   // value as a template parameter.
+   std::int64_t fMin;
+   std::int64_t fMax;
+public:
+   std::string TypeName() { return "float(nBits(" + std::to_string(fNBits) + ")/min(" + std::to_string(fMin) +
+      ")/max(" + std::to_string(fMax) + ")"; }
+   // TypeName relies on fNBits, fMin and fMax, so it has to be set after initializing those members.
+   explicit RField(std::string_view name, std::size_t nBits, std::int64_t min, std::int64_t max)
+   : Detail::RFieldBase(name, "" /* fType */, ENTupleStructure::kLeaf, true /* isSimple */), fNBits{nBits},
+      fMin{min}, fMax{max} { SetType(TypeName()); }
+   RField(RField&& other) = default;
+   RField& operator =(RField&& other) = default;
+   ~RField() = default;
+   RFieldBase* Clone(std::string_view newName) final { return new RField(newName, fNBits, fMin, fMax); }
+
+   void DoGenerateColumns() final{
+      RColumnModel model(EColumnType::kCustomFloat, false /* isSorted*/);
+      fColumns.emplace_back(std::unique_ptr<Detail::RColumn>(
+         Detail::RColumn::CreateCustom<float, EColumnType::kCustomFloat>(model, 0, fNBits, fMin, fMax)));
+      fPrincipalColumn = fColumns[0].get();
+   }
+
+   float *Map(NTupleSize_t globalIndex) {
+      return fPrincipalColumn->Map<float, EColumnType::kCustomFloat>(globalIndex);
+   }
+   float *Map(const RClusterIndex &clusterIndex) {
+      return fPrincipalColumn->Map<float, EColumnType::kCustomFloat>(clusterIndex);
+   }
+
+   using Detail::RFieldBase::GenerateValue;
+   template <typename... ArgsT>
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where, ArgsT&&... args)
+   {
+      return Detail::RFieldValue(
+         Detail::RColumnElement<float, EColumnType::kCustomFloat>(static_cast<float*>(where), fNBits, fMin, fMax),
+         this, static_cast<float*>(where), std::forward<ArgsT>(args)...);
+   }
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where) final { return GenerateValue(where, 0.0); }
+   Detail::RFieldValue CaptureValue(void *where) final {
+      return Detail::RFieldValue(true /* captureFlag */,
+         Detail::RColumnElement<float, EColumnType::kCustomFloat>(static_cast<float*>(where), fNBits, fMin, fMax),
+                                 this, where);
+   }
+   size_t GetValueSize() const final { return sizeof(float); }
+};
 
 template <>
 class RField<double> : public Detail::RFieldBase {
@@ -629,6 +793,58 @@ public:
    Detail::RFieldValue CaptureValue(void *where) final {
       return Detail::RFieldValue(true /* captureFlag */,
          Detail::RColumnElement<double, EColumnType::kReal64>(static_cast<double*>(where)), this, where);
+   }
+   size_t GetValueSize() const final { return sizeof(double); }
+};
+
+/// Special version of RField<double> where the number of bits of a double-value in storage is defined by the user.
+template<>
+class RField<double, RCustomSizedFloat> : public Detail::RFieldBase {
+private:
+   std::size_t fNBits;
+   // integers were used to express the minimum and maximum instead of floating point numbers, because these fields
+   // are constructed by MakeField<double, nbits, min, max>(...), where it is not possible to write a floating point
+   // value as a template parameter.
+   std::int64_t fMin;
+   std::int64_t fMax;
+public:
+   std::string TypeName() { return "double(nBits(" + std::to_string(fNBits) + ")/min(" + std::to_string(fMin) +
+      ")/max(" + std::to_string(fMax) + ")"; }
+   // TypeName relies on fNBits, fMin and fMax, so it has to be set after initializing those members.
+   explicit RField(std::string_view name, std::size_t nBits, std::int64_t min, std::int64_t max)
+   : Detail::RFieldBase(name, "" /* TypeName() */, ENTupleStructure::kLeaf, true /* isSimple */), fNBits{nBits}, fMin{min},
+   fMax{max} { SetType(TypeName()); }
+   RField(RField&& other) = default;
+   RField& operator =(RField&& other) = default;
+   ~RField() = default;
+   RFieldBase* Clone(std::string_view newName) final { return new RField(newName, fNBits, fMin, fMax); }
+
+   void DoGenerateColumns() final{
+      RColumnModel model(EColumnType::kCustomDouble, false /* isSorted*/);
+      fColumns.emplace_back(std::unique_ptr<Detail::RColumn>(
+         Detail::RColumn::CreateCustom<double, EColumnType::kCustomDouble>(model, 0, fNBits, fMin, fMax)));
+      fPrincipalColumn = fColumns[0].get();
+   }
+
+   double *Map(NTupleSize_t globalIndex) {
+      return fPrincipalColumn->Map<double, EColumnType::kCustomDouble>(globalIndex);
+   }
+   double *Map(const RClusterIndex &clusterIndex) {
+      return fPrincipalColumn->Map<double, EColumnType::kCustomDouble>(clusterIndex);
+   }
+
+   using Detail::RFieldBase::GenerateValue;
+   template <typename... ArgsT>
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where, ArgsT&&... args)
+   {
+      return Detail::RFieldValue(
+         Detail::RColumnElement<double, EColumnType::kCustomDouble>(static_cast<double*>(where), fNBits, fMin, fMax),
+         this, static_cast<double*>(where), std::forward<ArgsT>(args)...);
+   }
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where) final { return GenerateValue(where, 0.0); }
+   Detail::RFieldValue CaptureValue(void *where) final {
+      return Detail::RFieldValue(true /* captureFlag */,
+         Detail::RColumnElement<double, EColumnType::kCustomDouble>(static_cast<double*>(where), fNBits, fMin, fMax), this, where);
    }
    size_t GetValueSize() const final { return sizeof(double); }
 };
@@ -847,6 +1063,36 @@ public:
    }
 };
 
+/// Used when storing floating-point data with custom bit size in a std::array
+template <typename ItemT, std::size_t N>
+class RField<std::array<ItemT, N>, RCustomSizedFloat> : public RFieldArray {
+   using ContainerT = typename std::array<ItemT, N>;
+private:
+   std::size_t fNBits;
+   std::int64_t fMin;
+   std::int64_t fMax;
+public:
+   explicit RField(std::string_view name, std::size_t nBits, std::int64_t min, std::int64_t max)
+   : RFieldArray(name, std::make_unique<RField<ItemT, RCustomSizedFloat>>(RField<ItemT>::TypeName() + "(nBits(" +
+                                                                          std::to_string(nBits) + ")/min(" +
+                                                                          std::to_string(min) + ")/max(" +
+                                                                          std::to_string(max) + ")", nBits, min, max), N)
+   , fNBits{nBits}, fMin{min}, fMax{max}
+   {}
+   RField(RField&& other) = default;
+   RField& operator =(RField&& other) = default;
+   ~RField() = default;
+
+   using Detail::RFieldBase::GenerateValue;
+   template <typename... ArgsT>
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void *where, ArgsT&&... args)
+   {
+      return Detail::RFieldValue(this, static_cast<ContainerT*>(where), std::forward<ArgsT>(args)...);
+   }
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void *where) final {
+      return GenerateValue(where, ContainerT());
+   }
+};
 
 #if __cplusplus >= 201703L
 template <typename... ItemTs>
@@ -958,6 +1204,41 @@ public:
    void CommitCluster() final { fNWritten = 0; }
 };
 
+/// Used when storing floating-point data with custom bit size in a std::vector
+template <typename ItemT>
+class RField<std::vector<ItemT>, RCustomSizedFloat> : public RFieldVector {
+   using ContainerT = typename std::vector<ItemT>;
+private:
+   std::size_t fNBits;
+   std::int64_t fMin;
+   std::int64_t fMax;
+public:
+   explicit RField(std::string_view name, std::size_t nBits, std::int64_t min, std::int64_t max)
+      : RFieldVector(name, std::make_unique<RField<ItemT, RCustomSizedFloat>>(RField<ItemT>::TypeName() +
+                                                                              "(nBits(" + std::to_string(nBits) +
+                                                                              ")/min(" + std::to_string(min) +
+                                                                              ")/max(" + std::to_string(max) +
+                                                                              ")", nBits, min, max)),
+   fNBits{nBits}, fMin{min}, fMax{max}
+   {}
+   RField(RField&& other) = default;
+   RField& operator =(RField&& other) = default;
+   ~RField() = default;
+
+   using Detail::RFieldBase::GenerateValue;
+   template <typename... ArgsT>
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where, ArgsT&&... args)
+   {
+      return Detail::RFieldValue(this, static_cast<ContainerT*>(where), std::forward<ArgsT>(args)...);
+   }
+   ROOT::Experimental::Detail::RFieldValue GenerateValue(void* where) final {
+      return GenerateValue(where, ContainerT());
+   }
+   Detail::RFieldValue CaptureValue(void *where) final {
+      return Detail::RFieldValue(true /* captureFlag */, this, where);
+   }
+   size_t GetValueSize() const final { return sizeof(ContainerT); }
+};
 
 /**
  * The RVec type has different layouts depending on the item type, therefore we cannot go with a generic
