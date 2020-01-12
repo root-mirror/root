@@ -250,7 +250,8 @@ if(NOT root7)
   set(root7_veto v7/ntuple/ntpl001_staff.C
                  v7/ntuple/ntpl002_vector.C
                  v7/ntuple/ntpl003_lhcbOpenData.C
-                 v7/ntuple/ntpl004_dimuon.C)
+                 v7/ntuple/ntpl004_dimuon.C
+		 v7/ntuple/ntpl005_h1analysis.C)
 elseif(NOT dataframe)
   set(root7_veto v7/ntuple/ntpl004_dimuon.C)
 endif()

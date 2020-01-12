@@ -13,11 +13,17 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "ROOT/RNTuple.hxx"
+#include <ROOT/RNTuple.hxx>
 
-#include "ROOT/RFieldVisitor.hxx"
-#include "ROOT/RNTupleModel.hxx"
-#include "ROOT/RPageStorage.hxx"
+#include <ROOT/RFieldVisitor.hxx>
+#include <ROOT/RNTupleModel.hxx>
+#include <ROOT/RNTupleOptions.hxx>
+#include <ROOT/RPageStorage.hxx>
+#include <ROOT/RPageStorageChain.hxx>
+#include <ROOT/RPageStorageFriend.hxx>
+#include <ROOT/RPageStorageRoot.hxx>
+
+#include <TFile.h>
 
 #include <algorithm>
 #include <iomanip>
@@ -26,9 +32,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-
-#include <TFile.h>
-#include <ROOT/RPageStorageRoot.hxx>
 
 
 ROOT::Experimental::Detail::RNTuple::RNTuple(std::unique_ptr<ROOT::Experimental::RNTupleModel> model)
@@ -91,7 +94,7 @@ std::unique_ptr<ROOT::Experimental::RNTupleReader> ROOT::Experimental::RNTupleRe
    std::string_view ntupleName,
    std::string_view storage)
 {
-   return std::make_unique<RNTupleReader>(std::move(model), Detail::RPageSource::Create(ntupleName, storage));
+   return std::make_unique<RNTupleReader>(std::move(model), Detail::RPageSource::Create(ntupleName, storage, RNTupleReadOptions(true/*fUseUserGeneratedModel*/)));
 }
 
 std::unique_ptr<ROOT::Experimental::RNTupleReader> ROOT::Experimental::RNTupleReader::Open(
@@ -99,6 +102,103 @@ std::unique_ptr<ROOT::Experimental::RNTupleReader> ROOT::Experimental::RNTupleRe
    std::string_view storage)
 {
    return std::make_unique<RNTupleReader>(Detail::RPageSource::Create(ntupleName, storage));
+}
+
+std::unique_ptr<ROOT::Experimental::RNTupleReader> ROOT::Experimental::RNTupleReader::Open(std::unique_ptr<RNTupleModel> model, std::string_view ntupleName, std::vector<std::string> storageVec, EFileOpeningOptions op)
+{
+   if (storageVec.size() == 0) {
+      std::cout << "No Files were specified, the RNTuple is empty! A nullptr was returned." << std::endl;
+      return nullptr;
+   }
+   if (op == EFileOpeningOptions::kChain) {
+      auto chainSource = std::make_unique<Detail::RPageSourceChain>(ntupleName, storageVec, RNTupleReadOptions(true/*fUseUserGeneratedModel*/));
+      if (chainSource->IsUnsafe() == false) {
+         return std::make_unique<RNTupleReader>(std::move(model), std::unique_ptr<Detail::RPageSource>(std::move(chainSource)));
+      }
+      return nullptr;
+   }
+   if (op == EFileOpeningOptions::kFriend) {
+      auto friendSource = std::make_unique<Detail::RPageSourceFriend>(ntupleName, storageVec, RNTupleReadOptions(true/*fUseUserGeneratedModel*/));
+      if (friendSource->IsUnsafe() == false) {
+         return std::make_unique<RNTupleReader>(std::move(model), std::unique_ptr<Detail::RPageSource>(std::move(friendSource)));
+      }
+      return nullptr;
+   }
+   // shouldn't reach here
+   assert(false);
+   return nullptr;
+}
+
+std::unique_ptr<ROOT::Experimental::RNTupleReader> ROOT::Experimental::RNTupleReader::Open(std::string_view ntupleName, std::vector<std::string> storageVec, EFileOpeningOptions op)
+{
+   if (storageVec.size() == 0) {
+      std::cout << "No Files were specified, the RNTuple is empty!" << std::endl;
+      return nullptr;
+   }
+   if (op == EFileOpeningOptions::kChain) {
+      auto chainSource = std::make_unique<Detail::RPageSourceChain>(ntupleName, storageVec);
+      if (chainSource->IsUnsafe() == false) {
+         return std::make_unique<RNTupleReader>(std::unique_ptr<Detail::RPageSource>(std::move(chainSource)));
+      }
+      return nullptr;
+   }
+   if (op == EFileOpeningOptions::kFriend) {
+      auto friendSource = std::make_unique<Detail::RPageSourceFriend>(ntupleName, storageVec);
+      if (friendSource->IsUnsafe() == false) {
+         return std::make_unique<RNTupleReader>(std::unique_ptr<Detail::RPageSource>(std::move(friendSource)));
+      }
+      return nullptr;
+   }
+   // shouldn't reach here
+   assert(false);
+   return nullptr;
+}
+
+std::unique_ptr<ROOT::Experimental::RNTupleReader> ROOT::Experimental::RNTupleReader::ChainReader(std::string_view ntupleName, std::unique_ptr<RNTupleReader>& reader1, std::unique_ptr<RNTupleReader>& reader2, EFileOpeningOptions op)
+{
+   // (lesimon): Possible idea for later: combine existing models instead of generating it from scratch from the descriptor.
+   if (op == EFileOpeningOptions::kChain) {
+      auto chainSource = std::make_unique<Detail::RPageSourceChain>(ntupleName, std::vector<Detail::RPageSource*>{reader1->fSource.get(), reader2->fSource.get()});
+      if (chainSource->IsUnsafe() == false) {
+         return std::make_unique<RNTupleReader>(std::unique_ptr<Detail::RPageSource>(std::move(chainSource)));
+      }
+      return nullptr;
+   }
+   if (op == EFileOpeningOptions::kFriend) {
+      auto friendSource = std::make_unique<Detail::RPageSourceFriend>(ntupleName, std::vector<Detail::RPageSource*>{reader1->fSource.get(), reader2->fSource.get()});
+      if (friendSource->IsUnsafe() == false) {
+         return std::make_unique<RNTupleReader>(std::unique_ptr<Detail::RPageSource>(std::move(friendSource)));
+      }
+      return nullptr;
+   }
+   assert(false);
+   return nullptr;
+}
+
+std::unique_ptr<ROOT::Experimental::RNTupleReader> ROOT::Experimental::RNTupleReader::ChainReader(std::string_view ntupleName, std::unique_ptr<RNTupleReader>&& reader1, std::unique_ptr<RNTupleReader>&& reader2, EFileOpeningOptions op)
+{
+   // TODO (lesimon): close RNTupleView of reader1 and reader2 if present. Not doing so leads to a segmentation fault when the destructor of RNTupleView of reader1 or reader2 is called.
+   if (op == EFileOpeningOptions::kChain) {
+      std::vector<std::unique_ptr<Detail::RPageSource>> sourceVec;
+      sourceVec.emplace_back(std::move(reader1->fSource));
+      sourceVec.emplace_back(std::move(reader2->fSource));
+      auto chainSource = std::make_unique<Detail::RPageSourceChain>(ntupleName, std::move(sourceVec));
+      if (chainSource->IsUnsafe() == false) {
+         return std::make_unique<RNTupleReader>(std::unique_ptr<Detail::RPageSource>(std::move(chainSource)));
+      }
+      return nullptr;
+   }
+   if (op == EFileOpeningOptions::kFriend) {
+      std::vector<std::unique_ptr<Detail::RPageSource>> sourceVec;
+      sourceVec.emplace_back(std::move(reader1->fSource));
+      sourceVec.emplace_back(std::move(reader2->fSource));
+      auto friendSource = std::make_unique<Detail::RPageSourceFriend>(ntupleName, std::move(sourceVec));
+      if (friendSource->IsUnsafe() == false) {
+         return std::make_unique<RNTupleReader>(std::unique_ptr<Detail::RPageSource>(std::move(friendSource)));
+      }
+   }
+   assert(false);
+   return nullptr;
 }
 
 void ROOT::Experimental::RNTupleReader::PrintInfo(const ENTupleInfo what, std::ostream &output)

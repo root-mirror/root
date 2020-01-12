@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <string>
 #include <utility>
 
 namespace {
@@ -511,6 +512,15 @@ bool ROOT::Experimental::RClusterDescriptor::operator==(const RClusterDescriptor
 }
 
 
+bool ROOT::Experimental::RClusterDescriptor::BeFriendAble(const RClusterDescriptor &other) const {
+   // unlike RClusterDescriptor::operator== , it doesn't check fLocator, fColumnRanges and fPageRanges
+   return fClusterId == other.fClusterId &&
+          fVersion == other.fVersion &&
+          fFirstEntryIndex == other.fFirstEntryIndex &&
+          fNEntries == other.fNEntries;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -707,6 +717,19 @@ std::unique_ptr<ROOT::Experimental::RNTupleModel> ROOT::Experimental::RNTupleDes
    return model;
 }
 
+bool ROOT::Experimental::RNTupleDescriptor::CommonFieldNameExists(const RNTupleDescriptor &desc) const
+{
+   // start from 1 because fieldId = 0 corresponds to RootField
+   for (std::size_t i = 1; i < GetNFields(); ++i) {
+      for (std::size_t j = 1; j < desc.GetNFields(); ++j) {
+         if ( GetFieldDescriptor(i).GetFieldName().compare(desc.GetFieldDescriptor(j).GetFieldName()) == 0 ) {
+            std::cout << GetFieldDescriptor(i).GetFieldName() << " " << desc.GetFieldDescriptor(j).GetFieldName() << i << j << std::endl;
+            return true; }
+      }
+   }
+   return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -842,6 +865,105 @@ void ROOT::Experimental::RNTupleDescriptorBuilder::AddClustersFromFooter(void* f
             pageRange.fPageInfos.emplace_back(pageInfo);
          }
          AddClusterPageRange(clusterId, std::move(pageRange));
+      }
+   }
+}
+
+void ROOT::Experimental::RNTupleDescriptorBuilder::SetNTuple(const RNTupleDescriptor& desc)
+{
+   SetNTuple(desc.GetName(), desc.GetDescription(), desc.GetAuthor(), desc.GetVersion(), desc.GetOwnUuid());
+}
+
+void ROOT::Experimental::RNTupleDescriptorBuilder::AddFieldsAndColumnsFromDescriptor(const RNTupleDescriptor& desc)
+{
+   // Add the RootField if it is missing.
+   if (fDescriptor.GetNFields() == 0) {
+      auto &f = desc.GetFieldDescriptor(0);
+      AddField(0, f.fFieldVersion, f.fTypeVersion, f.fFieldName, f.fTypeName, f.fNRepetitions, f.fStructure);
+   }
+
+   int oldNumFields = fDescriptor.GetNFields();
+   for (std::size_t i = 1; i < desc.GetNFields(); ++i) {
+      auto& f = desc.GetFieldDescriptor(i);
+      AddField(f.fFieldId+oldNumFields-1, f.fFieldVersion, f.fTypeVersion, f.fFieldName, f.fTypeName, f.fNRepetitions, f.fStructure);
+      AddFieldLink(f.fParentId ? f.fParentId+oldNumFields-1 : 0, i+oldNumFields-1);
+   }
+
+   int oldNumColumns = fDescriptor.GetNColumns();
+   for (std::size_t i = 0; i < desc.GetNColumns(); ++i) {
+      auto &c = desc.GetColumnDescriptor(i);
+      AddColumn(c.fColumnId+oldNumColumns, c.fFieldId+oldNumFields-1, c.fVersion, c.fModel, c.fIndex);
+   }
+}
+
+void ROOT::Experimental::RNTupleDescriptorBuilder::AddClustersFromDescriptor(const RNTupleDescriptor& desc)
+{
+   auto nOldClusters = fDescriptor.GetNClusters();
+   std::size_t nEntryOldState = fDescriptor.GetNEntries();
+   
+   for (std::size_t i = 0; i < desc.GetNClusters(); ++i) {
+      const RClusterDescriptor &clust = desc.fClusterDescriptors.at(i);
+      // Add Cluster
+      AddCluster(i+nOldClusters, clust.GetVersion(), clust.GetFirstEntryIndex()+nEntryOldState, clust.GetNEntries());
+      // Add Locator
+      SetClusterLocator(i+nOldClusters, clust.GetLocator());
+      for (std::size_t columnId = 0; columnId < fDescriptor.GetNColumns(); ++columnId) {
+         // Add ColumnRange
+         ClusterSize_t firstElementIndex{0};
+         
+         if (!(nOldClusters == 0 && i == 0)) {
+            firstElementIndex =
+               fDescriptor.GetClusterDescriptor(i+nOldClusters-1).GetColumnRange(columnId).fFirstElementIndex +
+               fDescriptor.GetClusterDescriptor(i+nOldClusters-1).GetColumnRange(columnId).fNElements;
+         }
+         
+         const RClusterDescriptor::RColumnRange colrange{columnId, firstElementIndex, clust.GetColumnRange(columnId).fNElements,
+            clust.GetColumnRange(columnId).fCompressionSettings};
+         AddClusterColumnRange(i+nOldClusters, colrange);
+         
+         // Add PageRanges
+         RClusterDescriptor::RPageRange pr;
+         pr.fColumnId = columnId;
+         for (auto& p: clust.fPageRanges.at(columnId).fPageInfos) {
+            pr.fPageInfos.push_back(p);
+            // p.fLocator is not changed here
+            // no change is required for p.fLocator here for RDrawStorage to work
+         }
+         AddClusterPageRange(i+nOldClusters, std::move(pr));
+      }
+   }
+}
+
+void ROOT::Experimental::RNTupleDescriptorBuilder::AddFriendInfo(const RNTupleDescriptor& desc)
+{
+   int oldNumColumns = fDescriptor.GetNColumns();
+   AddFieldsAndColumnsFromDescriptor(desc);
+   
+   for (std::size_t i = 0; i < desc.GetNClusters(); ++i) {
+      // get lastfLocatorfPosition
+      std::int64_t lastfLocatorfPosition = 0;
+      for (std::size_t j = 0; j < fDescriptor.GetClusterDescriptor(i).fPageRanges.size(); ++j) {
+         auto &pageInfo = fDescriptor.GetClusterDescriptor(i).fPageRanges.at(j).fPageInfos;
+         for (std::size_t k = 0; k < pageInfo.size(); ++k) {
+            if (pageInfo.at(k).fLocator.fPosition > lastfLocatorfPosition)
+               lastfLocatorfPosition = pageInfo.at(k).fLocator.fPosition;
+         }
+      }
+      // Add ColumnRanges
+      auto &cl = desc.GetClusterDescriptor(i);
+      for (std::size_t j = 0; j < desc.GetNColumns(); ++j) {
+         auto colrange = cl.GetColumnRange(j);
+         colrange.fColumnId += oldNumColumns;
+         AddClusterColumnRange(i, colrange);
+         // Add PageRanges
+         RClusterDescriptor::RPageRange pr;
+         pr.fColumnId = j+oldNumColumns;
+         for (auto& p: cl.fPageRanges.at(j).fPageInfos) {
+            pr.fPageInfos.push_back(p);
+            // p.fLocator is changed here to be compatible with RDrawStorage
+            pr.fPageInfos.back().fLocator.fPosition += lastfLocatorfPosition;
+         }
+         AddClusterPageRange(i, std::move(pr));
       }
    }
 }

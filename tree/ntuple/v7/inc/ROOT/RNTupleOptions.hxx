@@ -52,6 +52,11 @@ All page source classes need to support the common options.
 */
 // clang-format on
 class RNTupleReadOptions {
+   // Set to true if the RNTupleModel is not generated from the descriptor.
+   bool fUseUserGeneratedModel;
+public:
+   RNTupleReadOptions(bool customModelPassed = false) : fUseUserGeneratedModel(customModelPassed) {}
+   bool UsesUserGeneratedModel() const { return fUseUserGeneratedModel; }
 };
 
 } // namespace Experimental

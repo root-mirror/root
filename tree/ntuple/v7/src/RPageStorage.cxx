@@ -18,6 +18,7 @@
 #include <ROOT/RField.hxx>
 #include <ROOT/RNTupleModel.hxx>
 #include <ROOT/RPagePool.hxx>
+#include <ROOT/RPageStorageChain.hxx>
 #include <ROOT/RPageStorageRaw.hxx>
 #include <ROOT/RPageStorageRoot.hxx>
 #include <ROOT/RStringView.hxx>

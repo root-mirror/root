@@ -33,7 +33,7 @@ namespace Detail {
 \brief A page is a slice of a column that is mapped into memory
 
 The page provides an opaque memory buffer for uncompressed, unpacked data. It does not interpret
-the contents but it does now about the size (and thus the number) of the elements inside as well as the element
+the contents but it does know about the size (and thus the number) of the elements inside as well as the element
 number range within the backing column/cluster. The memory buffer is not managed by the page. It is normally registered
 with the page pool and allocated/freed by the page storage.
 */
@@ -99,7 +99,7 @@ public:
       auto clusterRangeFirst = ClusterSize_t(fRangeFirst - fClusterInfo.GetIndexOffset());
       return (clusterIndex.GetIndex() >= clusterRangeFirst) &&
              (clusterIndex.GetIndex() < clusterRangeFirst + fNElements);
-    }
+   }
 
    void* GetBuffer() const { return fBuffer; }
    /// Return a pointer after the last element that has space for nElements new elements. If there is not enough capacity,

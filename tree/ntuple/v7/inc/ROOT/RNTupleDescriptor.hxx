@@ -27,6 +27,8 @@
 #include <string>
 #include <unordered_map>
 
+#include <iostream>
+#include <iomanip>
 namespace ROOT {
 namespace Experimental {
 
@@ -238,6 +240,8 @@ public:
    RClusterDescriptor &operator =(RClusterDescriptor &&other) = default;
 
    bool operator==(const RClusterDescriptor &other) const;
+   /// Tells if 2 RPageSources can be befriended as in RPageSourceFriend
+   bool BeFriendAble(const RClusterDescriptor &other) const;
 
    DescriptorId_t GetId() const { return fClusterId; }
    RNTupleVersion GetVersion() const { return fVersion; }
@@ -358,6 +362,7 @@ public:
 
    /// Re-create the C++ model from the stored meta-data
    std::unique_ptr<RNTupleModel> GenerateModel() const;
+   bool CommonFieldNameExists(const RNTupleDescriptor &desc) const;
    void PrintInfo(std::ostream &output) const;
 };
 
@@ -400,6 +405,12 @@ public:
    void AddClusterPageRange(DescriptorId_t clusterId, RClusterDescriptor::RPageRange &&pageRange);
 
    void AddClustersFromFooter(void* footerBuffer);
+   
+   void SetNTuple(const RNTupleDescriptor& desc);
+   void AddFieldsAndColumnsFromDescriptor(const RNTupleDescriptor& desc);
+   void AddClustersFromDescriptor(const RNTupleDescriptor& desc);
+   // specific for RPageSourceFriend
+   void AddFriendInfo(const RNTupleDescriptor& desc);
 };
 
 } // namespace Experimental
