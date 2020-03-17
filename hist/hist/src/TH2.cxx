@@ -1492,7 +1492,7 @@ TH2 *TH2::RebinY(Int_t ngroup, const char *newname)
 /// If a non-null pointer is given an error is flagged
 /// see RebinX and Rebin2D
 
-TH2 * TH2::Rebin( Int_t ngroup, const char*newname, const Double_t *xbins)
+TH2 *TH2::Rebin(Int_t ngroup, const char *newname, const Double_t *xbins)
 {
    if (xbins != nullptr) {
       Error("Rebin","Rebinning a 2-d histogram into variable bins is not supported (it is possible only for 1-d histograms). Return a nullptr");
