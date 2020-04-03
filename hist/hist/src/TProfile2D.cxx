@@ -1420,11 +1420,11 @@ void TProfile2D::ExtendAxis(Double_t x, TAxis *axis)
 ////////////////////////////////////////////////////////////////////////////////
 /// Rebin this histogram grouping nxgroup/nygroup bins along the xaxis/yaxis together.
 ///
-/// ## case 1  xbins=0 || ybins=0
+/// ## case 1  `xbins`=0 || `ybins`=0
 ///
-/// if newname is not blank a new profile hnew is created.
+/// if `newname` is not blank a new profile hnew is created.
 /// else the current histogram is modified (default)
-/// The parameter nxgroup/nygroup indicate how many bins along the xaxis/yaxis of this
+/// The parameters `nxgroup`/`nygroup` indicate how many bins along the xaxis/yaxis of this
 /// have to be merged into one bin of hnew
 /// If the original profile has errors stored (via Sumw2), the resulting
 /// profile has new errors correctly calculated.
@@ -1440,18 +1440,18 @@ void TProfile2D::ExtendAxis(Double_t x, TAxis *axis)
 ///                                                  // merging 5 bins of hpxpy along the yaxis in one bin
 /// ~~~
 ///
-///  NOTE : If nxgroup/nygroup is not an exact divider of the number of bins,
+///  \note : If `nxgroup`/`nygroup` is not an exact divider of the number of bins,
 ///         along the xaxis/yaxis the top limit(s) of the rebinned profile
 ///         is changed to the upper edge of the xbin=newxbins*nxgroup resp.
 ///          ybin=newybins*nygroup and the remaining bins are added to
 ///          the overflow bin.
 ///          Statistics will be recomputed from the new bin contents.
 ///
-///  ## case 2  xbins!=0 && ybins!=0
-///  a new profile is created (you should specify newname).
-///  The parameter nxgroup (nygroup) is the number of variable size bins for the x-axis
+///  ## case 2  `xbins`!=0 && `ybins`!=0
+///  a new profile is created (you should specify `newname`).
+///  The parameter `nxgroup` (`nygroup`) is the number of variable size bins for the x-axis
 ///  (y-axis) in the created profile.
-///  The arrays xbins and ybins must contain nxgroup+1 and nygroup+1 elements that
+///  The arrays `xbins` and `ybins` must contain `nxgroup+1` and `nygroup+1` elements that
 ///  represent the low-edge of the x and y bins respectively.
 ///  The data of the old bins are added to the new bin which contains the bin center
 ///  of the old bins. It is possible that information from the old binning are attached

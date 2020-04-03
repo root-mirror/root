@@ -1505,11 +1505,11 @@ TH2 *TH2::Rebin(Int_t ngroup, const char *newname, const Double_t *xbins)
 ////////////////////////////////////////////////////////////////////////////////
 /// Rebin this histogram grouping nxgroup/nygroup bins along the xaxis/yaxis together.
 ///
-/// #### case 1  xbins=0 || ybins=0
+/// #### case 1  `xbins`=0 || `ybins`=0
 ///
-///   if newname is not blank a new temporary histogram hnew is created.
+///   if `newname` is not blank a new temporary histogram hnew is created.
 ///   else the current histogram is modified (default)
-///   The parameter nxgroup/nygroup indicate how many bins along the xaxis/yaxis of this
+///   The parameters `nxgroup`/`nygroup` indicate how many bins along the xaxis/yaxis of this
 ///   have to me merged into one bin of hnew
 ///   If the original histogram has errors stored (via Sumw2), the resulting
 ///   histograms has new errors correctly calculated.
@@ -1523,30 +1523,30 @@ TH2 *TH2::Rebin(Int_t ngroup, const char *newname, const Double_t *xbins)
 ///                                          // merging 5 bins of h1 along the yaxis in one bin
 /// ~~~
 ///
-///   NOTE : If nxgroup/nygroup is not an exact divider of the number of bins,
+///   \note : If `nxgroup`/`nygroup` is not an exact divider of the number of bins,
 ///          along the xaxis/yaxis the top limit(s) of the rebinned histogram
 ///          is changed to the upper edge of the xbin=newxbins*nxgroup resp.
 ///          ybin=newybins*nygroup and the corresponding bins are added to
 ///          the overflow bin.
 ///          Statistics will be recomputed from the new bin contents.
 ///
-/// #### case 2  xbins!=0 && ybins!=0
+/// #### case 2  `xbins`!=0 && `ybins`!=0
 ///
-/// A new histogram is created (you should specify newname).
-/// The parameter nxgroup (nygroup) is the number of variable size bins for the x-axis
+/// A new histogram is created (you should specify `newname`).
+/// The parameter `nxgroup` (`nygroup`) is the number of variable size bins for the x-axis
 /// (y-axis) in the created histogram.
-/// The arrays xbins and ybins must contain nxgroup+1 and nygroups+1 elements
+/// The arrays `xbins` and `ybins` must contain `nxgroup+1` and `nygroups+1` elements
 /// that represent the low-edges of the x and y bins respectively.
 /// If the original histogram has errors stored (via Sumw2), the resulting
 /// histograms has new errors correctly calculated.
 ///
-/// NOTE:  The bin edges specified in xbins and ybins should correspond
+/// \note  The bin edges specified in xbins and ybins should correspond
 /// to bin edges in the original histogram. If a bin edge in the new histogram
 /// is in the middle of a bin in the original histogram, all entries in
 /// the split bin in the original histogram will be transfered to the
 /// lower of the two possible bins in the new histogram. This is
 /// probably not what you want. A warning message is emitted in this
-/// case
+/// case.
 ///
 /// examples: if h2 is an existing TH2F histogram with 100 bins on x-axis
 /// and 100 bins y-axis
