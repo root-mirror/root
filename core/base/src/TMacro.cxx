@@ -52,6 +52,7 @@ Examples:
 #include "TObjString.h"
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TCollection.h"
 #include <sstream>
 
 ClassImp(TMacro);
@@ -307,6 +308,45 @@ TObjString *TMacro::GetLineWith(const char *text) const
       if (strstr(obj->GetName(),text)) return obj;
    }
    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Merge multiple TMacro objects.
+///
+/// Note that different macros cannot actually be merged. However, since the
+/// name of a TMacro usually corresponds to the name of the file it contains,
+/// two TMacro objects with the same name should always have the same content
+/// and the same default parameters.
+///
+/// This function just validates whether all TMacro objects with the same name
+/// share the same content and default parameters and issues a warning if not.
+
+Int_t TMacro::Merge(TCollection *list)
+{
+   Int_t n = 0;
+   TMD5 *thischecksum = Checksum();
+   TIter macros(list);
+
+   while (TObject *obj = macros()) {
+      if (!obj)
+         continue;
+
+      if (!obj->IsA()->InheritsFrom(TMacro::Class()))
+         continue;
+
+      auto m = (TMacro*) obj;
+      TMD5 *checksum = m->Checksum();
+      if (!(*thischecksum == *checksum))
+         Warning("Merge", "TMacro objects with name %s have different file content!", GetName());
+      delete checksum;
+
+      if (fParams.CompareTo(m->GetParams()) != 0)
+         Warning("Merge", "TMacro objects with name %s have different default parameters!", GetName());
+
+      n++;
+   }
+   delete thischecksum;
+   return n;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

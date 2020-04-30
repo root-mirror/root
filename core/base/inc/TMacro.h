@@ -26,6 +26,7 @@
 class TList;
 class TObjString;
 class TMD5;
+class TCollection;
 
 
 class TMacro : public TNamed {
@@ -49,6 +50,8 @@ public:
    virtual Bool_t       Load() const; //*MENU*
    virtual Long_t       Exec(const char *params = 0, Int_t* error = 0); //*MENU*
    TList               *GetListOfLines() const {return fLines;}
+   virtual const char  *GetParams() const { return fParams; }
+   virtual Int_t        Merge(TCollection *list);
    virtual void         Paint(Option_t *option="");
    virtual void         Print(Option_t *option="") const;  //*MENU*
    virtual Int_t        ReadFile(const char *filename);
