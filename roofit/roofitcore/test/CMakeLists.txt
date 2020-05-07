@@ -16,7 +16,7 @@ ROOT_ADD_GTEST(testGenericPdf testGenericPdf.cxx LIBRARIES RooFitCore)
 ROOT_ADD_GTEST(testRooAbsPdf testRooAbsPdf.cxx LIBRARIES RooFitCore)
 ROOT_ADD_GTEST(testRooAbsCollection testRooAbsCollection.cxx LIBRARIES RooFitCore)
 ROOT_ADD_GTEST(testRooDataSet testRooDataSet.cxx LIBRARIES Tree RooFitCore)
-ROOT_ADD_GTEST(testRooFormula testRooFormula.cxx LIBRARIES RooFitCore)
+ROOT_ADD_GTEST(testRooFormula testRooFormula.cxx LIBRARIES RooFitCore FAILREGEX "") #Override failregex, since we are actually testing failures.
 ROOT_ADD_GTEST(testProxiesAndCategories testProxiesAndCategories.cxx
   LIBRARIES RooFitCore
   COPY_TO_BUILDDIR ${CMAKE_CURRENT_SOURCE_DIR}/testProxiesAndCategories_1.root
