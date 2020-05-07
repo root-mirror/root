@@ -1652,10 +1652,21 @@ function(ROOT_ADD_UNITTEST_DIR)
 endfunction()
 
 #----------------------------------------------------------------------------
-# function ROOT_ADD_GTEST(<testsuite> source1 source2... COPY_TO_BUILDDIR file1 file2 LIBRARIES)
-#
+# function ROOT_ADD_GTEST(<testsuite> source1 source2...
+#                         [WILLFAIL] Negate output of test
+#                         [COPY_TO_BUILDDIR file1 file2] Copy listed files when ctest invokes the test.
+#                         [LIBRARIES libs ...]
+#                         [LABELS labels ...]
+#                         [FAILREGEX ...] Fail test if this regex matches. Defaults to '(Fatal|Error|Warning) in <'
+#                         )
+# Creates a new googletest exectuable, and registers it as a test.
+# The test output will automatically be checked for ROOT's "Fatal/Error/Warning in <..."
+# unless the FAILREGEX is overridden. Disable this by overriding with 'FAILREGEX ""'.
 function(ROOT_ADD_GTEST test_suite)
-  CMAKE_PARSE_ARGUMENTS(ARG "WILLFAIL" "" "COPY_TO_BUILDDIR;LIBRARIES;LABELS" ${ARGN})
+  cmake_parse_arguments(ARG
+    "WILLFAIL;NO_FAILREGEX"
+    ""
+    "COPY_TO_BUILDDIR;LIBRARIES;LABELS;FAILREGEX" ${ARGN})
 
   # ROOTUnitTestSupport
   if(NOT TARGET ROOTUnitTestSupport)
@@ -1685,6 +1696,13 @@ function(ROOT_ADD_GTEST test_suite)
     set(labels "LABELS ${ARG_LABELS}")
   endif()
 
+  if(ARG_FAILREGEX)
+    set(failregex "${ARG_FAILREGEX}")
+  elseif(NOT ARGN MATCHES FAILREGEX)
+    # If nothing was passed, go to default:
+    set(failregex "(Fatal|Error|Warning) in <")
+  endif()
+
   ROOT_PATH_TO_STRING(mangled_name ${test_suite} PATH_SEPARATOR_REPLACEMENT "-")
   ROOT_ADD_TEST(
     gtest${mangled_name}
@@ -1693,6 +1711,7 @@ function(ROOT_ADD_GTEST test_suite)
     COPY_TO_BUILDDIR ${ARG_COPY_TO_BUILDDIR}
     ${willfail}
     ${labels}
+    FAILREGEX ${failregex}
   )
 endfunction()
 
