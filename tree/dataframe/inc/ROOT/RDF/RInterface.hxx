@@ -50,7 +50,7 @@ class TGraph;
 namespace ROOT {
 void DisableImplicitMT();
 bool IsImplicitMTEnabled();
-void EnableImplicitMT(UInt_t numthreads);
+void EnableImplicitMT(UInt_t numthreads, std::string backend);
 class RDataFrame;
 namespace Internal {
 namespace RDF {

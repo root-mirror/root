@@ -30,6 +30,7 @@
 #@hasvc@ R__HAS_VC    /**/
 #@hasvdt@ R__HAS_VDT    /**/
 #@hasveccore@ R__HAS_VECCORE    /**/
+#@hashpx@ R__HAS_HPX    /**/
 #@usecxxmodules@ R__USE_CXXMODULES   /**/
 #@uselibc++@ R__USE_LIBCXX    /**/
 #@hasstdstringview@ R__HAS_STD_STRING_VIEW   /**/

@@ -521,19 +521,26 @@ namespace Internal {
    /// a hint for ROOT: it will try to satisfy the request if the execution
    /// scenario allows it. For example, if ROOT is configured to use an external
    /// scheduler, setting a value for 'numthreads' might not have any effect.
-   void EnableImplicitMT(UInt_t numthreads)
+   void EnableImplicitMT(UInt_t numthreads, std::string backend)
    {
 #ifdef R__USE_IMT
       if (ROOT::Internal::IsImplicitMTEnabledImpl())
          return;
       EnableThreadSafety();
-      static void (*sym)(UInt_t) = (void(*)(UInt_t))Internal::GetSymInLibImt("ROOT_TImplicitMT_EnableImplicitMT");
+      static void (*sym)(UInt_t, std::string) = (void(*)(UInt_t, std::string))Internal::GetSymInLibImt("ROOT_TImplicitMT_EnableImplicitMT");
       if (sym)
-         sym(numthreads);
+         sym(numthreads, backend);
       ROOT::Internal::IsImplicitMTEnabledImpl() = true;
 #else
-      ::Warning("EnableImplicitMT", "Cannot enable implicit multi-threading with %d threads, please build ROOT with -Dimt=ON", numthreads);
+      ::Warning("EnableImplicitMT", "Cannot enable implicit multi threading with %d threads, please build ROOT with  Dimt=ON", numthreads);
 #endif
+   }
+
+   std::string ImplicitMTBackend() {
+      static std::string (*sym)() = (std::string(*)())Internal::GetSymInLibImt("ROOT_TImplicitMT_ImplicitMTBackend");
+      if (!sym)
+         ::Error("ImplicitMTBackend", "Symbol not found");
+      return sym();
    }
 
    ////////////////////////////////////////////////////////////////////////////////

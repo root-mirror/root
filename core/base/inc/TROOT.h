@@ -83,9 +83,10 @@ namespace ROOT {
    void EnableThreadSafety();
    /// \brief Enable ROOT's implicit multi-threading for all objects and methods that provide an internal
    /// parallelisation mechanism.
-   void EnableImplicitMT(UInt_t numthreads = 0);
+   void EnableImplicitMT(UInt_t numthreads = 0, std::string backend = "TBB");
    void DisableImplicitMT();
    Bool_t IsImplicitMTEnabled();
+   std::string ImplicitMTBackend();
    UInt_t GetImplicitMTPoolSize() R__DEPRECATED(6, 24, "Please use ROOT::GetThreadPoolSize() instead");
    UInt_t GetThreadPoolSize();
 }

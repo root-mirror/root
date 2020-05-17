@@ -6,6 +6,12 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #endif
 
+#define R_HAS_HPX
+#ifdef R__HAS_HPX
+#include <hpx/parallel/algorithms/for_each.hpp>
+#include <hpx/parallel/execution_policy.hpp>
+#endif
+
 #include "tbb/tbb.h"
 
 #if !defined(_MSC_VER)
@@ -153,19 +159,38 @@ namespace ROOT {
 
    void TThreadExecutor::ParallelFor(unsigned int start, unsigned int end, unsigned step, const std::function<void(unsigned int i)> &f)
    {
-      tbb::this_task_arena::isolate([&]{
-         tbb::parallel_for(start, end, step, f);
-      });
+      if (ROOT::ImplicitMTBackend() == "TBB") {
+         tbb::this_task_arena::isolate([&]{
+            tbb::parallel_for(start, end, step, f);
+         });
+#ifdef R__HAS_HPX
+      } else {
+         ROOT::TSeq iter(start, end, step);
+         hpx::parallel::for_each_n(hpx::parallel::execution::par, iter.begin(), iter.size(), f);
+#endif
+      }
    }
 
    double TThreadExecutor::ParallelReduce(const std::vector<double> &objs, const std::function<double(double a, double b)> &redfunc)
    {
-      return ROOT::Internal::ParallelReduceHelper<double>(objs, redfunc);
+      if (ROOT::ImplicitMTBackend() == "TBB") {
+         return ROOT::Internal::ParallelReduceHelper<double>(objs, redfunc);
+#ifdef R__HAS_HPX
+      } else {
+         return this->Reduce(objs, redfunc);
+#endif
+      }
    }
 
    float TThreadExecutor::ParallelReduce(const std::vector<float> &objs, const std::function<float(float a, float b)> &redfunc)
    {
-      return ROOT::Internal::ParallelReduceHelper<float>(objs, redfunc);
+      if (ROOT::ImplicitMTBackend() == "TBB") {
+         return ROOT::Internal::ParallelReduceHelper<float>(objs, redfunc);
+#ifdef R__HAS_HPX
+      } else {
+         return this->Reduce(objs, redfunc);
+#endif
+      }
    }
 
    unsigned TThreadExecutor::GetPoolSize(){

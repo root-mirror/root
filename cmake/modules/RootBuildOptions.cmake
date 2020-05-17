@@ -127,6 +127,7 @@ ROOT_BUILD_OPTION(gsl_shared OFF "Enable linking against shared libraries for GS
 ROOT_BUILD_OPTION(gviz OFF "Enable support for Graphviz (graph visualization software)")
 ROOT_BUILD_OPTION(http ON "Enable suppport for HTTP server")
 ROOT_BUILD_OPTION(fcgi OFF "Enable FastCGI suppport in HTTP server")
+ROOT_BUILD_OPTION(hpx OFF "Enable support for HPX as a multithreaded backend")
 ROOT_BUILD_OPTION(imt ON "Enable support for implicit multi-threading via Intel® Thread Bulding Blocks (TBB)")
 ROOT_BUILD_OPTION(jemalloc OFF "Use jemalloc memory allocator")
 ROOT_BUILD_OPTION(libcxx OFF "Build using libc++")
