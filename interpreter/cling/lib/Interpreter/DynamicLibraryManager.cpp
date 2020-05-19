@@ -65,7 +65,30 @@ namespace cling {
     m_SearchPaths.push_back({".", /*IsUser*/true});
   }
 
-  DynamicLibraryManager::~DynamicLibraryManager() {}
+  namespace {
+    template <class T>
+    struct Reversed {
+      const T &m_orig;
+      auto begin() -> decltype(m_orig.rbegin()) { return m_orig.rbegin(); }
+      auto end() -> decltype (m_orig.rend()) { return m_orig.rend(); }
+    };
+    template <class T>
+    Reversed<T> reverse(const T& orig) { return {orig}; }
+  }
+
+  DynamicLibraryManager::~DynamicLibraryManager() {
+    // dlclose all libraries.
+    for (auto &&Handle: reverse(m_OpenDyLibs)) {
+      if (Handle == (DyLibHandle) -1)
+        continue; // was already closed previously.
+      std::string errMsg;
+      platform::DLClose(Handle, &errMsg);
+      if (!errMsg.empty()) {
+        cling::errs() << "cling::DynamicLibraryManager::~DynamicLibraryManager(): "
+                      << errMsg << '\n';
+      }
+    }
+  }
 
   std::string
   DynamicLibraryManager::lookupLibInPaths(llvm::StringRef libStem) const {
@@ -204,6 +227,7 @@ namespace cling {
     if (!insRes.second)
       return kLoadLibAlreadyLoaded;
     m_LoadedLibraries.insert(canonicalLoadedLib);
+    m_OpenDyLibs.push_back(dyLibHandle);
     return kLoadLibSuccess;
   }
 
@@ -235,6 +259,9 @@ namespace cling {
 
     m_DyLibs.erase(dyLibHandle);
     m_LoadedLibraries.erase(canonicalLoadedLib);
+    auto it = std::find(m_OpenDyLibs.rbegin(), m_OpenDyLibs.rend(),
+                        dyLibHandle);
+    *it = (DyLibHandle) -1; // Invalidate
   }
 
   bool DynamicLibraryManager::isLibraryLoaded(llvm::StringRef fullPath) const {
