@@ -6,4 +6,5 @@
 
 ROOT_ADD_UNITTEST_DIR(Imt Thread ${TBB_LIBRARIES})
 
-ROOT_ADD_GTEST(testImt testRTaskArena.cxx testTFuture.cxx testTTaskGroup.cxx LIBRARIES Imt ${TBB_LIBRARIES})
+ROOT_ADD_GTEST(testImt testTFuture.cxx testTTaskGroup.cxx LIBRARIES Imt)
+ROOT_ADD_GTEST(testTaskArena testRTaskArena.cxx LIBRARIES Imt ${TBB_LIBRARIES} FAILREGEX "")
