@@ -8,10 +8,9 @@
 # with any questions or with examples that do not work.
 #
 # HELP IT DOESN'T WORK: Two possible solutions:
-#     1. Check that all the types returned by the tutorial are in the gTypesList. If they aren't,
-#        simply add them.
-#     2. If the tutorial takes a long time to execute (more than 90 seconds), add the name of the
+#     1. If the tutorial takes a long time to execute (more than 90 seconds), add the name of the
 #        tutorial to the list of long tutorials listLongTutorials, in the function findTimeout.
+#     2. Check that helper functions are recognised correctly in split(text).
 #
 # REQUIREMENTS: This script needs jupyter to be properly installed, as it uses the python
 # package nbformat and calls the shell commands `jupyter nbconvert` and `jupyter trust`. The
@@ -66,15 +65,6 @@ import textwrap
 import subprocess
 from nbformat import v3, v4
 from datetime import datetime, date
-
-# List of types that will be considered when looking for a C++ function. If a macro returns a
-# type not included on the list, the regular expression will not match it, and thus the function
-# will not be properly defined. Thus, any other type returned by function  must be added to this list
-# for the script to work correctly.
-gTypesList = ["void", "int", "Int_t", "TF1", "string", "bool", "double", "float", "char",
-    "TCanvas", "TTree", "TString", "TSeqCollection", "Double_t", "TFile", "Long64_t", "Bool_t", "TH1",
-    "RooDataSet", "RooWorkspace" , "HypoTestInverterResult" , "TVectorD" , "TArrayF", "UInt_t",
-    "TGraphErrors", "TGraphAsymmErrors"]
 
 # -------------------------------------
 # -------- Function definitions--------
@@ -228,6 +218,12 @@ def pythonMainFunction(text):
                 newtext += (line + '\n')
     return newtext
 
+def convertDoxygenLatexToMarkdown(text):
+    """Replace formula tags used by doxygen to the ones used in notebooks."""
+    text = text.replace("\\f$", "$")
+    text = text.replace("\\f[", "$$")
+    text = text.replace("\\f]", "$$")
+    return text
 
 def readHeaderCpp(text):
     """
@@ -296,9 +292,7 @@ def readHeaderCpp(text):
     newtext = ''
     for line in lines[i:]:
         newtext += (line + "\n")
-    description = description.replace("\\f$", "$")
-    description = description.replace("\\f[", "$$")
-    description = description.replace("\\f]", "$$")
+    description = convertDoxygenLatexToMarkdown(description)
     return newtext, description, author, isNotebook, isJsroot, nodraw, needsHeaderFile
 
 
@@ -349,38 +343,81 @@ def cppComments(text):
     ... }''')
     'void function(){\\n   int variable = 5 // Comment not in cell\\n   // Comment also not in cell\\n}\\n'
     """
-    text = text.splitlines()
     newtext = ''
     inComment = False
 
-    for line in text:
-        if line.startswith("//") and not inComment:  # True if first line of comment
-            inComment = True
-            newtext += "# <markdowncell>\n"
-            if line[2:].lstrip().startswith("#"):  # Don't use .capitalize() if line starts with hash, ie it is a header
-               newtext += ("# " + line[2:]+"\n")
-            else:
-               newtext += ("# " + line[2:].lstrip().capitalize()+"\n")
-        elif inComment and not line.startswith("//"):  # True if first line after comment
+    for line in text.splitlines():
+        if line.strip().startswith("//"):
+            line = line.strip(" /")
+
+            # Allow for doxygen-style latex:
+            line = convertDoxygenLatexToMarkdown(line)
+
+            if not inComment:  # True if first line of comment
+                inComment = True
+                newtext += "# <markdowncell>\n\n"
+            newtext += ("# " + line + "\n")
+        elif inComment:  # True if first line after comment
             inComment = False
             newtext += "# <codecell>\n"
             newtext += (line+"\n")
-        elif inComment and line.startswith("//"):  # True if in the middle of a comment block
-            newtext += ("# " + line[2:] + "\n")
         else:
             newtext += (line+"\n")
 
     return newtext
 
 
+def findBracedBlock(text, startpos, openingBraceChar):
+    """
+    Scan the string in <text>, starting at <startpos>. Return index of opening and
+    matching closing brace if present. The brace to search for is passed in <openingBraceChar>,
+    e.g. '(', '{', '['.
+    """
+    depth = 0
+    braceRegex = {"<": r"[<>]", "(": r"[()]", "{": r"[{}]", "[": r"[[]]"}
+    if openingBraceChar not in braceRegex:
+        raise ValueError("Brace character " + openingBraceChar + " doesn't seem to be an opening brace")
+
+    pos = startpos
+    begin = None
+    bracketRe = re.compile(braceRegex[openingBraceChar], flags = re.DOTALL | re.MULTILINE)
+    lastMatch = None
+    while True:
+        lastMatch = bracketRe.search(text, pos)
+        if lastMatch:
+            if begin is None:
+                if lastMatch.group() != openingBraceChar:
+                    raise ValueError("Found " + lastMatch.group() + " while looking for opening brace in\n" + text[pos:])
+                begin = lastMatch.start()
+
+            depth += 1 if lastMatch.group(0) == openingBraceChar else -1
+            pos = lastMatch.end()
+            if depth == 0:
+                break
+        else:
+            raise ValueError("Unmatched " + braceRegex[openingBraceChar] + " at " + str(startpos) + " in " + text[begin:startpos+50])
+
+    matchingBrace = lastMatch.end()
+    return begin,matchingBrace
+
+
+def findStuffBeforeFunc(text, searchStart, searchEnd):
+    beforeFunctionRe = re.compile("(;|}|//[^\n]*)\s*$", flags = re.MULTILINE)
+    try:
+        # Find the last '}' or comment line etc before function definition:
+        lastMatchBeforeFunc = [thisMatch for thisMatch in beforeFunctionRe.finditer(text, searchStart, searchEnd)][-1]
+        return lastMatchBeforeFunc.end()+1
+    except IndexError as e:
+        return searchStart
+
+
 def split(text):
     """
     Splits the text string into main, helpers, and rest. main is the main function,
-    i.e. the function tha thas the same name as the macro file. Helpers is a list of
+    i.e. the function with the same name as the macro file. Helpers is a list of
     strings, each a helper function, i.e. any other function that is not the main function.
-    Finally, rest is a string containing any top-level code outside of any function.
-    Comments immediately prior to a helper cell are converted into markdown cell,
-    added to the helper, and removed from rest.
+    Finally, rest is a string containing any top-level code/declarations outside of any function.
+    Comments above a function will be converted to a markdown cell in notebooks.
     Intended for C++ files only.
     >>> split('''void tutorial(){
     ...    content of tutorial
@@ -416,90 +453,66 @@ def split(text):
     ... }''')
     ('void tutorial(){\\n   content of tutorial\\n}', ['\\n# <markdowncell>\\n  This is a multiline\\n description of the\\n helper function\\n \\n# <codecell>\\n%%cpp -d\\nvoid helper(arguments = values){\\n   helper function\\n   content spans lines\\n}'], '')
     """
-    functionReString="("
-    for cpptype in gTypesList:
-        functionReString += ("^%s|") % cpptype
-
-    functionReString = functionReString[:-1] + r")\s?\*?&?\s?[\w:]*?\s?\([^\)]*\)\s*\{.*?^\}"
-
-    functionRe = re.compile(functionReString, flags = re.DOTALL | re.MULTILINE)
-    #functionre = re.compile(r'(^void|^int|^Int_t|^TF1|^string|^bool|^double|^float|^char|^TCanvas|^TTree|^TString|^TSeqCollection|^Double_t|^TFile|^Long64_t|^Bool_t)\s?\*?\s?[\w:]*?\s?\([^\)]*\)\s*\{.*?^\}', flags = re.DOTALL | re.MULTILINE)
-    functionMatches = functionRe.finditer(text)
+    functionRe = re.compile(r"[^(/;]*?\s+[*&]*([\w:]+)\s*\(", flags = re.DOTALL | re.MULTILINE)
     helpers = []
+    definitions = []
     main = ""
-    for matchString in [match.group() for match in functionMatches]:
-        if tutName == findFunctionName(matchString):  # if the name of the function is that of the macro
-            main = matchString
+    searchStart = 0
+    for match in functionRe.finditer(text):
+        if match.end() < searchStart:
+            # These are matches for functions inside blocks like funcName() { ... }
+            continue
+
+        startpos = match.start()
+        # Search for function arguments
+        roundBegin,roundEnd = findBracedBlock(text, match.end()-1, "(")
+        # Search for function body
+        curlyBegin,curlyEnd = findBracedBlock(text, roundEnd, "{")
+
+        nextMatch = functionRe.search(text, match.start(1)+1, curlyBegin+1)
+        if nextMatch is not None:
+            # There is a function name before the next { ... } block. Use that instead.
+            pos = findStuffBeforeFunc(text, searchStart, nextMatch.start(1))
+            definitions += [line for line in text[searchStart:pos].splitlines()]
+            searchStart = pos
+            continue
+
+        beforeFuncPos = findStuffBeforeFunc(text, searchStart, match.start(1))
+        stuffBeforeFunc = text[searchStart:beforeFuncPos]
+        funcString = text[beforeFuncPos:curlyEnd]
+        searchStart = curlyEnd+1
+
+        commentLines = []
+        for line in stuffBeforeFunc.splitlines():
+            if line.strip().startswith("//"):
+                commentLines.append(line)
+            else:
+                definitions.append(line)
+
+        if tutName == match.group(1).strip():  # if the name of the function is that of the macro
+            main = funcString
         else:
-            helpers.append(matchString)
-
-    # Create rest by replacing the main and helper functions with blank strings
-    rest = text.replace(main, "")
-
-    for helper in helpers:
-        rest = rest.replace(helper, "")
+            helpers.append((funcString, match.group(1).strip(), commentLines))
 
     newHelpers = []
-    lines = text.splitlines()
-    for helper in helpers:      # For each helper function
-        for i, line in enumerate(lines):                    # Look through the lines until the
-            if line.startswith(helper[:helper.find("\n")]):  # first line of the helper is found
-                j = 1
-                commentList = []
-                while lines[i-j].startswith("//"):   # Add comment lines immediately prior to list
-                    commentList.append(lines[i-j])
-                    j += 1
-                if commentList:                  # Convert list to string
-                    commentList.reverse()
-                    helperDescription = ''
-                    for comment in commentList:
-                        if comment in ("//", "// "):
-                            helperDescription += "\n\n"  # Two newlines to create hard break in Markdown
-                        else:
-                            helperDescription += (comment[2:] + "\n")
-                            rest = rest.replace(comment, "")
-                    break
-                else:   # If no comments are found create generic description
-                    helperDescription = "A helper function is created:"
-                    break
+    for helper,functionName,commentLines in helpers:      # For each helper function
+        helper = helper.rstrip(" \n")
+        helperDescription = ""
+        for line in commentLines:
+            helper = helper.replace(line, "")
+            if line.strip() in ["//", "///"]:
+                # Convert empty comment lines to markdown breaks
+                helperDescription += "\n\n"
+            else:
+                helperDescription += line.strip(" /*") + "\n"
+        if len(helperDescription) == 0:   # If no comments are found create generic description
+            helperDescription = "Definition of a helper function:"
 
-        if findFunctionName(helper) != "main":  # remove void main function
+        if functionName != "main":  # remove void main function
             newHelpers.append("\n# <markdowncell>\n " + helperDescription + " \n# <codecell>\n%%cpp -d\n" + helper)
 
-    rest = rest.rstrip("\n /")  # remove newlines and empty comments at the end of string
+    return main, newHelpers, "\n".join(definitions)
 
-    return main, newHelpers, rest
-
-
-def findFunctionName(text):
-    """
-    Takes a string representation of a C++ function as an input,
-    finds and returns the name of the function
-    >>> findFunctionName('void functionName(arguments = values){}')
-    'functionName'
-    >>> findFunctionName('void functionName (arguments = values){}')
-    'functionName'
-    >>> findFunctionName('void *functionName(arguments = values){}')
-    'functionName'
-    >>> findFunctionName('void* functionName(arguments = values){}')
-    'functionName'
-    >>> findFunctionName('void * functionName(arguments = values){}')
-    'functionName'
-    >>> findFunctionName('void class::functionName(arguments = values){}')
-    'class::functionName'
-    """
-    functionNameReString="(?<="
-    for cpptype in gTypesList:
-        functionNameReString += ("(?<=%s)|") % cpptype
-
-    functionNameReString = functionNameReString[:-1] + r")\s?\*?\s?[^\s]*?(?=\s?\()"
-
-    functionNameRe = re.compile(functionNameReString, flags = re.DOTALL | re.MULTILINE)
-
-    #functionnamere = re.compile(r'(?<=(?<=int)|(?<=void)|(?<=TF1)|(?<=Int_t)|(?<=string)|(?<=double)|(?<=Double_t)|(?<=float)|(?<=char)|(?<=TString)|(?<=bool)|(?<=TSeqCollection)|(?<=TCanvas)|(?<=TTree)|(?<=TFile)|(?<=Long64_t)|(?<=Bool_t))\s?\*?\s?[^\s]*?(?=\s?\()', flags = re.DOTALL | re.MULTILINE)
-    match = functionNameRe.search(text)
-    functionname = match.group().strip(" *\n")
-    return functionname
 
 
 def processmain(text):
@@ -624,7 +637,9 @@ def disableDrawProgressBar(code):
     return code
 def fixes(code):
     codeTransformers=[removePaletteEditor, runEventExe, getLibMathMore,
-        roofitRemoveSpacesComments, declareNamespace, rs401dGetFiles ,
+        roofitRemoveSpacesComments,
+        #declareNamespace,
+        rs401dGetFiles,
         declareIncludes, tree4GetFiles, disableDrawProgressBar]
 
     for transformer in codeTransformers:
@@ -774,13 +789,15 @@ def mainfunction(text):
     if r != 0:
         sys.stderr.write("NOTEBOOK_CONVERSION_WARNING: Nbconvert failed for notebook %s with return code %s\n" %(outname,r))
         # If notebook conversion did not work, try again without the option --execute
-        subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout=%d" % timeout,  "--to=notebook",  outPathName])
+        if subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout=%d" % timeout,  "--to=notebook",  outPathName]) != 0:
+            raise RuntimeError("NOTEBOOK_CONVERSION_WARNING: Nbconvert failed for notebook %s with return code %s\n" %(outname,r))
     else:
         if isJsroot:
             subprocess.call(["jupyter", "trust",  os.path.join(outdir, outnameconverted)])
         # Only remove notebook without output if nbconvert succeeds
         os.remove(outPathName)
 
+    return r
 
 if __name__ == "__main__":
 
@@ -800,7 +817,8 @@ if __name__ == "__main__":
             tutRelativePath = "$ROOTSYS/tutorials/%s/" % tutPath.split("/")[-1]
         tutFileName = os.path.basename(tutPathName)
         tutName, extension = tutFileName.split(".")
-        tutTitle = re.sub( r"([A-Z\d])", r" \1", tutName).title()
+        #tutTitle = re.sub( r"([A-Z\d])", r" \1", tutName).title()
+        tutTitle = tutName
         outname = tutFileName + ".ipynb"
         outnameconverted = tutFileName + ".nbconvert.ipynb"
 
@@ -834,7 +852,7 @@ if __name__ == "__main__":
 
         if isNotebook:
             starttime = time.time()
-            mainfunction(text)
-            print(time.time() - starttime)
-        else:
-            pass
+            ret = mainfunction(text)
+            print("Notebook run time", time.time() - starttime)
+
+            sys.exit(ret)
