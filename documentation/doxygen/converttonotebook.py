@@ -65,6 +65,7 @@ import textwrap
 import subprocess
 from nbformat import v3, v4
 from datetime import datetime, date
+import statistics
 
 # -------------------------------------
 # -------- Function definitions--------
@@ -91,6 +92,11 @@ def unindenter(string, spaces = 3):
             newstring += (line + "\n")
 
     return newstring
+
+def measureIndentation(text):
+    """Measure the indentation width"""
+    nSpaces = sorted({len(line) - len(line.lstrip()) for line in text.splitlines() if line.strip()})
+    return nSpaces[0] if nSpaces[0] != 0 or len(nSpaces) == 1 else nSpaces[1]
 
 
 def readHeaderPython(text):
@@ -685,7 +691,8 @@ def mainfunction(text):
     if isCpp():
         main, helpers, rest = split(text)
         main,  argumentsCell = processmain(main)
-        main = cppComments(unindenter(cppFunction(main)))  # Remove function, Unindent, and convert comments to Markdown cells
+        funcText = cppFunction(main)
+        main = cppComments(unindenter(funcText, measureIndentation(funcText)))  # Remove function, Unindent, and convert comments to Markdown cells
 
         if argumentsCell:
             main = argumentsCell + main
