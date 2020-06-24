@@ -7762,10 +7762,14 @@ void TTree::RecursiveRemove(TObject *obj)
    if (fTreeIndex == obj) {
       fTreeIndex = 0;
    }
-   if (fAliases) {
+   if (fAliases == obj) {
+      fAliases = 0;
+   } else if (fAliases) {
       fAliases->RecursiveRemove(obj);
    }
-   if (fFriends) {
+   if (fFriends == obj) {
+      fFriends = 0;
+   } else if (fFriends) {
       fFriends->RecursiveRemove(obj);
    }
 }
