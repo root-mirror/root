@@ -689,28 +689,32 @@ def mainfunction(text):
     """
     # Modify text from macros to suit a notebook
     if isCpp():
-        main, helpers, rest = split(text)
-        main,  argumentsCell = processmain(main)
-        funcText = cppFunction(main)
-        main = cppComments(unindenter(funcText, measureIndentation(funcText)))  # Remove function, Unindent, and convert comments to Markdown cells
+        try:
+            main, helpers, rest = split(text)
+            main,  argumentsCell = processmain(main)
+            funcText = cppFunction(main)
+            main = cppComments(unindenter(funcText, measureIndentation(funcText)))  # Remove function, Unindent, and convert comments to Markdown cells
 
-        if argumentsCell:
-            main = argumentsCell + main
+            if argumentsCell:
+                main = argumentsCell + main
 
-        rest = cppComments(rest)  # Convert top level code comments to Markdown cells
+            rest = cppComments(rest)  # Convert top level code comments to Markdown cells
 
-        # Construct text by starting with top level code, then the helper functions, and finally the main function.
-        # Also add cells for headerfile, or keepfunction
-        if needsHeaderFile:
-            text = "# <markdowncell>\n# The header file must be copied to the current directory\n# <codecell>\n.!cp %s%s.h .\n# <codecell>\n" % (tutRelativePath, tutName)
-            text += rest
-        else:
-            text = "# <codecell>\n" + rest
+            # Construct text by starting with top level code, then the helper functions, and finally the main function.
+            # Also add cells for headerfile, or keepfunction
+            if needsHeaderFile:
+                text = "# <markdowncell>\n# The header file must be copied to the current directory\n# <codecell>\n.!cp %s%s.h .\n# <codecell>\n" % (tutRelativePath, tutName)
+                text += rest
+            else:
+                text = "# <codecell>\n" + rest
 
-        for helper in helpers:
-            text += helper
+            for helper in helpers:
+                text += helper
 
-        text += ("\n# <codecell>\n" + main)
+            text += ("\n# <codecell>\n" + main)
+        except Exception as e:
+            sys.stderr.write("Failed to convert C++ to notebook\n" + str(e))
+            raise e
 
     if extension == "py":
         text = pythonMainFunction(text)
@@ -788,13 +792,12 @@ def mainfunction(text):
     with open(outPathName, 'w') as fout:
         json.dump(json_data, fout, indent=1, sort_keys=True)
 
-    print(time.time() - starttime)
     timeout = findTimeout()
 
     # Call commmand that executes the notebook and creates a new notebook with the output
     r = subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout=%d" % timeout,  "--to=notebook", "--execute",  outPathName])
     if r != 0:
-        sys.stderr.write("NOTEBOOK_CONVERSION_WARNING: Nbconvert failed for notebook %s with return code %s\n" %(outname,r))
+        sys.stderr.write("NOTEBOOK_CONVERSION_WARNING: Nbconvert failed for notebook %s with return code %s\n" %(outPathName,r))
         # If notebook conversion did not work, try again without the option --execute
         if subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout=%d" % timeout,  "--to=notebook",  outPathName]) != 0:
             raise RuntimeError("NOTEBOOK_CONVERSION_WARNING: Nbconvert failed for notebook %s with return code %s\n" %(outname,r))
@@ -859,7 +862,11 @@ if __name__ == "__main__":
 
         if isNotebook:
             starttime = time.time()
-            ret = mainfunction(text)
-            print("Notebook run time", time.time() - starttime)
+            try:
+                ret = mainfunction(text)
+            except Exception as e:
+                print("Failed to convert to notebook", outPathName)
+                raise e
+            print("Notebook {0} run time".format(tutFileName), time.time() - starttime)
 
             sys.exit(ret)
