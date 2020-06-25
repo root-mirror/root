@@ -338,7 +338,8 @@ def cppFunction(text):
 
 def cppComments(text):
     """
-    Converts comments delimited by // and on a new line into a markdown cell. For C++ files only.
+    Converts comments delimited by // and on a new line into a markdown cell. Skips comments inside
+    blocks and braces, though, since these would otherwise be ripped apart. For C++ files only.
     >>> cppComments('''// This is a
     ... // multiline comment
     ... void function(){}''')
@@ -351,9 +352,12 @@ def cppComments(text):
     """
     newtext = ''
     inComment = False
+    curlyDepth = 0
+    braceDepth = 0
 
     for line in text.splitlines():
-        if line.strip().startswith("//"):
+
+        if line.strip().startswith("//") and curlyDepth == 0 and braceDepth == 0:
             line = line.strip(" /")
 
             # Allow for doxygen-style latex:
@@ -363,11 +367,21 @@ def cppComments(text):
                 inComment = True
                 newtext += "# <markdowncell>\n\n"
             newtext += ("# " + line + "\n")
-        elif inComment:  # True if first line after comment
-            inComment = False
-            newtext += "# <codecell>\n"
-            newtext += (line+"\n")
         else:
+            for char in line:
+                if char == "(":
+                    braceDepth += 1
+                elif char == ")":
+                    braceDepth -= 1
+                elif char == "{":
+                    curlyDepth += 1
+                elif char == "}":
+                    curlyDepth -= 1
+
+            if inComment:  # True if first line after comment
+                inComment = False
+                newtext += "# <codecell>\n"
+
             newtext += (line+"\n")
 
     return newtext
