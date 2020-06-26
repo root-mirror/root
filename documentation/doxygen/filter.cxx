@@ -75,6 +75,7 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <memory>
@@ -296,6 +297,12 @@ void FilterClass()
 
 void FilterTutorial()
 {
+	 // Use these to write out work that should be run in parallel after doxygen is done:
+	 // This executes python <work>
+	 std::ofstream worklist_py(  "tutorialWorklist_py", ios_base::app);
+	 // This executes root <work>
+	 std::ofstream worklist_root("tutorialWorklist_root", ios_base::app);
+
    // File for inline macros.
    FILE *m = 0;
 
@@ -378,10 +385,10 @@ void FilterTutorial()
 
       // notebook found
       if (gLineString.find("\\notebook") != string::npos) {
-         ExecuteCommand(StringFormat("%s converttonotebook.py %s %s/notebooks/",
-                                          gPythonExec.c_str(),
-                                          gFileName.c_str(), gOutDir.c_str()));
-         if (gPython){
+        // Notebooks are generated in dedicated step:
+        worklist_py << "converttonotebook.py " << gFileName << " " << gOutDir << "/notebooks/" << std::endl;
+
+        if (gPython){
              gLineString = "## ";
          }
          else{
