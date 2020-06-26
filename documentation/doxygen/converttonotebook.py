@@ -683,13 +683,22 @@ def isCpp():
 
 
 def findTimeout():
-   listLongTutorials = ["OneSidedFrequentistUpperLimitWithBands", "StandardBayesianNumericalDemo",
-   "TwoSidedFrequentistUpperLimitWithBands" , "HybridStandardForm", "rs401d_FeldmanCousins",
-   "TMVAMultipleBackgroundExample", "TMVARegression", "TMVAClassification", "StandardHypoTestDemo"]
-   if tutName in listLongTutorials:
-      return 300
+   if tutName in ["OneSidedFrequentistUpperLimitWithBands",
+       "StandardBayesianNumericalDemo",
+       "TwoSidedFrequentistUpperLimitWithBands",
+       "HybridStandardForm",
+       "rs401d_FeldmanCousins",
+       "TMVAMultipleBackgroundExample",
+       "TMVARegression",
+       "TMVAClassification",
+       "StandardHypoTestDemo"]:
+      return 900
+   elif tutName in ["df103_NanoAODHiggsAnalysis"]:
+      return 1200
    else:
-      return 90
+      return 120
+
+
 # -------------------------------------
 # ------------ Main Program------------
 # -------------------------------------
