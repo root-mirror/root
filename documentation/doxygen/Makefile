@@ -25,7 +25,7 @@ endef
 all: filter folders mathjax images doxygen
 
 filter:
-	`root-config --cxx` -o filter filter.cxx -std=c++11
+	`root-config --cxx` -o filter filter.cxx -std=c++11 -O2
 
 mathjax:
 	$(call MkDir,$(DOXYGEN_IMAGE_PATH))
