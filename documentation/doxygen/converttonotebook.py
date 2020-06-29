@@ -398,12 +398,11 @@ def findBracedBlock(text, startpos, openingBraceChar):
     if openingBraceChar not in braceRegex:
         raise ValueError("Brace character " + openingBraceChar + " doesn't seem to be an opening brace")
 
-    pos = startpos
     begin = None
     bracketRe = re.compile(braceRegex[openingBraceChar], flags = re.DOTALL | re.MULTILINE)
-    lastMatch = None
+  
     while True:
-        lastMatch = bracketRe.search(text, pos)
+        lastMatch = bracketRe.search(text, startpos)
         if lastMatch:
             if begin is None:
                 if lastMatch.group() != openingBraceChar:
@@ -411,14 +410,16 @@ def findBracedBlock(text, startpos, openingBraceChar):
                 begin = lastMatch.start()
 
             depth += 1 if lastMatch.group(0) == openingBraceChar else -1
-            pos = lastMatch.end()
+            startpos = lastMatch.end()
+            
             if depth == 0:
-                break
+                ret = (begin,lastMatch.end()-1)
+                begin = None
+                yield ret
+        elif depth == 0:
+            return
         else:
-            raise ValueError("Unmatched " + braceRegex[openingBraceChar] + " at " + str(startpos) + " in " + text[begin:startpos+50])
-
-    matchingBrace = lastMatch.end()
-    return begin,matchingBrace
+            raise ValueError("Unmatched " + braceRegex[openingBraceChar] + " at " + text[startpos-15:startpos+15])
 
 
 def findStuffBeforeFunc(text, searchStart, searchEnd):
@@ -474,33 +475,37 @@ def split(text):
     ('void tutorial(){\\n   content of tutorial\\n}', ['\\n# <markdowncell>\\n  This is a multiline\\n description of the\\n helper function\\n \\n# <codecell>\\n%%cpp -d\\nvoid helper(arguments = values){\\n   helper function\\n   content spans lines\\n}'], '')
     """
     functionRe = re.compile(r"[^(/;]*?\s+[*&]*([\w:]+)\s*\(", flags = re.DOTALL | re.MULTILINE)
+    tailRe = re.compile(r"}\s*;?", flags = re.DOTALL | re.MULTILINE)
     helpers = []
     definitions = []
     main = ""
     searchStart = 0
-    for match in functionRe.finditer(text):
-        if match.end() < searchStart:
-            # These are matches for functions inside blocks like funcName() { ... }
+    for curlyBegin,curlyEnd in findBracedBlock(text, 0, "{"):
+        functionMatches = [match for match in functionRe.finditer(text, searchStart, curlyBegin)] 
+        
+        tailMatch = tailRe.match(text, curlyEnd)
+        if tailMatch:
+            curlyEnd = tailMatch.end()
+        else:
+            sys.stderr.write("Failed match on " + text[curlyEnd:curlyEnd+10])
+        
+        if not functionMatches:
+            definitions.append("%%cpp -d\n" + text[searchStart:curlyEnd])
+            searchStart = curlyEnd+1
             continue
 
-        startpos = match.start()
+        functionMatch = functionMatches[-1]
+        startpos = functionMatch.start()
         # Search for function arguments
-        roundBegin,roundEnd = findBracedBlock(text, match.end()-1, "(")
-        # Search for function body
-        curlyBegin,curlyEnd = findBracedBlock(text, roundEnd, "{")
+        roundBegin,roundEnd = next( findBracedBlock(text, functionMatch.end()-2, "(") )
+        if roundEnd > curlyBegin:
+            raise RuntimeError("Didn't find '()' before '{}'")
 
-        nextMatch = functionRe.search(text, match.start(1)+1, curlyBegin+1)
-        if nextMatch is not None:
-            # There is a function name before the next { ... } block. Use that instead.
-            pos = findStuffBeforeFunc(text, searchStart, nextMatch.start(1))
-            definitions += [line for line in text[searchStart:pos].splitlines()]
-            searchStart = pos
-            continue
 
-        beforeFuncPos = findStuffBeforeFunc(text, searchStart, match.start(1))
+        beforeFuncPos = findStuffBeforeFunc(text, searchStart, functionMatch.start(1))
         stuffBeforeFunc = text[searchStart:beforeFuncPos]
         funcString = text[beforeFuncPos:curlyEnd]
-        searchStart = curlyEnd+1
+        searchStart = curlyEnd
 
         commentLines = []
         for line in stuffBeforeFunc.splitlines():
@@ -509,10 +514,10 @@ def split(text):
             else:
                 definitions.append(line)
 
-        if tutName == match.group(1).strip():  # if the name of the function is that of the macro
+        if tutName == functionMatch.group(1).strip():  # if the name of the function is that of the macro
             main = funcString
         else:
-            helpers.append((funcString, match.group(1).strip(), commentLines))
+            helpers.append((funcString, functionMatch.group(1).strip(), commentLines))
 
     newHelpers = []
     for helper,functionName,commentLines in helpers:      # For each helper function
