@@ -1,5 +1,5 @@
 
-.PHONY: filter folders mathjax images doxygen
+.PHONY: filter mathjax images doxygen replaceCollaborationDiagrams
 
 NJOB ?= $(shell nproc)
 PYTHON_EXECUTABLE ?= python3
