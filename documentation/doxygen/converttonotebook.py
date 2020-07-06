@@ -823,11 +823,17 @@ def mainfunction(text):
     timeout = findTimeout()
 
     # Call commmand that executes the notebook and creates a new notebook with the output
-    r = subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout=%d" % timeout,  "--to=notebook", "--execute",  outPathName])
+    r = subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout={}".format(timeout), "--to=notebook", "--execute", outPathName])
+    retry = 0
+    while r != 0 and retry < 2:
+        # Work around glitches in NB conversion
+        retry += 1
+        r = subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout={}".format(timeout*2), "--to=notebook", "--execute", outPathName])
+
     if r != 0:
         sys.stderr.write("NOTEBOOK_CONVERSION_WARNING: Nbconvert failed for notebook %s with return code %s\n" %(outPathName,r))
         # If notebook conversion did not work, try again without the option --execute
-        if subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout=%d" % timeout,  "--to=notebook",  outPathName]) != 0:
+        if subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout={}".format(timeout),  "--to=notebook",  outPathName]) != 0:
             raise RuntimeError("NOTEBOOK_CONVERSION_WARNING: Nbconvert failed for notebook %s with return code %s\n" %(outname,r))
     else:
         if isJsroot:
