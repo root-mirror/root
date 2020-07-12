@@ -470,13 +470,20 @@ Bool_t TFileMerger::MergeRecursive(TDirectory *target, TList *sourcelist, Int_t 
                continue;
             }
             // Check if only the listed objects are to be merged
-            if (type & kOnlyListed) {
+            if ((type & kOnlyListed) || (type & kOnlyListedDirectories)) {
                onlyListed = kFALSE;
                oldkeyname = key->GetName();
                oldkeyname += " ";
                onlyListed = fObjectNames.Contains(oldkeyname);
                oldkeyname = key->GetName();
-               if ((!onlyListed) && (!cl->InheritsFrom(TDirectory::Class()))) continue;
+
+               if (!onlyListed) {
+                  if (type & kOnlyListedDirectories) {
+                     if (cl->InheritsFrom(TDirectory::Class())) continue;
+                  } else {
+                     if (!cl->InheritsFrom(TDirectory::Class())) continue;
+                  }
+               }
             }
 
             if (!(type&kResetable && type&kNonResetable)) {

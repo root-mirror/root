@@ -33,6 +33,8 @@ compression setting after fk (for example 206 when using -fk206)""")
 	parser.add_argument("-ff", help="The compression level use is the one specified in the first input")
 	parser.add_argument("-f0", help="Do not compress the target file")
 	parser.add_argument("-f6", help="Use compression level 6. (See TFile::SetCompressionSettings for the support range of value.)")
+	parser.add_argument("-objects", help="List of space-separated keys (folders, histograms) to either include or exclude from the input files")
+	parser.add_argument("-objectmergetype", help="Whether to skip (SkipListed; default) or only include (OnlyListed) the above objects or to only include the root directories (OnlyListedDirectories) from the input files")
 	parser.add_argument("TARGET", help="Target file")
 	parser.add_argument("SOURCES", help="Source files")
 	return parser

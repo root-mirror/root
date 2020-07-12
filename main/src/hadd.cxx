@@ -123,6 +123,8 @@ int main( int argc, char **argv )
    int outputPlace = 0;
    int ffirst = 2;
    Int_t newcomp = -1;
+   TString fileObjects = "";
+   Int_t fileObjectsType = TFileMerger::kSkipListed;
    for( int a = 1; a < argc; ++a ) {
       if ( strcmp(argv[a],"-T") == 0 ) {
          noTrees = kTRUE;
@@ -288,6 +290,32 @@ int main( int argc, char **argv )
             }
          }
          ++ffirst;
+      } else if (strcmp(argv[a], "-objects") == 0) {
+         if (a + 1 != argc && argv[a + 1][0] != '-') {
+            fileObjects = argv[a + 1];
+            ++a;
+            ++ffirst;
+         } else {
+            std::cerr << "-objects: no objects specified. Parameter ignored.\n";
+         }
+         ++ffirst;
+      } else if (strcmp(argv[a], "-objectmergetype") == 0) {
+         if (a + 1 != argc && argv[a + 1][0] != '-') {
+            TString tmp = argv[a + 1];
+            if (tmp == "SkipListed")
+               fileObjectsType = TFileMerger::kSkipListed;
+            else if (tmp == "OnlyListed")
+               fileObjectsType = TFileMerger::kOnlyListed;
+            else if (tmp == "OnlyListedDirectories")
+               fileObjectsType = TFileMerger::kOnlyListedDirectories;
+            else
+               std::cerr << "-objectmergetype: bad type specified. Parameter ignored.\n";
+            ++a;
+            ++ffirst;
+         } else {
+            std::cerr << "-objectmergetype: no type specified. Parameter ignored.\n";
+         }
+         ++ffirst;
       } else if ( argv[a][0] == '-' ) {
          bool farg = false;
          if (force && argv[a][1] == 'f') {
@@ -350,6 +378,9 @@ int main( int argc, char **argv )
    TFileMerger fileMerger(kFALSE, kFALSE);
    fileMerger.SetMsgPrefix("hadd");
    fileMerger.SetPrintLevel(verbosity - 1);
+   if (fileObjects != "") {
+      fileMerger.AddObjectNames(fileObjects);
+   }
    if (maxopenedfiles > 0) {
       fileMerger.SetMaxOpenedFiles(maxopenedfiles);
    }
@@ -435,10 +466,14 @@ int main( int argc, char **argv )
       merger.SetMergeOptions(cacheSize);
       merger.SetIOFeatures(features);
       Bool_t status;
-      if (append)
-         status = merger.PartialMerge(TFileMerger::kIncremental | TFileMerger::kAll);
-      else
+      if (append || fileObjects != "") {
+         Int_t type = TFileMerger::kIncremental | TFileMerger::kAll;
+         if (fileObjects != "")
+            type |= fileObjectsType;
+         status = merger.PartialMerge(type);
+      } else {
          status = merger.Merge();
+      }
       return status;
    };
 
