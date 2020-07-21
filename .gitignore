@@ -34,3 +34,9 @@ CMakeLists.txt.user
 # Other Stuff
 tags
 *.d
+*.so
+
+# Doxygen
+documentation/doxygen/*.eps
+documentation/doxygen/*.pcm
+documentation/doxygen/*.jpg
