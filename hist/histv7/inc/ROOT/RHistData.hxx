@@ -149,7 +149,7 @@ public:
    /// Retrieve the under-/overflow content array (non-const).
    Content_t &GetOverflowContentArray() { return fOverflowBinContent; }
 
-   /// Merge with other RHistStatContent, assuming same bin configuration.
+   /// Add an other RHistStatContent, assuming same bin configuration.
    void Add(const RHistStatContent& other) {
       assert(fBinContent.size() == other.fBinContent.size()
                && "this and other have incompatible bin configuration!");
@@ -160,6 +160,32 @@ public:
          fBinContent[b] += other.fBinContent[b];
       for (size_t b = 0; b < fOverflowBinContent.size(); ++b)
          fOverflowBinContent[b] += other.fOverflowBinContent[b];
+   }
+
+   /// Multiply by a scalar.
+   template <typename T>
+   void MultiplyByScalar(const T scalar) {
+      for (auto &b: fBinContent)
+         b *= scalar;
+      for (auto &b: fOverflowBinContent)
+         b *= scalar;
+   }
+
+   /// Divide by an other RHistStatContent, assuming same bin configuration.
+   void Divide(const RHistStatContent& other) {
+      assert(fBinContent.size() == other.fBinContent.size());
+      assert(fOverflowBinContent.size() == other.fOverflowBinContent.size());
+      for (size_t b = 0; b < fBinContent.size(); ++b)
+         fBinContent[b] /= other.fBinContent[b];
+      for (size_t b = 0; b < fOverflowBinContent.size(); ++b)
+         fOverflowBinContent[b] /= other.fOverflowBinContent[b];
+      fEntries += other.fEntries;
+   }
+
+   /// Divide by an other RHistStatContent, assuming same bin configuration.
+   void DivideBinomial(const RHistStatContent& other) {
+      Divide(other);
+      fEntries = other.fEntries;
    }
 };
 
@@ -201,9 +227,26 @@ public:
    /// Get the sum of weights.
    Weight_t GetSumOfWeights() const { return fSumWeights; }
 
-   /// Merge with other RHistStatTotalSumOfWeights data, assuming same bin configuration.
+   /// Add an other RHistStatTotalSumOfWeights data, assuming same bin configuration.
    void Add(const RHistStatTotalSumOfWeights& other) {
       fSumWeights += other.fSumWeights;
+   }
+
+   /// Multiply by a scalar.
+   template <typename T>
+   void MultiplyByScalar(const T scalar) {
+      fSumWeights *= scalar;
+   }
+
+   /// Divide by an other RHistStatTotalSumOfWeights data, assuming same bin configuration.
+   void Divide(const RHistStatTotalSumOfWeights& other) {
+      fSumWeights /= other.fSumWeights;
+   }
+
+   /// Divide by an other RHistStatTotalSumOfWeights data, assuming same bin configuration.
+   void DivideBinomial(const RHistStatTotalSumOfWeights& other) {
+      // /!\ Should be the sum of the updated weights (after division) of the bin contents
+      Divide(other);
    }
 };
 
@@ -245,9 +288,31 @@ public:
    /// Get the sum of weights.
    Weight_t GetSumOfSquaredWeights() const { return fSumWeights2; }
 
-   /// Merge with other RHistStatTotalSumOfSquaredWeights data, assuming same bin configuration.
+   /// Add an other RHistStatTotalSumOfSquaredWeights data, assuming same bin configuration.
    void Add(const RHistStatTotalSumOfSquaredWeights& other) {
       fSumWeights2 += other.fSumWeights2;
+   }
+
+   /// Multiply by a scalar.
+   template <typename T>
+   void MultiplyByScalar(const T scalar) {
+      fSumWeights2 *= scalar * scalar;
+   }
+
+   /// Divide by an other RHistStatTotalSumOfSquaredWeights data, assuming same bin configuration.
+   void Divide(const RHistStatTotalSumOfSquaredWeights& other) {
+      fSumWeights2 /= other.fSumWeights2;
+      // fSumWeights2 = (fSumWeights2 * other.fUnchangedBinContent * other.fUnchangedBinContent
+      //                + other.fSumWeights2 * fUnchangedBinContent * fUnchangedBinContent)
+      //                / (other.fUnchangedBinContent * other.fUnchangedBinContent * other.fUnchangedBinContent * other.fUnchangedBinContent);
+   }
+
+   /// Divide by an other RHistStatTotalSumOfSquaredWeights data, assuming same bin configuration.
+   void DivideBinomial(const RHistStatTotalSumOfSquaredWeights& other) {
+      Divide(other);
+      // fSumWeights2 = std::abs(((1. - 2. * fUnchangedBinContent / other.fUnchangedBinContent) * fSumWeights2
+      //                + fUnchangedBinContent * fUnchangedBinContent * other.fSumWeights2 / other.fUnchangedBinContent * other.fUnchangedBinContent)
+      //                / (other.fUnchangedBinContent * other.fUnchangedBinContent));
    }
 };
 
@@ -358,7 +423,7 @@ public:
    /// Get the structure holding the under-/overflow sum of squares of weights (non-const).
    std::vector<double> &GetOverflowSumOfSquaredWeights() { return fOverflowSumWeightsSquared; }
 
-   /// Merge with other `RHistStatUncertainty` data, assuming same bin configuration.
+   /// Add an other `RHistStatUncertainty` data, assuming same bin configuration.
    void Add(const RHistStatUncertainty& other) {
       assert(fSumWeightsSquared.size() == other.fSumWeightsSquared.size()
                && "this and other have incompatible bin configuration!");
@@ -368,6 +433,46 @@ public:
          fSumWeightsSquared[b] += other.fSumWeightsSquared[b];
       for (size_t b = 0; b < fOverflowSumWeightsSquared.size(); ++b)
          fOverflowSumWeightsSquared[b] += other.fOverflowSumWeightsSquared[b];
+   }
+
+   /// Multiply by a scalar.
+   template <typename T>
+   void MultiplyByScalar(const T scalar) {
+      for (auto &b: fSumWeightsSquared)
+         b *= scalar * scalar;
+      for (auto &b: fOverflowSumWeightsSquared)
+         b *= scalar * scalar;
+   }
+
+   /// Divide by an other `RHistStatUncertainty` data, assuming same bin configuration.
+   void Divide(const RHistStatUncertainty& other) {
+      assert(fSumWeightsSquared.size() == other.fSumWeightsSquared.size());
+      assert(fOverflowSumWeightsSquared.size() == other.fOverflowSumWeightsSquared.size());
+      for (size_t b = 0; b < fSumWeightsSquared.size(); ++b)
+         fSumWeightsSquared[b] /= other.fSumWeightsSquared[b];
+      for (size_t b = 0; b < fOverflowSumWeightsSquared.size(); ++b)
+         fOverflowSumWeightsSquared[b] /= other.fOverflowSumWeightsSquared[b];
+      // for (size_t b = 0; b < fSumWeightsSquared.size(); ++b)
+      // fSumWeightsSquared[b] = (fSumWeightsSquared[b] * other.fUnchangedBinContent * other.fUnchangedBinContent
+      //                + other.fSumWeightsSquared[b] * fUnchangedBinContent * fUnchangedBinContent)
+      //                / (other.fUnchangedBinContent * other.fUnchangedBinContent * other.fUnchangedBinContent * other.fUnchangedBinContent);
+      // for (size_t b = 0; b < fOverflowSumWeightsSquared.size(); ++b)
+      // fOverflowSumWeightsSquared[b] = (fOverflowSumWeightsSquared[b] * other.fUnchangedBinContent * other.fUnchangedBinContent
+      //                + other.fOverflowSumWeightsSquared[b] * fUnchangedBinContent * fUnchangedBinContent)
+      //                / (other.fUnchangedBinContent * other.fUnchangedBinContent * other.fUnchangedBinContent * other.fUnchangedBinContent);
+   }
+
+   /// Divide by an other `RHistStatUncertainty` data, assuming same bin configuration.
+   void DivideBinomial(const RHistStatUncertainty& other) {
+      Divide(other);
+      // for (size_t b = 0; b < fSumWeightsSquared.size(); ++b)
+      // fSumWeightsSquared[b] = std::abs(((1. - 2. * fUnchangedBinContent / other.fUnchangedBinContent) * fSumWeightsSquared[b]
+      //                + fUnchangedBinContent * fUnchangedBinContent * other.fSumWeightsSquared[b] / other.fUnchangedBinContent * other.fUnchangedBinContent)
+      //                / (other.fUnchangedBinContent * other.fUnchangedBinContent));
+      // for (size_t b = 0; b < fOverflowSumWeightsSquared.size(); ++b)
+      // fOverflowSumWeightsSquared[b] = std::abs(((1. - 2. * fUnchangedBinContent / other.fUnchangedBinContent) * fOverflowSumWeightsSquared[b]
+      //                + fUnchangedBinContent * fUnchangedBinContent * other.fOverflowSumWeightsSquared[b] / other.fUnchangedBinContent * other.fUnchangedBinContent)
+      //                / (other.fUnchangedBinContent * other.fUnchangedBinContent));
    }
 };
 
@@ -417,12 +522,40 @@ public:
 
    // FIXME: Add a way to query the inner data
 
-   /// Merge with other RHistDataMomentUncert data, assuming same bin configuration.
+   /// Add an other RHistDataMomentUncert data, assuming same bin configuration.
    void Add(const RHistDataMomentUncert& other) {
+      assert(fMomentXW.size() == other.fMomentXW.size());
+      assert(fMomentX2W.size() == other.fMomentX2W.size());
       for (size_t d = 0; d < DIMENSIONS; ++d) {
          fMomentXW[d] += other.fMomentXW[d];
          fMomentX2W[d] += other.fMomentX2W[d];
       }
+   }
+
+   /// Multiply by a scalar.
+   template <typename T>
+   void MultiplyByScalar(const T scalar) {
+      for (size_t d = 0; d < DIMENSIONS; ++d) {
+         fMomentXW[d] *= scalar;
+         fMomentX2W[d] *= scalar;
+      }
+   }
+
+   /// Divide by an other RHistDataMomentUncert data, assuming same bin configuration.
+   void Divide(const RHistDataMomentUncert& other) {
+      // /!\ Should be with the updated weights (after division) of the bin contents
+      assert(fMomentXW.size() == other.fMomentXW.size());
+      assert(fMomentX2W.size() == other.fMomentX2W.size());
+      for (size_t d = 0; d < DIMENSIONS; ++d) {
+         fMomentXW[d] /= other.fMomentXW[d];
+         fMomentX2W[d] /= other.fMomentX2W[d];
+      }
+   }
+
+   /// Divide by an other RHistDataMomentUncert data, assuming same bin configuration.
+   void DivideBinomial(const RHistDataMomentUncert& other) {
+      // /!\ Should be with the updated weights (after division) of the bin contents
+      Divide(other);
    }
 };
 
@@ -574,6 +707,41 @@ public:
       // Call `Add()` on all base classes, using the same tricks as `Fill()`.
       using trigger_base_add = int[];
       (void)trigger_base_add{(STAT<DIMENSIONS, PRECISION>::Add(other), 0)...};
+   }
+
+   /// Multiply the current data by a scalar.
+   template <typename OtherData>
+   void MultiplyByScalar(const OtherData scalar)
+   {
+      // Call `MultiplyByScalar()` on all base classes, using the same tricks as `Fill()`.
+      using trigger_base_add = int[];
+      (void)trigger_base_add{(STAT<DIMENSIONS, PRECISION>::MultiplyByScalar(scalar), 0)...};
+   }
+
+   /// Divide current data by some other statistical data.
+   ///
+   /// The implementation assumes that the other statistics were recorded with
+   /// the same binning configuration, and that the statistics of `OtherData`
+   /// are a superset of those recorded by the active `RHistData` instance.
+   template <typename OtherData>
+   void Divide(const OtherData &other)
+   {
+      // Call `Divide()` on all base classes, using the same tricks as `Fill()`.
+      using trigger_base_add = int[];
+      (void)trigger_base_add{(STAT<DIMENSIONS, PRECISION>::Divide(other), 0)...};
+   }
+
+   /// Divide current data by some other statistical data.
+   ///
+   /// The implementation assumes that the other statistics were recorded with
+   /// the same binning configuration, and that the statistics of `OtherData`
+   /// are a superset of those recorded by the active `RHistData` instance.
+   template <typename OtherData>
+   void DivideBinomial(const OtherData &other)
+   {
+      // Call `DivideBinomial()` on all base classes, using the same tricks as `Fill()`.
+      using trigger_base_add = int[];
+      (void)trigger_base_add{(STAT<DIMENSIONS, PRECISION>::DivideBinomial(other), 0)...};
    }
 
    /// Whether this provides storage for uncertainties, or whether uncertainties

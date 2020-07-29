@@ -42,18 +42,6 @@ using AxisIter_t = std::array<RAxisBase::const_iterator, NDIMS>;
 template <int NDIMS>
 using AxisIterRange_t = std::array<AxisIter_t<NDIMS>, 2>;
 
-/// Kinds of under- and overflow handling.
-enum class EOverflow {
-   kNoOverflow = 0x0, ///< Exclude under- and overflows
-   kUnderflow = 0x1,  ///< Include underflows
-   kOverflow = 0x2,   ///< Include overflows
-   kUnderOver = 0x3,  ///< Include both under- and overflows
-};
-
-inline bool operator&(EOverflow a, EOverflow b)
-{
-   return static_cast<int>(a) & static_cast<int>(b);
-}
 } // namespace Hist
 
 namespace Detail {

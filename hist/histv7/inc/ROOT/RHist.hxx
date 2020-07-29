@@ -171,6 +171,13 @@ public:
       std::swap(fFillFunc, other.fFillFunc);
    }
 
+   /// Multiply all stats of a histogram by a certain scalar.
+   template <typename T>
+   RHist &operator*=(T scalar) {
+      fImpl->GetStat().MultiplyByScalar(scalar);
+      return *this;
+   }
+
 private:
    /// The actual histogram implementation.
    std::unique_ptr<ImplBase_t> fImpl;
@@ -304,6 +311,20 @@ using RH3I = RHist<3, int, RHistStatContent>;
 using RH3LL = RHist<3, int64_t, RHistStatContent>;
 ///\}
 
+template <int DIMENSIONS, class PRECISION,
+          template <int D_, class P_> class... STAT_FIRST,
+          template <int D_, class P_> class... STAT_SECOND>
+void SameAxesOrThrow(RHist<DIMENSIONS, PRECISION, STAT_FIRST...> &first, const RHist<DIMENSIONS, PRECISION, STAT_SECOND...> &second)
+{
+   auto& firstImpl = *first.GetImpl();
+   const auto& secondImpl = *second.GetImpl();
+   for (int dim = 0; dim < DIMENSIONS; ++dim) {
+      if (!firstImpl.GetAxis(dim).HasSameBinningAs(secondImpl.GetAxis(dim))) {
+         throw std::runtime_error("Attempted to merge two RHists with incompatible axis binning!");
+      }
+   }
+}
+
 /// Add two histograms.
 ///
 /// This operation may currently only be performed if the two histograms have
@@ -311,8 +332,8 @@ using RH3LL = RHist<3, int64_t, RHistStatContent>;
 /// at least the same statistics as `to` (recording more stats is fine).
 ///
 /// Adding histograms with incompatible axis binning will be reported at runtime
-/// with an `std::runtime_error`. Insufficient statistics in the source
-/// histogram will be detected at compile-time and result in a compiler error.
+/// with an `std::runtime_error`. Incompatible statistics' size in the source
+/// histograms will be detected at compile-time and result in a compiler error.
 ///
 /// In the future, we may either adopt a more relaxed definition of histogram
 /// addition or provide a mechanism to convert from one histogram type to
@@ -323,17 +344,78 @@ template <int DIMENSIONS, class PRECISION,
 void Add(RHist<DIMENSIONS, PRECISION, STAT_TO...> &to, const RHist<DIMENSIONS, PRECISION, STAT_FROM...> &from)
 {
    // Enforce "same axis configuration" policy.
-   auto& toImpl = *to.GetImpl();
-   const auto& fromImpl = *from.GetImpl();
-   for (int dim = 0; dim < DIMENSIONS; ++dim) {
-      if (!toImpl.GetAxis(dim).HasSameBinningAs(fromImpl.GetAxis(dim))) {
-         throw std::runtime_error("Attempted to add RHists with incompatible axis binning");
-      }
-   }
+   SameAxesOrThrow(to, from);
 
    // Now that we know that the two axes have the same binning, we can just add
    // the statistics directly.
+   auto& toImpl = *to.GetImpl();
+   const auto& fromImpl = *from.GetImpl();
    toImpl.GetStat().Add(fromImpl.GetStat());
+}
+
+/// Divide the `hist` by the `dividor`.
+///
+/// `hist = hist/dividor`
+/// This operation may only be performed if the two histograms have
+/// the same axis configuration, use the same precision, and if `dividor` records
+/// at least the same statistics as `hist` (recording more stats is fine).
+///
+/// Dividing histograms with incompatible axis binning will be reported at runtime
+/// with an `std::runtime_error`. Incompatible statistics' size in the source
+/// histograms will be detected at compile-time and result in a compiler error.
+///
+/// In the future, we may either adopt a more relaxed definition of histogram
+/// division or provide a mechanism to convert from one histogram type to
+/// another. We currently favor the latter path.
+///
+/// NOTE : The resulting errors are calculated assuming uncorrelated histograms,
+/// using Gaussian error propagation.
+/// See ROOT::Experimental::DivideBinomial for binomial error propagation.
+template <int DIMENSIONS, class PRECISION,
+          template <int D_, class P_> class... STAT_TO,
+          template <int D_, class P_> class... STAT_FROM>
+void Divide(RHist<DIMENSIONS, PRECISION, STAT_TO...> &hist, const RHist<DIMENSIONS, PRECISION, STAT_FROM...> &dividor)
+{
+   // Enforce "same axis configuration" policy.
+   SameAxesOrThrow(hist, dividor);
+
+   // Now that we know that the two axes have the same binning, we can call
+   // `Divide` directly on the statistics.
+   auto& histImpl = *hist.GetImpl();
+   const auto& dividingImpl = *dividor.GetImpl();
+   histImpl.GetStat().Divide(dividingImpl.GetStat());
+}
+
+/// Divide the `hist` by the `dividor`.
+///
+/// `hist = hist/dividor`
+/// This operation may only be performed if the two histograms have
+/// the same axis configuration, use the same precision, and if `dividor` records
+/// at least the same statistics as `hist` (recording more stats is fine).
+///
+/// Dividing histograms with incompatible axis binning will be reported at runtime
+/// with an `std::runtime_error`. Incompatible statistics' size in the source
+/// histograms will be detected at compile-time and result in a compiler error.
+///
+/// In the future, we may either adopt a more relaxed definition of histogram
+/// division or provide a mechanism to convert from one histogram type to
+/// another. We currently favor the latter path.
+///
+/// NOTE : The resulting errors are calculated using binomial error propagation.
+/// See ROOT::Experimental::Divide for Gaussian error propagation.
+template <int DIMENSIONS, class PRECISION,
+          template <int D_, class P_> class... STAT_TO,
+          template <int D_, class P_> class... STAT_FROM>
+void DivideBinomial(RHist<DIMENSIONS, PRECISION, STAT_TO...> &hist, const RHist<DIMENSIONS, PRECISION, STAT_FROM...> &dividor)
+{
+   // Enforce "same axis configuration" policy.
+   SameAxesOrThrow(hist, dividor);
+
+   // Now that we know that the two axes have the same binning, we can call
+   // `Divide` directly on the statistics.
+   auto& histImpl = *hist.GetImpl();
+   const auto& dividingImpl = *dividor.GetImpl();
+   histImpl.GetStat().DivideBinomial(dividingImpl.GetStat());
 }
 
 } // namespace Experimental
