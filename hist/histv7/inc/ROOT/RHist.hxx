@@ -18,61 +18,95 @@
 
 #include "ROOT/RSpan.hxx"
 #include "ROOT/RAxis.hxx"
-#include "ROOT/RHistBinIter.hxx"
-#include "ROOT/RHistImpl.hxx"
+#include "ROOT/RAxisLayout.hxx"
 #include "ROOT/RHistData.hxx"
+#include "ROOT/RHistUtils.hxx"
 #include <initializer_list>
 #include <stdexcept>
 
 namespace ROOT {
 namespace Experimental {
 
-// fwd declare for fwd declare for friend declaration in RHist...
-template <int DIMENSIONS, class PRECISION, template <int D_, class P_> class... STAT>
-class RHist;
-
-// fwd declare for friend declaration in RHist.
-template <int DIMENSIONS, class PRECISION, template <int D_, class P_> class... STAT>
-class RHist<DIMENSIONS, PRECISION, STAT...>
-HistFromImpl(std::unique_ptr<typename RHist<DIMENSIONS, PRECISION, STAT...>::ImplBase_t> pHistImpl);
+/// Using declaration for the default container for bin content and uncertainties.
+template <class El>
+using StdVector_t = std::vector<El>;
 
 /**
- \class RHist
- Histogram class for histograms with `DIMENSIONS` dimensions, where each
- bin count is stored by a value of type `PRECISION`. STAT stores statistical
+ \class RHistBase
+ Histogram base class for histograms with `Dimensions` dimensions, where each
+ bin count is stored by a value of type `WeightType`. STAT stores statistical
  data of the entries filled into the histogram (bin content, uncertainties etc).
 
  A histogram counts occurrences of values or n-dimensional combinations thereof.
  Contrary to for instance a `RTree`, a histogram combines adjacent values. The
  resolution of this combination is defined by the axis binning, see e.g.
  http://www.wikiwand.com/en/Histogram
+
+ Histogram axes are only known to the derived classes.
  */
 
-template <int DIMENSIONS, class PRECISION, template <int D_, class P_> class... STAT>
-class RHist {
+template <int Dimensions, class WeightType, int StatConfig, template <class EL> class Container = StdVector_t>
+class RHistBase {
 public:
-   /// The type of the `Detail::RHistImplBase` of this histogram.
-   using ImplBase_t =
-      Detail::RHistImplBase<Detail::RHistData<DIMENSIONS, PRECISION, std::vector<PRECISION>, STAT...>>;
-   /// The coordinates type: a `DIMENSIONS`-dimensional `std::array` of `double`.
-   using CoordArray_t = typename ImplBase_t::CoordArray_t;
-   /// The type of weights
-   using Weight_t = PRECISION;
-   /// Pointer type to `HistImpl_t::Fill`, for faster access.
-   using FillFunc_t = typename ImplBase_t::FillFunc_t;
-   /// Range.
-   using AxisRange_t = typename ImplBase_t::AxisIterRange_t;
+   static constexpr int kNDim = Dimensions;
+   using Weight_t = WeightType;
+   static constexpr int kStatConfig = StatConfig;
+   using Data_t = Detail::RHistData<kNDim, WeightType, kStatConfig, Container>;
 
-   using const_iterator = Detail::RHistBinIter<ImplBase_t>;
+private:
+   Data_t fData;
 
+protected:
+   RHistBase() = default;
+   RHistBase(size_t numBins);
+
+   Data_t &GetData() { return fData; }
+
+public:
    /// Number of dimensions of the coordinates
-   static constexpr int GetNDim() noexcept { return DIMENSIONS; }
+   static constexpr int GetNDim() noexcept { return kNDim; }
 
-   RHist() = default;
-   RHist(RHist &&) = default;
-   RHist(const RHist &other): fImpl(other.fImpl->Clone()), fFillFunc(other.fFillFunc)
-   {}
+   std::array<RAxisBase*, kNDim> GetAxes() const = 0;
 
+   WeightType GetBinContent(size_t bin) const { return fData[bin]; }
+   WeightType GetStatContent(size_t bin, Hist::Stat::EStat stat) const { return fData.GetStat(stat)[bin]; }
+   double_t GetUncertainty(size_t bin) const { return fData.GetCombinedUncertainty(bin); }
+   size_t GetNBins() const { return fData.GetNBins(); }
+   const Data_t &GetData() const { return fData; }
+};
+
+template <int Dimensions, class WeightType, class AxisTuple, int StatConfig = 0, template <class EL> class Container = StdVector_t >
+class RHist: public RHistBase<Dimensions, WeightType, StatConfig, Container> {
+   static_assert(! (std::tuple_size<AxisTuple>::value < Dimensions), "Too few histogram axes specified for a histogram of this dimension!");
+   static_assert(! (std::tuple_size<AxisTuple>::value > Dimensions), "Too many histogram axes specified for a histogram of this dimension!");
+
+public:
+   using AxisLayout_t = Internal::RAxisLayout<AxisTuple>;
+   using CoordTuple_t = typename AxisLayout_t::CoordTuple_t;
+   static constexpr int kNDim = Dimensions;
+   static constexpr int kStatConfig = StatConfig;
+
+private:
+   using Base_t = RHistBase<Dimensions, WeightType, StatConfig, Container>;
+
+   AxisLayout_t fAxisLayout;
+
+   ///\{
+   /// Internal interfaces to convert a coord tuple to an array of doubles.
+   template <class...Axis>
+   struct TupleElementsConvertibleToDouble:
+      std::integral_constant<bool, (std::is_convertible<double, Axis>::value && ...)>
+   {};
+
+   std::array<double, Dimensions> CoordTupleToDoubleArr(...) { return {}; } // FIXME: more helpful diags for users!
+
+   template <class...Coord, class T = std::enable_if_t<TupleElementsConvertibleToDouble<Coord...>::value>>
+   std::array<double, Dimensions> CoordTupleToDoubleArr(const Coord &...coord) {
+      return {((double)coord),...};
+   }
+   ///\}
+
+public:
    /// Create a histogram from an `array` of axes (`RAxisConfig`s). Example code:
    ///
    /// Construct a 1-dimensional histogram that can be filled with `floats`s.
@@ -88,76 +122,82 @@ public:
    /// double curlies.
    ///
    ///     RHist<2,int> h2i({{ {10, 0., 1.}, {{-1., 0., 1., 10., 100.}} }});
-   explicit RHist(std::array<RAxisConfig, DIMENSIONS> axes);
+   explicit RHist(const AxisTuple &axes);
 
-   /// Constructor overload taking the histogram title.
-   RHist(std::string_view histTitle, std::array<RAxisConfig, DIMENSIONS> axes);
+   /// Constructor taking the single axis for a 1D histogram.
+   template <int EnableIfNDim = Dimensions, class = typename std::enable_if<EnableIfNDim == 1>::type>
+   explicit RHist(const std::tuple_element<0, AxisTuple> &axis): RHist(std::forward_as_tuple(axis)) {}
 
-   /// Constructor overload that's only available for a 1-dimensional histogram.
-   template <int ENABLEIF_NDIM = DIMENSIONS, class = typename std::enable_if<ENABLEIF_NDIM == 1>::type>
-   explicit RHist(const RAxisConfig &xaxis): RHist(std::array<RAxisConfig, 1>{{xaxis}})
-   {}
-
-   /// Constructor overload that's only available for a 1-dimensional histogram,
-   /// also passing the histogram title.
-   template <int ENABLEIF_NDIM = DIMENSIONS, class = typename std::enable_if<ENABLEIF_NDIM == 1>::type>
-   RHist(std::string_view histTitle, const RAxisConfig &xaxis): RHist(histTitle, std::array<RAxisConfig, 1>{{xaxis}})
-   {}
-
-   /// Constructor overload that's only available for a 2-dimensional histogram.
-   template <int ENABLEIF_NDIM = DIMENSIONS, class = typename std::enable_if<ENABLEIF_NDIM == 2>::type>
-   RHist(const RAxisConfig &xaxis, const RAxisConfig &yaxis): RHist(std::array<RAxisConfig, 2>{{xaxis, yaxis}})
-   {}
-
-   /// Constructor overload that's only available for a 2-dimensional histogram,
-   /// also passing the histogram title.
-   template <int ENABLEIF_NDIM = DIMENSIONS, class = typename std::enable_if<ENABLEIF_NDIM == 2>::type>
-   RHist(std::string_view histTitle, const RAxisConfig &xaxis, const RAxisConfig &yaxis)
-      : RHist(histTitle, std::array<RAxisConfig, 2>{{xaxis, yaxis}})
-   {}
-
-   /// Constructor overload that's only available for a 3-dimensional histogram.
-   template <int ENABLEIF_NDIM = DIMENSIONS, class = typename std::enable_if<ENABLEIF_NDIM == 3>::type>
-   RHist(const RAxisConfig &xaxis, const RAxisConfig &yaxis, const RAxisConfig &zaxis)
-      : RHist(std::array<RAxisConfig, 3>{{xaxis, yaxis, zaxis}})
-   {}
-
-   /// Constructor overload that's only available for a 3-dimensional histogram,
-   /// also passing the histogram title.
-   template <int ENABLEIF_NDIM = DIMENSIONS, class = typename std::enable_if<ENABLEIF_NDIM == 3>::type>
-   RHist(std::string_view histTitle, const RAxisConfig &xaxis, const RAxisConfig &yaxis, const RAxisConfig &zaxis)
-      : RHist(histTitle, std::array<RAxisConfig, 3>{{xaxis, yaxis, zaxis}})
-   {}
-
-   /// Access the ImplBase_t this RHist points to.
-   ImplBase_t *GetImpl() const noexcept { return fImpl.get(); }
-
-   /// "Steal" the ImplBase_t this RHist points to.
-   std::unique_ptr<ImplBase_t> TakeImpl() && noexcept { return std::move(fImpl); }
+   /// Constructor taking the two axes for a 2D histogram.
+   template <int EnableIfNDim = Dimensions, class = typename std::enable_if<EnableIfNDim == 2>::type>
+   explicit RHist(const std::tuple_element<0, AxisTuple> &axis0,
+      const std::tuple_element<1, AxisTuple> &axis1):
+   RHist(std::forward_as_tuple(axis0, axis1)) {}
 
    /// Add `weight` to the bin containing coordinate `x`.
-   void Fill(const CoordArray_t &x, Weight_t weight = (Weight_t)1) noexcept { (fImpl.get()->*fFillFunc)(x, weight); }
+   void Fill(const CoordTuple_t &x, WeightType weight = (WeightType)1) noexcept {
+      // FIXME: handle growth!
+      ssize_t bin = fAxisLayout.FindBin(x);
+      if /*constexpr*/ (StatConfig >= Hist::Stat::k1stMoment)
+         Base_t::GetData().FillMoment(bin, std::apply(CoordTupleToDoubleArr, x), weight);
+      Base_t::GetData().Fill(bin, weight);
+   }
+
+   /// Add `weight` to the bin containing coordinate `x`, non-tuple overload for 1D histogram.
+   template <int EnableIfNDim = Dimensions, class = typename std::enable_if<EnableIfNDim == 1>::type>
+   void Fill(const typename std::tuple_element<0, AxisTuple>::Coord_t &x, WeightType weight = (WeightType)1) {
+      Fill(CoordTuple_t{x}, weight);
+   }
+
+   /// Add `weight` to the bin containing coordinate `x`, non-tuple overload for 2D histogram.
+   template <int EnableIfNDim = Dimensions, class = typename std::enable_if<EnableIfNDim == 2>::type>
+   void Fill(const typename std::tuple_element<0, AxisTuple>::Coord_t &x,
+             const typename std::tuple_element<1, AxisTuple>::Coord_t &y,
+             WeightType weight = (WeightType)1) {
+      Fill(CoordTuple_t{x, y}, weight);
+   }
 
    /// For each coordinate in `xN`, add `weightN[i]` to the bin at coordinate
    /// `xN[i]`. The sizes of `xN` and `weightN` must be the same. This is more
    /// efficient than many separate calls to `Fill()`.
-   void FillN(const std::span<const CoordArray_t> xN, const std::span<const Weight_t> weightN) noexcept
+   void FillN(const std::span<const CoordTuple_t> xN, const std::span<const WeightType> weightN) noexcept
    {
-      fImpl->FillN(xN, weightN);
+      std::vector<ssize_t> binN = fAxisLayout.FindBin(xN);
+      if /*constexpr*/ (StatConfig >= Hist::Stat::k1stMoment) {
+         std::vector<std::array<double, Dimensions>> coordValN;
+         coordValN.reserve(xN.size());
+         for (auto &&x: xN)
+            coordValN.emplace_back(std::apply(CoordTupleToDoubleArr, x));
+         Base_t::GetData().FillMoment(binN, coordValN, weightN);
+      }
+      Base_t::GetData().Fill(binN, weightN);
    }
 
    /// Convenience overload: `FillN()` with weight 1.
-   void FillN(const std::span<const CoordArray_t> xN) noexcept { fImpl->FillN(xN); }
-
-   /// Get the number of entries this histogram was filled with.
-   int64_t GetEntries() const noexcept { return fImpl->GetStat().GetEntries(); }
+   void FillN(const std::span<const CoordTuple_t> xN) noexcept {
+      std::vector<size_t> binN = fAxisLayout.FindBin(xN);
+      if /*constexpr*/ (StatConfig >= Hist::Stat::k1stMoment) {
+         std::vector<std::array<double, Dimensions>> coordValN;
+         coordValN.reserve(xN.size());
+         for (auto &&x: xN)
+            coordValN.emplace_back(std::apply(CoordTupleToDoubleArr, x));
+         Base_t::GetData().FillMoment(binN, coordValN);
+      }
+      Base_t::GetData().Fill(binN);
+   }
 
    /// Get the content of the bin at `x`.
-   Weight_t GetBinContent(const CoordArray_t &x) const { return fImpl->GetBinContent(x); }
+   WeightType GetBinContent(const CoordTuple_t &x) const {
+      return Base_t::GetBinContent(fAxisLayout.FindBin(x));
+   }
 
    /// Get the uncertainty on the content of the bin at `x`.
-   double GetBinUncertainty(const CoordArray_t &x) const { return fImpl->GetBinUncertainty(x); }
+   double GetBinUncertainty(const CoordTuple_t &x) const {
+      return Base_t::GetBinUncertainty(fAxisLayout.FindBin(x));
+   }
 
+   /// TODO:
+   /*
    const_iterator begin() const { return const_iterator(*fImpl); }
 
    const_iterator end() const { return const_iterator(*fImpl, fImpl->GetNBinsNoOver()); }
@@ -165,149 +205,46 @@ public:
    /// Swap *this and other.
    ///
    /// Very efficient; swaps the `fImpl` pointers.
-   void swap(RHist<DIMENSIONS, PRECISION, STAT...> &other) noexcept
+   void swap(RHist<Dimensions, WeightType, STAT...> &other) noexcept
    {
       std::swap(fImpl, other.fImpl);
       std::swap(fFillFunc, other.fFillFunc);
    }
-
-private:
-   /// The actual histogram implementation.
-   std::unique_ptr<ImplBase_t> fImpl;
-
-   /// Pointer to RHistImpl::Fill() member function.
-   FillFunc_t fFillFunc = nullptr;    //!
-
-   friend RHist HistFromImpl<>(std::unique_ptr<ImplBase_t>);
-};
-
-/// RHist with no STAT parameter uses RHistStatContent by default.
-template <int DIMENSIONS, class PRECISION>
-class RHist<DIMENSIONS, PRECISION>: public RHist<DIMENSIONS, PRECISION, RHistStatContent> {
-   using RHist<DIMENSIONS, PRECISION, RHistStatContent>::RHist;
-};
-
-/// Swap two histograms.
-///
-/// Very efficient; swaps the `fImpl` pointers.
-template <int DIMENSIONS, class PRECISION, template <int D_, class P_> class... STAT>
-void swap(RHist<DIMENSIONS, PRECISION, STAT...> &a, RHist<DIMENSIONS, PRECISION, STAT...> &b) noexcept
-{
-   a.swap(b);
-};
-
-namespace Internal {
-/**
- Generate RHist::fImpl from RHist constructor arguments.
- */
-template <int NDIM, int IDIM, class DATA, class... PROCESSEDAXISCONFIG>
-struct RHistImplGen {
-   /// Select the template argument for the next axis type, and "recurse" into
-   /// RHistImplGen for the next axis.
-   template <RAxisConfig::EKind KIND>
-   std::unique_ptr<Detail::RHistImplBase<DATA>>
-   MakeNextAxis(std::string_view title, const std::array<RAxisConfig, NDIM> &axes,
-                PROCESSEDAXISCONFIG... processedAxisArgs)
-   {
-      using NextAxis_t = typename AxisConfigToType<KIND>::Axis_t;
-      NextAxis_t nextAxis = AxisConfigToType<KIND>()(axes[IDIM]);
-      using HistImpl_t = RHistImplGen<NDIM, IDIM + 1, DATA, PROCESSEDAXISCONFIG..., NextAxis_t>;
-      return HistImpl_t()(title, axes, processedAxisArgs..., nextAxis);
-   }
-
-   /// Make a RHistImpl-derived object reflecting the RAxisConfig array.
-   ///
-   /// Delegate to the appropriate MakeNextAxis instantiation, depending on the
-   /// axis type selected in the RAxisConfig.
-   /// \param axes - `RAxisConfig` objects describing the axis of the resulting
-   ///   RHistImpl.
-   /// \param statConfig - the statConfig parameter to be passed to the RHistImpl
-   /// \param processedAxisArgs - the RAxisBase-derived axis objects describing the
-   ///   axes of the resulting RHistImpl. There are `IDIM` of those; in the end
-   /// (`IDIM` == `GetNDim()`), all `axes` have been converted to
-   /// `processedAxisArgs` and the RHistImpl constructor can be invoked, passing
-   /// the `processedAxisArgs`.
-   std::unique_ptr<Detail::RHistImplBase<DATA>> operator()(std::string_view title,
-                                                           const std::array<RAxisConfig, NDIM> &axes,
-                                                           PROCESSEDAXISCONFIG... processedAxisArgs)
-   {
-      switch (axes[IDIM].GetKind()) {
-      case RAxisConfig::kEquidistant: return MakeNextAxis<RAxisConfig::kEquidistant>(title, axes, processedAxisArgs...);
-      case RAxisConfig::kGrow: return MakeNextAxis<RAxisConfig::kGrow>(title, axes, processedAxisArgs...);
-      case RAxisConfig::kIrregular: return MakeNextAxis<RAxisConfig::kIrregular>(title, axes, processedAxisArgs...);
-      default: R__ERROR_HERE("HIST") << "Unhandled axis kind";
-      }
-      return nullptr;
-   }
-};
-
-/// Generate RHist::fImpl from constructor arguments; recursion end.
-template <int NDIM, class DATA, class... PROCESSEDAXISCONFIG>
-/// Create the histogram, now that all axis types and initializer objects are
-/// determined.
-struct RHistImplGen<NDIM, NDIM, DATA, PROCESSEDAXISCONFIG...> {
-   using HistImplBase_t = ROOT::Experimental::Detail::RHistImplBase<DATA>;
-   std::unique_ptr<HistImplBase_t>
-   operator()(std::string_view title, const std::array<RAxisConfig, DATA::GetNDim()> &, PROCESSEDAXISCONFIG... axisArgs)
-   {
-      using HistImplt_t = Detail::RHistImpl<DATA, PROCESSEDAXISCONFIG...>;
-      return std::make_unique<HistImplt_t>(title, axisArgs...);
-   }
-};
-} // namespace Internal
-
-template <int DIMENSIONS, class PRECISION, template <int D_, class P_> class... STAT>
-RHist<DIMENSIONS, PRECISION, STAT...>::RHist(std::string_view title, std::array<RAxisConfig, DIMENSIONS> axes)
-   : fImpl{std::move(
-        Internal::RHistImplGen<RHist::GetNDim(), 0,
-                               Detail::RHistData<DIMENSIONS, PRECISION, std::vector<PRECISION>, STAT...>>()(
-           title, axes))}
-{
-   fFillFunc = fImpl->GetFillFunc();
-}
-
-template <int DIMENSIONS, class PRECISION, template <int D_, class P_> class... STAT>
-RHist<DIMENSIONS, PRECISION, STAT...>::RHist(std::array<RAxisConfig, DIMENSIONS> axes): RHist("", axes)
-{}
-
-/// Adopt an external, stand-alone RHistImpl. The RHist will take ownership.
-template <int DIMENSIONS, class PRECISION, template <int D_, class P_> class... STAT>
-RHist<DIMENSIONS, PRECISION, STAT...>
-HistFromImpl(std::unique_ptr<typename RHist<DIMENSIONS, PRECISION, STAT...>::ImplBase_t> pHistImpl)
-{
-   RHist<DIMENSIONS, PRECISION, STAT...> ret;
-   ret.fFillFunc = pHistImpl->GetFillFunc();
-   std::swap(ret.fImpl, pHistImpl);
-   return ret;
+   */
 };
 
 /// \name RHist Typedefs
 ///\{ Convenience typedefs (ROOT6-compatible type names)
 
 // Keep them as typedefs, to make sure old-style documentation tools can understand them.
-using RH1D = RHist<1, double, RHistStatContent, RHistStatUncertainty>;
-using RH1F = RHist<1, float, RHistStatContent, RHistStatUncertainty>;
-using RH1C = RHist<1, char, RHistStatContent>;
-using RH1I = RHist<1, int, RHistStatContent>;
-using RH1LL = RHist<1, int64_t, RHistStatContent>;
+/// TODO: Figure out how to provide aliases given the axis tuple - maybe `RH1DBase` and `template <class Axis> RH1D`?
+/*
+using RH1D = RHist<1, double, Hist::Stat::kUncertainty>;
+using RH1F = RHist<1, float, Hist::Stat::kUncertainty>;
+using RH1C = RHist<1, char>;
+using RH1I = RHist<1, int>;
+using RH1LL = RHist<1, int64_t>;
 
-using RH2D = RHist<2, double, RHistStatContent, RHistStatUncertainty>;
-using RH2F = RHist<2, float, RHistStatContent, RHistStatUncertainty>;
-using RH2C = RHist<2, char, RHistStatContent>;
-using RH2I = RHist<2, int, RHistStatContent>;
-using RH2LL = RHist<2, int64_t, RHistStatContent>;
+using RH2D = RHist<2, double, Hist::Stat::kUncertainty>;
+using RH2F = RHist<2, float, Hist::Stat::kUncertainty>;
+using RH2C = RHist<2, char>;
+using RH2I = RHist<2, int>;
+using RH2LL = RHist<2, int64_t>;
 
-using RH3D = RHist<3, double, RHistStatContent, RHistStatUncertainty>;
-using RH3F = RHist<3, float, RHistStatContent, RHistStatUncertainty>;
-using RH3C = RHist<3, char, RHistStatContent>;
-using RH3I = RHist<3, int, RHistStatContent>;
-using RH3LL = RHist<3, int64_t, RHistStatContent>;
+using RH3D = RHist<3, double, Hist::Stat::kUncertainty>;
+using RH3F = RHist<3, float, Hist::Stat::kUncertainty>;
+using RH3C = RHist<3, char>;
+using RH3I = RHist<3, int>;
+using RH3LL = RHist<3, int64_t>;
 ///\}
+*/
 
+/// TODO:
+/*
 /// Add two histograms.
 ///
 /// This operation may currently only be performed if the two histograms have
-/// the same axis configuration, use the same precision, and if `from` records
+/// the same axis configuration, use the same WeightType, and if `from` records
 /// at least the same statistics as `to` (recording more stats is fine).
 ///
 /// Adding histograms with incompatible axis binning will be reported at runtime
@@ -317,15 +254,15 @@ using RH3LL = RHist<3, int64_t, RHistStatContent>;
 /// In the future, we may either adopt a more relaxed definition of histogram
 /// addition or provide a mechanism to convert from one histogram type to
 /// another. We currently favor the latter path.
-template <int DIMENSIONS, class PRECISION,
+template <int Dimensions, class WeightType,
           template <int D_, class P_> class... STAT_TO,
           template <int D_, class P_> class... STAT_FROM>
-void Add(RHist<DIMENSIONS, PRECISION, STAT_TO...> &to, const RHist<DIMENSIONS, PRECISION, STAT_FROM...> &from)
+void Add(RHist<Dimensions, WeightType, STAT_TO...> &to, const RHist<Dimensions, WeightType, STAT_FROM...> &from)
 {
    // Enforce "same axis configuration" policy.
    auto& toImpl = *to.GetImpl();
    const auto& fromImpl = *from.GetImpl();
-   for (int dim = 0; dim < DIMENSIONS; ++dim) {
+   for (int dim = 0; dim < Dimensions; ++dim) {
       if (!toImpl.GetAxis(dim).HasSameBinningAs(fromImpl.GetAxis(dim))) {
          throw std::runtime_error("Attempted to add RHists with incompatible axis binning");
       }
@@ -335,6 +272,7 @@ void Add(RHist<DIMENSIONS, PRECISION, STAT_TO...> &to, const RHist<DIMENSIONS, P
    // the statistics directly.
    toImpl.GetStat().Add(fromImpl.GetStat());
 }
+*/
 
 } // namespace Experimental
 } // namespace ROOT

@@ -22,36 +22,16 @@ namespace ROOT {
 namespace Experimental {
 namespace Hist {
 
-template <int DIMENSIONS>
-struct RCoordArray: std::array<double, DIMENSIONS> {
-   using Base_t = std::array<double, DIMENSIONS>;
-
-   /// Default construction.
-   RCoordArray() = default;
-
-   /// Construction with one `double` per `DIMENSION`.
-   template<class...ELEMENTS, class = typename std::enable_if<sizeof...(ELEMENTS) + 1 == DIMENSIONS>::type>
-   RCoordArray(double x, ELEMENTS...el): Base_t{{x, el...}} {}
-
-   /// Fallback constructor, invoked if the one above fails because of the wrong number of
-   /// arguments / coordinates.
-   template<class T, class...ELEMENTS, class = typename std::enable_if<sizeof...(ELEMENTS) + 1 != DIMENSIONS>::type>
-   RCoordArray(T, ELEMENTS...) {
-      static_assert(sizeof...(ELEMENTS) + 1 == DIMENSIONS, "Number of coordinates does not match DIMENSIONS");
-   }
-
-   /// Construction from a C-style array.
-   RCoordArray(double (&arr)[DIMENSIONS]): Base_t(arr) {}
-
-   /// Copy-construction from a C++-style array.
-   /// (No need for a move-constructor, it isn't any better for doubles)
-   RCoordArray(const std::array<double, DIMENSIONS>& arr): Base_t(arr) {}
+namespace Stat {
+enum EStat { // not enum class - want int-casts!
+   kUncertainty = 1, ///< Poisson uncertainty per bin
+   kRuntime = 2, ///< Runtime statistics - but how to set them?
+   k1stMoment = 4, ///< 1st moment
+   k2ndMoment = 8, ///< 2nd moment
+   // k3rdMoment = 16, ///< 3rd moment
+   // k4thMoment = 32, ///< 4th moment
 };
-
-template <int DIMENSIONS>
-//using CoordArray_t = std::array<double, DIMENSIONS>;
-using CoordArray_t = RCoordArray<DIMENSIONS>;
-
+}
 
 } // namespace Hist
 } // namespace Experimental
