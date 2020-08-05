@@ -84,14 +84,14 @@ RooExpPoly::RooExpPoly(const char* name, const char* title,
   // Check lowest order
   if (_lowestOrder<0) {
     coutE(InputArguments) << "RooExpPoly::ctor(" << GetName()
-           << ") WARNING: lowestOrder must be >=0, setting value to 0" << endl ;
+			  << ") WARNING: lowestOrder must be >=0, setting value to 0" << std::endl ;
     _lowestOrder=0 ;
   }
-
+  
   for(auto coef:coefList){
     if (!dynamic_cast<RooAbsReal*>(coef)) {
       coutE(InputArguments) << "RooExpPoly::ctor(" << GetName() << ") ERROR: coefficient " << coef->GetName()
-                            << " is not of type RooAbsReal" << endl ;
+                            << " is not of type RooAbsReal" << std::endl ;
       R__ASSERT(0) ;
     }
     _coefList.add(*coef) ;
@@ -145,13 +145,51 @@ Double_t RooExpPoly::evaluateLog() const
     retval += coefs[i]*xpow;
     xpow *= x;
   }
+  
+  if(std::numeric_limits<double>::max_exponent < retval){
+    coutE(InputArguments) << "RooExpPoly::evaluateLog(" << GetName() << ") ERROR: exponent at " << x << " larger than allowed maximum, result will be infinite! " << retval << " > " << std::numeric_limits<double>::max_exponent << " in " << this->getFormulaExpression(true) << std::endl;
+  }
   return retval;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void RooExpPoly::adjustLimits() {
+  // Adjust the limits of all the coefficients to reflect the numeric boundaries
+  
+  const unsigned sz = _coefList.getSize();
+  double max = std::numeric_limits<double>::max_exponent / sz;
+  const int lowestOrder = _lowestOrder;
+  std::vector<double> coefs;
+  coefs.reserve(sz);
+
+  RooRealVar* x = dynamic_cast<RooRealVar*>(&(*_x));
+  if(x){
+    const Double_t xmax = x->getMax();
+    double xmaxpow = std::pow(xmax, lowestOrder);
+    for(size_t i=0; i<sz; ++i){
+      double thismax =max/xmaxpow;
+      RooRealVar* coef = dynamic_cast<RooRealVar*>(this->_coefList.at(i));
+      if(coef){
+        coef->setVal(thismax);
+        coef->setMax(thismax);
+      }
+      xmaxpow *= xmax;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Double_t RooExpPoly::evaluate() const {
-  return exp(this->evaluateLog());
+  // Calculate and return value of function
+  
+  const double logval = this->evaluateLog();
+  const double val = exp(logval);
+  if(std::isinf(val)){
+    coutE(InputArguments) << "RooExpPoly::evaluate(" << GetName() << ") ERROR: result of exponentiation is infinite! exponent was " << logval << std::endl;
+  }
+  return val;  
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +206,7 @@ Int_t RooExpPoly::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars,
 {
   
   if ((_coefList.getSize() + _lowestOrder < 4) && (( _coefList.getSize() + _lowestOrder < 3) || (static_cast<RooAbsReal*>(_coefList.at(2-_lowestOrder))->getVal() <= 0)) && matchArgs(allVars,analVars,_x)){
-    return 1;
+    return 0;
   }
   return 0 ;
 }
@@ -188,8 +226,22 @@ namespace {
       std::cout << "WARNING in calculation of analytical integral limited by numerical precision" << std::endl;
       std::cout << "x: " << x1 << " , " << x2 << std::endl;
       std::cout << "y: " << y1 << " , " << y2 << std::endl;
-    } 
+    }
     return y1 - y2;
+  }
+
+  double deltaerfi(double x1, double x2){
+    std::complex<double> u1 = {x1, 0.};
+    std::complex<double> u2 = {x2, 0.};
+
+    std::complex<double> y2 = x2 > 0 ? RooMath::faddeeva(u2) : RooMath::faddeeva(-u2);
+    std::complex<double> y1 = x1 > 0 ? RooMath::faddeeva(u1) : RooMath::faddeeva(-u1);
+    if(y1 == y2){
+      std::cout << "WARNING in calculation of analytical integral limited by numerical precision" << std::endl;
+      std::cout << "x: " << x1 << " , " << x2 << std::endl;
+      std::cout << "y: " << y1 << " , " << y2 << std::endl;
+    } 
+    return y1.imag() - y2.imag();
   }
 }
 
@@ -227,8 +279,10 @@ Double_t RooExpPoly::analyticalIntegral(Int_t code, const char* rangeName) const
       double d = ::deltaerf((-b + 2 * absa * xmax)/(2 * sqrta),(-b + 2 * absa * xmin)/(2 * sqrta));
       double retval = exp(b*b/(4 * absa) + c) * sqrt(PI) * d /(2 * sqrta);
       return retval;  
-    } else if(a>0){
-      throw std::runtime_error("dawson integral not yet implemented!");
+    } else if(a > 0){
+      double d = ::deltaerfi((b + 2 * absa * xmax)/(2 * sqrta),(b + 2 * absa * xmin)/(2 * sqrta));
+      double retval = exp(-b*b/(4 * absa) + c) * sqrt(PI) * d /(2 * sqrta);
+      return retval;
     } else if(b!=0){
       return 1./b * (exp(b*xmax)-exp(b*xmin)) * exp(c);
     } else {      
@@ -238,6 +292,8 @@ Double_t RooExpPoly::analyticalIntegral(Int_t code, const char* rangeName) const
   }
   return 0.;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 std::string RooExpPoly::getFormulaExpression(bool expand) const {
   std::stringstream ss;
