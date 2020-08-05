@@ -34,7 +34,7 @@ public:
            RooAbsReal& _x, const RooArgList& _coefList, const RooArgList& _expList) ;
 
   RooPower(const RooPower& other, const char* name = 0);
-  virtual TObject* clone(const char* newname) const { return new RooPower(*this, newname); }
+  virtual TObject* clone(const char* newname) const override { return new RooPower(*this, newname); }
   virtual ~RooPower() ;
   
   std::string getFormulaExpression(bool expand) const;
