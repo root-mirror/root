@@ -53,7 +53,7 @@ protected:
   /// Evaluation
   Double_t evaluate() const override;
 
-  ClassDef(RooPower,1) // Power PDF
+  ClassDefOverride(RooPower,1) // Power PDF
 };
 
 #endif

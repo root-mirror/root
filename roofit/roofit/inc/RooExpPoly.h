@@ -54,7 +54,7 @@ protected:
   Double_t evaluate() const override;
   Double_t evaluateLog() const;  
 
-  ClassDef(RooExpPoly,1) // ExpPoly PDF
+  ClassDefOverride(RooExpPoly,1) // ExpPoly PDF
 };
 
 #endif
