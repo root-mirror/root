@@ -29,18 +29,20 @@ RooExpPoly::RooExpPoly(const char*, const char*, RooAbsReal&, const RooArgList&,
 
 **/
 
-#include <cmath>
-#include <sstream>
-#include <cassert>
-
-#include "TMath.h"
-
 #include "RooExpPoly.h"
+
 #include "RooAbsReal.h"
 #include "RooArgList.h"
 #include "RooMsgService.h"
+#include "RooRealVar.h"
 
+#include "TMath.h"
 #include "TError.h"
+
+#include <cmath>
+#include <sstream>
+#include <cassert>
+#include <complex>
 
 using namespace std;
 
