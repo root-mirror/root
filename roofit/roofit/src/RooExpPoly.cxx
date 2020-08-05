@@ -24,6 +24,9 @@ the function is used in computations.
 
 The sum can be truncated at the low end. See the main constructor
 RooExpPoly::RooExpPoly(const char*, const char*, RooAbsReal&, const RooArgList&, Int_t)
+
+\image html RooExpPoly.png
+
 **/
 
 #include <cmath>

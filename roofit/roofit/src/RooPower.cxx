@@ -19,6 +19,8 @@
 
 RooPower implements a power law p.d.f of the form
 \f[ f(x) = \mathcal{N} \cdot \sum_{i} a_{i} * x^{b_i} \f]
+
+\image html RooPower.png
 **/
 
 #include <cmath>
