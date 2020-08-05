@@ -34,7 +34,7 @@ public:
       RooAbsReal& _x, const RooArgList& _coefList, Int_t lowestOrder=1) ;
 
   RooExpPoly(const RooExpPoly& other, const char* name = 0);
-  virtual TObject* clone(const char* newname) const { return new RooExpPoly(*this, newname); }
+  virtual TObject* clone(const char* newname) const override { return new RooExpPoly(*this, newname); }
   virtual ~RooExpPoly() ;
 
   Double_t getLogVal(const RooArgSet* nset) const override;
