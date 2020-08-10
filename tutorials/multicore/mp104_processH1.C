@@ -31,10 +31,10 @@ static std::string tutname = "mp104_processH1: ";
 static std::string logfile = "mp104_processH1.log";
 static RedirectHandle_t gRH;
 
-std::vector<std::string> files {"http://root.cern.ch/files/h1/dstarmb.root",
-                                "http://root.cern.ch/files/h1/dstarp1a.root",
-                                "http://root.cern.ch/files/h1/dstarp1b.root",
-                                "http://root.cern.ch/files/h1/dstarp2.root"};
+std::vector<std::string> files {"http://root.cern/files/h1/dstarmb.root",
+                                "http://root.cern/files/h1/dstarp1a.root",
+                                "http://root.cern/files/h1/dstarp1b.root",
+                                "http://root.cern/files/h1/dstarp2.root"};
 
 int mp104_processH1()
 {

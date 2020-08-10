@@ -11,7 +11,7 @@
 /// measurement.
 ///
 /// Documentation for these utilities can be found here:
-/// http://root.cern.ch/root/html/RooStats__NumberCountingUtils.html
+/// http://root.cern/root/html/RooStats__NumberCountingUtils.html
 ///
 ///
 /// This problem is often called a proto-type problem for high energy physics.

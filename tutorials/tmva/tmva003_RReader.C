@@ -42,7 +42,7 @@ void train(const std::string &filename)
 void tmva003_RReader()
 {
    // First, let's train a model with TMVA.
-   const std::string filename = "http://root.cern.ch/files/tmva_class_example.root";
+   const std::string filename = "http://root.cern/files/tmva_class_example.root";
    train(filename);
 
    // Next, we load the model from the TMVA XML file.

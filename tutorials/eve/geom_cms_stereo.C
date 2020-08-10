@@ -14,7 +14,7 @@ void geom_cms_stereo(Bool_t quad_buf=kTRUE)
    TEveManager::Create();
 
    TFile::SetCacheFileDir(".");
-   gGeoManager = gEve->GetGeometry("http://root.cern.ch/files/cms.root");
+   gGeoManager = gEve->GetGeometry("http://root.cern/files/cms.root");
    gGeoManager->DefaultColors();
 
    auto top = gGeoManager->GetTopVolume()->FindNode("CMSE_1")->GetVolume();

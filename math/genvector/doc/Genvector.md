@@ -2,7 +2,7 @@
 
 
 **GenVector**, is a new package intended to prepresent vectors and their operations and transformations, such as rotations and Lorentz transformations, in 2, 3 and 4 dimensions. The 2D and 3D space are used to describe the geometry vectors and points, while the 4D space-time is used for physics vectors representing relativistic particles.   
-These 2D,3D and 4D vectors are different from vectors of the Linear Algebra package which describe generic N-dimensional vectors. Similar functionality is currently provided by the CLHEP [Vector](http://proj-clhep.web.cern.ch/proj-clhep/manual/UserGuide/VectorDefs/index.html) and [Geometry](http://www.hep.phy.cam.ac.uk/lhcb/doc/CLHEP/1.9.1.2/html/namespaceHepGeom.html) packages and the %ROOT [Physics Vector](http://root.cern.ch/root/html/PHYSICS_Index.html) classes (Tvector2, TVector3 and TLorentzVector). It is also re-uses concepts and ideas from the CMS [Common Vector package](http://lcgapp.cern.ch/doxygen/SEAL/snapshot/html/dir_000007.html).
+These 2D,3D and 4D vectors are different from vectors of the Linear Algebra package which describe generic N-dimensional vectors. Similar functionality is currently provided by the CLHEP [Vector](http://proj-clhep.web.cern.ch/proj-clhep/manual/UserGuide/VectorDefs/index.html) and [Geometry](http://www.hep.phy.cam.ac.uk/lhcb/doc/CLHEP/1.9.1.2/html/namespaceHepGeom.html) packages and the %ROOT [Physics Vector](http://root.cern/root/html/PHYSICS_Index.html) classes (Tvector2, TVector3 and TLorentzVector). It is also re-uses concepts and ideas from the CMS [Common Vector package](http://lcgapp.cern.ch/doxygen/SEAL/snapshot/html/dir_000007.html).
 
 In contrast to CLHEP or the %ROOT physics libraries, GenVector provides class templates for modelling the vectors. There is a user-controlled freedom on how the vector is internally represented. This is expressed by a choice of coordinate system which is supplied as a template prameter when the vector is constructed. Furthermore each coordinate system is itself a template, so that the user can specify the underlying scalar type.   
 In more detail, the main characteristics of GenVector are:
@@ -109,5 +109,5 @@ A more detailed description of all the GenVector classes is available in this [d
 
 1.  CLHEP Vector package ([User guide](http://proj-clhep.web.cern.ch/proj-clhep/manual/UserGuide/VectorDefs/index.html) and [reference doc](http://www.hep.phy.cam.ac.uk/lhcb/doc/CLHEP/1.9.1.2/html/dir_000027.html))
 2.  [CLHEP Geometry package](http://www.hep.phy.cam.ac.uk/lhcb/doc/CLHEP/1.9.1.2/html/namespaceH)
-3.  [%ROOT Physics Vector classes](http://root.cern.ch/root/html/PHYSICS_Index.html)
+3.  [%ROOT Physics Vector classes](http://root.cern/root/html/PHYSICS_Index.html)
 4.  [CMS Vector package](http://lcgapp.cern.ch/doxygen/SEAL/snapshot/html/dir_000007.html)

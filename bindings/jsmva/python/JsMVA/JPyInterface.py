@@ -188,7 +188,7 @@ class functions:
 ## Class for creating the output scripts and inserting them to cell output
 class JsDraw:
     ## Base repository
-    __jsMVARepo = "https://root.cern.ch/js/jsmva/latest"
+    __jsMVARepo = "https://root.cern/js/jsmva/latest"
 
     ## String containing the link to JavaScript files
     __jsMVASourceDir = __jsMVARepo + "/js"

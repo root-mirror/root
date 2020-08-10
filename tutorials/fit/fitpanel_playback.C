@@ -29,7 +29,7 @@ Int_t file_size(char *filename)
 void fitpanel_playback()
 {
    r = new TRecorder();
-   r->Replay("http://root.cern.ch/files/fitpanel_playback.root");
+   r->Replay("http://root.cern/files/fitpanel_playback.root");
 
    // wait for the recorder to finish the replay
    while (r->GetState() == TRecorder::kReplaying) {

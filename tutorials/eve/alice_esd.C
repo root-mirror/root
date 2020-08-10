@@ -80,7 +80,7 @@ void alice_esd()
    dir.ReplaceAll("alice_esd.C","");
    dir.ReplaceAll("/./","/");
    gROOT->LoadMacro(dir +"MultiView.C+");
-   const char* esd_file_name = "http://root.cern.ch/files/alice_ESDs.root";
+   const char* esd_file_name = "http://root.cern/files/alice_ESDs.root";
    TFile::SetCacheFileDir(".");
    TString lib(Form("aliesd/aliesd.%s", gSystem->GetSoExt()));
 
@@ -126,15 +126,15 @@ Double_t   trackGetP(AliExternalTrackParam* tp);
 
 // Configuration and global variables.
 
-const char* esd_file_name = "http://root.cern.ch/files/alice_ESDs.root";
+const char* esd_file_name = "http://root.cern/files/alice_ESDs.root";
 // Temporarily disable reading of ESD friend.
 // There seems to be no way to get it working without AliRoot.
 // const char* esd_friends_file_name =
-//       "http://root.cern.ch/files/alice_ESDfriends.root";
+//       "http://root.cern/files/alice_ESDfriends.root";
 const char* esd_friends_file_name = 0;
 
 const char* esd_geom_file_name =
-   "http://root.cern.ch/files/alice_ESDgeometry.root";
+   "http://root.cern/files/alice_ESDgeometry.root";
 
 // For testing
 // const char* esd_file_name         = "AliESDs.root";

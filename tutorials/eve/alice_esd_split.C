@@ -80,7 +80,7 @@ void alice_esd_split()
    dir.ReplaceAll("alice_esd_split.C","");
    dir.ReplaceAll("/./","/");
    gROOT->LoadMacro(dir +"SplitGLView.C+");
-   const char* esd_file_name = "http://root.cern.ch/files/alice_ESDs.root";
+   const char* esd_file_name = "http://root.cern/files/alice_ESDs.root";
    TFile::SetCacheFileDir(".");
    TString lib(Form("aliesd/aliesd.%s", gSystem->GetSoExt()));
 
@@ -128,9 +128,9 @@ Double_t   trackGetP(AliExternalTrackParam* tp);
 
 // Configuration and global variables.
 
-const char* esd_file_name         = "http://root.cern.ch/files/alice_ESDs.root";
-const char* esd_friends_file_name = "http://root.cern.ch/files/alice_ESDfriends.root";
-const char* esd_geom_file_name    = "http://root.cern.ch/files/alice_ESDgeometry.root";
+const char* esd_file_name         = "http://root.cern/files/alice_ESDs.root";
+const char* esd_friends_file_name = "http://root.cern/files/alice_ESDfriends.root";
+const char* esd_geom_file_name    = "http://root.cern/files/alice_ESDgeometry.root";
 
 TFile *esd_file          = 0;
 TFile *esd_friends_file  = 0;

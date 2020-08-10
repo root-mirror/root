@@ -189,7 +189,7 @@ will automatically invoke a script GetWebHistogram.C via the interpreter.
 An example of a GetWebHistogram.C script is shown below
 ~~~ {.cpp}
    void GetWebHistogram() {
-      TFile *f= TFile::Open("http://root.cern.ch/files/pippa.root");
+      TFile *f= TFile::Open("http://root.cern/files/pippa.root");
       f->cd("DM/CJ");
       TH1 *h6 = (TH1*)gDirectory->Get("h6");
       h6->SetDirectory(0);

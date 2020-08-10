@@ -2279,7 +2279,7 @@ again:
 ///   TString formatted;
 ///   formatted.Form("%s in <%s>: %s", type, location, msg);
 ///
-///   lines.emplace_back(TString::Format("Welcome to ROOT %s%%shttp://root.cern.ch",
+///   lines.emplace_back(TString::Format("Welcome to ROOT %s%%shttp://root.cern",
 ///                      gROOT->GetVersion()));
 /// ~~~
 ///
@@ -2299,7 +2299,7 @@ void TString::Form(const char *va_(fmt), ...)
 /// descriptor and return a TString. Similar to TString::Form() but it is
 /// not needed to first create a TString.
 /// ~~~ {.cpp}
-///   lines.emplace_back(TString::Format("Welcome to ROOT %s%%shttp://root.cern.ch",
+///   lines.emplace_back(TString::Format("Welcome to ROOT %s%%shttp://root.cern",
 ///                      gROOT->GetVersion()));
 ///   TString formatted;
 ///   formatted.Form("%s in <%s>: %s", type, location, msg);

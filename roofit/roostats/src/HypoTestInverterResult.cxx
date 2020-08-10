@@ -264,7 +264,7 @@ int HypoTestInverterResult::ExclusionCleanup()
     delete s;
 
     /// store useful quantities for reuse later ...
-    /// http://root.cern.ch/root/html532/src/RooStats__HypoTestInverterPlot.cxx.html#197
+    /// http://root.cern/root/html532/src/RooStats__HypoTestInverterPlot.cxx.html#197
     for (int j=0; j<5; ++j) { qv[j]=q[j]; }
     qv[5]  = CLs(i) ; //
     qv[6]  = CLsError(i) ; //

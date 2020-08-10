@@ -11,8 +11,8 @@ void geom_alias()
 {
    TEveManager::Create();
 
-   gEve->RegisterGeometryAlias("ALICE", "http://root.cern.ch/files/alice.root");
-   gEve->RegisterGeometryAlias("ATLAS", "http://root.cern.ch/files/atlas.root");
+   gEve->RegisterGeometryAlias("ALICE", "http://root.cern/files/alice.root");
+   gEve->RegisterGeometryAlias("ATLAS", "http://root.cern/files/atlas.root");
 
 
    gGeoManager = gEve->GetGeometryByAlias("ALICE");

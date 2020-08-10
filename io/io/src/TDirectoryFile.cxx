@@ -1531,7 +1531,7 @@ void TDirectoryFile::Save()
 /// By default a message is printed. Use option "q" to not print the message.
 /// If filename contains ".json" extension, JSON representation of the object
 /// will be created and saved in the text file. Such file can be used in
-/// JavaScript ROOT (https://root.cern.ch/js/) to display object in web browser
+/// JavaScript ROOT (https://root.cern/js/) to display object in web browser
 /// When creating JSON file, option string may contain compression level from 0 to 3 (default 0)
 
 Int_t TDirectoryFile::SaveObjectAs(const TObject *obj, const char *filename, Option_t *option) const

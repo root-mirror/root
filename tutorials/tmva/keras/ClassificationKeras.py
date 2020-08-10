@@ -29,7 +29,7 @@ factory = TMVA.Factory('TMVAClassification', output,
 
 # Load data
 if not isfile('tmva_class_example.root'):
-    call(['curl', '-O', 'http://root.cern.ch/files/tmva_class_example.root'])
+    call(['curl', '-O', 'http://root.cern/files/tmva_class_example.root'])
 
 data = TFile.Open('tmva_class_example.root')
 signal = data.Get('TreeS')

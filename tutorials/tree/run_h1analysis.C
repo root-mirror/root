@@ -25,7 +25,7 @@ void run_h1analysis(int type = 0, const char * h1dir = 0) {
       gSystem->Setenv("H1",h1dir);
    }
    else
-      gSystem->Setenv("H1","http://root.cern.ch/files/h1/");
+      gSystem->Setenv("H1","http://root.cern/files/h1/");
 
 
    std::cout << "Creating the chain" << std::endl;

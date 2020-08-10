@@ -294,8 +294,8 @@ void portfolio()
    } else if (!gSystem->AccessPathName(Form("%s/quadp/%s", TROOT::GetTutorialDir().Data(), fname))) {
       f = TFile::Open(Form("%s/quadp/%s", TROOT::GetTutorialDir().Data(), fname));
    } else {
-      printf("accessing %s file from http://root.cern.ch/files\n",fname);
-      f = TFile::Open(Form("http://root.cern.ch/files/%s",fname));
+      printf("accessing %s file from http://root.cern/files\n",fname);
+      f = TFile::Open(Form("http://root.cern/files/%s",fname));
    }
    if (!f) return;
 

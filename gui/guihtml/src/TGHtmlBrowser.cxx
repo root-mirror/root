@@ -140,7 +140,7 @@ TGHtmlBrowser::TGHtmlBrowser(const char *filename, const TGWindow *p, UInt_t w, 
    fMenuFavorites->AddEntry("&Add to Favorites", kM_FAVORITES_ADD, 0,
                             gClient->GetPicture("bld_plus.png"));
    fMenuFavorites->AddSeparator();
-   fMenuFavorites->AddEntry("http://root.cern.ch", fNbFavorites++, 0,
+   fMenuFavorites->AddEntry("http://root.cern", fNbFavorites++, 0,
                             gClient->GetPicture("htmlfile.gif"));
    fMenuFavorites->Associate(this);
 
@@ -191,9 +191,9 @@ TGHtmlBrowser::TGHtmlBrowser(const char *filename, const TGWindow *p, UInt_t w, 
 
    fHome = new TGPictureButton(fHorizontalFrame,gClient->GetPicture("GoHome.gif"));
    fHome->SetStyle(gClient->GetStyle());
-   fHome->SetToolTipText("Go to ROOT HomePage\n  (http://root.cern.ch)");
+   fHome->SetToolTipText("Go to ROOT HomePage\n  (http://root.cern)");
    fHorizontalFrame->AddFrame(fHome, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY,2,2,2,2));
-   fHome->Connect("Clicked()", "TGHtmlBrowser", this, "Selected(=\"http://root.cern.ch\")");
+   fHome->Connect("Clicked()", "TGHtmlBrowser", this, "Selected(=\"http://root.cern\")");
 
    // combo box
    fURLBuf   = new TGTextBuffer(256);

@@ -290,7 +290,7 @@ End_Macro
 ## <a name="C06"></a> High quality predefined palettes
 \since **6.04:**
 62 high quality palettes are predefined with 255 colors each.
-Despite the [disadvantages of the Rainbow color map](https://root.cern.ch/rainbow-color-map),
+Despite the [disadvantages of the Rainbow color map](https://root.cern/rainbow-color-map),
 it was kept in the list of predefined color maps.
 These palettes can be accessed "by name" with `gStyle->SetPalette(num)`.
 `num` can be taken within the following enum:

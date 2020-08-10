@@ -3,6 +3,6 @@ This directory contains all classes, related to the ROOT SQL file
 implementation. See:
 <ul>
 <li>Main functionality of ROOT SQL documented in TSQLFile class </li>
-<li>See the chapter on <a href="ftp://root.cern.ch/root/doc/11InputOutput.pdf">Input/Output</a> for more on how TFile is to be used</li>
+<li>See the chapter on <a href="ftp://root.cern/root/doc/11InputOutput.pdf">Input/Output</a> for more on how TFile is to be used</li>
 </ul>
 END_HTML

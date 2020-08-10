@@ -43,7 +43,7 @@ void vo002_VectorCalculations()
 
    // Dot product and the extraction of quantities such as Mean, Min and Max
    // are also easy to express (see here for the full list:
-   // https://root.cern.ch/doc/master/namespaceROOT_1_1VecOps.html)
+   // https://root.cern/doc/master/namespaceROOT_1_1VecOps.html)
    auto v1_mean = Mean(v1);
    auto v1_dot_v2 = Dot(v1, v2);
 

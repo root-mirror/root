@@ -11,7 +11,7 @@ void geom_alice_tpc()
 {
    TEveManager::Create();
 
-   gGeoManager = gEve->GetGeometry("http://root.cern.ch/files/alice.root");
+   gGeoManager = gEve->GetGeometry("http://root.cern/files/alice.root");
 
    auto node = gGeoManager->GetTopVolume()->FindNode("TPC_M_1");
    auto tpc  = new TEveGeoTopNode(gGeoManager, node);

@@ -74,7 +74,7 @@ by <tt>TStreamerElement::CannotSplit</tt> (and thus <tt>TClass::CanSplit</tt>).<
 data member which is an instance of a class with more than one base
 class some of which are not split (for example if one the base class
 is std::vector&lt;int&gt;).</li>
-<li>Fix the problem reported at <a href="http://root.cern.ch/phpBB3/viewtopic.php?t=11890">#11890</a>
+<li>Fix the problem reported at <a href="http://root.cern/phpBB3/viewtopic.php?t=11890">#11890</a>
 by making sure that <tt>TChain::ResetBranchAddress(TBranch*)</tt> also record the reset in the
 chain's meta information about branches.</li>
 <li>Allow the output name passed to <tt>MakeProxy</tt> to be either a classname (to which will be added .h to make the filename) or a filename (which already has an extension).</li>

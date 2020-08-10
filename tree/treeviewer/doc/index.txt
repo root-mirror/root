@@ -3,7 +3,7 @@ BEGIN_HTML
  See:
 <ul>
 <li>The main tree viewer class is documented in class TTreeViewer.</li>
-<li><a href="ftp://root.cern.ch/root/doc/12Trees.pdf">The Chapter about Trees and Treeviewer in the Users Guide
+<li><a href="ftp://root.cern/root/doc/12Trees.pdf">The Chapter about Trees and Treeviewer in the Users Guide
     </a></li>
 </ul>
 END_HTML

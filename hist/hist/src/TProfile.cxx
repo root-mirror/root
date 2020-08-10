@@ -876,7 +876,7 @@ Double_t TProfile::GetBinEffectiveEntries(Int_t bin) const
 ///
 ///  Ideas for improvements of this algorithm are welcome. No suggestions
 /// received since our call for advice to roottalk in Jul 2002.
-/// see for instance: http://root.cern.ch/root/roottalk/roottalk02/2916.html
+/// see for instance: http://root.cern/root/roottalk/roottalk02/2916.html
 
 Double_t TProfile::GetBinError(Int_t bin) const
 {

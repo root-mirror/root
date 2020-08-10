@@ -21,7 +21,7 @@ void geom_alice_its()
 {
    TEveManager::Create();
 
-   gGeoManager = gEve->GetGeometry("http://root.cern.ch/files/alice.root");
+   gGeoManager = gEve->GetGeometry("http://root.cern/files/alice.root");
 
    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
    TEveGeoTopNode* its = new TEveGeoTopNode(gGeoManager, node);
@@ -84,7 +84,7 @@ void extract_ssd_modules()
 
    TEveManager::Create();
 
-   gGeoManager = gEve->GetGeometry("http://root.cern.ch/files/alice.root");
+   gGeoManager = gEve->GetGeometry("http://root.cern/files/alice.root");
 
    Bool_t s = gGeoManager->cd("/ITSV_1/ITSD_1/IT56_1");
    if (!s) {

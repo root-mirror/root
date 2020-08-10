@@ -47,7 +47,7 @@
 // The rootd daemon lives in the directory $ROOTSYS/bin. It can be      //
 // started either via inetd or by hand from the command line (no need   //
 // to be super user). For more info about rootd see the web page:       //
-// Begin_Html <a href=http://root.cern.ch/root/NetFile.html>NetFile</a> //
+// Begin_Html <a href=http://root.cern/root/NetFile.html>NetFile</a> //
 // End_Html                                                             //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////

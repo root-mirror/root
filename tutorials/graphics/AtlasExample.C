@@ -126,7 +126,7 @@ TGraphErrors* GetGraph(Int_t ir, Int_t ifs,Int_t icut, Int_t ipdf)
    const double muf[] = {1.0,0.25,4.0};
 
    TFile::SetCacheFileDir(".");
-   TFile *file = TFile::Open("http://root.cern.ch/files/AtlasGraphs.root", "CACHEREAD");
+   TFile *file = TFile::Open("http://root.cern/files/AtlasGraphs.root", "CACHEREAD");
 
    char gname[100];
    char tname[100];

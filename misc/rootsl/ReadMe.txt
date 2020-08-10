@@ -10,7 +10,7 @@ select the SL icon on the top right of the menubar and type in a search string.
 
 Get the binary for the ROOTSL plugin from:
 
-   ftp://root.cern.ch/root/ROOTSL.tgz
+   ftp://root.cern/root/ROOTSL.tgz
 
 To install the plugin, after untarring the above file, just double click the
 ROOTSL.mdimporter icon. If you have no admin rights you will be asked for
@@ -24,7 +24,7 @@ Spotlight will then, in the background, index all *.root files.
 
 To build from source, get it from svn using:
 
-   git clone http://root.cern.ch/git/root.git root
+   git clone http://root.cern/git/root.git root
    cd root/misc/rootsl
 
 Open the ROOTSL project in Xcode and click on "Build" (make sure the Active

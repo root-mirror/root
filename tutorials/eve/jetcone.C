@@ -8,7 +8,7 @@
 /// \author Jochen Thaeder
 
 const char* esd_geom_file_name =
-   "http://root.cern.ch/files/alice_ESDgeometry.root";
+   "http://root.cern/files/alice_ESDgeometry.root";
 
 TEveVector GetTEveVector(Float_t eta, Float_t phi);
 void       geomGentleTPC();

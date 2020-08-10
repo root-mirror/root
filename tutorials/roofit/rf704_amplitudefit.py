@@ -94,7 +94,7 @@ hh_sin.SetLineColor(ROOT.kRed)
 frame1 = t.frame()
 data.plotOn(frame1)
 pdf.plotOn(frame1)
-# workaround, see https://root.cern.ch/phpBB3/viewtopic.php?t=7764
+# workaround, see https://root.cern/phpBB3/viewtopic.php?t=7764
 ras_ampl1 = ROOT.RooArgSet(ampl1)
 pdf.plotOn(frame1, ROOT.RooFit.Components(ras_ampl1),
            ROOT.RooFit.LineStyle(ROOT.kDashed))

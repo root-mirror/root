@@ -170,7 +170,7 @@ const char gHelpBuilder[] = "\
 \n\
 For more information, please see the GuiBuilder Howto page at:\n\
 \n\
-   http://root.cern.ch/root/HowtoGuiBuilder.html\n\
+   http://root.cern/root/HowtoGuiBuilder.html\n\
 \n\
 ";
 

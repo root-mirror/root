@@ -4,6 +4,6 @@ implementation. See:
 <ul>
 <li>Main functionality of ROOT xml documented in TXMLFile class </li>
 <li>Special xml parser for ROOT xml files implemented in TXMLEngine class </li>
-<li><a href="ftp://root.cern.ch/root/doc/11InputOutput.pdf">Some documentation can be found in the end of the Input/Output chapter</a></li>
+<li><a href="ftp://root.cern/root/doc/11InputOutput.pdf">Some documentation can be found in the end of the Input/Output chapter</a></li>
 </ul>
 END_HTML

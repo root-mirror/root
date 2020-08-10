@@ -508,9 +508,9 @@ void TMVA::MethodTMlpANN::GetHelpMessage() const
    Log() << Endl;
    Log() << "Detailed information is available here:" << Endl;
    if (gConfig().WriteOptionsReference()) {
-      Log() << "<a href=\"http://root.cern.ch/root/html/TMultiLayerPerceptron.html\">";
-      Log() << "http://root.cern.ch/root/html/TMultiLayerPerceptron.html</a>" << Endl;
+      Log() << "<a href=\"http://root.cern/root/html/TMultiLayerPerceptron.html\">";
+      Log() << "http://root.cern/root/html/TMultiLayerPerceptron.html</a>" << Endl;
    }
-   else Log() << "http://root.cern.ch/root/html/TMultiLayerPerceptron.html" << Endl;
+   else Log() << "http://root.cern/root/html/TMultiLayerPerceptron.html" << Endl;
    Log() << Endl;
 }

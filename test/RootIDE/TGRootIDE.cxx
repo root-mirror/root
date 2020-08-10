@@ -815,9 +815,9 @@ void TGRootIDE::Build()
 
    fHome = new TGPictureButton(fHorizontalFrame,
            gClient->GetPicture("GoHome.gif"));
-   fHome->SetToolTipText("Go to ROOT HomePage\n  (http://root.cern.ch)");
+   fHome->SetToolTipText("Go to ROOT HomePage\n  (http://root.cern)");
    fHorizontalFrame->AddFrame(fHome, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY,2,2,2,2));
-   fHome->Connect("Clicked()", "TGRootIDE", this, "Selected(=\"http://root.cern.ch\")");
+   fHome->Connect("Clicked()", "TGRootIDE", this, "Selected(=\"http://root.cern\")");
 
    // combo box
    fURLBuf   = new TGTextBuffer(256);
@@ -827,9 +827,9 @@ void TGRootIDE::Build()
    fComboBox->Resize(200, fURL->GetDefaultHeight());
    fURL->Connect("ReturnPressed()", "TGRootIDE", this, "URLChanged()");
 
-   fComboBox->AddEntry("http://root.cern.ch", 1);
-   fComboBox->AddEntry("http://root.cern.ch/root/htmldoc/ClassIndex.html", 2);
-   fURL->SetText("http://root.cern.ch/root/htmldoc/ClassIndex.html");
+   fComboBox->AddEntry("http://root.cern", 1);
+   fComboBox->AddEntry("http://root.cern/root/htmldoc/ClassIndex.html", 2);
+   fURL->SetText("http://root.cern/root/htmldoc/ClassIndex.html");
 
    fComboBox->Select(0);
    fComboBox->Connect("Selected(char *)", "TGRootIDE", this, "Selected(char *)");
@@ -846,7 +846,7 @@ void TGRootIDE::Build()
 
    fGuiHtml->Connect("MouseOver(char *)", "TGRootIDE", this, "MouseOver(char *)");
    fGuiHtml->Connect("MouseDown(char *)", "TGRootIDE", this, "MouseDown(char *)");
-   Selected("http://root.cern.ch/root/htmldoc/ClassIndex.html");
+   Selected("http://root.cern/root/htmldoc/ClassIndex.html");
    fGuiHtml->Layout();
 
    tf = fTab->AddTab("Untitled");

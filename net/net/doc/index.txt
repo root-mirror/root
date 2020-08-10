@@ -2,7 +2,7 @@ This directory contains all the network  classes.
 BEGIN_HTML
  See:
 <ul>
-<li><a href="ftp://root.cern.ch/root/doc/22Networking.pdf">The Chapter about the Networking classes in the Users Guide
+<li><a href="ftp://root.cern/root/doc/22Networking.pdf">The Chapter about the Networking classes in the Users Guide
     </a></li>
 </ul>
 END_HTML

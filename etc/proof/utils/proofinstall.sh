@@ -39,7 +39,7 @@ pworkers=0
 pconfig=
 #--- stored in $saverc
 
-prompt_rootrepository="ftp://root.cern.ch/root/"
+prompt_rootrepository="ftp://root.cern/root/"
 
 prog=`basename $0`
 progdir=`dirname $0`
@@ -476,13 +476,13 @@ while [ "$REPEAT_LOOP" = 1 ]; do
       echo "Give URL to remote ROOT binary distribution tar file."
       echo "This only makes sense if all the cluster nodes have the same architecture."
       echo "Requires curl or wget on this machine."
-      echo "Example: ftp://root.cern.ch/root/root_v5.17.04.Linux.slc4_amd64.gcc3.4.tar.gz"
+      echo "Example: ftp://root.cern/root/root_v5.17.04.Linux.slc4_amd64.gcc3.4.tar.gz"
       echo ""
       echo "-- Option 3 --"
       echo "Give URL to remote ROOT binary distribution repository."
       echo "The remote nodes will try to download the binary version matching"
       echo "their architecture. Requires curl or wget on the remote nodes."
-      echo "Example: ftp://root.cern.ch/root/"
+      echo "Example: ftp://root.cern/root/"
       echo ""
       echo "-- Option h --"
       echo "Selecting option h displays this help message."

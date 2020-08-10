@@ -124,7 +124,7 @@ TGHtmlBrowserTest::TGHtmlBrowserTest(const char *filename, const TGWindow *p, UI
    fMenuFavorites->AddEntry("&Add to Favorites", M_FAVORITES_ADD, 0,
                             gClient->GetPicture("bld_plus.png"));
    fMenuFavorites->AddSeparator();
-   fMenuFavorites->AddEntry("http://root.cern.ch/drupal/", fNbFavorites++, 0,
+   fMenuFavorites->AddEntry("http://root.cern/drupal/", fNbFavorites++, 0,
                             gClient->GetPicture("htmlfile.gif"));
    fMenuFavorites->Associate(this);
 
@@ -175,9 +175,9 @@ TGHtmlBrowserTest::TGHtmlBrowserTest(const char *filename, const TGWindow *p, UI
 
    fHome = new TGPictureButton(fHorizontalFrame,gClient->GetPicture("GoHome.gif"));
    fHome->SetStyle(gClient->GetStyle());
-   fHome->SetToolTipText("Go to ROOT HomePage\n  (http://root.cern.ch)");
+   fHome->SetToolTipText("Go to ROOT HomePage\n  (http://root.cern)");
    fHorizontalFrame->AddFrame(fHome, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY,2,2,2,2));
-   fHome->Connect("Clicked()", "TGHtmlBrowserTest", this, "Selected(=\"http://root.cern.ch/drupal/\")");
+   fHome->Connect("Clicked()", "TGHtmlBrowserTest", this, "Selected(=\"http://root.cern/drupal/\")");
 
    // combo box
    fURLBuf   = new TGTextBuffer(256);

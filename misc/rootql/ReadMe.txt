@@ -15,7 +15,7 @@ file and number of keys, but generally it is a quick operation.
 
 Get the binary for the ROOTQL plugin from:
 
-   ftp://root.cern.ch/root/ROOTQL.tgz
+   ftp://root.cern/root/ROOTQL.tgz
 
 To install the plugin, after untarring the above file, just drag the
 ROOTQL.qlgenerator icon to either /Library/QuickLook or to ~/Library/QuickLook.
@@ -25,7 +25,7 @@ you may have to refresh the QL plugin cache by executing:
 
 To build from source, get it from git using:
 
-   git clone http://root.cern.ch/git/root.git root
+   git clone http://root.cern/git/root.git root
    cd root/misc/rootql
 
 Open the ROOTQL project in Xcode and click on "Build" (make sure the Active

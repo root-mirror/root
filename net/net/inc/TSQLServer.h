@@ -22,7 +22,7 @@
 // To open a connection to a server use the static method Connect().    //
 // The db argument of Connect() is of the form:                         //
 //    <dbms>://<host>[:<port>][/<database>], e.g.                       //
-// mysql://pcroot.cern.ch:3456/test, oracle://srv1.cern.ch/main, ...    //
+// mysql://pcroot.cern:3456/test, oracle://srv1.cern.ch/main, ...    //
 // Depending on the <dbms> specified an appropriate plugin library      //
 // will be loaded which will provide the real interface.                //
 //                                                                      //

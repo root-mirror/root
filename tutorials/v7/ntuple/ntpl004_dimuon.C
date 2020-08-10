@@ -39,7 +39,7 @@ using RNTupleReader = ROOT::Experimental::RNTupleReader;
 using RNTupleWriter = ROOT::Experimental::RNTupleWriter;
 using RNTupleDS = ROOT::Experimental::RNTupleDS;
 
-constexpr char const* kTreeFileName = "http://root.cern.ch/files/NanoAOD_DoubleMuon_CMS2011OpenData.root";
+constexpr char const* kTreeFileName = "http://root.cern/files/NanoAOD_DoubleMuon_CMS2011OpenData.root";
 constexpr char const* kNTupleFileName = "ntpl004_dimuon.root";
 
 

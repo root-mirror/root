@@ -12,7 +12,7 @@ void geom_lhcb()
    TEveManager::Create();
 
    TFile::SetCacheFileDir(".");
-   gGeoManager = gEve->GetGeometry("http://root.cern.ch/files/lhcbfull.root");
+   gGeoManager = gEve->GetGeometry("http://root.cern/files/lhcbfull.root");
    gGeoManager->DefaultColors();
 
    auto tn = new TEveGeoTopNode(gGeoManager, gGeoManager->GetTopNode());

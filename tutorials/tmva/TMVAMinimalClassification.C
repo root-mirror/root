@@ -7,7 +7,7 @@
 /// This is intended as a simple foundation to build on. It assumes you are
 /// familiar with TMVA already. As such concepts like the Factory, the DataLoader
 /// and others are not explained. For descriptions and tutuorials use the TMVA
-/// User's Guide (https://root.cern.ch/root-user-guides-and-manuals under TMVA)
+/// User's Guide (https://root.cern/root-user-guides-and-manuals under TMVA)
 /// or the more detailed examples provided with TMVA e.g. TMVAClassification.C.
 ///
 /// Sets up a minimal binary classification example with two slighly overlapping

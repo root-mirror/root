@@ -8,7 +8,7 @@
 ///
 /// \author Matevz Tadel
 
-void show_extract(const char* file="http://root.cern.ch/files/alice_ESDgeometry.root")
+void show_extract(const char* file="http://root.cern/files/alice_ESDgeometry.root")
 {
   TEveManager::Create();
 

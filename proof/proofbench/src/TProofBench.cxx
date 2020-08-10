@@ -13,7 +13,7 @@
   \ingroup proof
 
   Set of utilities to benchmark a PROOF facility.
-  See also https://root.cern.ch/proof-benchmark-framework-tproofbench .
+  See also https://root.cern/proof-benchmark-framework-tproofbench .
 
 */
 

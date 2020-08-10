@@ -3,11 +3,11 @@ BEGIN_HTML
  See:
 <ul>
 <li>The main TMinuit class is documented in class TMinuit.</li>
-<li><a href="ftp://root.cern.ch/root/doc/5FittingHistograms.pdf">The Chapter about Fitting Histogram in the Users Guide
+<li><a href="ftp://root.cern/root/doc/5FittingHistograms.pdf">The Chapter about Fitting Histogram in the Users Guide
     </a></li>
 <li><a href="https://cern-tex.web.cern.ch/cern-tex/minuit/minmain.html">The MINUIT documentation in CERNLIB
     </a></li>
-<li><a href="http://root.cern.ch/drupal/content/howtos#fit">How to Fit Histograms
+<li><a href="http://root.cern/drupal/content/howtos#fit">How to Fit Histograms
       </A></li>
 <li><a href="tutorials/spectrum/peaks.C.html">How to Fit find peaks in histograms
       </A></li>

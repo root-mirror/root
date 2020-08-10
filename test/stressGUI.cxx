@@ -2262,7 +2262,7 @@ void testPaletteEditor()
    if (!gSystem->AccessPathName(fname)) {
       gal = TFile::Open(fname);
    } else {
-      gal = TFile::Open(Form("http://root.cern.ch/files/%s",fname));
+      gal = TFile::Open(Form("http://root.cern/files/%s",fname));
    }
    if (!gal) return;
    TImage *img = (TImage*)gal->Get("n4254");
@@ -2416,7 +2416,7 @@ void guitest_playback()
       gSystem->Unlink(TString::Format("%s/guitest%03d.C", dir.Data(), i+1));
    }
    TStopwatch sw;
-   ret = r.Replay("http://root.cern.ch/files/guitest_playback.root");
+   ret = r.Replay("http://root.cern/files/guitest_playback.root");
 
    // wait for the recorder to finish the replay
    while (ret && r.GetState() == TRecorder::kReplaying) {
@@ -2557,7 +2557,7 @@ void graph_edit_playback()
    gSystem->ChangeDirectory(dir.Data());
 
    TStopwatch sw;
-   ret = r.Replay("http://root.cern.ch/files/graphedit_playback.root");
+   ret = r.Replay("http://root.cern/files/graphedit_playback.root");
 
    // wait for the recorder to finish the replay
    while (ret && r.GetState() == TRecorder::kReplaying) {
@@ -2592,7 +2592,7 @@ void fitpanel_playback()
    gSystem->ChangeDirectory(dir.Data());
 
    TStopwatch sw;
-   ret = r.Replay("http://root.cern.ch/files/fitpanel_playback.root");
+   ret = r.Replay("http://root.cern/files/fitpanel_playback.root");
 
    // wait for the recorder to finish the replay
    while (ret && r.GetState() == TRecorder::kReplaying) {

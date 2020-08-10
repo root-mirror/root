@@ -4,7 +4,7 @@
 /// Combined (simultaneous) fit of two histogram with separate functions
 /// and some common parameters
 ///
-/// See http://root.cern.ch/phpBB3//viewtopic.php?f=3&t=11740#p50908
+/// See http://root.cern/phpBB3//viewtopic.php?f=3&t=11740#p50908
 /// for a modified version working with Fumili or GSLMultiFit
 ///
 /// N.B. this macro must be compiled with ACliC

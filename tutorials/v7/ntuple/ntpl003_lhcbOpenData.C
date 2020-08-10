@@ -39,7 +39,7 @@ using RFieldBase = ROOT::Experimental::Detail::RFieldBase;
 using RNTupleReader = ROOT::Experimental::RNTupleReader;
 using RNTupleWriter = ROOT::Experimental::RNTupleWriter;
 
-constexpr char const* kTreeFileName = "http://root.cern.ch/files/LHCb/lhcb_B2HHH_MagnetUp.root";
+constexpr char const* kTreeFileName = "http://root.cern/files/LHCb/lhcb_B2HHH_MagnetUp.root";
 constexpr char const* kNTupleFileName = "ntpl003_lhcbOpenData.root";
 
 

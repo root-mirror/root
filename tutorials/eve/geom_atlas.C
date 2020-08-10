@@ -12,7 +12,7 @@ void geom_atlas()
    TEveManager::Create();
 
    TFile::SetCacheFileDir(".");
-   gGeoManager = gEve->GetGeometry("http://root.cern.ch/files/atlas.root");
+   gGeoManager = gEve->GetGeometry("http://root.cern/files/atlas.root");
    gGeoManager->DefaultColors();
 
    auto node1 = gGeoManager->GetTopVolume()->FindNode("INNE_1");

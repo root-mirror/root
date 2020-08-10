@@ -21,5 +21,5 @@
 
 void geom_cms_playback()
 {
-   auto r = new TRecorder("http://root.cern.ch/files/geom_cms_recording.root");
+   auto r = new TRecorder("http://root.cern/files/geom_cms_recording.root");
 }

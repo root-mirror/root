@@ -308,7 +308,7 @@ int main(int argc, const char *argv[])
    Bool_t doDump      = kFALSE;
    Bool_t doTreeStore = kFALSE;
 
-   //string refFileName = "http://root.cern.ch/files/stressRooStats_v534_ref.root" ;
+   //string refFileName = "http://root.cern/files/stressRooStats_v534_ref.root" ;
    string refFileName = "$ROOTSYS/test/stressRooStats_ref.root" ;
    string minimizerName = "Minuit";
 

@@ -2009,7 +2009,7 @@ void th2poly()
    TH2Poly *p = new TH2Poly("USA","USA Population",lon1,lon2,lat1,lat2);
    gErrorIgnoreLevel = 9999;
    TFile::SetCacheFileDir(".");
-   TFile *f = TFile::Open("http://root.cern.ch/files/usa.root", "CACHEREAD");
+   TFile *f = TFile::Open("http://root.cern/files/usa.root", "CACHEREAD");
 
    if (!f) {
       printf("Cannot access usa.root. Is internet working ?\n");

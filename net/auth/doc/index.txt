@@ -1,4 +1,4 @@
 BEGIN_HTML
 This directory contains the classes steering the authentication services available in ROOT.
-See <a href="http://root.cern.ch/root/Auth.html">the authentication page</a> for more details.
+See <a href="http://root.cern/root/Auth.html">the authentication page</a> for more details.
 END_HTML

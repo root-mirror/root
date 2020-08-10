@@ -43,7 +43,7 @@ void guitest_playback()
       gSystem->Unlink(TString::Format("guitest%03d.C", i+1));
    }
 
-   TRecorder r("http://root.cern.ch/files/guitest_playback.root");
+   TRecorder r("http://root.cern/files/guitest_playback.root");
 
    // wait for the recorder to finish the replay
    while (r.GetState() == TRecorder::kReplaying) {

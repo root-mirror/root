@@ -106,8 +106,8 @@ Double_t ellipse_TGraph_chi2(const Double_t *x)
 }
 
 //
-// http://root.cern.ch/drupal/content/numerical-minimization#multidim_minim
-// http://root.cern.ch/root/html534/tutorials/fit/NumericalMinimization.C.html
+// http://root.cern/drupal/content/numerical-minimization#multidim_minim
+// http://root.cern/root/html534/tutorials/fit/NumericalMinimization.C.html
 //
 ROOT::Math::Minimizer *ellipse_TGraph_minimize(TGraph *g)
 {

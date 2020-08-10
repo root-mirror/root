@@ -8,7 +8,7 @@ TPythia is an interface class to F77 version of Pythia 6.2
 
 To use this class you must install a version of pythia6.            
 See the installation instructions at                              
-  http://root.cern.ch/root/Install.html                         
+  http://root.cern/root/Install.html                         
                                                                     
 CERNLIB event generators, written by T.Sjostrand.                   
 For the details about these generators look at Pythia/Jetset manual:
@@ -214,7 +214,7 @@ TPythia6::TPythia6() : TGenerator("TPythia6","TPythia6") {
 
    // initialize common-blocks
    // the functions/subroutines referenced by TPythia6 can be found
-   // at ftp://root.cern.ch/root/pythia6.tar.gz
+   // at ftp://root.cern/root/pythia6.tar.gz
 
    fPyjets = (Pyjets_t*) pythia6_common_address("PYJETS");
    fPydat1 = (Pydat1_t*) pythia6_common_address("PYDAT1");

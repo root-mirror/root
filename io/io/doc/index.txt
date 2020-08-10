@@ -4,10 +4,10 @@ BEGIN_HTML
  Several documents describing the I/O classes are listed below:
 <ul>
 <li>The ROOT file format is documented in class TFile.</li>
-<li><a href="ftp://root.cern.ch/root/doc/11InputOutput.pdf">The Chapter about the IO classes in the Users Guide </a></li>
-<li><a href="ftp://root.cern.ch/root/doc/12Trees.pdf">The Chapter about the Tree classes in the Users Guide </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-write-objects-file">How to Write Objects to a File ? </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-read-objects-file">How to Read Objects from a File ? </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-read-root-file-web">How to Read a ROOT File via the Web ? </a></li>
+<li><a href="ftp://root.cern/root/doc/11InputOutput.pdf">The Chapter about the IO classes in the Users Guide </a></li>
+<li><a href="ftp://root.cern/root/doc/12Trees.pdf">The Chapter about the Tree classes in the Users Guide </a></li>
+<li><a href="http://root.cern/drupal/content/how-write-objects-file">How to Write Objects to a File ? </a></li>
+<li><a href="http://root.cern/drupal/content/how-read-objects-file">How to Read Objects from a File ? </a></li>
+<li><a href="http://root.cern/drupal/content/how-read-root-file-web">How to Read a ROOT File via the Web ? </a></li>
 </ul>
 END_HTML

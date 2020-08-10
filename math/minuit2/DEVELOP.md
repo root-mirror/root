@@ -57,6 +57,6 @@ Extracting from the ROOT sources is made possible through a few careful design f
 After this happens, all the standard CMake machinery can produce the source distribution. And, CMake correctly builds and installs in either mode, since all source and header files are explicitly listed.
 
 
-[ROOT]: https://root.cern.ch
-[minuitdoc]: https://root.cern.ch/root/htmldoc/guides/users-guide/ROOTUsersGuide.html#minuit2-package
+[ROOT]: https://root.cern
+[minuitdoc]: https://root.cern/root/htmldoc/guides/users-guide/ROOTUsersGuide.html#minuit2-package
 [CMake]: https://cmake.org

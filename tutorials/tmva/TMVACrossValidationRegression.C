@@ -82,7 +82,7 @@ TFile * getDataFile(TString fname) {
    } else {
       // if not: download from ROOT server
       TFile::SetCacheFileDir(".");
-      input = TFile::Open("http://root.cern.ch/files/tmva_reg_example.root", "CACHEREAD");
+      input = TFile::Open("http://root.cern/files/tmva_reg_example.root", "CACHEREAD");
    }
 
    if (!input) {

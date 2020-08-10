@@ -54,7 +54,7 @@ This class includes functions to set some of the following object attributes.
 All objects that can be drawn in a pad inherit from one or more attribute classes
 like TAttLine, TAttFill, TAttText, TAttMarker. When the objects are created, their
 default attributes are taken from the current style. The current style is an object
-of the class[TStyle](https://root.cern.ch/doc/master/classTStyle.html) and can be
+of the class[TStyle](https://root.cern/doc/master/classTStyle.html) and can be
 referenced via the global variable `gStyle` (in TStyle.h).
 
 ROOT provides two styles called "Default" and "Plain". The "Default"
@@ -99,7 +99,7 @@ You can create additional styles with:
     st1->cd();  this becomes now the current style gStyle
 ```
 
-In your [rootlogon.C](https://root.cern.ch/doc/master/classexamples/startsession.log.html)
+In your [rootlogon.C](https://root.cern/doc/master/classexamples/startsession.log.html)
 file, you can redefine the default parameters via statements like:
 
 ```

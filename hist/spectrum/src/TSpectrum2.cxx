@@ -25,13 +25,13 @@
 
  These NIM papers are also available as doc or ps files from:
 
- - [SpectrumDec.ps.gz](ftp://root.cern.ch/root/SpectrumDec.ps.gz)
- - [SpectrumSrc.ps.gz](ftp://root.cern.ch/root/SpectrumSrc.ps.gz)
- - [SpectrumBck.ps.gz](ftp://root.cern.ch/root/SpectrumBck.ps.gz)
+ - [SpectrumDec.ps.gz](ftp://root.cern/root/SpectrumDec.ps.gz)
+ - [SpectrumSrc.ps.gz](ftp://root.cern/root/SpectrumSrc.ps.gz)
+ - [SpectrumBck.ps.gz](ftp://root.cern/root/SpectrumBck.ps.gz)
 
  See also the
- [online documentation](https://root.cern.ch/guides/tspectrum-manual) and
- [tutorials](https://root.cern.ch/doc/master/group__tutorial__spectrum.html).
+ [online documentation](https://root.cern/guides/tspectrum-manual) and
+ [tutorials](https://root.cern/doc/master/group__tutorial__spectrum.html).
 
  All the figures in this page were prepared using the DaqProVis
  system, Data Acquisition, Processing and Visualization system,

@@ -89,7 +89,7 @@ void projection_prescale(std::string type = "RhPhi")
 
    // static scene
    TFile::SetCacheFileDir(".");
-   auto geoManager = eveMng->GetGeometry("http://root.cern.ch/files/cms.root");
+   auto geoManager = eveMng->GetGeometry("http://root.cern/files/cms.root");
    TGeoNode* top = geoManager->GetTopVolume()->FindNode("CMSE_1");
    auto holder = new REX::REveElement("MUON");
    eveMng->GetGlobalScene()->AddElement(holder);

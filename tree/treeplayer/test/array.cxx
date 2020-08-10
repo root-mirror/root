@@ -31,7 +31,7 @@ TEST(TTreeReaderArray, Vector)
 
 TEST(TTreeReaderArray, MultiReaders)
 {
-   // See https://root.cern.ch/phpBB3/viewtopic.php?f=3&t=22790
+   // See https://root.cern/phpBB3/viewtopic.php?f=3&t=22790
    TTree *tree = new TTree("TTreeReaderArrayTree", "In-memory test tree");
    double Double[6] = {42.f, 43.f, 44.f, 45.f, 46.f, 47.f};
    tree->Branch("D", &Double, "D[4]/D");

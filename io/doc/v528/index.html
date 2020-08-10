@@ -69,9 +69,9 @@ of data members (i.e. by adding inline the version number of the class
 <br/>
 To read file containing this construct and written with this revision
 using an older version of ROOT you will need the following patches:
-   <ul><li>For v5.22/00, you will need the <a href="http://root.cern.ch/viewvc?view=rev&amp;revision=33174">patch r33174</a>
+   <ul><li>For v5.22/00, you will need the <a href="http://root.cern/viewvc?view=rev&amp;revision=33174">patch r33174</a>
      or v5.22/00k</li>
-   <li>For v5.26/00, you will need <a href="http://root.cern.ch/viewvc?view=rev&amp;revision=33176">patch r33176</a>
+   <li>For v5.26/00, you will need <a href="http://root.cern/viewvc?view=rev&amp;revision=33176">patch r33176</a>
      or v5.26/00c</li>
    </ul>
 Additionally, we no longer allow the member wise streaming of a class which
@@ -187,7 +187,7 @@ to never delete the object.  For example:
 </ul>
 <h4>Misc.</h4>
 <ul>
-<li><tt>TFile::Open</tt> now does variable expansion so that you can include the protocol in the variable (for example: <pre style="border:gray 1px solid;padding:0.5em 2em;background:#ffe">export H1="http://root.cern.ch/files/h1"
+<li><tt>TFile::Open</tt> now does variable expansion so that you can include the protocol in the variable (for example: <pre style="border:gray 1px solid;padding:0.5em 2em;background:#ffe">export H1="http://root.cern/files/h1"
 ...
  TFile::Open("$H1/dstarmb.root");</pre></li>
 <li>Added warning if the file does contain any StreamerInfo objects and was written with a different version of ROOT.</li>

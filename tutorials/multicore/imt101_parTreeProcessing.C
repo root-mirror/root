@@ -29,7 +29,7 @@ int imt101_parTreeProcessing()
    ROOT::TThreadedObject<TH2F> pxpyHist("px_py", "p_{X} vs p_{Y} Distribution;p_{X};p_{Y}", 100, -5., 5., 100, -5., 5.);
 
    // Create a TTreeProcessorMT: specify the file and the tree in it
-   ROOT::TTreeProcessorMT tp("http://root.cern.ch/files/tp_process_imt.root", "events");
+   ROOT::TTreeProcessorMT tp("http://root.cern/files/tp_process_imt.root", "events");
 
    // Define the function that will process a subrange of the tree.
    // The function must receive only one parameter, a TTreeReader,

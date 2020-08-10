@@ -3,12 +3,12 @@ BEGIN_HTML
  Several documents describing the TTree classes are listed below:
 <ul>
 <li>The TTree data structure is documented in class TTree.</li>
-<li><a href="ftp://root.cern.ch/root/doc/12Trees.pdf">The Chapter about Trees in the Users Guide </a></li>
-<li><a href="ftp://root.cern.ch/root/doc/21ExampleAnalysis.pdf">The Chapter about Selectors in the Users Guide </a></li>
-<li><a href="ftp://root.cern.ch/root/doc/24PROOF.pdf">The Chapter about PROOF in the Users Guide </a></li>
-<li><a href="ftp://root.cern.ch/root/doc/11InputOutput.pdf">The Chapter about IO in the Users Guide </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-create-and-fill-tree">How to Create and Fill a Tree </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-read-tree">How to Read a Tree </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-use-chains-list-files">How to use Chains </a></li>
+<li><a href="ftp://root.cern/root/doc/12Trees.pdf">The Chapter about Trees in the Users Guide </a></li>
+<li><a href="ftp://root.cern/root/doc/21ExampleAnalysis.pdf">The Chapter about Selectors in the Users Guide </a></li>
+<li><a href="ftp://root.cern/root/doc/24PROOF.pdf">The Chapter about PROOF in the Users Guide </a></li>
+<li><a href="ftp://root.cern/root/doc/11InputOutput.pdf">The Chapter about IO in the Users Guide </a></li>
+<li><a href="http://root.cern/drupal/content/how-create-and-fill-tree">How to Create and Fill a Tree </a></li>
+<li><a href="http://root.cern/drupal/content/how-read-tree">How to Read a Tree </a></li>
+<li><a href="http://root.cern/drupal/content/how-use-chains-list-files">How to use Chains </a></li>
 </ul>
 END_HTML

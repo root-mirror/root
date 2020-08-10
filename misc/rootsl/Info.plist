@@ -57,7 +57,7 @@
 			<key>UTTypeIdentifier</key>
 			<string>ch.cern.root.data</string>
 			<key>UTTypeReferenceURL</key>
-			<string>http://root.cern.ch/</string>
+			<string>http://root.cern/</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

@@ -18,7 +18,7 @@ void RecursiveInvisible(TGeoVolume *vol);
 void RecursiveTransparency(TGeoVolume *vol, Int_t transp);
 
 void geomD0(Int_t allVisible=0) {
-   TGeoManager::Import("http://root.cern.ch/files/d0.root");
+   TGeoManager::Import("http://root.cern/files/d0.root");
    gGeoManager->DefaultColors();
    gGeoManager->SetMaxVisNodes(40000);
    //gGeoManager->SetVisLevel(4);

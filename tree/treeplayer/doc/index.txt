@@ -2,15 +2,15 @@ This directory contains utilities to plot data stored in a TTree.
 BEGIN_HTML
  See the TTree documentation:
 <ul>
-<li><a href="http://root.cern.ch/root/html/TREE_Index.html">Tree package documentation
+<li><a href="http://root.cern/root/html/TREE_Index.html">Tree package documentation
     </a>
 </li>
-<li><a href="ftp://root.cern.ch/root/doc/12Trees.pdf">The Chapter about Trees in the Users Guide
+<li><a href="ftp://root.cern/root/doc/12Trees.pdf">The Chapter about Trees in the Users Guide
     </a>
 </li>
-<li><a href="ftp://root.cern.ch/root/doc/21ExampleAnalysis.pdf">The Chapter about Selectors in the Users Guide
+<li><a href="ftp://root.cern/root/doc/21ExampleAnalysis.pdf">The Chapter about Selectors in the Users Guide
     </a>
-</li><a hread="ftp://root.cern.ch/root/doc/20TutorialsandTests.pdf">ROOT examples in tutorials and test directories: Event application, benchmarks
+</li><a hread="ftp://root.cern/root/doc/20TutorialsandTests.pdf">ROOT examples in tutorials and test directories: Event application, benchmarks
      </a>
 </ul>
 END_HTML

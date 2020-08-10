@@ -16,8 +16,8 @@
 using namespace ROOT::RDF;
 
 constexpr auto fileName0 = "RSqliteDS_test.sqlite";
-constexpr auto url0 = "http://root.cern.ch/files/RSqliteDS_test.sqlite";
-constexpr auto url1 = "http://root.cern.ch/files/RSqliteDS_test.sqlite.404";
+constexpr auto url0 = "http://root.cern/files/RSqliteDS_test.sqlite";
+constexpr auto url1 = "http://root.cern/files/RSqliteDS_test.sqlite.404";
 constexpr auto query0 = "SELECT * FROM test";
 constexpr auto query1 = "SELECT fint + 1, freal/1.0 as fmyreal, NULL, 'X', fblob FROM test";
 constexpr auto query2 = "SELECT fint, freal, fint FROM test";

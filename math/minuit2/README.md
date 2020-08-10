@@ -63,6 +63,6 @@ make package
 
 
 [DEVELOP.md]: ./DEVELOP.md
-[ROOT]: https://root.cern.ch
-[minuitdoc]: https://root.cern.ch/root/htmldoc/guides/users-guide/ROOTUsersGuide.html#minuit2-package
+[ROOT]: https://root.cern
+[minuitdoc]: https://root.cern/root/htmldoc/guides/users-guide/ROOTUsersGuide.html#minuit2-package
 [CMake]: https://cmake.org

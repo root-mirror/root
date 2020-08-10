@@ -10,7 +10,7 @@ each deriving from `TVirtualMC` implementing all necessary methods.
 
 Before a user can instantiate an engine, an object deriving from `TVirtualMCApplication` needs to be present which has to be implemented by the user. It contains necessary hooks called from the `TVirtualMC`s depending on their internal state. At the same time it provides the bridge between the user code and VMC. For instance, the user code can contain the geometry construction routines somewhere which should be called from the implemented `UserApplication::ConstructGeometry()`.
 
-Further general information on the VMC project can be found [here](https://root.cern.ch/vmc)
+Further general information on the VMC project can be found [here](https://root.cern/vmc)
 
 ## Running multiple different engines
 

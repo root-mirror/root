@@ -25,7 +25,7 @@ int testPyKerasRegression(){
    std::cout << "Get test data..." << std::endl;
    TString fname = "./tmva_reg_example.root";
    if (gSystem->AccessPathName(fname))  // file does not exist in local directory
-      gSystem->Exec("curl -O http://root.cern.ch/files/tmva_reg_example.root");
+      gSystem->Exec("curl -O http://root.cern/files/tmva_reg_example.root");
    TFile *input = TFile::Open(fname);
 
    // Build model from python file

@@ -24,8 +24,8 @@ void galaxy_image()
    if (!gSystem->AccessPathName(fname)) {
       gal = TFile::Open(fname);
    } else {
-      printf("accessing %s file from http://root.cern.ch/files\n",fname);
-      gal = TFile::Open(Form("http://root.cern.ch/files/%s",fname));
+      printf("accessing %s file from http://root.cern/files\n",fname);
+      gal = TFile::Open(Form("http://root.cern/files/%s",fname));
    }
    if (!gal) return;
    TImage *img = (TImage*)gal->Get("n4254");

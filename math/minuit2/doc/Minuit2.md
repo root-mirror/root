@@ -30,12 +30,12 @@ It does not contain the %ROOT interface and it is therefore
 totally independent of external packages and can be simply build using the _configure_ script
 and then _make_. Example tests are provided in the directory _test/MnSim_ and _test/MnTutorial_
 and they can be built with the _make check_ command.
-The [Minuit2 User Guide](https://root.cern.ch/root/htmldoc/guides/minuit2/Minuit2.html)
+The [Minuit2 User Guide](https://root.cern/root/htmldoc/guides/minuit2/Minuit2.html)
 provides all the information needed for using directly (without add-on packages like %ROOT) Minuit2.
 
 ## References
 
 1.  F. James, _Fortran MINUIT Reference Manual_ ([html](https://cern-tex.web.cern.ch/cern-tex/minuit/minmain.html));
-2.  F. James and M. Winkler, _C++ MINUIT User's Guide_ ([html](https://root.cern.ch/root/htmldoc/guides/minuit2/Minuit2.html) and [pdf](https://root.cern.ch/root/htmldoc/guides/minuit2/Minuit2.pdf));
+2.  F. James and M. Winkler, _C++ MINUIT User's Guide_ ([html](https://root.cern/root/htmldoc/guides/minuit2/Minuit2.html) and [pdf](https://root.cern/root/htmldoc/guides/minuit2/Minuit2.pdf));
 3.  F. James, _Minuit Tutorial on Function Minimization_ ([pdf](http://seal.cern.ch/documents/minuit/mntutorial.pdf));
 4.  F. James, _The Interpretation of Errors in Minuit_ ([pdf](http://seal.cern.ch/documents/minuit/mnerror.pdf));

@@ -21,8 +21,8 @@ void mlpHiggs(Int_t ntrain=100) {
    } else if (!gSystem->AccessPathName(Form("%s/legacy/mlp/%s", TROOT::GetTutorialDir().Data(), fname))) {
       input = TFile::Open(Form("%s/legacy/mlp/%s", TROOT::GetTutorialDir().Data(), fname));
    } else {
-      printf("accessing %s file from http://root.cern.ch/files\n",fname);
-      input = TFile::Open(Form("http://root.cern.ch/files/%s",fname));
+      printf("accessing %s file from http://root.cern/files\n",fname);
+      input = TFile::Open(Form("http://root.cern/files/%s",fname));
    }
    if (!input) return;
 

@@ -548,7 +548,7 @@ RooAbsReal* RooAbsReal::createProfile(const RooArgSet& paramsOfInterest)
 ///
 /// \note The integral over a PDF is usually not normalised (*i.e.*, it is usually not
 /// 1 when integrating the PDF over the full range). In fact, this integral is used *to compute*
-/// the normalisation of each PDF. See the rf110 tutorial at https://root.cern.ch/doc/master/group__tutorial__roofit.html
+/// the normalisation of each PDF. See the rf110 tutorial at https://root.cern/doc/master/group__tutorial__roofit.html
 /// for details on PDF normalisation.
 ///
 /// The following named arguments are accepted

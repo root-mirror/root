@@ -40,7 +40,7 @@ data = model.generate(ROOT.RooArgSet(x, y), 10000)
 # Create and fill ROOT 2D histogram (20x20 bins) with contents of dataset
 # hh_data = data.createHistogram("hh_data",x, ROOT.RooFit.Binning(20), ROOT.RooFit.YVar(y, ROOT.RooFit.Binning(20)))
 # hh_data = data.createHistogram("x,y", 20, 20) # does not work, see
-# https://root.cern.ch/phpBB3/viewtopic.php?t=16648
+# https://root.cern/phpBB3/viewtopic.php?t=16648
 hh_data = ROOT.RooAbsData.createHistogram(data, "x,y", x, ROOT.RooFit.Binning(
     20), ROOT.RooFit.YVar(y, ROOT.RooFit.Binning(20)))
 

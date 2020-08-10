@@ -8,7 +8,7 @@
 // Class to compute 95% CL limits
 //
 // adapted from the mclimit code from Tom Junk (CLs method)
-// see http://root.cern.ch/root/doc/TomJunk.pdf
+// see http://root.cern/root/doc/TomJunk.pdf
 // see http://cern.ch/thomasj/searchlimits/ecl.html
 // see: Tom Junk,NIM A434, p. 435-443, 1999
 //

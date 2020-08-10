@@ -44,7 +44,7 @@ alt="DOI"></a>
 \endhtmlonly
 
 ## For the impatient user
-You can directly see RDataFrame in action through its [code examples](https://root.cern.ch/doc/master/group__tutorial__dataframe.html), both in C++ and Python.
+You can directly see RDataFrame in action through its [code examples](https://root.cern/doc/master/group__tutorial__dataframe.html), both in C++ and Python.
 
 ## Table of Contents
 - [Cheat sheet](#cheatsheet)
@@ -728,7 +728,7 @@ loop (in most cases, the resulting performance impact should be negligible).
 As a final note, remember that RDataFrame actions do not return another dataframe, but a RResultPtr<T>, where T is the
 type of the result of the action.
 
-Read more on this topic [here](https://root.cern.ch/doc/master/classROOT_1_1RDF_1_1RInterface.html#a6909f04c05723de79f97a14b092318b1).
+Read more on this topic [here](https://root.cern/doc/master/classROOT_1_1RDF_1_1RInterface.html#a6909f04c05723de79f97a14b092318b1).
 
 ##  <a name="transformations"></a>Transformations
 ### <a name="Filters"></a> Filters

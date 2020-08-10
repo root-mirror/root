@@ -271,7 +271,7 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    }
    else {
       TFile::SetCacheFileDir(".");
-      input = TFile::Open("http://root.cern.ch/files/tmva_class_example.root", "CACHEREAD"); // if not: download from ROOT server
+      input = TFile::Open("http://root.cern/files/tmva_class_example.root", "CACHEREAD"); // if not: download from ROOT server
    }
    if (!input) {
       std::cout << "ERROR: could not open data file" << std::endl;

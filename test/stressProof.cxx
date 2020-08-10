@@ -89,7 +89,7 @@
 // *                                                                       * //
 // * before running stressProof. The syntax is the same as for standard    * //
 // * PROOF valgrind runs. See                                              * //
-// *   http://root.cern.ch/drupal/content/running-proof-query-valgrind     * //
+// *   http://root.cern/drupal/content/running-proof-query-valgrind     * //
 // *                                                                       * //
 // ************************************************************************* //
 
@@ -164,12 +164,12 @@ static Bool_t gLocalCluster = kTRUE;
 static Bool_t gSkipDataSetTest = kTRUE;
 static Bool_t gUseParallelUnzip = kFALSE;
 static Bool_t gClearCache = kFALSE;
-static TString gh1src("http://root.cern.ch/files/h1");
+static TString gh1src("http://root.cern/files/h1");
 static Bool_t gh1ok = kTRUE;
 static Bool_t gh1local = kFALSE;
 static char gh1sep = '/';
 static const char *gh1file[] = { "dstarmb.root", "dstarp1a.root", "dstarp1b.root", "dstarp2.root" };
-static TString geventsrc("http://root.cern.ch/files/data");
+static TString geventsrc("http://root.cern/files/data");
 static Bool_t geventok = kTRUE;
 static Bool_t geventlocal = kFALSE;
 static Int_t geventnf = 10;
@@ -1442,7 +1442,7 @@ Int_t PT_H1AssertFiles(const char *h1src)
       // Copy the files now
       Int_t i = 0;
       for (i = 0; i < 4; i++) {
-         TString src = TString::Format("http://root.cern.ch/files/h1/%s", gh1file[i]);
+         TString src = TString::Format("http://root.cern/files/h1/%s", gh1file[i]);
          TString dst = TString::Format("%s/%s", gh1src.Data(), gh1file[i]);
          if (!TFile::Cp(src, dst)) {
             printf("\n >>> Test failure: problems retrieving %s\n", src.Data());
@@ -1569,7 +1569,7 @@ Int_t PT_EventAssertFiles(const char *eventsrc, Int_t nf = 10)
       // Copy the files now
       Int_t i = 0;
       for (i = 0; i < nf; i++) {
-         TString src = TString::Format("http://root.cern.ch/files/data/event_%d.root", i+1);
+         TString src = TString::Format("http://root.cern/files/data/event_%d.root", i+1);
          TString dst = TString::Format("%s/event_%d.root", geventsrc.Data(), i+1);
          if (!TFile::Cp(src, dst)) {
             printf("\n >>> Test failure: problems retrieving %s\n", src.Data());
@@ -3748,7 +3748,7 @@ Int_t PT_AdminFunc(void *, RunTimes &tt)
    PutPoint();
 
    // Test 'cp' and 'md5sum;
-   if (mgr->Cp("http://root.cern.ch/files/h1/dstarmb.root", "~/") != 0) {
+   if (mgr->Cp("http://root.cern/files/h1/dstarmb.root", "~/") != 0) {
       // Cp failure
       printf("\n >>> Test failure: could not retrieve remotely dstarmb.root from the Root Web server\n");
       return -1;

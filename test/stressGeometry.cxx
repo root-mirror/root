@@ -1,6 +1,6 @@
 // Program to check a TGeo geometry
 // The first time you run this program, the geometry files will be taken
-// from http://root.cern.ch/files
+// from http://root.cern/files
 //
 //    How the program works
 // If the file <geom_name>_ref.root does not exist, it is generated. The file
@@ -274,13 +274,13 @@ void stressGeometry(const char *exp="*", Bool_t generate_ref=kFALSE, Bool_t vecg
          delete gGeoManager;
          gGeoManager = 0;
       }
-      TGeoManager::Import(Form("http://root.cern.ch/files/%s",fname.Data()));
+      TGeoManager::Import(Form("http://root.cern/files/%s",fname.Data()));
       if (!gGeoManager) return;
       if (vecgeom) TVirtualGeoConverter::Instance()->ConvertGeometry();
       
       fname = TString::Format("files/%s_ref_%d.root", exps[i],versions[i]);
 
-      if (gen_ref || !TFile::Open(Form("http://root.cern.ch/files/%s_ref_%d.root",exps[i],versions[i]),"CACHEREAD")) {
+      if (gen_ref || !TFile::Open(Form("http://root.cern/files/%s_ref_%d.root",exps[i],versions[i]),"CACHEREAD")) {
          if (!gen_ref) fprintf(stderr,"File: %s does not exist, generating it\n", fname.Data());
          else               fprintf(stderr,"Generating reference file %s\n", fname.Data());
          WriteRef(i);
@@ -324,7 +324,7 @@ void ReadRef(Int_t kexp) {
    TFile *f = 0;
    //use ref_[version[i]] files
    if (!gen_ref)
-      fname = TString::Format("http://root.cern.ch/files/%s_ref_%d.root", exps[kexp],versions[kexp]);
+      fname = TString::Format("http://root.cern/files/%s_ref_%d.root", exps[kexp],versions[kexp]);
    else
       fname.Format("files/%s_ref_%d.root", exps[kexp],versions[kexp]);
 
@@ -550,7 +550,7 @@ void InspectDiff(const char* exp="alice",Long64_t ientry=-1) {
    Float_t rad    = 0.;
    TString fname(TString::Format("%s.root",exp));
    if (gSystem->AccessPathName(fname)) {
-      TGeoManager::Import(Form("http://root.cern.ch/files/%s",fname.Data()));
+      TGeoManager::Import(Form("http://root.cern/files/%s",fname.Data()));
    } else {
       TGeoManager::Import(fname);
    }

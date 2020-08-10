@@ -2034,7 +2034,7 @@ void MethodUnitTestWithROCLimits::run()
      input = TFile::Open( fname );
   } else {
      TFile::SetCacheFileDir(".");
-     input = TFile::Open("http://root.cern.ch/files/tmva_class_example.root", "CACHEREAD");
+     input = TFile::Open("http://root.cern/files/tmva_class_example.root", "CACHEREAD");
   }
   if (input == NULL) {
      cerr << "broken/inaccessible input file" << endl;
@@ -2460,7 +2460,7 @@ void RegressionUnitTestWithDeviation::run()
       input = TFile::Open( fname );
    } else {
       TFile::SetCacheFileDir(".");
-      input = TFile::Open("http://root.cern.ch/files/tmva_reg_example.root", "CACHEREAD");
+      input = TFile::Open("http://root.cern/files/tmva_reg_example.root", "CACHEREAD");
    }
    if (input == NULL) {
       cerr << "broken/inaccessible input file" << endl;

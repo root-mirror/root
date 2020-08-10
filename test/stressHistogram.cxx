@@ -130,7 +130,7 @@ enum RefFileEnum {
 
 const int refFileOption = 1;
 TFile * refFile = 0;
-const char* refFileName = "http://root.cern.ch/files/stressHistogram.5.18.00.root";
+const char* refFileName = "http://root.cern/files/stressHistogram.5.18.00.root";
 
 TRandom2 r;
 // set to zero if want to run different every time

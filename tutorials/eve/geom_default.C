@@ -11,7 +11,7 @@ void geom_default()
 {
    TEveManager::Create();
 
-   gEve->RegisterGeometryAlias("Default", "http://root.cern.ch/files/alice.root");
+   gEve->RegisterGeometryAlias("Default", "http://root.cern/files/alice.root");
 
    gGeoManager = gEve->GetDefaultGeometry();
 

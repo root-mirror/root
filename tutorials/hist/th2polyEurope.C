@@ -68,7 +68,7 @@ void th2polyEurope(Int_t npoints=500000)
 
    TFile::SetCacheFileDir(".");
    TFile *f;
-   f = TFile::Open("http://root.cern.ch/files/europe.root","cacheread");
+   f = TFile::Open("http://root.cern/files/europe.root","cacheread");
 
    if (!f) {
       printf("Cannot access europe.root. Is internet working ?\n");

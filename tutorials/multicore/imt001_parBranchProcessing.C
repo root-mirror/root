@@ -20,7 +20,7 @@ int imt001_parBranchProcessing()
    ROOT::EnableImplicitMT(nthreads);
 
    // Open the file containing the tree
-   auto file = TFile::Open("http://root.cern.ch/files/h1/dstarmb.root");
+   auto file = TFile::Open("http://root.cern/files/h1/dstarmb.root");
 
    // Get the tree
    auto tree = file->Get<TTree>("h42");

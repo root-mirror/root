@@ -81,8 +81,8 @@
 /// -------
 /// 
 /// You have two options:
-/// * **Recommended**: ROOT can automatically install FFTW for itself, see `builtin_fftw3` at https://root.cern.ch/building-root
-/// * Install FFTW and let ROOT discover it. `fftw3` is on by default (see https://root.cern.ch/building-root)
+/// * **Recommended**: ROOT can automatically install FFTW for itself, see `builtin_fftw3` at https://root.cern/building-root
+/// * Install FFTW and let ROOT discover it. `fftw3` is on by default (see https://root.cern/building-root)
 ///
 /// 1) Go to www.fftw.org and download the latest stable version (a .tar.gz file)
 ///
@@ -92,7 +92,7 @@
 ///       and type './configure' followed by 'make install'. 
 ///       This will install fftw in /usr/local/bin,lib etc...
 ///
-///   3) Start from a source installation of ROOT. ROOT should discover it. See https://root.cern.ch/building-root
+///   3) Start from a source installation of ROOT. ROOT should discover it. See https://root.cern/building-root
 ///         
 /// 
 /// If you do not have root access and want to make a private installation of FFTW
@@ -105,7 +105,7 @@
 ///       procedure will install FFTW in the location designated by you
 /// 
 ///   4) Start from a source installation of ROOT.
-///      Look up and set the proper paths for ROOT to discover FFTW. See https://root.cern.ch/building-root
+///      Look up and set the proper paths for ROOT to discover FFTW. See https://root.cern/building-root
 ///
 
 
@@ -170,7 +170,7 @@ RooFFTConvPdf::RooFFTConvPdf(const char *name, const char *title, RooRealVar& co
 ////////////////////////////////////////////////////////////////////////////////
 /// \copydoc RooFFTConvPdf(const char*, const char*, RooRealVar&, RooAbsPdf&, RooAbsPdf&, Int_t)
 /// \param[in] pdfConvVar If the variable used for convolution is a PDF, itself, pass the PDF here, and pass the convolution variable to
-/// `convVar`. See also rf210_angularconv.C in the <a href="https://root.cern.ch/root/html/tutorials/roofit/index.html.">roofit tutorials</a>
+/// `convVar`. See also rf210_angularconv.C in the <a href="https://root.cern/root/html/tutorials/roofit/index.html.">roofit tutorials</a>
 
 RooFFTConvPdf::RooFFTConvPdf(const char *name, const char *title, RooAbsReal& pdfConvVar, RooRealVar& convVar, RooAbsPdf& pdf1, RooAbsPdf& pdf2, Int_t ipOrder) :
   RooAbsCachedPdf(name,title,ipOrder),

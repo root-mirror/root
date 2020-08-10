@@ -288,7 +288,7 @@ void THttpServer::AddLocation(const char *prefix, const char *path)
 ////////////////////////////////////////////////////////////////////////////////
 /// Set location of JSROOT to use with the server
 /// One could specify address like:
-///   https://root.cern.ch/js/5.6.3/
+///   https://root.cern/js/5.6.3/
 ///   http://jsroot.gsi.de/5.6.3/
 /// This allows to get new JSROOT features with old server,
 /// reduce load on THttpServer instance, also startup time can be improved

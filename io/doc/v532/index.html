@@ -120,7 +120,7 @@ code. The first argument defines the directory and the name of the package.
 For example, the following generates a PAR package equivalent to
 tutorials/proof/event.par:
 <pre style="border:gray 1px solid;padding:0.5em 2em;background:#ffe">
-  root [] TFile *f = TFile::Open("http://root.cern.ch/files/data/event_1.root")
+  root [] TFile *f = TFile::Open("http://root.cern/files/data/event_1.root")
   root [] f->MakeProject("packages/myevent.par", "*", "par");
 </pre>
 Note that, because a PAR file is a tarball, for the time being, on Windows
@@ -151,7 +151,7 @@ For example:
 <pre style="border:gray 1px solid;padding:0.5em 2em;background:#ffe">
     TFile::Open("mergedClient.root?pmerge","RECREATE"); // For now contact localhost:1095
     TFile::Open("mergedClient.root?pmerge=localhost:1095","RECREATE");
-    TFile::Open("rootd://root.cern.ch/files/output.root?pmerger=pcanal:password@locahost:1095","NEW")
+    TFile::Open("rootd://root.cern/files/output.root?pmerger=pcanal:password@locahost:1095","NEW")
 </pre>
 <tt>tutorials/net/treeClient.C</tt> and <tt>fastMergeServer.C</tt>: update to follow the change in interfaces
 Introduce the tutorials <tt>parallelMergerClient.C</tt> and the temporary tutorials <tt>parallelMergerServer.C</tt>

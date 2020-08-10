@@ -25,7 +25,7 @@ int testPyKerasClassification(){
    std::cout << "Get test data..." << std::endl;
    TString fname = "./tmva_class_example.root";
    if (gSystem->AccessPathName(fname))  // file does not exist in local directory
-      gSystem->Exec("curl -O http://root.cern.ch/files/tmva_class_example.root");
+      gSystem->Exec("curl -O http://root.cern/files/tmva_class_example.root");
    TFile *input = TFile::Open(fname);
 
    // Build model from python file

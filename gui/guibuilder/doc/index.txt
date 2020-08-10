@@ -2,17 +2,17 @@ This directory contains the GUI Builder classes.
 BEGIN_HTML
  Several documents describing the I/O classes are listed below:
 <ul>
-<li><a href="ftp://root.cern.ch/root/doc/25WritingGUI.pdf">The Chapter about Writing a Graphical User Interface in the Users Guide
+<li><a href="ftp://root.cern/root/doc/25WritingGUI.pdf">The Chapter about Writing a Graphical User Interface in the Users Guide
     </a></li>
-<li><a href="ftp://root.cern.ch/root/doc/9Graphics.pdf">The Chapter about Graphics and Graphical User Interface in the Users Guide
+<li><a href="ftp://root.cern/root/doc/9Graphics.pdf">The Chapter about Graphics and Graphical User Interface in the Users Guide
     </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-use-root-gui-classes">How to use the ROOT GUI classes
+<li><a href="http://root.cern/drupal/content/how-use-root-gui-classes">How to use the ROOT GUI classes
     </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-use-signalslot-communication-mechanism">How to use the Signal/Slot communication mechanism
+<li><a href="http://root.cern/drupal/content/how-use-signalslot-communication-mechanism">How to use the Signal/Slot communication mechanism
       </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-use-root-gui-builder">How to use the GUI Builder
+<li><a href="http://root.cern/drupal/content/how-use-root-gui-builder">How to use the GUI Builder
       </a></li>
-<li><a href="http://root.cern.ch/drupal/content/how-create-or-modify-style">How to Create or Modify a style
+<li><a href="http://root.cern/drupal/content/how-create-or-modify-style">How to Create or Modify a style
       </a></li>
 </ul>
 END_HTML

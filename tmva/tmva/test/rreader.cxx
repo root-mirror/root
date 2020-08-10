@@ -15,7 +15,7 @@ using namespace TMVA::Experimental;
 
 // Classification
 static const std::string modelClassification = "RReaderClassification/weights/RReaderClassification_BDT.weights.xml";
-static const std::string filenameClassification = "http://root.cern.ch/files/tmva_class_example.root";
+static const std::string filenameClassification = "http://root.cern/files/tmva_class_example.root";
 static const std::vector<std::string> variablesClassification = {"var1", "var2", "var3", "var4"};
 
 void TrainClassificationModel()
@@ -34,7 +34,7 @@ void TrainClassificationModel()
            output, "Silent:!V:!DrawProgressBar:AnalysisType=Classification");
 
    // Open trees with signal and background events
-   const std::string filename = "http://root.cern.ch/files/tmva_class_example.root";
+   const std::string filename = "http://root.cern/files/tmva_class_example.root";
    auto data = TFile::Open(filename.c_str());
    auto signal = (TTree *)data->Get("TreeS");
    auto background = (TTree *)data->Get("TreeB");
@@ -57,7 +57,7 @@ void TrainClassificationModel()
 
 // Regression
 static const std::string modelRegression = "RReaderRegression/weights/RReaderRegression_BDTG.weights.xml";
-static const std::string filenameRegression = "http://root.cern.ch/files/tmva_reg_example.root";
+static const std::string filenameRegression = "http://root.cern/files/tmva_reg_example.root";
 static const std::vector<std::string> variablesRegression = {"var1", "var2"};
 
 void TrainRegressionModel()
@@ -76,7 +76,7 @@ void TrainRegressionModel()
            output, "Silent:!V:!DrawProgressBar:AnalysisType=Regression");
 
    // Open trees with signal and background events
-   const std::string filename = "http://root.cern.ch/files/tmva_reg_example.root";
+   const std::string filename = "http://root.cern/files/tmva_reg_example.root";
    auto data = TFile::Open(filename.c_str());
    auto tree = (TTree *)data->Get("TreeR");
 
@@ -96,7 +96,7 @@ void TrainRegressionModel()
 
 // Multiclass
 static const std::string modelMulticlass = "RReaderMulticlass/weights/RReaderMulticlass_BDT.weights.xml";
-static const std::string filenameMulticlass = "http://root.cern.ch/files/tmva_multiclass_example.root";
+static const std::string filenameMulticlass = "http://root.cern/files/tmva_multiclass_example.root";
 static const std::vector<std::string> variablesMulticlass = variablesClassification;
 
 void TrainMulticlassModel()
@@ -115,7 +115,7 @@ void TrainMulticlassModel()
            output, "Silent:!V:!DrawProgressBar:AnalysisType=Multiclass");
 
    // Open trees with signal and background events
-   const std::string filename = "http://root.cern.ch/files/tmva_multiclass_example.root";
+   const std::string filename = "http://root.cern/files/tmva_multiclass_example.root";
    auto data = TFile::Open(filename.c_str());
    auto signal = (TTree *)data->Get("TreeS");
    auto background0 = (TTree *)data->Get("TreeB0");

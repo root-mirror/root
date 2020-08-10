@@ -57,7 +57,7 @@ void httpserver(const char* jobname = "job1", Long64_t maxcnt = 0)
    serv->SetReadOnly(kFALSE);
 
    // One could specify location of newer version of JSROOT
-   // serv->SetJSROOT("https://root.cern.ch/js/latest/");
+   // serv->SetJSROOT("https://root.cern/js/latest/");
    // serv->SetJSROOT("http://jsroot.gsi.de/latest/");
 
    gBenchmark->Start(jobname);

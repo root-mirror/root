@@ -103,7 +103,7 @@ void MakeTopLinks(TString &links, const char* name, const char* title, const cha
       subtitle += TString(name);
       suburl = subtitle + "?view=markup";
    }
-   links += TString::Format("<div class=\"location\"><h2>From <a href=\"http://root.cern.ch/viewvc/trunk/tutorials/%s\">$ROOTSYS/tutorials/%s</a></h2></div>",
+   links += TString::Format("<div class=\"location\"><h2>From <a href=\"http://root.cern/viewvc/trunk/tutorials/%s\">$ROOTSYS/tutorials/%s</a></h2></div>",
                             suburl.Data(), subtitle.Data());
 }
 
@@ -137,7 +137,7 @@ void writeItem(ostream& out, Int_t numb, const char *ref, const char *name, cons
    //
    const char *imagenew = "";
    cout << "writingItem: " << numb << ", ref=" << ref << ", name=" << name << ", title=" << title << endl;
-   if (isnew) imagenew = " <img src=\"http://root.cern.ch/root/images/new01.gif\" alt=\"new\" align=\"top\" />";
+   if (isnew) imagenew = " <img src=\"http://root.cern/root/images/new01.gif\" alt=\"new\" align=\"top\" />";
    out << "<li class=\"idxl" << numb%2 << "\">";
    out << "<a href=\"" << ref << "\"><span class=\"typename\">" << numb << ". " << name << "</span></a> "
        << title << imagenew << "</li>" << endl;
@@ -237,7 +237,7 @@ void writeTutorials(THtml& html) {
    }
 
    fptop << "</ul>" << endl;
-   fptop << "<p><a href=\"http://root.cern.ch/drupal/content/downloading-root\">Download ROOT</a> and run the tutorials in $ROOTSYS/tutorials yourself!</p>" << endl;
+   fptop << "<p><a href=\"http://root.cern/drupal/content/downloading-root\">Download ROOT</a> and run the tutorials in $ROOTSYS/tutorials yourself!</p>" << endl;
    writeTrailer(html, fptop);
 }
 
@@ -453,13 +453,13 @@ void scandir(THtml& html, const char *dir, const char *title, TObjLink* toplnk) 
 }
 
 void MakeTutorials() {
-   // Bring the ROOT tutorials on the web, see http://root.cern.ch/root/html/tutorials/.
+   // Bring the ROOT tutorials on the web, see http://root.cern/root/html/tutorials/.
    // Demonstrates the use of THtml:Convert() in a realistic context.
 
    if (!gSystem->OpenDirectory("htmldoc")) gSystem->MakeDirectory("htmldoc");
    if (!gSystem->OpenDirectory("htmldoc/tutorials")) gSystem->MakeDirectory("htmldoc/tutorials");
    gEnv->SetValue("Unix.*.Root.Html.SourceDir", "$(ROOTSYS)");
-   gEnv->SetValue("Root.Html.ViewCVS","http://root.cern.ch/viewcvs/trunk/%f?view=log");
+   gEnv->SetValue("Root.Html.ViewCVS","http://root.cern/viewcvs/trunk/%f?view=log");
    gEnv->SetValue("Root.Html.Search", "http://www.google.com/search?q=%s+site%3A%u");
    THtml html;
    html.LoadAllLibs();

@@ -80,7 +80,7 @@ public:
          inputfile = TFile::Open(fname); // check if file in local directory exists
       } else {
          TFile::SetCacheFileDir(".");
-         inputfile = TFile::Open("http://root.cern.ch/files/tmva_class_example.root", "CACHEREAD");
+         inputfile = TFile::Open("http://root.cern/files/tmva_class_example.root", "CACHEREAD");
       }
       if (!inputfile) {
          std::cout << "ERROR: could not open data file" << std::endl;

@@ -261,7 +261,7 @@ TEST(TTreeReaderBasic, InvertedEntryRange) {
 
 
 TEST(TTreeReaderBasic, EntryList) {
-   // See https://root.cern.ch/phpBB3/viewtopic.php?f=3&t=22850&p=100796
+   // See https://root.cern/phpBB3/viewtopic.php?f=3&t=22850&p=100796
    auto tree = MakeTree();
    EXPECT_EQ(9, tree->Draw(">>negZ","three.z<0", "entrylistarray"));
    TEntryListArray* selected = (TEntryListArray*)gDirectory->Get("negZ");
