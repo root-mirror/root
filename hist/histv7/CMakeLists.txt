@@ -12,6 +12,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTHist
   HEADERS
     ROOT/RAxis.hxx
     ROOT/RAxisConfig.hxx
+    ROOT/RFitImpl.hxx
     ROOT/RHist.hxx
     ROOT/RHistBinIter.hxx
     ROOT/RHistBufferedFill.hxx
@@ -22,12 +23,14 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTHist
     ROOT/RHistView.hxx
   SOURCES
     src/RAxis.cxx
+    src/RFitImpl.cxx
   DICTIONARY_OPTIONS
     -writeEmptyRootPCM
   DEPENDENCIES
     MathCore
     Matrix
     RIO
+    Hist
 )
 
 ROOT_ADD_TEST_SUBDIRECTORY(test)

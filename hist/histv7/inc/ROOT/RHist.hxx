@@ -24,6 +24,8 @@
 #include <initializer_list>
 #include <stdexcept>
 
+#include "ROOT/RFitImpl.hxx"
+
 namespace ROOT {
 namespace Experimental {
 
@@ -334,6 +336,13 @@ void Add(RHist<DIMENSIONS, PRECISION, STAT_TO...> &to, const RHist<DIMENSIONS, P
    // Now that we know that the two axes have the same binning, we can just add
    // the statistics directly.
    toImpl.GetStat().Add(fromImpl.GetStat());
+}
+
+/// For now, only for dim <= 3 (due to the use of functions restricting dimension like in DataRange) 
+template <int DIMENSIONS, class PRECISION, template <int D_, class P_> class... STAT>
+TFitResultPtr Fit(RHist<DIMENSIONS, PRECISION, STAT...> & hist, TF1 *f1, ROOT::Fit::DataOptions & fitOption, ROOT::Fit::FitConfig & fitConfig)
+{
+   return RFit::Fit(hist, f1, fitOption, fitConfig);
 }
 
 } // namespace Experimental
