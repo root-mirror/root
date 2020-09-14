@@ -16,6 +16,7 @@
 #ifndef ROOT7_RPageStorageFile
 #define ROOT7_RPageStorageFile
 
+#include <ROOT/RClusterPool.hxx>
 #include <ROOT/RPageStorage.hxx>
 #include <ROOT/RMiniFile.hxx>
 #include <ROOT/RNTupleMetrics.hxx>
@@ -41,6 +42,7 @@ namespace Detail {
 class RCluster;
 class RClusterPool;
 class RPageAllocatorHeap;
+class RPageSourceFile;
 class RPagePool;
 
 
@@ -74,12 +76,18 @@ protected:
    RClusterDescriptor::RLocator CommitPageImpl(ColumnHandle_t columnHandle, const RPage &page) final;
    RClusterDescriptor::RLocator CommitClusterImpl(NTupleSize_t nEntries) final;
    void CommitDatasetImpl() final;
+   RClusterDescriptor::RLocator WriteRawPageImpl(DescriptorId_t columnId,
+      RPageStorage::RNTupleBuffer page) final;
 
 public:
    RPageSinkFile(std::string_view ntupleName, std::string_view path, const RNTupleWriteOptions &options);
    RPageSinkFile(std::string_view ntupleName, std::string_view path, const RNTupleWriteOptions &options,
                  std::unique_ptr<TFile> &file);
    RPageSinkFile(std::string_view ntupleName, TFile &file, const RNTupleWriteOptions &options);
+   RPageSinkFile(const RPageSinkFile&) = delete;
+   RPageSinkFile& operator=(const RPageSinkFile&) = delete;
+   RPageSinkFile(RPageSinkFile&&) = default;
+   RPageSinkFile& operator=(RPageSinkFile&&) = default;
    virtual ~RPageSinkFile();
 
    RPage ReservePage(ColumnHandle_t columnHandle, std::size_t nElements = 0) final;
@@ -154,6 +162,9 @@ private:
    RPage PopulatePageFromCluster(ColumnHandle_t columnHandle, const RClusterDescriptor &clusterDescriptor,
                                  ClusterSize_t::ValueType clusterIndex);
 
+   RPageStorage::RNTupleBuffer ReadRawPageFromCluster(DescriptorId_t clusterId,
+      const RClusterDescriptor &clusterDescriptor, ClusterSize_t::ValueType clusterIndex);
+
 protected:
    RNTupleDescriptor AttachImpl() final;
 
@@ -162,6 +173,11 @@ public:
    /// The cloned page source creates a new raw file and reader and opens its own file descriptor to the data.
    /// The meta-data (header and footer) is reread and parsed by the clone.
    std::unique_ptr<RPageSource> Clone() const final;
+
+   RPageSourceFile(const RPageSourceFile&) = delete;
+   RPageSourceFile& operator=(const RPageSourceFile&) = delete;
+   RPageSourceFile(RPageSourceFile&&) = default;
+   RPageSourceFile& operator=(RPageSourceFile&&) = default;
    virtual ~RPageSourceFile();
 
    RPage PopulatePage(ColumnHandle_t columnHandle, NTupleSize_t globalIndex) final;
@@ -171,6 +187,8 @@ public:
    std::unique_ptr<RCluster> LoadCluster(DescriptorId_t clusterId, const ColumnSet_t &columns) final;
 
    RNTupleMetrics &GetMetrics() final { return fMetrics; }
+
+   RPageStorage::RNTupleBuffer ReadRawPage(DescriptorId_t columnId, NTupleSize_t globalIndex) final;
 };
 
 

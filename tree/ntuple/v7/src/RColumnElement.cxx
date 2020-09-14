@@ -20,31 +20,32 @@
 #include <algorithm>
 #include <bitset>
 #include <cstdint>
+#include <memory>
 
-ROOT::Experimental::Detail::RColumnElementBase
+std::unique_ptr<ROOT::Experimental::Detail::RColumnElementBase>
 ROOT::Experimental::Detail::RColumnElementBase::Generate(EColumnType type) {
    switch (type) {
    case EColumnType::kReal32:
-      return RColumnElement<float, EColumnType::kReal32>(nullptr);
+      return std::make_unique<RColumnElement<float, EColumnType::kReal32>>(nullptr);
    case EColumnType::kReal64:
-      return RColumnElement<double, EColumnType::kReal64>(nullptr);
+      return std::make_unique<RColumnElement<double, EColumnType::kReal64>>(nullptr);
    case EColumnType::kByte:
-      return RColumnElement<std::uint8_t, EColumnType::kByte>(nullptr);
+      return std::make_unique<RColumnElement<std::uint8_t, EColumnType::kByte>>(nullptr);
    case EColumnType::kInt32:
-      return RColumnElement<std::int32_t, EColumnType::kInt32>(nullptr);
+      return std::make_unique<RColumnElement<std::int32_t, EColumnType::kInt32>>(nullptr);
    case EColumnType::kInt64:
-      return RColumnElement<std::int64_t, EColumnType::kInt64>(nullptr);
+      return std::make_unique<RColumnElement<std::int64_t, EColumnType::kInt64>>(nullptr);
    case EColumnType::kBit:
-      return RColumnElement<bool, EColumnType::kBit>(nullptr);
+      return std::make_unique<RColumnElement<bool, EColumnType::kBit>>(nullptr);
    case EColumnType::kIndex:
-      return RColumnElement<ClusterSize_t, EColumnType::kIndex>(nullptr);
+      return std::make_unique<RColumnElement<ClusterSize_t, EColumnType::kIndex>>(nullptr);
    case EColumnType::kSwitch:
-      return RColumnElement<RColumnSwitch, EColumnType::kSwitch>(nullptr);
+      return std::make_unique<RColumnElement<RColumnSwitch, EColumnType::kSwitch>>(nullptr);
    default:
       R__ASSERT(false);
    }
    // never here
-   return RColumnElementBase();
+   return std::make_unique<RColumnElementBase>();
 }
 
 void ROOT::Experimental::Detail::RColumnElement<bool, ROOT::Experimental::EColumnType::kBit>::Pack(

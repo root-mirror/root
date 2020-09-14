@@ -51,6 +51,8 @@ public:
    RNTupleCompressor() : fZipBuffer(std::unique_ptr<Buffer_t>(new Buffer_t())) {}
    RNTupleCompressor(const RNTupleCompressor &other) = delete;
    RNTupleCompressor &operator =(const RNTupleCompressor &other) = delete;
+   RNTupleCompressor(RNTupleCompressor &&other) = default;
+   RNTupleCompressor &operator =(RNTupleCompressor &&other) = default;
 
    /// Returns the size of the compressed data. Data is compressed in 16MB blocks and written
    /// piecewise using the provided writer
@@ -138,6 +140,8 @@ public:
    RNTupleDecompressor() : fUnzipBuffer(std::unique_ptr<Buffer_t>(new Buffer_t())) {}
    RNTupleDecompressor(const RNTupleDecompressor &other) = delete;
    RNTupleDecompressor &operator =(const RNTupleDecompressor &other) = delete;
+   RNTupleDecompressor(RNTupleDecompressor &&other) = default;
+   RNTupleDecompressor &operator =(RNTupleDecompressor &&other) = default;
 
    /**
     * The nbytes parameter provides the size ls of the from buffer. The dataLen gives the size of the uncompressed data.

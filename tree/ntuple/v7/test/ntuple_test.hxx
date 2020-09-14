@@ -104,6 +104,8 @@ public:
    explicit FileRaii(const std::string &path) : fPath(path) { }
    FileRaii(const FileRaii&) = delete;
    FileRaii& operator=(const FileRaii&) = delete;
+   FileRaii(FileRaii&&) = default;
+   FileRaii& operator=(FileRaii&&) = default;
    ~FileRaii() { std::remove(fPath.c_str()); }
    std::string GetPath() const { return fPath; }
 };

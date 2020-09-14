@@ -392,6 +392,13 @@ public:
    /// Given kNBytesPostscript bytes, extract the header and footer lengths in bytes
    static void LocateMetadata(const void *postscript, std::uint32_t &szHeader, std::uint32_t &szFooter);
 
+   std::uint32_t GetHeaderSize() const {
+      return SerializeHeader(nullptr);
+   }
+   std::uint32_t GetFooterSize() const {
+      return SerializeFooter(nullptr);
+   }
+
    const RFieldDescriptor& GetFieldDescriptor(DescriptorId_t fieldId) const {
       return fFieldDescriptors.at(fieldId);
    }
@@ -440,6 +447,15 @@ public:
    std::size_t GetNFields() const { return fFieldDescriptors.size(); }
    std::size_t GetNColumns() const { return fColumnDescriptors.size(); }
    std::size_t GetNClusters() const { return fClusterDescriptors.size(); }
+
+   std::vector<DescriptorId_t> GetColumnIds() const {
+      std::vector<DescriptorId_t> ids;
+      ids.reserve(GetNColumns());
+      for (const auto& key_val: fColumnDescriptors) {
+         ids.push_back(key_val.first);
+      }
+      return ids;
+   }
 
    // The number of entries as seen with the currently loaded cluster meta-data; there might be more
    NTupleSize_t GetNEntries() const;
@@ -536,6 +552,7 @@ public:
    /// was not given enough information to make a proper descriptor.
    RResult<RFieldDescriptor> MakeDescriptor() const;
 };
+
 
 // clang-format off
 /**

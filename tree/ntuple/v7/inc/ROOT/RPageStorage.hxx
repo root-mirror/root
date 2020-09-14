@@ -16,6 +16,7 @@
 #ifndef ROOT7_RPageStorage
 #define ROOT7_RPageStorage
 
+#include <ROOT/RError.hxx>
 #include <ROOT/RNTupleDescriptor.hxx>
 #include <ROOT/RNTupleOptions.hxx>
 #include <ROOT/RNTupleUtil.hxx>
@@ -39,6 +40,7 @@ namespace Detail {
 class RCluster;
 class RColumn;
 class RPagePool;
+class RPageSource;
 class RFieldBase;
 class RNTupleMetrics;
 
@@ -65,10 +67,24 @@ public:
    explicit RPageStorage(std::string_view name);
    RPageStorage(const RPageStorage &other) = delete;
    RPageStorage& operator =(const RPageStorage &other) = delete;
+   RPageStorage(RPageStorage &&other) = default;
+   RPageStorage& operator =(RPageStorage &&other) = default;
    virtual ~RPageStorage();
 
    /// Whether the concrete implementation is a sink or a source
    virtual EPageStorageType GetType() = 0;
+
+   struct RNTupleBuffer {
+      std::unique_ptr<unsigned char[]> fBuffer = nullptr;
+      std::uint32_t fSize = 0;
+      std::uint32_t fNElements = 0;
+
+      RNTupleBuffer() = default;
+      RNTupleBuffer(const RNTupleBuffer &other) = delete;
+      RNTupleBuffer& operator =(const RNTupleBuffer &other) = delete;
+      RNTupleBuffer(RNTupleBuffer &&other) = default;
+      RNTupleBuffer& operator =(RNTupleBuffer &&other) = default;
+   };
 
    struct RColumnHandle {
       DescriptorId_t fId = kInvalidDescriptorId;
@@ -127,10 +143,18 @@ protected:
    virtual RClusterDescriptor::RLocator CommitPageImpl(ColumnHandle_t columnHandle, const RPage &page) = 0;
    virtual RClusterDescriptor::RLocator CommitClusterImpl(NTupleSize_t nEntries) = 0;
    virtual void CommitDatasetImpl() = 0;
+   virtual RClusterDescriptor::RLocator WriteRawPageImpl(DescriptorId_t columnId,
+      RPageStorage::RNTupleBuffer page) = 0;
 
 public:
    RPageSink(std::string_view ntupleName, const RNTupleWriteOptions &options);
+
+   RPageSink(const RPageSink&) = delete;
+   RPageSink& operator=(const RPageSink&) = delete;
+   RPageSink(RPageSink&&) = default;
+   RPageSink& operator=(RPageSink&&) = default;
    virtual ~RPageSink();
+
    /// Guess the concrete derived page source from the file name (location)
    static std::unique_ptr<RPageSink> Create(std::string_view ntupleName, std::string_view location,
                                             const RNTupleWriteOptions &options = RNTupleWriteOptions());
@@ -150,9 +174,15 @@ public:
    /// Finalize the current cluster and the entrire data set.
    void CommitDataset() { CommitDatasetImpl(); }
 
+   /// Write a raw page to storage. The column must have been added before.
+   void WriteRawPage(DescriptorId_t columnId, RPageStorage::RNTupleBuffer page);
+
    /// Get a new, empty page for the given column that can be filled with up to nElements.  If nElements is zero,
    /// the page sink picks an appropriate size.
    virtual RPage ReservePage(ColumnHandle_t columnHandle, std::size_t nElements = 0) = 0;
+
+   /// Merge a number of page sources into the sink.
+   RResult<void> Merge(const std::vector<std::unique_ptr<RPageSource>>& sources);
 };
 
 // clang-format off
@@ -180,6 +210,10 @@ protected:
 
 public:
    RPageSource(std::string_view ntupleName, const RNTupleReadOptions &fOptions);
+   RPageSource(const RPageSource&) = delete;
+   RPageSource& operator=(const RPageSource&) = delete;
+   RPageSource(RPageSource&&) = default;
+   RPageSource& operator=(RPageSource&&) = default;
    virtual ~RPageSource();
    /// Guess the concrete derived page source from the file name (location)
    static std::unique_ptr<RPageSource> Create(std::string_view ntupleName, std::string_view location,
@@ -202,6 +236,8 @@ public:
    virtual RPage PopulatePage(ColumnHandle_t columnHandle, NTupleSize_t globalIndex) = 0;
    /// Another version of PopulatePage that allows to specify cluster-relative indexes
    virtual RPage PopulatePage(ColumnHandle_t columnHandle, const RClusterIndex &clusterIndex) = 0;
+
+   virtual RPageStorage::RNTupleBuffer ReadRawPage(DescriptorId_t columnId, NTupleSize_t globalIndex) = 0;
 
    /// Populates all the pages of the given cluster id and columns; it is possible that some columns do not
    /// contain any pages.  The pages source may load more columns than the minimal necessary set from `columns`.

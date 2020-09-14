@@ -68,6 +68,8 @@ public:
    std::unique_ptr<RPageSource> Clone() const final { return nullptr; }
    RPage PopulatePage(ColumnHandle_t, ROOT::Experimental::NTupleSize_t) final { return RPage(); }
    RPage PopulatePage(ColumnHandle_t, const ROOT::Experimental::RClusterIndex &) final { return RPage(); }
+   RPageStorage::RNTupleBuffer ReadRawPage(ROOT::Experimental::DescriptorId_t,
+      ROOT::Experimental::NTupleSize_t) final { return RPageStorage::RNTupleBuffer(); }
    void ReleasePage(RPage &) final {}
    std::unique_ptr<RCluster> LoadCluster(
       ROOT::Experimental::DescriptorId_t clusterId,

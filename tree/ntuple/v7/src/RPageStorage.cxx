@@ -16,6 +16,7 @@
 #include <ROOT/RPageStorage.hxx>
 #include <ROOT/RPageStorageFile.hxx>
 #include <ROOT/RColumn.hxx>
+#include <ROOT/RError.hxx>
 #include <ROOT/RField.hxx>
 #include <ROOT/RNTupleDescriptor.hxx>
 #include <ROOT/RNTupleMetrics.hxx>
@@ -168,16 +169,25 @@ void ROOT::Experimental::Detail::RPageSink::Create(RNTupleModel &model)
 
 void ROOT::Experimental::Detail::RPageSink::CommitPage(ColumnHandle_t columnHandle, const RPage &page)
 {
-   auto locator = CommitPageImpl(columnHandle, page);
+   fOpenColumnRanges.at(columnHandle.fId).fNElements += page.GetNElements();
 
-   auto columnId = columnHandle.fId;
-   fOpenColumnRanges[columnId].fNElements += page.GetNElements();
    RClusterDescriptor::RPageRange::RPageInfo pageInfo;
    pageInfo.fNElements = page.GetNElements();
-   pageInfo.fLocator = locator;
-   fOpenPageRanges[columnId].fPageInfos.emplace_back(pageInfo);
+   pageInfo.fLocator = CommitPageImpl(columnHandle, page);
+   fOpenPageRanges.at(columnHandle.fId).fPageInfos.emplace_back(pageInfo);
 }
 
+void ROOT::Experimental::Detail::RPageSink::WriteRawPage(
+   ROOT::Experimental::DescriptorId_t columnId,
+   ROOT::Experimental::Detail::RPageStorage::RNTupleBuffer page)
+{
+   fOpenColumnRanges.at(columnId).fNElements += page.fNElements;
+
+   RClusterDescriptor::RPageRange::RPageInfo pageInfo;
+   pageInfo.fNElements = page.fNElements;
+   pageInfo.fLocator = WriteRawPageImpl(columnId, std::move(page));
+   fOpenPageRanges.at(columnId).fPageInfos.emplace_back(pageInfo);
+}
 
 void ROOT::Experimental::Detail::RPageSink::CommitCluster(ROOT::Experimental::NTupleSize_t nEntries)
 {
@@ -200,4 +210,61 @@ void ROOT::Experimental::Detail::RPageSink::CommitCluster(ROOT::Experimental::NT
    }
    ++fLastClusterId;
    fPrevClusterNEntries = nEntries;
+}
+
+ROOT::Experimental::RResult<void>
+ROOT::Experimental::Detail::RPageSink::Merge(
+   const std::vector<std::unique_ptr<RPageSource>>& sources)
+{
+   std::cout << "\n\ngot " << sources.size() << " files to merge\n";
+   if (sources.empty()) {
+      return RResult<void>::Success();
+   }
+
+   // todo(max) handle non-empty PageSink NTuple descriptor
+   sources.front()->Attach();
+   const auto& sourceDesc = sources.front()->GetDescriptor();
+   sourceDesc.PrintInfo(std::cout);
+   // initialize merge target columns from source RNTupleModel
+   Create(*sourceDesc.GenerateModel());
+
+   std::cout << "input has " << sourceDesc.GetColumnIds().size() << " columns\n";
+   std::cout << "input has " << sourceDesc.GetNEntries() << " entries\n";
+
+   auto columnIds = fDescriptorBuilder.GetDescriptor().GetColumnIds();
+
+   for (auto id: columnIds) {
+      std::cout << "got column: " << id << "\n";
+   }
+
+   auto columnId = DescriptorId_t(0);
+   auto elementIdx = NTupleSize_t(0);
+
+   RPageStorage::RNTupleBuffer rp = sources.front()->ReadRawPage(columnId, elementIdx);
+   std::cout << "read raw page:\n"
+      << "\tbytes: " << rp.fSize << "\n\telements: "
+      << rp.fNElements << "\n";
+
+   // write page to the sink. this consumes the page
+   WriteRawPage(columnId, std::move(rp));
+
+   // read another column
+   rp = sources.front()->ReadRawPage(DescriptorId_t(10), NTupleSize_t(0));
+   std::cout << "read raw page:\n"
+      << "\tbytes: " << rp.fSize << "\n\telements: "
+      << rp.fNElements << "\n";
+   WriteRawPage(DescriptorId_t(10), std::move(rp));
+
+   //for (std::size_t i = 1; i < sources.size(); ++i) {
+   //   sources[i]->Attach();
+   //   // todo merge
+   //}
+
+   auto nEntries = 1;
+   CommitCluster(nEntries);
+   CommitDataset();
+
+   fDescriptorBuilder.GetDescriptor().PrintInfo(std::cout);
+
+   return RResult<void>::Success();
 }

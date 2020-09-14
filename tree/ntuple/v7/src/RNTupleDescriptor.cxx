@@ -623,7 +623,7 @@ std::uint32_t ROOT::Experimental::RNTupleDescriptor::SerializeFooter(void* buffe
    pos += SerializeUInt16(kFrameVersionCurrent, *where);
    pos += SerializeUInt16(kFrameVersionMin, *where);
    // Add the CRC32 bytes to the header and footer sizes
-   pos += SerializeUInt32(SerializeHeader(nullptr), *where);
+   pos += SerializeUInt32(GetHeaderSize(), *where);
    std::uint32_t size = pos - base + 4;
    pos += SerializeUInt32(size + 4, *where);
    size += SerializeCrc32(base, size, *where);

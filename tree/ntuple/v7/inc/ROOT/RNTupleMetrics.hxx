@@ -256,6 +256,8 @@ public:
    explicit RNTupleMetrics(const std::string &name) : fName(name) {}
    RNTupleMetrics(const RNTupleMetrics &other) = delete;
    RNTupleMetrics & operator=(const RNTupleMetrics &other) = delete;
+   RNTupleMetrics(RNTupleMetrics &&other) = default;
+   RNTupleMetrics & operator=(RNTupleMetrics &&other) = default;
    ~RNTupleMetrics() = default;
 
    // TODO(jblomer): return a reference

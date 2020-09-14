@@ -108,10 +108,10 @@ TEST(RNTuple, Descriptor)
    EXPECT_EQ(0U, reference.FindPrevClusterId(1));
    EXPECT_EQ(ROOT::Experimental::kInvalidDescriptorId, reference.FindPrevClusterId(0));
 
-   auto szHeader = reference.SerializeHeader(nullptr);
+   auto szHeader = reference.GetHeaderSize();
    auto headerBuffer = new unsigned char[szHeader];
    reference.SerializeHeader(headerBuffer);
-   auto szFooter = reference.SerializeFooter(nullptr);
+   auto szFooter = reference.GetFooterSize();
    auto footerBuffer = new unsigned char[szFooter];
    reference.SerializeFooter(footerBuffer);
 

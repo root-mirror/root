@@ -113,8 +113,8 @@ void ROOT::Experimental::RNTupleDescriptor::PrintInfo(std::ostream &output) cons
    std::uint64_t nPages = 0;
    int compression = -1;
    for (const auto &column : fColumnDescriptors) {
-      auto element = Detail::RColumnElementBase::Generate(column.second.GetModel().GetType());
-      auto elementSize = element.GetSize();
+      auto elementSize = Detail::RColumnElementBase::Generate(
+         column.second.GetModel().GetType())->GetSize();
 
       ColumnInfo info;
       info.fColumnId = column.second.GetId();
@@ -144,8 +144,8 @@ void ROOT::Experimental::RNTupleDescriptor::PrintInfo(std::ostream &output) cons
       }
       columns.emplace_back(info);
    }
-   auto headerSize = SerializeHeader(nullptr);
-   auto footerSize = SerializeFooter(nullptr);
+   auto headerSize = GetHeaderSize();
+   auto footerSize = GetFooterSize();
    output << "============================================================" << std::endl;
    output << "NTUPLE:      " << GetName() << std::endl;
    output << "Compression: " << compression << std::endl;
