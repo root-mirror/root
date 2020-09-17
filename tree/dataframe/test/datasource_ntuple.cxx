@@ -12,6 +12,13 @@ using ROOT::Experimental::RNTupleWriter;
 using ROOT::Experimental::RNTupleModel;
 using ROOT::Experimental::Detail::RPageSource;
 
+
+struct IMTRAII {
+   IMTRAII() { ROOT::EnableImplicitMT(); }
+   ~IMTRAII() { ROOT::DisableImplicitMT(); }
+};
+
+
 class RNTupleDSTest : public ::testing::Test {
 protected:
    std::string fFileName = "RNTupleDS_test.root";
@@ -42,6 +49,7 @@ protected:
    }
 };
 
+
 TEST_F(RNTupleDSTest, ColTypeNames)
 {
    RNTupleDS tds(std::move(fPageSource));
@@ -55,4 +63,62 @@ TEST_F(RNTupleDSTest, ColTypeNames)
 
    EXPECT_STREQ("std::string", tds.GetTypeName("tag").c_str());
    EXPECT_STREQ("float", tds.GetTypeName("energy").c_str());
+}
+
+
+void ReadTest(const std::string &name, const std::string &fname) {
+   auto df = ROOT::Experimental::MakeNTupleDataFrame(name, fname);
+
+   auto count = df.Count();
+   auto sumpt = df.Sum<float>("pt");
+   auto tag = df.Take<std::string>("tag");
+   auto sumjets = df.Sum<std::vector<float>>("jets");
+   auto sumvec = [](float red, const std::vector<std::vector<float>> &nnlo) {
+      auto sum = 0.f;
+      for (auto &v : nnlo)
+         for (auto e : v)
+            sum += e;
+      return red + sum;
+   };
+   auto sumnnlo = df.Aggregate(sumvec, std::plus<float>{}, "nnlo", 0.f);
+
+   EXPECT_EQ(count.GetValue(), 1ull);
+   EXPECT_DOUBLE_EQ(sumpt.GetValue(), 42.f);
+   EXPECT_EQ(tag.GetValue().size(), 1ull);
+   EXPECT_EQ(tag.GetValue()[0], "xyz");
+   EXPECT_EQ(sumjets.GetValue(), 3.f);
+   EXPECT_EQ(sumnnlo.GetValue(), 16.f);
+}
+
+
+TEST_F(RNTupleDSTest, Read)
+{
+   ReadTest(fNtplName, fFileName);
+}
+
+
+TEST_F(RNTupleDSTest, ReadMT)
+{
+   IMTRAII _;
+   ReadTest(fNtplName, fFileName);
+}
+
+
+void ReadRVecTest(const std::string &name, const std::string &fname) {
+   auto df = ROOT::Experimental::MakeNTupleDataFrame(name, fname);
+   auto sumjets = df.Sum<ROOT::RVec<float>>("jets");
+   EXPECT_EQ(sumjets.GetValue(), 3.f);
+}
+
+
+TEST_F(RNTupleDSTest, ReadRVec)
+{
+   ReadRVecTest(fNtplName, fFileName);
+}
+
+
+TEST_F(RNTupleDSTest, ReadRVecMT)
+{
+   IMTRAII _;
+   ReadRVecTest(fNtplName, fFileName);
 }
