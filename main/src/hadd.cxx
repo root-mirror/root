@@ -339,7 +339,7 @@ int main( int argc, char **argv )
             }
          }
          char ft[7];
-         for (int alg = 0; !useFirstInputCompression && alg <= 5; ++alg) {
+         for (int alg = 0; !useFirstInputCompression && alg <= 6; ++alg) {
             for( int j=0; j<=9; ++j ) {
                const int comp = (alg*100)+j;
                snprintf(ft,7,"-f%s%d",prefix,comp);

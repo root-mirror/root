@@ -98,6 +98,7 @@ void ROOT::Experimental::Detail::RPageSinkFile::CreateImpl(const RNTupleModel & 
 ROOT::Experimental::RClusterDescriptor::RLocator
 ROOT::Experimental::Detail::RPageSinkFile::CommitPageImpl(ColumnHandle_t columnHandle, const RPage &page)
 {
+   // printf("**ROOT::Experimental::Detail::RPageSinkFile::CommitPageImpl**\n");
    unsigned char *buffer = reinterpret_cast<unsigned char *>(page.GetBuffer());
    bool isAdoptedBuffer = true;
    auto packedBytes = page.GetSize();

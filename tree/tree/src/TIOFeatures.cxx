@@ -241,7 +241,7 @@ bool TIOFeatures::Test(EIOFeatures input_bits) const
    TBasket::EIOBits enum_bits = static_cast<TBasket::EIOBits>(input_bits);
    auto bits = static_cast<UChar_t>(enum_bits);
    if (R__unlikely((bits & static_cast<UChar_t>(TBasket::EIOBits::kSupported)) != bits)) {
-      Error("TestFeature", "A feature is being tested for that is not supported or known.");
+      Error("TestFeature", "A feature (%d) is being tested for that is not supported or known.", bits);
       return kFALSE;
    }
    return (fIOBits & bits) == bits;

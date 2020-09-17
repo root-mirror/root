@@ -14,7 +14,9 @@
 #endif
 #include "ZipLZMA.h"
 #include "lzma.h"
+#include "Bitshuffle.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 static const int kHeaderSize = 9;
 

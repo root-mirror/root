@@ -14,6 +14,8 @@ target_include_directories(Lzma PRIVATE
    ${LIBLZMA_INCLUDE_DIR}
    ${CMAKE_SOURCE_DIR}/core/base/inc
    ${CMAKE_BINARY_DIR}/ginclude
+   # Headers for Bitshuffle.h
+   ${CMAKE_SOURCE_DIR}/core/zip/inc
 )
 
 ROOT_INSTALL_HEADERS()

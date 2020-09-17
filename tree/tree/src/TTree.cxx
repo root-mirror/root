@@ -3110,7 +3110,6 @@ TTree* TTree::CloneTree(Long64_t nentries /* = -1 */, Option_t* option /* = "" *
 
    // We will use this to override the IO features on the cloned branches.
    ROOT::TIOFeatures features = this->GetIOFeatures();
-   ;
 
    // Note: For a chain, the returned clone will be
    //       a clone of the chain's first tree.
@@ -3118,6 +3117,7 @@ TTree* TTree::CloneTree(Long64_t nentries /* = -1 */, Option_t* option /* = "" *
    if (!newtree) {
       return 0;
    }
+   // newtree->SetIOFeatures(features);
 
    // The clone should not delete any objects allocated by SetAddress().
    TObjArray* branches = newtree->GetListOfBranches();
@@ -8960,6 +8960,9 @@ ROOT::TIOFeatures TTree::SetIOFeatures(const ROOT::TIOFeatures &features)
    fIOFeatures.Set(curFeatures);
 
    ROOT::TIOFeatures newSettings(newFeatures);
+   // if (newSettings.Test(ROOT::Experimental::EIOFeatures::kOnlyFlushAtCluster)) {
+   //     SetBit(TTree::kOnlyFlushAtCluster);
+   // }
    return newSettings;
 }
 

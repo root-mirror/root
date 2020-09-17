@@ -4,6 +4,7 @@
 # For the licensing terms see $ROOTSYS/LICENSE.
 # For the list of contributors see $ROOTSYS/README/CREDITS.
 
+find_package(LZ4 REQUIRED)
 find_package(ZLIB REQUIRED)
 
 ROOT_OBJECT_LIBRARY(Zip
@@ -13,9 +14,13 @@ ROOT_OBJECT_LIBRARY(Zip
   src/ZInflate.c
   src/Compression.cxx
   src/RZip.cxx
+  src/Bitshuffle.c
+  src/Bitshuffle_core.c
+  src/Bitshuffle_iochain.c
 )
 
 target_include_directories(Zip PRIVATE 
+   ${LZ4_INCLUDE_DIR} 
    ${ZLIB_INCLUDE_DIR}
    ${CMAKE_SOURCE_DIR}/core/lzma/inc
    ${CMAKE_SOURCE_DIR}/core/lz4/inc

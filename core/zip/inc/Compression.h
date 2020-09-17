@@ -96,6 +96,8 @@ struct RCompressionSetting {
          kLZ4,
          /// Use ZSTD compression
          kZSTD,
+         /// Use LZ4BS (LZ4 with Bitshuffle) compression
+         kLZ4BS,
          /// Undefined compression algorithm (must be kept the last of the list in case a new algorithm is added).
          kUndefined
       };
@@ -118,12 +120,15 @@ enum ECompressionAlgorithm {
    /// Deprecated name, do *not* use:
    kZSTD = RCompressionSetting::EAlgorithm::kZSTD,
    /// Deprecated name, do *not* use:
-   kUndefinedCompressionAlgorithm = RCompressionSetting::EAlgorithm::kUndefined
+   kUndefinedCompressionAlgorithm = RCompressionSetting::EAlgorithm::kUndefined,
+   /// Use LZ4 + BitShuffle compression
+   kLZ4BS = RCompressionSetting::EAlgorithm::kLZ4BS,
 };
 
 int CompressionSettings(RCompressionSetting::EAlgorithm algorithm, int compressionLevel);
 /// Deprecated name, do *not* use:
 int CompressionSettings(ROOT::ECompressionAlgorithm algorithm, int compressionLevel);
 } // namespace ROOT
+
 
 #endif
