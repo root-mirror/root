@@ -837,12 +837,12 @@ void TClassEdit::GetNormalizedName(std::string &norm_name, std::string_view name
    TClassEdit::TSplitType splitname(norm_name.c_str(),(TClassEdit::EModType)(TClassEdit::kLong64 | TClassEdit::kDropStd | TClassEdit::kDropStlDefault | TClassEdit::kKeepOuterConst));
    splitname.ShortType(norm_name, TClassEdit::kDropStd | TClassEdit::kDropStlDefault | TClassEdit::kResolveTypedef | TClassEdit::kKeepOuterConst);
 
-   if (splitname.fElements.size() == 4 && (splitname.fElements[0] == "std::pair" || splitname.fElements[0] == "pair")) {
+   if (splitname.fElements.size() == 4 && (splitname.fElements[0] == "std::pair" || splitname.fElements[0] == "pair" || splitname.fElements[0] == "__pair_base")) {
       // We don't want to lookup the std::pair itself.
       std::string first, second;
       GetNormalizedName(first, splitname.fElements[1]);
       GetNormalizedName(second, splitname.fElements[2]);
-      norm_name = "pair<" + first + "," + second;
+      norm_name = splitname.fElements[0] + "<" + first + "," + second;
       if (!second.empty() && second.back() == '>')
          norm_name += " >";
       else
