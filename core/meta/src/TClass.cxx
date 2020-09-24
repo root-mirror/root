@@ -52,6 +52,8 @@ In order to access the name of a class within the ROOT type system, the method T
 #include "TClassTable.h"
 #include "TDataMember.h"
 #include "TDataType.h"
+#include "TDatime.h"
+#include "TEnum.h"
 #include "TError.h"
 #include "TExMap.h"
 #include "TFunctionTemplate.h"
@@ -3018,6 +3020,9 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
       if (gInterpreter->AutoLoad(normalizedName.c_str(),kTRUE)) {
          loadedcl = LoadClassDefault(normalizedName.c_str(),silent);
       }
+      auto e = TEnum::GetEnum(normalizedName.c_str(), TEnum::kNone);
+      if (e)
+         return nullptr;
       // Maybe this was a typedef: let's try to see if this is the case
       if (!loadedcl){
          if (TDataType* theDataType = gROOT->GetType(normalizedName.c_str())){
