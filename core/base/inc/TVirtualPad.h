@@ -226,6 +226,7 @@ public:
    virtual void     ShowGuidelines(TObject *object, const Int_t event, const char mode = 'i', const bool cling = true) = 0;
    virtual TObject *WaitPrimitive(const char *pname="", const char *emode="") = 0;
    virtual void     Update() = 0;
+   virtual void     ModifiedUpdate() = 0;
    virtual Int_t    UtoAbsPixel(Double_t u) const = 0;
    virtual Int_t    VtoAbsPixel(Double_t v) const = 0;
    virtual Int_t    UtoPixel(Double_t u) const = 0;

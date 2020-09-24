@@ -270,6 +270,7 @@ public:
    virtual Bool_t    IsVertical() const {return !TestBit(kHori);}
    virtual void      ls(Option_t *option="") const;
    void              Modified(Bool_t flag=1);  // *SIGNAL*
+   void              ModifiedUpdate();
    virtual Bool_t    OpaqueMoving() const;
    virtual Bool_t    OpaqueResizing() const;
    Double_t          PadtoX(Double_t x) const;

@@ -2850,6 +2850,19 @@ void TPad::Update()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Short cut to call Modified() and Update() in a single call and on Mac perform
+/// an additional ProcessEvents().
+
+void TPad::ModifiedUpdate()
+{
+   Modified();
+   Update();
+#ifdef R__HAS_COCOA
+   gSystem->ProcessEvents();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Get frame.
 
 TFrame *TPad::GetFrame()
