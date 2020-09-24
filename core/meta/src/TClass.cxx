@@ -1427,7 +1427,7 @@ void TClass::Init(const char *name, Version_t cversion,
    // We need to check if the class it is not fwd declared for the cases where we
    // created a TClass directly in the kForwardDeclared state. Indeed in those cases
    // fClassInfo will always be nullptr.
-   if (fState!=kForwardDeclared && !fClassInfo) {
+   if (fState!=kForwardDeclared && !fClassInfo && fName.First('@')==kNPOS) {
 
       if (fState == kHasTClassInit) {
          // If the TClass is being generated from a ROOT dictionary,
@@ -2951,6 +2951,15 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
 
       //we may pass here in case of a dummy class created by TVirtualStreamerInfo
       load = kTRUE;
+   }
+
+   if (strchr(name, '@') != nullptr) {
+      // If there is a @ symbol (followed by a version number) then this is a synthetic class name created
+      // from an already normalized name for the purpose of supporting schema evolution.
+      // There is no dictionary or interpreter information about this kind of class, the only
+      // (undesirable) side-effect of doing the search would be a waste of CPU time and potential
+      // auto-loading or auto-parsing based on the scope of the name.
+      return cl;
    }
 
    // To avoid spurious auto parsing, let's check if the name as-is is
