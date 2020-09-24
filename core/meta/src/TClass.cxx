@@ -3033,7 +3033,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
       if (e)
          return nullptr;
       // Maybe this was a typedef: let's try to see if this is the case
-      if (!loadedcl){
+      if (!loadedcl) {
          if (TDataType* theDataType = gROOT->GetType(normalizedName.c_str())){
             // We have a typedef: we get the name of the underlying type
             auto underlyingTypeName = theDataType->GetTypeName();
