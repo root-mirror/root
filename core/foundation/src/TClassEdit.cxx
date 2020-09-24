@@ -833,7 +833,7 @@ void TClassEdit::GetNormalizedName(std::string &norm_name, std::string_view name
 {
    norm_name = std::string(name); // NOTE: Is that the shortest version?
 
-   if (name.find('@')) {
+   if (TClassEdit::IsArtificial(name)) {
       // If there is a @ symbol (followed by a version number) then this is a synthetic class name created
       // from an already normalized name for the purpose of supporting schema evolution.
       return;

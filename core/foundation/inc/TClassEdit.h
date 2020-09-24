@@ -155,6 +155,8 @@ namespace TClassEdit {
    void        Init(TClassEdit::TInterpreterLookupHelper *helper);
 
    std::string CleanType (const char *typeDesc,int mode = 0,const char **tail=0);
+   inline bool IsArtificial(std::string_view name) { return name.find('@') != name.npos; }
+   inline bool IsArtificial(ROOT::Internal::TStringView name) {return IsArtificial(std::string_view(name)); }
    bool        IsDefAlloc(const char *alloc, const char *classname);
    bool        IsDefAlloc(const char *alloc, const char *keyclassname, const char *valueclassname);
    bool        IsDefComp (const char *comp , const char *classname);

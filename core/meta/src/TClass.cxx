@@ -1091,7 +1091,7 @@ TClass::TClass(const char *name, Bool_t silent) :
       ::Fatal("TClass::TClass", "gInterpreter not initialized");
 
    gInterpreter->SetClassInfo(this);   // sets fClassInfo pointer
-   if (!silent && !fClassInfo && fName.First('@')==kNPOS)
+   if (!silent && !fClassInfo && !TClassEdit::IsArtificial(name))
       ::Warning("TClass::TClass", "no dictionary for class %s is available", name);
    ResetBit(kLoading);
 
@@ -1427,7 +1427,7 @@ void TClass::Init(const char *name, Version_t cversion,
    // We need to check if the class it is not fwd declared for the cases where we
    // created a TClass directly in the kForwardDeclared state. Indeed in those cases
    // fClassInfo will always be nullptr.
-   if (fState!=kForwardDeclared && !fClassInfo && fName.First('@')==kNPOS) {
+   if (fState!=kForwardDeclared && !fClassInfo && !TClassEdit::IsArtificial(fName)) {
 
       if (fState == kHasTClassInit) {
          // If the TClass is being generated from a ROOT dictionary,
@@ -1465,7 +1465,7 @@ void TClass::Init(const char *name, Version_t cversion,
          }
       }
    }
-   if (!silent && (!fClassInfo && !fCanLoadClassInfo) && !isStl && fName.First('@')==kNPOS &&
+   if (!silent && (!fClassInfo && !fCanLoadClassInfo) && !isStl && !TClassEdit::IsArtificial(fName) &&
        !TClassEdit::IsInterpreterDetail(fName.Data()) ) {
       if (fState == kHasTClassInit) {
          if (fImplFileLine == -1 && fClassVersion == 0) {
@@ -2953,7 +2953,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
       load = kTRUE;
    }
 
-   if (strchr(name, '@') != nullptr) {
+   if (TClassEdit::IsArtificial(name)) {
       // If there is a @ symbol (followed by a version number) then this is a synthetic class name created
       // from an already normalized name for the purpose of supporting schema evolution.
       // There is no dictionary or interpreter information about this kind of class, the only
