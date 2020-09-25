@@ -694,11 +694,11 @@ void TStreamerInfo::Build()
 /// Check if built and consistent with the class dictionary.
 /// This method is called by TFile::ReadStreamerInfo.
 
-void TStreamerInfo::BuildCheck(TFile *file /* = 0 */)
+void TStreamerInfo::BuildCheck(TFile *file /* = 0 */, Bool_t load /* = kTRUE */)
 {
    R__LOCKGUARD(gInterpreterMutex);
 
-   fClass = TClass::GetClass(GetName());
+   fClass = TClass::GetClass(GetName(), load);
    if (!fClass) {
       // fClassVersion should have been a Version_t and/or Version_t
       // should have been an Int_t.  Changing the on-file format
@@ -5646,7 +5646,7 @@ TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firs
    Int_t oldlevel = gErrorIgnoreLevel;
    // Hide the warning about the missing pair dictionary.
    gErrorIgnoreLevel = kError;
-   i->BuildCheck();
+   i->BuildCheck(nullptr, kFALSE); // Skipping the loading part (it would leads to infinite recursion on this very routine)
    gErrorIgnoreLevel = oldlevel;
    i->BuildOld();
    return i;

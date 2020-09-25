@@ -143,6 +143,12 @@ namespace {
 
 std::atomic<Int_t> TClass::fgClassCount;
 
+static bool IsFromRootCling() {
+  // rootcling also uses TCling for generating the dictionary ROOT files.
+  const static bool foundSymbol = dlsym(RTLD_DEFAULT, "usedToIdentifyRootClingByDlSym");
+  return foundSymbol;
+}
+
 // Implementation of the TDeclNameRegistry
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3025,6 +3031,9 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
 //         ::Fatal("TClass::GetClass","The existing name (%s) for %s is different from the normalized name: %s\n",
 //                 altcl->GetName(), name, normalizedName.c_str());
 //   }
+   // We want to avoid auto-parsing due to intentionally missing dictionary for std::pair.
+   // However, we don't need this special treatement in rootcling (there is no auto-parsing)
+   const bool ispair = TClassEdit::IsStdPair(normalizedName) && !IsFromRootCling();
 
    TClass *loadedcl = 0;
    if (checkTable) {
@@ -3037,7 +3046,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
       if (e)
          return nullptr;
       // Maybe this was a typedef: let's try to see if this is the case
-      if (!loadedcl) {
+      if (!loadedcl && !ispair) {
          if (TDataType* theDataType = gROOT->GetType(normalizedName.c_str())){
             // We have a typedef: we get the name of the underlying type
             auto underlyingTypeName = theDataType->GetTypeName();
@@ -3060,7 +3069,11 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
    // TClass if we have one.
    if (cl) return cl;
 
-   if (TClassEdit::IsSTLCont( normalizedName.c_str() )) {
+   if (ispair) {
+      auto pairinfo = TVirtualStreamerInfo::Factory()->GenerateInfoForPair(normalizedName);
+      return pairinfo ? pairinfo->GetClass() : nullptr;
+
+   } else if (TClassEdit::IsSTLCont( normalizedName.c_str() )) {
 
       return gInterpreter->GenerateTClass(normalizedName.c_str(), kTRUE, silent);
    }
@@ -3631,9 +3644,7 @@ TList *TClass::GetListOfEnums(Bool_t requestListLoading /* = kTRUE */)
          return fEnums.load();
       }
 
-      static bool fromRootCling = dlsym(RTLD_DEFAULT, "usedToIdentifyRootClingByDlSym");
-
-      if (fromRootCling) // rootcling is single thread (this save some space in the rootpcm).
+      if (IsFromRootCling()) // rootcling is single thread (this save some space in the rootpcm).
          fEnums = new TListOfEnums(this);
       else
          fEnums = new TListOfEnumsWithLock(this);
