@@ -440,7 +440,7 @@ Usage: root-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version]\
  [--noauxcflags] [--noauxlibs] [--noldflags] [--has-<feature>] [--arch]\
  [--platform] [--config] [--features] [--ncpu] [--git-revision]\
  [--python-version] [--python2-version] [--python3-version]\
- [--cc] [--cxx] [--f77] [--ld ] [--help]"
+ [--cxxstandard] [--cc] [--cxx] [--f77] [--ld ] [--help]"
 
 if test $# -eq 0; then
    echo "${usage}" 1>&2
@@ -554,6 +554,9 @@ while test $# -gt 0; do
       ;;
     --python3-version)
       out="$out @python3vers@"
+      ;;
+    --cxxstandard)
+      out="$out @cxxstandard@"
       ;;
     --cflags)
       ### Output the compiler flags
@@ -828,6 +831,7 @@ while test $# -gt 0; do
       echo "  --python-version      Print the Python version used by ROOT"
       echo "  --python2-version     Print the Python2 version used by PyROOT"
       echo "  --python3-version     Print the Python3 version used by PyROOT"
+      echo "  --cxxstandard         Print the C++ standard used to compile ROOT"
       echo "  --ncpu                Print number of available (hyperthreaded) cores"
       echo "  --cc                  Print alternative C compiler specified when ROOT was built"
       echo "  --cxx                 Print alternative C++ compiler specified when ROOT was built"
