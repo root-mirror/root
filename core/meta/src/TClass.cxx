@@ -1322,7 +1322,11 @@ void TClass::Init(const char *name, Version_t cversion,
       return;
    }
    // Always strip the default STL template arguments (from any template argument or the class name)
-   fName           = TClassEdit::ShortType(name, TClassEdit::kDropStlDefault).c_str();
+   if (TClassEdit::IsArtificial(name))
+      fName        = name; // We can assume that the artificial class name is already normalized.
+   else
+      fName        = TClassEdit::ShortType(name, TClassEdit::kDropStlDefault).c_str();
+
    fClassVersion   = cversion;
    fDeclFileName   = dfil ? dfil : "";
    fImplFileName   = ifil ? ifil : "";
