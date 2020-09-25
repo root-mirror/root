@@ -4250,6 +4250,7 @@ TClass *TCling::GenerateTClass(const char *classname, Bool_t emulation, Bool_t s
    if (TClassEdit::IsSTLCont(classname)) {
       version = TClass::GetClass("TVirtualStreamerInfo")->GetClassVersion();
    }
+   R__LOCKGUARD(gInterpreterMutex);
    TClass *cl = new TClass(classname, version, silent);
    if (emulation) {
       cl->SetBit(TClass::kIsEmulation);

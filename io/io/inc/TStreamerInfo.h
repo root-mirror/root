@@ -275,6 +275,14 @@ private:
 public:
    virtual void        Update(const TClass *oldClass, TClass *newClass);
 
+   // \brief Generate the TClass and TStreamerInfo for the requested pair.
+   // This creates a TVirtualStreamerInfo for the pair and trigger the BuildCheck/Old to
+   // provokes the creation of the corresponding TClass.  This relies on the dictionary for
+   // std::pair<const int, int> to already exist (or the interpreter information being available)
+   // as it is used as a template.
+   virtual TVirtualStreamerInfo *GenerateInfoForPair(const std::string &pairclassname);
+   virtual TVirtualStreamerInfo *GenerateInfoForPair(const std::string &firstname, const std::string &secondname);
+
    virtual TVirtualCollectionProxy *GenEmulatedProxy(const char* class_name, Bool_t silent);
    virtual TClassStreamer *GenEmulatedClassStreamer(const char* class_name, Bool_t silent);
    virtual TVirtualCollectionProxy *GenExplicitProxy( const ::ROOT::Detail::TCollectionProxyInfo &info, TClass *cl );

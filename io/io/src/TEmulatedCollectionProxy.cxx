@@ -39,7 +39,6 @@ the class TEmulatedMapProxy.
 // a dictionary (See end of file for implementation
 //
 
-static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const char *dmFull, Int_t offset);
 TStreamerInfo *R__GenerateTClassForPair(const std::string &f, const std::string &s);
 
 TEmulatedCollectionProxy::TEmulatedCollectionProxy(const TEmulatedCollectionProxy& copy)
@@ -608,105 +607,7 @@ void TEmulatedCollectionProxy::Streamer(TBuffer &b)
    }
 }
 
-//
-// Utility functions
-//
-static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const char *dmFull, Int_t offset)
-{
-   // Create a TStreamerElement for the type 'dmFull' and whose data member name is 'dmName'.
-
-   TString s1( TClassEdit::ShortType(dmFull,0) );
-   TString dmType( TClassEdit::ShortType(dmFull,1) );
-   Bool_t dmIsPtr = (s1 != dmType);
-   const char *dmTitle = "Emulation";
-
-   TDataType *dt = gROOT->GetType(dmType);
-   if (dt && dt->GetType() > 0 ) {  // found a basic type
-      Int_t dsize,dtype;
-      dtype = dt->GetType();
-      dsize = dt->Size();
-      if (dmIsPtr && dtype != kCharStar) {
-         Error("Pair Emulation Building","%s is not yet supported in pair emulation",
-               dmFull);
-         return 0;
-      } else {
-         TStreamerElement *el = new TStreamerBasicType(dmName,dmTitle,offset,dtype,dmFull);
-         el->SetSize(dsize);
-         return el;
-      }
-   } else {
-
-      static const char *full_string_name = "basic_string<char,char_traits<char>,allocator<char> >";
-      if (strcmp(dmType,"string") == 0 || strcmp(dmType,"std::string") == 0 || strcmp(dmType,full_string_name)==0 ) {
-         return new TStreamerSTLstring(dmName,dmTitle,offset,dmFull,dmIsPtr);
-      }
-      if (TClassEdit::IsSTLCont(dmType)) {
-         return new TStreamerSTL(dmName,dmTitle,offset,dmFull,dmFull,dmIsPtr);
-      }
-      TClass *clm = TClass::GetClass(dmType);
-      if (!clm) {
-         // either we have an Emulated enum or a really unknown class!
-         // let's just claim its an enum :(
-         Int_t dtype = kInt_t;
-         return new TStreamerBasicType(dmName,dmTitle,offset,dtype,dmFull);
-      }
-      // a pointer to a class
-      if ( dmIsPtr ) {
-         if (clm->IsTObject()) {
-            return new TStreamerObjectPointer(dmName,dmTitle,offset,dmFull);
-         } else {
-            return new TStreamerObjectAnyPointer(dmName,dmTitle,offset,dmFull);
-         }
-      }
-      // a class
-      if (clm->IsTObject()) {
-         return new TStreamerObject(dmName,dmTitle,offset,dmFull);
-      } else if(clm == TString::Class() && !dmIsPtr) {
-         return new TStreamerString(dmName,dmTitle,offset);
-      } else {
-         return new TStreamerObjectAny(dmName,dmTitle,offset,dmFull);
-      }
-   }
-}
-
-
 TStreamerInfo *R__GenerateTClassForPair(const std::string &fname, const std::string &sname)
 {
-   // Generate a TStreamerInfo for a std::pair<fname,sname>
-   // This TStreamerInfo is then used as if it was read from a file to generate
-   // and emulated TClass.
-
-   TStreamerInfo *i = (TStreamerInfo*)TClass::GetClass("pair<const int,int>")->GetStreamerInfo()->Clone();
-   std::string pname = "pair<"+fname+","+sname;
-   pname += (pname[pname.length()-1]=='>') ? " >" : ">";
-   i->SetName(pname.c_str());
-   i->SetClass(0);
-   i->GetElements()->Delete();
-   TStreamerElement *fel = R__CreateEmulatedElement("first", fname.c_str(), 0);
-   Int_t size = 0;
-   if (fel) {
-      i->GetElements()->Add( fel );
-
-      size = fel->GetSize();
-      Int_t sp = sizeof(void *);
-      //align the non-basic data types (required on alpha and IRIX!!)
-      if (size%sp != 0) size = size - size%sp + sp;
-   } else {
-      delete i;
-      return 0;
-   }
-   TStreamerElement *second = R__CreateEmulatedElement("second", sname.c_str(), size);
-   if (second) {
-      i->GetElements()->Add( second );
-   } else {
-      delete i;
-      return 0;
-   }
-   Int_t oldlevel = gErrorIgnoreLevel;
-   // Hide the warning about the missing pair dictionary.
-   gErrorIgnoreLevel = kError;
-   i->BuildCheck();
-   gErrorIgnoreLevel = oldlevel;
-   i->BuildOld();
-   return i;
+   return (TStreamerInfo*)TVirtualStreamerInfo::Factory()->GenerateInfoForPair(fname, sname);
 }
