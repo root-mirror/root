@@ -161,9 +161,6 @@ if(NOT CMAKE_CXX_STANDARD MATCHES "11|14|17")
   message(FATAL_ERROR "Unsupported C++ standard: ${CMAKE_CXX_STANDARD}")
 endif()
 
-# needed by roottest, to be removed once roottest is fixed
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX${CMAKE_CXX_STANDARD}_STANDARD_COMPILE_OPTION}")
-
 #---Check for libcxx option------------------------------------------------------------
 if(libcxx)
   CHECK_CXX_COMPILER_FLAG("-stdlib=libc++" HAS_LIBCXX11)
