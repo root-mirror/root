@@ -657,18 +657,19 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.10.0")
 endif()
 
 message(STATUS "ROOT Configuration \n
-System          ${CMAKE_SYSTEM}
-Processor       ${PROCESSOR} (${CMAKE_SYSTEM_PROCESSOR})
-Build type      ${CMAKE_BUILD_TYPE}
-Install path    ${CMAKE_INSTALL_PREFIX}
-Compiler        ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}
+System:          ${CMAKE_SYSTEM}
+Processor:       ${PROCESSOR} (${CMAKE_SYSTEM_PROCESSOR})
+Build type:      ${CMAKE_BUILD_TYPE}
+Install path:    ${CMAKE_INSTALL_PREFIX}
+Compiler:        ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}
+C++ standard:    ${CMAKE_CXX_STANDARD}
 Compiler flags:
 C               ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${BUILD_TYPE}}
 C++             ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE}}
 Linker flags:
-Executable      ${CMAKE_EXE_LINKER_FLAGS}
-Module          ${CMAKE_MODULE_LINKER_FLAGS}
-Shared          ${CMAKE_SHARED_LINKER_FLAGS}\n")
+ - Executable    ${CMAKE_EXE_LINKER_FLAGS}
+ - Module        ${CMAKE_MODULE_LINKER_FLAGS}
+ - Shared        ${CMAKE_SHARED_LINKER_FLAGS}\n")
 
 ROOT_SHOW_ENABLED_OPTIONS()
 
