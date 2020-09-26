@@ -1392,7 +1392,7 @@ bool TClassEdit::IsStdClass(const char *classname)
    classname += StdLen( classname );
    if ( strcmp(classname,"string")==0 ) return true;
    if ( strncmp(classname,"bitset<",strlen("bitset<"))==0) return true;
-   if ( strncmp(classname,"pair<",strlen("pair<"))==0) return true;
+   if ( IsStdPair(classname) ) return true;
    if ( strcmp(classname,"allocator")==0) return true;
    if ( strncmp(classname,"allocator<",strlen("allocator<"))==0) return true;
    if ( strncmp(classname,"greater<",strlen("greater<"))==0) return true;

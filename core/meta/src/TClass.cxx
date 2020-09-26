@@ -1586,7 +1586,7 @@ void TClass::Init(const char *name, Version_t cversion,
             fStreamer =  TVirtualStreamerInfo::Factory()->GenEmulatedClassStreamer( GetName(), silent );
          }
       }
-   } else if (!strncmp(GetName(),"std::pair<",10) || !strncmp(GetName(),"pair<",5) ) {
+   } else if (TClassEdit::IsStdPair(GetName())) {
       // std::pairs have implicit conversions
       GetSchemaRules(kTRUE);
    }
@@ -2001,7 +2001,7 @@ void TClass::BuildRealData(void* pointer, Bool_t isTransient)
    // and those for which the user explicitly requested a dictionary.
    if (!isTransient && GetState() != kHasTClassInit
        && TClassEdit::IsStdClass(GetName())
-       && strncmp(GetName(), "pair<", 5) != 0) {
+       && !TClassEdit::IsStdPair(GetName())) {
       Error("BuildRealData", "Inspection for %s not supported!", GetName());
    }
 
@@ -3996,7 +3996,7 @@ void TClass::GetMissingDictionaries(THashTable& result, bool recurse)
 
    THashTable visited;
 
-   if (strncmp(fName, "pair<", 5) == 0) {
+   if (TClassEdit::IsStdPair(fName)) {
       GetMissingDictionariesForPairElements(result, visited, recurse);
       return;
    }
@@ -6333,7 +6333,7 @@ UInt_t TClass::GetCheckSum(ECheckSum code, Bool_t &isvalid) const
    // otherwise, on some STL implementations, it can happen that pair has
    // base classes which are an internal implementation detail.
    TList *tlb = ((TClass*)this)->GetListOfBases();
-   if (tlb && !GetCollectionProxy() && strncmp(GetName(), "pair<", 5)) {
+   if (tlb && !GetCollectionProxy() && !TClassEdit::IsStdPair(GetName())) {
       // Loop over bases if not a proxied collection or a pair
 
       TIter nextBase(tlb);

@@ -2998,7 +2998,7 @@ void TFile::MakeProject(const char *dirname, const char * /*classes*/,
                   break;
                }
             default:
-               if (strncmp(key->GetName(),"pair<",strlen("pair<"))==0) {
+               if (TClassEdit::IsStdPair(key->GetName())) {
                   if (genreflex) {
                      tmp.Form("<class name=\"%s\" />\n",key->GetName());
                      if ( selections.Index(tmp) == kNPOS ) {
