@@ -2297,14 +2297,6 @@ Bool_t TClass::CanSplit() const
       if (!valueClass->CanSplit()) { This->fCanSplit = 0; return kFALSE; }
       if (valueClass->GetCollectionProxy() != 0) { This->fCanSplit = 0; return kFALSE; }
 
-      Int_t stl = -TClassEdit::IsSTLCont(GetName(), 0);
-      if ((stl==ROOT::kSTLmap || stl==ROOT::kSTLmultimap)
-          && !valueClass->HasDataMemberInfo())
-      {
-         This->fCanSplit = 0;
-         return kFALSE;
-      }
-
       This->fCanSplit = 1;
       return kTRUE;
 
