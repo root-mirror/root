@@ -3023,8 +3023,13 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
 //         ::Fatal("TClass::GetClass","The existing name (%s) for %s is different from the normalized name: %s\n",
 //                 altcl->GetName(), name, normalizedName.c_str());
 //   }
+
    // We want to avoid auto-parsing due to intentionally missing dictionary for std::pair.
    // However, we don't need this special treatement in rootcling (there is no auto-parsing)
+   // and we want to make that the TClass for the pair goes through the regular creation
+   // mechanism (i.e. in rootcling they should be in kInterpreted state and never in
+   // kEmulated state) so that they have proper interpreter (ClassInfo) information which
+   // will be used to create the TProtoClass (if one is requested for the pair).
    const bool ispair = TClassEdit::IsStdPair(normalizedName) && !IsFromRootCling();
 
    TClass *loadedcl = 0;

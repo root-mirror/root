@@ -117,6 +117,9 @@ namespace Internal {
          directive = Form("#include \"%s\"\n",filename);
       } else if (TClassEdit::IsStdPair(cl->GetName())) {
          TClassEdit::TSplitType split(cl->GetName());
+         // 4 elements expected: "pair", "first type name", "second type name", "trailing stars"
+         // However legacy code had a test for 3, we will leave it here until
+         // a test is developed (or found :) ) that exercise these lines of code.
          if (split.fElements.size() == 3 || split.fElements.size() == 4) {
             for (int arg = 1; arg < 3; ++arg) {
                TClass* clArg = TClass::GetClass(split.fElements[arg].c_str());
