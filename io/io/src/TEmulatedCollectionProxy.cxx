@@ -28,6 +28,7 @@ the class TEmulatedMapProxy.
 #include "TStreamerInfo.h"
 #include "TClassEdit.h"
 #include "TError.h"
+#include "TEnum.h"
 #include "TROOT.h"
 #include "Riostream.h"
 
@@ -139,18 +140,55 @@ TGenCollectionProxy *TEmulatedCollectionProxy::InitializeEx(Bool_t silent)
             constexpr size_t kSizeOfPtr = sizeof(void*);
             return in + (kSizeOfPtr - in%kSizeOfPtr)%kSizeOfPtr;
          };
+         struct GenerateTemporaryTEnum
+         {
+            TEnum *fTemporaryTEnum = nullptr;
+
+            GenerateTemporaryTEnum(UInt_t typecase, const std::string &enumname)
+            {
+               if (typecase == kIsEnum && !TEnum::GetEnum(enumname.c_str())) {
+                  fTemporaryTEnum = new TEnum();
+                  fTemporaryTEnum->SetName(enumname.c_str());
+                  gROOT->GetListOfEnums()->Add(fTemporaryTEnum);
+               }
+            }
+
+            ~GenerateTemporaryTEnum()
+            {
+               if (fTemporaryTEnum) {
+                  gROOT->GetListOfEnums()->Remove(fTemporaryTEnum);
+                  delete fTemporaryTEnum;
+               }
+            }
+         };
          switch ( fSTL_type )  {
             case ROOT::kSTLmap:
             case ROOT::kSTLmultimap:
                nam = "pair<"+inside[1]+","+inside[2];
                nam += (nam[nam.length()-1]=='>') ? " >" : ">";
-               if (0==TClass::GetClass(nam.c_str())) {
-                  // We need to emulate the pair
-                  R__GenerateTClassForPair(inside[1],inside[2]);
-               }
-               fValue = new Value(nam,silent);
                fKey   = new Value(inside[1],silent);
                fVal   = new Value(inside[2],silent);
+               {
+                  // We have the case of an on-file enum or an unknown class, since
+                  // this comes from a file, we also know that the type was valid but
+                  // since we have no information it was either
+                  //   a. an enum
+                  //   b. a class of type that was never stored
+                  //   c. a class with a custom streamer
+                  // We can "safely" pretend that it is an enum in all 3 case because
+                  //   a. obviously
+                  //   b. it will not be used anyway (no object of that type on the file)
+                  //   c. since we don't know the class we don't have the Streamer and thus can read it anyway
+                  // So let's temporarily pretend it is an enum.
+                  GenerateTemporaryTEnum keyEnum(fKey->fCase, inside[1]);
+                  GenerateTemporaryTEnum valueEnum(fVal->fCase, inside[2]);
+
+                  if (0==TClass::GetClass(nam.c_str())) {
+                     // We need to emulate the pair
+                     R__GenerateTClassForPair(inside[1],inside[2]);
+                  }
+               }
+               fValue = new Value(nam,silent);
                if ( !(*fValue).IsValid() || !fKey->IsValid() || !fVal->IsValid() ) {
                   return 0;
                }
