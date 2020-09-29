@@ -1707,6 +1707,8 @@ function(ROOT_ADD_GTEST test_suite)
     target_include_directories(${test_suite} PRIVATE ${ARG_INCLUDE_DIRS})
   endif(ARG_INCLUDE_DIRS)
 
+  set_property(TARGET ${test_suite} PROPERTY CXX_STANDARD ${CMAKE_CXX_STANDARD})
+
   if(MSVC)
     set(test_exports "/EXPORT:_Init_thread_abort /EXPORT:_Init_thread_epoch
         /EXPORT:_Init_thread_footer /EXPORT:_Init_thread_header /EXPORT:_tls_index")
