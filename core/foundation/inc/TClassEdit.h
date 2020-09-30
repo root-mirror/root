@@ -192,6 +192,11 @@ namespace TClassEdit {
       return 0 == name.compare(0, 10, "std::pair<") || 0 == name.compare(0, 5, "pair<");
    }
    inline bool IsStdPair(ROOT::Internal::TStringView name) {return IsStdPair(std::string_view(name)); }
+   inline bool IsStdPairBase(std::string_view name)
+   {
+      return 0 == name.compare(0, 17, "std::__pair_base<") || 0 == name.compare(0, 12, "__pair_base<");
+   }
+   inline bool IsStdPairBase(ROOT::Internal::TStringView name) {return IsStdPair(std::string_view(name)); }
    inline std::string GetUniquePtrType(std::string_view name)
    {
       // Find the first template parameter

@@ -3031,6 +3031,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
    // kEmulated state) so that they have proper interpreter (ClassInfo) information which
    // will be used to create the TProtoClass (if one is requested for the pair).
    const bool ispair = TClassEdit::IsStdPair(normalizedName) && !IsFromRootCling();
+   const bool ispairbase = TClassEdit::IsStdPairBase(normalizedName) && !IsFromRootCling();
 
    TClass *loadedcl = 0;
    if (checkTable) {
@@ -3043,7 +3044,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
       if (e)
          return nullptr;
       // Maybe this was a typedef: let's try to see if this is the case
-      if (!loadedcl && !ispair) {
+      if (!loadedcl && !ispair && !ispairbase) {
          if (TDataType* theDataType = gROOT->GetType(normalizedName.c_str())){
             // We have a typedef: we get the name of the underlying type
             auto underlyingTypeName = theDataType->GetTypeName();
@@ -3076,7 +3077,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
    }
 
    // Check the interpreter only after autoparsing the template if any.
-   {
+   if (!ispairbase) {
       std::string::size_type posLess = normalizedName.find('<');
       if (posLess != std::string::npos) {
          gCling->AutoParse(normalizedName.substr(0, posLess).c_str());

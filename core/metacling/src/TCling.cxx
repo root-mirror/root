@@ -3924,7 +3924,7 @@ TCling::CheckClassInfo(const char *name, Bool_t autoload, Bool_t isClassOrNamesp
    };
 
    MaybeSuspendAutoLoadParse autoLoadParseRAII( autoload );
-   if (TClassEdit::IsStdPair(classname))
+   if (TClassEdit::IsStdPair(classname) || TClassEdit::IsStdPairBase(classname))
       autoLoadParseRAII.SuspendAutoParsing();
 
    // First we want to check whether the decl exist, but _without_
