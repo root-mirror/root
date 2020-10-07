@@ -595,6 +595,21 @@ if(xml)
   endif()
 endif()
 
+#---Check for RYML --------------------------------------------------------------------
+
+if(ryml)
+  message(STATUS "Looking for RYML")
+  find_package(ryml)
+  if(NOT ${RYML_FOUND})
+    if(fail-on-missing)
+      message(FATAL_ERROR "RYML not found and they are required (ryml option enabled)")
+    else()
+      message(STATUS "RYML not found. Switching off RYML option")
+      set(ryml OFF CACHE BOOL "" FORCE)
+    endif()
+  endif()
+endif()
+
 #---Check for OpenSSL------------------------------------------------------------------
 foreach(suffix FOUND INCLUDE_DIR INCLUDE_DIRS LIBRARY LIBRARIES VERSION)
   unset(OPENSSL_${suffix} CACHE)
