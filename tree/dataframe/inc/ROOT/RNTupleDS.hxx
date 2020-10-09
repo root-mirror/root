@@ -49,6 +49,8 @@ class RNTupleDS final : public ROOT::RDF::RDataSource {
 
    std::vector<std::string> fColumnNames;
    std::vector<std::string> fColumnTypes;
+   /// Applies TClassEdit::GetNormalizedName to fColumnTypes
+   std::vector<std::string> fNormalizedColumnTypes;
    std::vector<size_t> fActiveColumns;
 
    unsigned fNSlots = 0;

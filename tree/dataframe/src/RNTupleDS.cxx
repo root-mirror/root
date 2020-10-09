@@ -36,6 +36,9 @@ void RNTupleDS::AddFields(const RNTupleDescriptor &desc, DescriptorId_t parentId
    for (const auto& f : desc.GetFieldRange(parentId)) {
       fColumnNames.emplace_back(desc.GetQualifiedFieldName(f.GetId()));
       fColumnTypes.emplace_back(f.GetTypeName());
+      std::string normalized;
+      TClassEdit::GetNormalizedName(normalized, f.GetTypeName());
+      fNormalizedColumnTypes.emplace_back(normalized);
       if (f.GetStructure() == ENTupleStructure::kRecord)
          AddFields(desc, f.GetId());
    }
@@ -53,11 +56,28 @@ RNTupleDS::RNTupleDS(std::unique_ptr<Detail::RPageSource> pageSource)
 }
 
 
-RDF::RDataSource::Record_t RNTupleDS::GetColumnReadersImpl(std::string_view name, const std::type_info& /* ti */)
+RDF::RDataSource::Record_t RNTupleDS::GetColumnReadersImpl(std::string_view name, const std::type_info& ti)
 {
    const auto colIdx = std::distance(
       fColumnNames.begin(), std::find(fColumnNames.begin(), fColumnNames.end(), name));
-   // TODO(jblomer): check expected type info like in, e.g., RRootDS.cxx
+
+   std::string demangled = ROOT::Internal::RDF::DemangleTypeIdName(ti);
+   std::string normalized;
+   TClassEdit::GetNormalizedName(normalized, demangled.c_str());
+   if (normalized != fNormalizedColumnTypes[colIdx]) {
+      std::string err = "The type of column \"";
+      err += name;
+      err += "\" is ";
+      err += fColumnTypes[colIdx];
+      if (fColumnTypes[colIdx] != fNormalizedColumnTypes[colIdx])
+         err += " (= " + fNormalizedColumnTypes[colIdx] + ")";
+      err += " but ";
+      err += demangled;
+      if (demangled != normalized)
+         err += " (= " + normalized + ")";
+      err += " has been selected";
+      throw std::runtime_error(err);
+   }
 
    std::vector<void*> ptrs;
    for (unsigned int slot = 0; slot < fNSlots; ++slot) {
