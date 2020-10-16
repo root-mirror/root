@@ -1899,24 +1899,18 @@ RooPlot* RooAbsReal::plotOn(RooPlot* frame, RooLinkedList& argList) const
       sliceSet = new RooArgSet ;
     }
 
-    // Prepare comma separated label list for parsing
-    char buf[1024] ;
-    strlcpy(buf,sliceCatState,1024) ;
-    const char* slabel = strtok(buf,",") ;
-
     // Loop over all categories provided by (multiple) Slice() arguments
-    TIterator* iter = sliceCatList.MakeIterator() ;
-    RooCategory* scat ;
-    while((scat=(RooCategory*)iter->Next())) {
-      if (slabel) {
-	// Set the slice position to the value indicate by slabel
-	scat->setLabel(slabel) ;
-	// Add the slice category to the master slice set
-	sliceSet->add(*scat,kFALSE) ;
+    auto catTokens = RooHelpers::tokenise(sliceCatState, ",");
+    std::unique_ptr<TIterator> iter( sliceCatList.MakeIterator() );
+    for (unsigned int i=0; i < catTokens.size(); ++i) {
+      auto scat = static_cast<RooCategory*>(iter->Next());
+      if (scat) {
+        // Set the slice position to the value indicate by slabel
+        scat->setLabel(catTokens[i]) ;
+        // Add the slice category to the master slice set
+        sliceSet->add(*scat,kFALSE) ;
       }
-      slabel = strtok(0,",") ;
     }
-    delete iter ;
   }
 
   o.precision = pc.getDouble("precision") ;
@@ -1963,18 +1957,15 @@ RooPlot* RooAbsReal::plotOn(RooPlot* frame, RooLinkedList& argList) const
     makeProjectionSet(frame->getPlotVar(),frame->getNormVars(),projectedVars,kTRUE) ;
 
     // Take out the sliced variables
-    TIterator* iter = sliceSet->createIterator() ;
-    RooAbsArg* sliceArg ;
-    while((sliceArg=(RooAbsArg*)iter->Next())) {
+    for (const auto sliceArg : *sliceSet) {
       RooAbsArg* arg = projectedVars.find(sliceArg->GetName()) ;
       if (arg) {
-	projectedVars.remove(*arg) ;
+        projectedVars.remove(*arg) ;
       } else {
-	coutI(Plotting) << "RooAbsReal::plotOn(" << GetName() << ") slice variable "
-			<< sliceArg->GetName() << " was not projected anyway" << endl ;
+        coutI(Plotting) << "RooAbsReal::plotOn(" << GetName() << ") slice variable "
+            << sliceArg->GetName() << " was not projected anyway" << endl ;
       }
     }
-    delete iter ;
   } else if (projSet) {
     cxcoutD(Plotting) << "RooAbsReal::plotOn(" << GetName() << ") Preprocessing: have projSet " << *projSet << endl ;
     makeProjectionSet(frame->getPlotVar(),projSet,projectedVars,kFALSE) ;

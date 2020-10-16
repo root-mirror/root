@@ -103,6 +103,7 @@ RooMsgService::RooMsgService()
   _topicNames[Contents]="Contents" ;
   _topicNames[DataHandling]="DataHandling" ;
   _topicNames[NumIntegration]="NumericIntegration" ;
+  _topicNames[FastEvaluations] = "FastEvaluations";
   _topicNames[HistFactory]="HistFactory";
 
   reset();

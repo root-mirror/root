@@ -781,6 +781,7 @@ void RooAbsPdf::logBatchComputationErrors(RooSpan<const double>& outputs, std::s
   }
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Compute the log-likelihoods for all events in the requested batch.
 /// The arguments are passed over to getValBatch().
@@ -799,6 +800,41 @@ RooSpan<const double> RooAbsPdf::getLogValBatch(std::size_t begin, std::size_t m
 
   auto output = _batchData.makeWritableBatchUnInit(begin, pdfValues.size(),
       normSet, BatchHelpers::BatchData::kgetLogVal);
+
+  for (std::size_t i = 0; i < pdfValues.size(); ++i) { //CHECK_VECTORISE
+    const double prob = pdfValues[i];
+
+    double theLog = _rf_fast_log(prob);
+
+    if (prob < 0) {
+      theLog = std::numeric_limits<double>::quiet_NaN();
+    } else if (prob == 0 || TMath::IsNaN(prob)) {
+      theLog = -std::numeric_limits<double>::infinity();
+    }
+
+    output[i] = theLog;
+  }
+
+  return output;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Compute the log-likelihoods for all events in the requested batch.
+/// The arguments are passed over to getValBatch().
+/// \param[in] evalData Struct with data that should be used for evaluation.
+/// \param[in] normSet Optional normalisation set to be used during computations.
+/// \return    Returns a batch of doubles that contains the log probabilities.
+RooSpan<const double> RooAbsPdf::getLogProbabilities(BatchHelpers::RunContext& evalData, const RooArgSet* normSet) const
+{
+  auto pdfValues = getValues(evalData, normSet);
+
+  if (checkInfNaNNeg(pdfValues)) {
+    logBatchComputationErrors(pdfValues, 0);
+  }
+
+  evalData.logProbabilities.resize(pdfValues.size());
+  RooSpan<double> output( evalData.logProbabilities );
 
   for (std::size_t i = 0; i < pdfValues.size(); ++i) { //CHECK_VECTORISE
     const double prob = pdfValues[i];

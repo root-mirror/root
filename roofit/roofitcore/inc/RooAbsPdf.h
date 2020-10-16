@@ -207,6 +207,7 @@ public:
   RooSpan<const double> getValues(BatchHelpers::RunContext& evalData, const RooArgSet* normSet) const;
   RooSpan<const double> getLogValBatch(std::size_t begin, std::size_t batchSize,
       const RooArgSet* normSet = nullptr) const;
+  RooSpan<const double> getLogProbabilities(BatchHelpers::RunContext& evalData, const RooArgSet* normSet = nullptr) const;
 
   /// \copydoc getNorm(const RooArgSet*) const
   Double_t getNorm(const RooArgSet& nset) const { 

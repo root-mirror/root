@@ -132,6 +132,7 @@ protected:
 
   Double_t evaluate() const;
   virtual RooSpan<double> evaluateBatch(std::size_t begin, std::size_t batchSize) const;
+  RooSpan<double> evaluateSpan(BatchHelpers::RunContext& evalData, const RooArgSet* normSet) const;
 
 
   mutable RooAICRegistry _codeReg ;  //! Registry of component analytical integration codes

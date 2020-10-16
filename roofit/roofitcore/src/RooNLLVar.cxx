@@ -40,6 +40,8 @@ In extended mode, a
 #include "RooRealVar.h"
 #include "RooProdPdf.h"
 #include "RooNaNPacker.h"
+#include "RunContext.h"
+
 #ifdef ROOFIT_CHECK_CACHED_VALUES
 #include "BatchHelpers.h"
 #endif
@@ -53,6 +55,8 @@ ClassImp(RooNLLVar)
 
 RooArgSet RooNLLVar::_emptySet ;
 
+RooNLLVar::RooNLLVar()
+{ }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Construct likelihood from given p.d.f and (binned or unbinned dataset)
@@ -452,6 +456,13 @@ Double_t RooNLLVar::evaluatePartition(std::size_t firstEvent, std::size_t lastEv
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+/// Compute probabilites of all data events. Use faster batch interface.
+/// \param[in] stepSize Stride when moving through the dataset.
+///   \note For batch computations, the step size **must** be one.
+/// \param[in] firstEvent  First event to be processed.
+/// \param[in] lastEvent   First event not to be processed.
+/// \return Tuple with (Kahan sum of probabilities, carry of kahan sum, sum of weights)
 std::tuple<double, double, double> RooNLLVar::computeBatched(std::size_t stepSize, std::size_t firstEvent, std::size_t lastEvent) const
 {
   if (stepSize != 1) {
@@ -460,10 +471,36 @@ std::tuple<double, double, double> RooNLLVar::computeBatched(std::size_t stepSiz
 
   auto pdfClone = static_cast<const RooAbsPdf*>(_funcClone);
 
-  auto results = pdfClone->getLogValBatch(firstEvent, lastEvent-firstEvent, _normSet);
+#ifdef ROOFIT_NEW_BATCH_INTERFACE
+  // Create a RunContext that will own the memory where computation results are stored.
+  // Holding on to this struct in between function calls will make sure that the memory
+  // is only allocated once.
+  if (!_evalData) {
+    _evalData.reset(new BatchHelpers::RunContext);
+  }
+  _evalData->clear();
+  _dataClone->getBatches(*_evalData, firstEvent, lastEvent-firstEvent);
 
+  auto results = pdfClone->getLogProbabilities(*_evalData, _normSet);
+#else
+  auto results = pdfClone->getLogValBatch(firstEvent, lastEvent-firstEvent, _normSet);
+#endif
 
 #ifdef ROOFIT_CHECK_CACHED_VALUES
+
+#ifdef ROOFIT_NEW_BATCH_INTERFACE
+  for (std::size_t evtNo = firstEvent; evtNo < lastEvent; evtNo += (lastEvent-firstEvent)/100) {
+    _dataClone->get(evtNo);
+    assert(_dataClone->valid());
+    pdfClone->getValV(_normSet);
+    try {
+      BatchHelpers::BatchInterfaceAccessor::checkBatchComputation(*pdfClone, *_evalData, evtNo-firstEvent, _normSet);
+    } catch (std::exception& e) {
+      std::cerr << "ERROR when checking batch computation for event " << evtNo << ":\n"
+          << e.what() << std::endl;
+    }
+  }
+#else
   for (std::size_t evtNo = firstEvent; evtNo < lastEvent; ++evtNo) {
     _dataClone->get(evtNo);
     assert(_dataClone->valid());
@@ -475,6 +512,8 @@ std::tuple<double, double, double> RooNLLVar::computeBatched(std::size_t stepSiz
           << e.what() << std::endl;
     }
   }
+#endif
+
 #endif
 
 

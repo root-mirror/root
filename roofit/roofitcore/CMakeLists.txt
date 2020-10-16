@@ -444,6 +444,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooFitLegacy/RooCatTypeLegacy.cxx
     src/RooFitLegacy/RooCategorySharedProperties.cxx
     src/RooFitLegacy/RooMultiCatIter.cxx
+    src/RooFitLegacy/OldRooIntegrator1D.cxx
   DICTIONARY_OPTIONS
     "-writeEmptyRootPCM"
   DEPENDENCIES

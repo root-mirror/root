@@ -68,13 +68,12 @@ public:
   virtual Double_t weight(Int_t index) const ;
   virtual Bool_t isWeighted() const { return (_wgtVar!=0||_extWgtArray!=0) ; }
 
-  virtual std::vector<RooSpan<const double>> getBatch(std::size_t first, std::size_t last) const {
+  virtual BatchHelpers::RunContext getBatches(std::size_t first, std::size_t len) const {
     //TODO
     std::cerr << "This functionality is not yet implemented for tree data stores." << std::endl;
-    assert(false);
-
-    std::vector<double> vec(first, last);
-    return {RooSpan<const double>(vec)};
+    throw std::logic_error("getBatches() not implemented in RooTreeDataStore.");
+    (void)first; (void)len;
+    return {};
   }
   virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const;
 

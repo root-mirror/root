@@ -859,6 +859,42 @@ RooSpan<double> RooAddPdf::evaluateBatch(std::size_t begin, std::size_t batchSiz
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Compute addition of PDFs in batches.
+RooSpan<double> RooAddPdf::evaluateSpan(BatchHelpers::RunContext& evalData, const RooArgSet* normSet) const {
+  auto normAndCache = getNormAndCache(normSet);
+  const RooArgSet* nset = normAndCache.first;
+  CacheElem* cache = normAndCache.second;
+
+
+  RooSpan<double> output;
+
+  for (unsigned int pdfNo = 0; pdfNo < _pdfList.size(); ++pdfNo) {
+    const auto& pdf = static_cast<RooAbsPdf&>(_pdfList[pdfNo]);
+    auto pdfOutputs = pdf.getValues(evalData, nset);
+    if (output.empty()) {
+      output = evalData.makeBatch(this, pdfOutputs.size());
+      for (double& val : output) { //CHECK_VECTORISE
+        val = 0.;
+      }
+    }
+    assert(output.size() == pdfOutputs.size());
+
+    const double coef = _coefCache[pdfNo] / (cache->_needSupNorm ?
+        static_cast<RooAbsReal*>(cache->_suppNormList.at(pdfNo))->getVal() :
+        1.);
+
+    if (pdf.isSelectedComp()) {
+      for (std::size_t i = 0; i < output.size(); ++i) { //CHECK_VECTORISE
+        output[i] += pdfOutputs[i] * coef;
+      }
+    }
+  }
+
+  return output;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// Reset error counter to given value, limiting the number
 /// of future error messages for this pdf to 'resetValue'
 

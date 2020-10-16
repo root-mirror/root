@@ -100,13 +100,12 @@ public:
 
   virtual void forceCacheUpdate() ;
   
-  virtual std::vector<RooSpan<const double>> getBatch(std::size_t first, std::size_t last) const {
+  virtual BatchHelpers::RunContext getBatches(std::size_t first, std::size_t len) const {
     //TODO
     std::cerr << "This functionality is not yet implemented for composite data stores." << std::endl;
-    throw std::logic_error("RooCompositeDataStore doesn't have batch access yet.");
-
-    std::vector<double> vec(first, last);
-    return {RooSpan<const double>(vec)};
+    throw std::logic_error("getBatches() not implemented for RooCompositeDataStore.");
+    (void)first; (void)len;
+    return {};
   }
   virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const;
 

@@ -48,6 +48,7 @@ or RooStringVar objects, thus data can be binned in real and/or discrete dimensi
 #include "RooFormulaVar.h"
 #include "RooFormula.h"
 #include "RooUniformBinning.h"
+#include "RooSpan.h"
 
 #include "TH1.h"
 #include "TTree.h"
@@ -2069,4 +2070,30 @@ void RooDataHist::Streamer(TBuffer &R__b)
    }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+/// Return event weights of all events in range [first, first+len).
+/// If no contiguous structure of weights is stored, an empty batch can be returned.
+/// This indicates that the weight is constant. Use weight() to retrieve it.
+RooSpan<const double> RooDataHist::getWeightBatch(std::size_t first, std::size_t len) const {
+  if (first > static_cast<std::size_t>(_arrSize))
+    return {};
+
+  return {&_wgt[first], std::min(_arrSize - first + len, len)};
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Write information to retrieve data columns into `evalData.spans`.
+/// All spans belonging to variables of this dataset are overwritten. Spans to other
+/// variables remain intact.
+/// \param[out] evalData Store references to all data batches in this struct's `spans`.
+/// The key to retrieve an item is the pointer of the variable that owns the data.
+/// \param first Index of first event that ends up in the batch.
+/// \param len   Number of events in each batch.
+void RooDataHist::getBatches(BatchHelpers::RunContext& evalData, std::size_t begin, std::size_t len) const {
+  for (auto&& batch : store()->getBatches(begin, len).spans) {
+    evalData.spans[batch.first] = std::move(batch.second);
+  }
+}
 

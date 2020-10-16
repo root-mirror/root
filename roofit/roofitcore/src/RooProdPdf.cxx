@@ -58,6 +58,7 @@ have to appear in any specific place in the list.
 #include "RooCustomizer.h"
 #include "RooRealIntegral.h"
 #include "RooTrace.h"
+#include "RunContext.h"
 #include "strtok.h"
 
 #include <cstring>
@@ -544,6 +545,50 @@ RooSpan<double> RooProdPdf::evaluateBatch(std::size_t begin, std::size_t size) c
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+/// Evaluate product of PDFs using input data in `evalData`.
+RooSpan<double> RooProdPdf::evaluateSpan(BatchHelpers::RunContext& evalData, const RooArgSet* normSet) const {
+  int code;
+  auto cache = static_cast<CacheElem*>(_cacheMgr.getObj(normSet, nullptr, &code));
+
+  // If cache doesn't have our configuration, recalculate here
+  if (!cache) {
+    code = getPartIntList(normSet, nullptr);
+    cache = static_cast<CacheElem*>(_cacheMgr.getObj(normSet, nullptr, &code));
+  }
+
+  if (cache->_isRearranged) {
+    auto numerator = cache->_rearrangedNum->getValues(evalData, normSet);
+    auto denominator = cache->_rearrangedDen->getValues(evalData, normSet);
+    auto outputs = evalData.makeBatch(this, numerator.size());
+
+    for (std::size_t i=0; i < outputs.size(); ++i) {
+      outputs[i] = numerator[i] / denominator[i];
+    }
+
+    return outputs;
+  } else {
+    assert(cache->_normList.size() == cache->_partList.size());
+    RooSpan<double> outputs;
+    for (std::size_t i = 0; i < cache->_partList.size(); ++i) {
+      const auto& partInt = static_cast<const RooAbsReal&>(cache->_partList[i]);
+      const auto partNorm = cache->_normList[i].get();
+
+      const auto partialInt = partInt.getValues(evalData, partNorm->getSize() > 0 ? partNorm : nullptr);
+
+      if (outputs.empty()) {
+        outputs = evalData.makeBatch(this,  partialInt.size());
+        for (double& val : outputs) val = 1.;
+      }
+
+      for (std::size_t j=0; j < outputs.size(); ++j) {
+        outputs[j] *= partialInt[j];
+      }
+    }
+
+    return outputs;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Factorize product in irreducible terms for given choice of integration/normalization

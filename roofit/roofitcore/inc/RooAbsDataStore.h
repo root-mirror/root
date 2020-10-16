@@ -27,6 +27,9 @@ class RooAbsArg ;
 class RooArgList ;
 class TIterator ;
 class TTree ;
+namespace BatchHelpers {
+struct RunContext;
+}
 
 class RooAbsDataStore : public TNamed, public RooPrintable {
 public:
@@ -53,7 +56,8 @@ public:
   virtual Double_t weight(Int_t index) const = 0 ;
   virtual Bool_t isWeighted() const = 0 ;
 
-  virtual std::vector<RooSpan<const double>> getBatch(std::size_t first, std::size_t len) const = 0;
+  /// Retrieve batches for all observables in this data store.
+  virtual BatchHelpers::RunContext getBatches(std::size_t first, std::size_t len) const = 0;
   virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const = 0;
 
   // Change observable name

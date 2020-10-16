@@ -19,8 +19,16 @@
 \class RooVectorDataStore
 \ingroup Roofitcore
 
-RooVectorDataStore is the abstract base class for data collection that
-use a TTree as internal storage mechanism
+RooVectorDataStore uses std::vectors to store data columns. Each of these vectors
+is associated to an instance of a RooAbsReal, whose values it represents. Those
+RooAbsReal are the observables of the dataset.
+In addition to the observables, a data column can be bound to a different instance
+of a RooAbsReal (e.g., the column "x" can be bound to the observable "x" of a computation
+graph using attachBuffers()). In this case, a get() operation writes the value of
+the requested column into the bound real.
+
+As a faster alternative to loading values one-by-one, one can use the function getBatches(),
+which returns spans pointing directly to the data.
 **/
 
 #include "RooVectorDataStore.h"
@@ -35,11 +43,10 @@ use a TTree as internal storage mechanism
 #include "RooHistError.h"
 #include "RooTrace.h"
 #include "RooHelpers.h"
+#include "RunContext.h"
 
-#include "TTree.h"
-#include "TChain.h"
-#include "TBuffer.h"
 #include "TList.h"
+#include "TBuffer.h"
 
 #include <iomanip>
 using namespace std;
@@ -1411,27 +1418,47 @@ void RooVectorDataStore::RealFullVector::Streamer(TBuffer &R__b)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Return a batch of the data columns for all events in [firstEvent, lastEvent[.
+/// Return batches of the data columns for the requested events.
+/// \param[in] first First event in the batches.
+/// \param[in] len   Number of events in batches.
+/// \return RunContext object whose member `spans` maps RooAbsReal pointers to spans with
+/// the associated data.
+BatchHelpers::RunContext RooVectorDataStore::getBatches(std::size_t first, std::size_t len) const {
+  BatchHelpers::RunContext evalData;
 
-std::vector<RooSpan<const double>> RooVectorDataStore::getBatch(std::size_t firstEvent, std::size_t lastEvent) const
-{
-  std::vector<RooSpan<const double>> ret;
-
-  ret.reserve(_realStoreList.size());
+  auto emplace = [this,&evalData,first,len](const RealVector* realVec) {
+    auto span = realVec->getRange(first, first + len);
+    auto result = evalData.spans.emplace(realVec->_nativeReal, span);
+    if (result.second == false || result.first->second.size() != len) {
+      const auto size = result.second ? result.first->second.size() : 0;
+      coutE(DataHandling) << "A batch of data for '" << realVec->_nativeReal->GetName()
+          << "' was requested from " << first << " to " << first+len
+          << ", but only the events [" << first << ", " << first + size << ") are available." << std::endl;
+    }
+    if (realVec->_real) {
+      // If a buffer is attached, i.e. we are ready to load into a RooAbsReal outside of our dataset,
+      // we can directly map our spans to this real.
+      auto result = evalData.spans.emplace(realVec->_real, std::move(span));
+    }
+  };
 
   for (const auto realVec : _realStoreList) {
-    ret.emplace_back(realVec->getRange(firstEvent, lastEvent));
+    emplace(realVec);
+  }
+  for (const auto realVec : _realfStoreList) {
+    emplace(realVec);
   }
 
   if (_cache) {
-    ret.reserve(ret.size() + _cache->_realStoreList.size());
-
     for (const auto realVec : _cache->_realStoreList) {
-      ret.emplace_back(realVec->getRange(firstEvent, lastEvent));
+      emplace(realVec);
+    }
+    for (const auto realVec : _cache->_realfStoreList) {
+      emplace(realVec);
     }
   }
 
-  return ret;
+  return evalData;
 }
 
 

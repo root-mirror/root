@@ -13,33 +13,30 @@
  * with or without modification, are permitted according to the terms        *
  * listed in LICENSE (http://roofit.sourceforge.net/license.txt)             *
  *****************************************************************************/
-#ifndef ROO_INTEGRATOR_1D
-#define ROO_INTEGRATOR_1D
+#ifndef OLD_ROO_INTEGRATOR_1D
+#define OLD_ROO_INTEGRATOR_1D
 
 #include "RooAbsIntegrator.h"
 #include "RooNumIntConfig.h"
-#include <array>
-#include <tuple>
-#include <vector>
 
-class RooIntegrator1D : public RooAbsIntegrator {
+class OldRooIntegrator1D : public RooAbsIntegrator {
 public:
 
   // Constructors, assignment etc
   enum SummationRule { Trapezoid, Midpoint };
-  RooIntegrator1D() { };
+  OldRooIntegrator1D() ;
 
-  RooIntegrator1D(const RooAbsFunc& function, SummationRule rule= Trapezoid,
+  OldRooIntegrator1D(const RooAbsFunc& function, SummationRule rule= Trapezoid,
 		  Int_t maxSteps= 0, Double_t eps= 0) ; 
-  RooIntegrator1D(const RooAbsFunc& function, Double_t xmin, Double_t xmax,
+  OldRooIntegrator1D(const RooAbsFunc& function, Double_t xmin, Double_t xmax,
 		  SummationRule rule= Trapezoid, Int_t maxSteps= 0, Double_t eps= 0) ; 
 
-  RooIntegrator1D(const RooAbsFunc& function, const RooNumIntConfig& config) ;
-  RooIntegrator1D(const RooAbsFunc& function, Double_t xmin, Double_t xmax, 
+  OldRooIntegrator1D(const RooAbsFunc& function, const RooNumIntConfig& config) ;
+  OldRooIntegrator1D(const RooAbsFunc& function, Double_t xmin, Double_t xmax,
 		  const RooNumIntConfig& config) ;
 
   virtual RooAbsIntegrator* clone(const RooAbsFunc& function, const RooNumIntConfig& config) const ;
-  virtual ~RooIntegrator1D() = default;
+  virtual ~OldRooIntegrator1D();
 
   virtual Bool_t checkLimits() const;
   virtual Double_t integral(const Double_t *yvec=0) ;
@@ -53,12 +50,7 @@ public:
   virtual Bool_t canIntegrateND() const { return kFALSE ; }
   virtual Bool_t canIntegrateOpenEnded() const { return kFALSE ; }
 
-  /// Set whether series acceleration should be applied. Defaults to true.
-  void applySeriesAcceleration(bool arg) {
-    _doExtrap = arg;
-  }
-
-private:
+protected:
 
   friend class RooNumIntFactory ;
   static void registerIntegrator(RooNumIntFactory& fact) ;	
@@ -74,21 +66,31 @@ private:
   Int_t _fixSteps ;      // Fixed number of steps 
   Double_t _epsAbs ;     // Absolute convergence tolerance
   Double_t _epsRel ;     // Relative convergence tolerance
-  Bool_t _doExtrap ;     // Apply series acceleration
+  Bool_t _doExtrap ;     // Apply conversion step?
+  enum { _nPoints = 5 };
 
   // Numerical integrator support functions
-  std::vector<double> computeTrapezoids(unsigned int start, unsigned int end, double previousSum, const double* parameters, std::size_t nPar) const;
-  std::vector<double> computeMidpoints(unsigned int start, unsigned int end, double previousSum, const double* parameters, std::size_t nPar) const;
-  RooSpan<const double> evalIntegrand(const std::vector<double>& xValues, const double* parameters, std::size_t nPar) const;
-
-  Double_t addMidpoints(Int_t n, const double* parameters) ;
+  Double_t addTrapezoids(Int_t n) ;
+  Double_t addMidpoints(Int_t n) ;
+  void extrapolate(Int_t n) ;
   
   // Numerical integrator workspace
   Double_t _xmin;              //! Lower integration bound
   Double_t _xmax;              //! Upper integration bound
-  std::vector<double> _s;      //! Integrator workspace
+  Double_t _range;             //! Size of integration range
+  Double_t _extrapValue;               //! Extrapolated value
+  Double_t _extrapError;               //! Error on extrapolated value
+  Double_t *_h ;                       //! Integrator workspace
+  Double_t *_s ;                       //! Integrator workspace
+  Double_t *_c ;                       //! Integrator workspace
+  Double_t *_d ;                       //! Integrator workspace
+  Double_t _savedResult;               //! Integrator workspace
 
-  ClassDef(RooIntegrator1D,0) // 1-dimensional numerical integration engine
+  Double_t* xvec(Double_t& xx) { _x[0] = xx ; return _x ; }
+
+  Double_t *_x ; //! do not persist
+
+  ClassDefInline(OldRooIntegrator1D,0) // 1-dimensional numerical integration engine
 };
 
 #endif

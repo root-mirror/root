@@ -16,21 +16,22 @@
 #ifndef ROO_VECTOR_DATA_STORE
 #define ROO_VECTOR_DATA_STORE
 
-#include <list>
-#include <vector>
-#include <algorithm>
 #include "RooAbsDataStore.h"
 #include "RooAbsCategory.h"
 #include "RooAbsReal.h"
 #include "RooChangeTracker.h"
 
-#define VECTOR_BUFFER_SIZE 1024
+#include <list>
+#include <vector>
+#include <algorithm>
 
 class RooAbsArg ;
 class RooArgList ;
 class TTree ;
 class RooFormulaVar ;
 class RooArgSet ;
+
+#define VECTOR_BUFFER_SIZE 1024
 
 class RooVectorDataStore : public RooAbsDataStore {
 public:
@@ -76,7 +77,7 @@ public:
   virtual Double_t weight(Int_t index) const override;
   virtual Bool_t isWeighted() const override { return (_wgtVar!=0||_extWgtArray!=0) ; }
 
-  virtual std::vector<RooSpan<const double>> getBatch(std::size_t first, std::size_t last) const override;
+  BatchHelpers::RunContext getBatches(std::size_t first, std::size_t len) const override;
   virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const override;
 
   // Change observable name
@@ -285,8 +286,8 @@ public:
 
   private:
     friend class RooVectorDataStore ;
-    RooAbsReal* _nativeReal ;
-    RooAbsReal* _real ;
+    RooAbsReal* _nativeReal ; // Instance which our data belongs to. This is the variable in the dataset.
+    RooAbsReal* _real ; // Instance where we should write data into when load() is called.
     Double_t* _buf ; //!
     Double_t* _nativeBuf ; //!
     RooChangeTracker* _tracker ; //

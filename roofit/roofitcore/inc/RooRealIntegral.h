@@ -43,6 +43,7 @@ public:
   virtual ~RooRealIntegral();
 
   virtual Double_t getValV(const RooArgSet* set=0) const ;
+  RooSpan<const double> getValues(BatchHelpers::RunContext& evalData, const RooArgSet* normSet) const;
 
   Bool_t isValid() const { return _valid; }
 
@@ -89,7 +90,6 @@ protected:
   const RooArgSet& parameters() const ;
 
   enum IntOperMode { Hybrid, Analytic, PassThrough } ;
-  //friend class RooAbsPdf ;
 
   Bool_t initNumIntegrator() const;
   void autoSelectDirtyMode() ;
@@ -138,9 +138,6 @@ protected:
 
   Bool_t _cacheNum ;           // Cache integral if numeric
   static Int_t _cacheAllNDim ; //! Cache all integrals with given numeric dimension
-
-
-  virtual void operModeHook() ; // cache operation mode
 
   ClassDef(RooRealIntegral,3) // Real-valued function representing an integral over a RooAbsReal object
 };
