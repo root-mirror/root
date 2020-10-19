@@ -32,12 +32,12 @@ class TDataMember;
 class TListOfDataMembers : public THashList
 {
 private:
-   TClass    *fClass;    //! Context of this list.  Not owned.
+   TClass           *fClass = nullptr;    //! Context of this list.  Not owned.
 
-   TExMap    *fIds;      //! Map from DeclId_t to TDataMember*
-   THashList *fUnloaded; //! Holder of TDataMember for unloaded DataMembers.
-   Bool_t     fIsLoaded; //! Mark whether Load was executed.
-   ULong64_t  fLastLoadMarker; //! Represent interpreter state when we last did a full load.
+   TExMap           *fIds = nullptr;      //! Map from DeclId_t to TDataMember*
+   THashList        *fUnloaded = nullptr; //! Holder of TDataMember for unloaded DataMembers.
+   ULong64_t         fLastLoadMarker = 0; //! Represent interpreter state when we last did a full load.
+   std::atomic<bool> fIsLoaded{kFALSE};  //! Mark whether Load was executed.
 
    TListOfDataMembers(const TListOfDataMembers&);              // not implemented
    TListOfDataMembers& operator=(const TListOfDataMembers&);   // not implemented
