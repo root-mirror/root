@@ -222,7 +222,7 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
             Info("FillTClass", "Returning w/o doing anything. %s is a STL collection.",cl->GetName());
          return kFALSE;
       }
-      if (cl->Property() & kIsNamespace) {
+      if (cl->fProperty != -1 && (cl->fProperty & kIsNamespace)) {
          if (gDebug > 0)
             Info("FillTClass", "Returning w/o doing anything. %s is a namespace.",cl->GetName());
          return kFALSE;
