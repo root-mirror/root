@@ -230,6 +230,9 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
       Error("FillTClass", "TClass %s already initialized!", cl->GetName());
       return kFALSE;
    }
+   if (cl->fHasRootPcmInfo) {
+      Fatal("FillTClass", "Filling TClass %s a second time", cl->GetName());
+   }
    if (gDebug > 1) Info("FillTClass","Loading TProtoClass for %s - %s",cl->GetName(),GetName());
 
    if (fPRealData.size() > 0) {
@@ -394,6 +397,7 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
    // delete fPRealData;
    // fPRealData = 0;
 
+   cl->fHasRootPcmInfo = kTRUE;
    return kTRUE;
 }
 
