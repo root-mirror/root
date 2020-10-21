@@ -217,7 +217,7 @@ private:
    Int_t               fSizeof;         //Sizeof the class.
 
            Int_t      fCanSplit;          //!Indicates whether this class can be split or not.
-   mutable std::atomic<Long_t> fProperty; //!Property
+   mutable std::atomic<Long_t> fProperty; //!Property See TClass::Property() for details
    mutable Long_t     fClassProperty;     //!C++ Property of the class (is abstract, has virtual table, etc.)
 
            // fHasRootPcmInfo needs to be atomic as long as GetListOfBases needs to modify it.

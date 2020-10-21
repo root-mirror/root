@@ -5835,14 +5835,18 @@ void TClass::PostLoadCheck()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Set TObject::fBits and fStreamerType to cache information about the
-/// class.  The bits are
+/// Returns the properties of the TClass as a bit field stored as a `Long_t` value.
+///
+/// The bit values used for the return value are defined in the enum EProperty (in TDictionary.h)
+///
+/// Also sets `TObject::fBits` and `fStreamerType` to cache information about the
+/// class.  The bits stored in `TObject::fBits` are
 /// ~~~ {.cpp}
 ///    kIsTObject : the class inherits from TObject
 ///    kStartWithTObject:  TObject is the left-most class in the inheritance tree
 ///    kIsForeign : the class doe not have a Streamer method
 /// ~~~
-/// The value of fStreamerType are
+/// The value of `fStreamerType` are
 /// ~~~ {.cpp}
 ///    kTObject : the class inherits from TObject
 ///    kForeign : the class does not have a Streamer method
@@ -5850,6 +5854,9 @@ void TClass::PostLoadCheck()
 ///    kExternal: the class has a free standing way of streaming itself
 ///    kEmulatedStreamer: the class is missing its shared library.
 /// ~~~
+///
+/// Implementation note: the data member fProperty has the value -1
+/// until it is initialized.
 
 Long_t TClass::Property() const
 {
