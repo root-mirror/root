@@ -231,7 +231,7 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
       return kFALSE;
    }
    if (cl->fHasRootPcmInfo) {
-      Fatal("FillTClass", "Filling TClass %s a second time", cl->GetName());
+      Fatal("FillTClass", "Filling TClass %s a second time but none of the info is in the TClass instance ... ", cl->GetName());
    }
    if (gDebug > 1) Info("FillTClass","Loading TProtoClass for %s - %s",cl->GetName(),GetName());
 
@@ -300,7 +300,7 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
    if (cl->fSizeof != -1 && cl->fSizeof != fSizeof) {
       Error("FillTClass",
             "For %s the sizeof provided by GenerateInitInstance (%d) is different from the one provided by TProtoClass (%d)",
-            cl->GetName(), cl->fSizeof, cl->fSizeof);
+            cl->GetName(), cl->fSizeof, fSizeof);
    } else
       cl->fSizeof = fSizeof;
    cl->fCheckSum = fCheckSum;
