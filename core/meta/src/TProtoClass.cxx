@@ -26,6 +26,7 @@ Persistent version of a TClass.
 #include "TListOfEnums.h"
 #include "TRealData.h"
 #include "TError.h"
+#include "TVirtualCollectionProxy.h"
 
 #include <cassert>
 
@@ -114,6 +115,12 @@ TProtoClass::TProtoClass(TClass* cl):
             //    Info("TProtoClass","And is transient");
          // }
       // }
+   } else if (cl->GetCollectionProxy()->GetProperties() & TVirtualCollectionProxy::kIsEmulated) {
+      // The collection proxy is emulated has the wrong size.
+      if (cl->HasInterpreterInfo())
+         fSizeof = gCling->ClassInfo_Size(cl->GetClassInfo());
+      else
+         fSizeof = -1;
    }
 
    // this crashes
