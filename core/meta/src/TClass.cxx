@@ -3580,7 +3580,8 @@ TList *TClass::GetListOfBases()
             LoadClassInfo();
          }
       }
-      if (!fClassInfo) return 0;
+      if (!fClassInfo)
+         return nullptr;
 
       if (!gInterpreter)
          Fatal("GetListOfBases", "gInterpreter not initialized");
