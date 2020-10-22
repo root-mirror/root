@@ -213,7 +213,7 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
 
       if (cl->GetCollectionType() != ROOT::kNotSTL) {
          // We are in the case of collection, duplicate dictionary are allowed
-         // (and even somewhat excepted since they can be auto asked for).
+         // (and even somewhat expected since they can be auto asked for).
          // They do not always have a TProtoClass for them.  In particular
          // the one that are pre-generated in the ROOT build (in what was once
          // called the cintdlls) do not have a pcms, neither does vector<string>
