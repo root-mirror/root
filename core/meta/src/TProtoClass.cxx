@@ -208,7 +208,7 @@ void TProtoClass::Delete(Option_t* opt /*= ""*/) {
 /// duplicate dictionary is acceptable for namespace or STL collections.
 
 Bool_t TProtoClass::FillTClass(TClass* cl) {
-   if (cl->fRealData || cl->fBase.load() || cl->fData || cl->fEnums.load() || cl->fSizeof != -1 || cl->fCanSplit >= 0 ||
+   if (cl->fRealData || cl->fBase.load() || cl->fData || cl->fEnums.load() || cl->fCanSplit >= 0 ||
        cl->fProperty != (-1)) {
 
       if (cl->GetCollectionType() != ROOT::kNotSTL) {
@@ -297,7 +297,12 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
       cl->fEnums = temp;
    }
 
-   cl->fSizeof = fSizeof;
+   if (cl->fSizeof != -1 && cl->fSizeof != fSizeof) {
+      Error("FillTClass",
+            "For %s the sizeof provided by GenerateInitInstance (%d) is different from the one provided by TProtoClass (%d)",
+            cl->GetName(), cl->fSizeof, cl->fSizeof);
+   } else
+      cl->fSizeof = fSizeof;
    cl->fCheckSum = fCheckSum;
    cl->fCanSplit = fCanSplit;
    cl->fProperty = fProperty;
