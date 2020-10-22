@@ -3571,8 +3571,8 @@ TList *TClass::GetListOfBases()
             if (!fHasRootPcmInfo) {
                // The bases are in our ProtoClass; we don't need the class info.
                TProtoClass *proto = TClassTable::GetProtoNorm(GetName());
-               if (proto)
-                  proto->FillTClass(this);
+               if (proto && proto->FillTClass(this))
+                  return fBase;
             }
          }
          // We test again on fCanLoadClassInfo has another thread may have executed it.
