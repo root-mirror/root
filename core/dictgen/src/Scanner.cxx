@@ -685,7 +685,7 @@ bool RScanner::TreatRecordDeclOrTypedefNameDecl(clang::TypeDecl* typeDecl)
       return true;
 
    // Save the typedef
-   if (selectedFromTypedef){
+   if (selectedFromTypedef) {
       if (!IsElementPresent(fSelectedTypedefs, typedefNameDecl))
          fSelectedTypedefs.push_back(typedefNameDecl);
       // Early exit here if we are not in presence of XML
