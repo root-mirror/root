@@ -5583,15 +5583,18 @@ static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const std:
       }
       TClass *clm = TClass::GetClass(dmType);
       if (!clm) {
-         if (TEnum::GetEnum(dmType, TEnum::kNone)) {
-            Int_t dtype = kInt_t;
-            return new TStreamerBasicType(dmName,dmTitle,offset,dtype,dmFull.c_str());
+         auto enumdesc = TEnum::GetEnum(dmType, TEnum::kNone);
+         if (enumdesc) {
+            auto dtype = enumdesc->GetUnderlyingType();
+            auto el = new TStreamerBasicType(dmName, dmTitle, offset, dtype, dmFull.c_str());
+            auto datatype = TDataType::GetDataType(dtype);
+            if (datatype)
+               el->SetSize(datatype->Size());
+            else
+               el->SetSize(sizeof(int)); // Default size of enums.
+            return el;
          }
          return nullptr;
-         // either we have an Emulated enum or a really unknown class!
-         // let's just claim its an enum :(
-         //Int_t dtype = kInt_t;
-         //return new TStreamerBasicType(dmName,dmTitle,offset,dtype,dmFull.c_str());
       }
       // a pointer to a class
       if ( dmIsPtr ) {
