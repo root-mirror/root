@@ -439,6 +439,6 @@ void TDataType::AddBuiltins(TCollection* types)
 
 TDataType* TDataType::GetDataType(EDataType type)
 {
-   if (type == kOther_t) return 0;
+   if (type == kOther_t || type >= kNumDataTypes) return 0;
    return fgBuiltins[(int)type];
 }
