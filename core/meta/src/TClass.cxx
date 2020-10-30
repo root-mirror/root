@@ -3119,6 +3119,8 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
          // to get the part to add or drop the default arguments as requested by the user)
          std::string alternative;
          gInterpreter->GetInterpreterTypeName(normalizedName.c_str(), alternative, kTRUE);
+         if (alternative.empty())
+            return nullptr;
          const char *altname = alternative.c_str();
          if (strncmp(altname, "std::", 5) == 0) {
             // For namespace (for example std::__1), GetInterpreterTypeName does
