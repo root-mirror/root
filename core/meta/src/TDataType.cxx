@@ -346,6 +346,9 @@ void TDataType::SetType(const char *name)
    } else if (!strcmp("signed char", name)) {
       fType = kChar_t; // kDataTypeAliasSignedChar_t;
       fSize = sizeof(Char_t);
+   } else if (!strcmp("void", name)) {
+      fType = kVoid_t;
+      fSize = 0;
    }
 
    if (!strcmp("Float16_t", fName.Data())) {
