@@ -455,18 +455,20 @@ TGenCollectionProxy::Value::Value(const std::string& inside_type, Bool_t silent)
                if ( prop&kIsStruct ) {
                   prop |= kIsClass;
                }
-               // Since we already searched GetClass earlier, this should
-               // never be true.
-               R__ASSERT(! (prop&kIsClass) && "Impossible code path" );
-//               if ( prop&kIsClass ) {
-//                  fType = TClass::GetClass(intype.c_str(),kTRUE,silent);
-//                  R__ASSERT(fType);
-//                  fCtor   = fType->GetNew();
-//                  fDtor   = fType->GetDestructor();
-//                  fDelete = fType->GetDelete();
-//               }
-//               else
-               if ( prop&kIsFundamental ) {
+
+               if ( prop&kIsClass ) {
+                  // We can get here in the case where the value if forward declared or
+                  // is an std::pair that can not be (yet) emulated (eg. "std::pair<int,void*>")
+                  fSize = std::string::npos;
+                  if (!silent)
+                     Error("TGenCollectionProxy", "Could not retrieve the TClass for %s", intype.c_str());
+//                fType = TClass::GetClass(intype.c_str(),kTRUE,silent);
+//                R__ASSERT(fType);
+//                fCtor   = fType->GetNew();
+//                fDtor   = fType->GetDestructor();
+//                fDelete = fType->GetDelete();
+               }
+               else if ( prop&kIsFundamental ) {
                   fundType = gROOT->GetType( intype.c_str() );
                   if (fundType==0) {
                      if (intype != "long double" && !silent) {
