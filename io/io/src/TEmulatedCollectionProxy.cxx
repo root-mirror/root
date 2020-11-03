@@ -40,8 +40,6 @@ the class TEmulatedMapProxy.
 // a dictionary (See end of file for implementation
 //
 
-TStreamerInfo *R__GenerateTClassForPair(const std::string &f, const std::string &s);
-
 TEmulatedCollectionProxy::TEmulatedCollectionProxy(const TEmulatedCollectionProxy& copy)
    : TGenCollectionProxy(copy)
 {
@@ -185,7 +183,7 @@ TGenCollectionProxy *TEmulatedCollectionProxy::InitializeEx(Bool_t silent)
 
                   if (0==TClass::GetClass(nam.c_str())) {
                      // We need to emulate the pair
-                     R__GenerateTClassForPair(inside[1],inside[2]);
+                     TVirtualStreamerInfo::Factory()->GenerateInfoForPair(inside[1],inside[2], silent);
                   }
                }
                fValue = new Value(nam,silent);
@@ -643,9 +641,4 @@ void TEmulatedCollectionProxy::Streamer(TBuffer &b)
          WriteItems(nElements, b);
       }
    }
-}
-
-TStreamerInfo *R__GenerateTClassForPair(const std::string &fname, const std::string &sname)
-{
-   return (TStreamerInfo*)TVirtualStreamerInfo::Factory()->GenerateInfoForPair(fname, sname);
 }

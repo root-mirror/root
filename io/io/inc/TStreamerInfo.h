@@ -280,8 +280,8 @@ public:
    // provokes the creation of the corresponding TClass.  This relies on the dictionary for
    // std::pair<const int, int> to already exist (or the interpreter information being available)
    // as it is used as a template.
-   virtual TVirtualStreamerInfo *GenerateInfoForPair(const std::string &pairclassname);
-   virtual TVirtualStreamerInfo *GenerateInfoForPair(const std::string &firstname, const std::string &secondname);
+   virtual TVirtualStreamerInfo *GenerateInfoForPair(const std::string &pairclassname, bool silent);
+   virtual TVirtualStreamerInfo *GenerateInfoForPair(const std::string &firstname, const std::string &secondname, bool silent);
 
    virtual TVirtualCollectionProxy *GenEmulatedProxy(const char* class_name, Bool_t silent);
    virtual TClassStreamer *GenEmulatedClassStreamer(const char* class_name, Bool_t silent);

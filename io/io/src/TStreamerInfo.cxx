@@ -5549,7 +5549,7 @@ TStreamerInfo::GenExplicitClassStreamer( const ::ROOT::TCollectionProxyInfo &inf
 //
 // Utility functions
 //
-static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const std::string &dmFull, Int_t offset)
+static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const std::string &dmFull, Int_t offset, bool silent)
 {
    // Create a TStreamerElement for the type 'dmFull' and whose data member name is 'dmName'.
 
@@ -5564,8 +5564,9 @@ static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const std:
       dtype = dt->GetType();
       dsize = dt->Size();
       if (dmIsPtr && dtype != kCharStar) {
-         Error("Pair Emulation Building","%s is not yet supported in pair emulation",
-               dmFull.c_str());
+         if (!silent)
+            Error("Pair Emulation Building","%s is not yet supported in pair emulation",
+                  dmFull.c_str());
          return 0;
       } else {
          TStreamerElement *el = new TStreamerBasicType(dmName,dmTitle,offset,dtype,dmFull.c_str());
@@ -5620,7 +5621,7 @@ static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const std:
 // provoke the creation of the corresponding TClass.  This relies on the dictionary for
 // std::pair<const int, int> to already exist (or the interpreter information being available)
 // as it is used as a template.
-TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firstname, const std::string &secondname)
+TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firstname, const std::string &secondname, bool silent)
 {
    // Generate a TStreamerInfo for a std::pair<fname,sname>
    // This TStreamerInfo is then used as if it was read from a file to generate
@@ -5632,7 +5633,7 @@ TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firs
    i->SetName(pname.c_str());
    i->SetClass(nullptr);
    i->GetElements()->Delete();
-   TStreamerElement *fel = R__CreateEmulatedElement("first", firstname, 0);
+   TStreamerElement *fel = R__CreateEmulatedElement("first", firstname, 0, silent);
    Int_t size = 0;
    if (fel) {
       i->GetElements()->Add( fel );
@@ -5645,7 +5646,7 @@ TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firs
       delete i;
       return 0;
    }
-   TStreamerElement *second = R__CreateEmulatedElement("second", secondname, size);
+   TStreamerElement *second = R__CreateEmulatedElement("second", secondname, size, silent);
    if (second) {
       i->GetElements()->Add( second );
    } else {
@@ -5661,11 +5662,12 @@ TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firs
    return i;
 }
 
-TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &pairclassname)
+TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &pairclassname, bool silent)
 {
    const static int pairlen = strlen("pair<");
    if (pairclassname.compare(0, pairlen, "pair<") != 0) {
-      Error("GenerateInfoForPair", "The class name passed is not a pair: %s", pairclassname.c_str());
+      if (!silent)
+         Error("GenerateInfoForPair", "The class name passed is not a pair: %s", pairclassname.c_str());
       return nullptr;
    }
 
@@ -5673,9 +5675,10 @@ TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &pair
    int nested = 0;
    int num = TClassEdit::GetSplit(pairclassname.c_str(), inside, nested);
    if (num != 4) {
-      Error("GenerateInfoForPair", "Could not find the pair arguments in %s", pairclassname.c_str());
+      if (!silent)
+         Error("GenerateInfoForPair", "Could not find the pair arguments in %s", pairclassname.c_str());
       return nullptr;
    }
 
-   return GenerateInfoForPair(inside[1], inside[2]);
+   return GenerateInfoForPair(inside[1], inside[2], silent);
 }

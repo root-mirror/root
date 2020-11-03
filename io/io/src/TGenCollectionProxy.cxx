@@ -29,9 +29,6 @@
 
 #define MESSAGE(which,text)
 
-// See TEmulatedCollectionProxy.cxx
-extern TStreamerInfo *R__GenerateTClassForPair(const std::string &f, const std::string &s);
-
 /**
 \class TGenVectorProxy
 \ingroup IO
@@ -472,7 +469,7 @@ TGenCollectionProxy::Value::Value(const std::string& inside_type, Bool_t silent)
                if ( prop&kIsFundamental ) {
                   fundType = gROOT->GetType( intype.c_str() );
                   if (fundType==0) {
-                     if (intype != "long double") {
+                     if (intype != "long double" && !silent) {
                         Error("TGenCollectionProxy","Unknown fundamental type %s",intype.c_str());
                      }
                      fSize = sizeof(int);
@@ -888,7 +885,7 @@ TGenCollectionProxy *TGenCollectionProxy::InitializeEx(Bool_t silent)
                   TInterpreter::SuspendAutoParsing autoParseRaii(gCling);
                   if (0==TClass::GetClass(nam.c_str())) {
                      // We need to emulate the pair
-                     R__GenerateTClassForPair(inside[1],inside[2]);
+                     TVirtualStreamerInfo::Factory()->GenerateInfoForPair(inside[1],inside[2], silent);
                   }
                }
                newfValue = R__CreateValue(nam, silent);

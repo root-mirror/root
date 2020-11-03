@@ -3067,7 +3067,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
    if (cl) return cl;
 
    if (ispair) {
-      auto pairinfo = TVirtualStreamerInfo::Factory()->GenerateInfoForPair(normalizedName);
+      auto pairinfo = TVirtualStreamerInfo::Factory()->GenerateInfoForPair(normalizedName, silent);
       return pairinfo ? pairinfo->GetClass() : nullptr;
 
    } else if (TClassEdit::IsSTLCont( normalizedName.c_str() )) {
