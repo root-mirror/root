@@ -262,7 +262,7 @@ public:
    Int_t               ReadBufferClones(TBuffer &b, TClonesArray *clones, Int_t nc, Int_t first, Int_t eoffset);
    Int_t               ReadBufferSTL(TBuffer &b, TVirtualCollectionProxy *cont, Int_t nc, Int_t eoffset, Bool_t v7 = kTRUE );
    void                SetCheckSum(UInt_t checksum) {fCheckSum = checksum;}
-   void                SetClass(TClass *cl) {fClass = cl;}
+   void                SetClass(TClass *cl);
    void                SetClassVersion(Int_t vers) {fClassVersion=vers;}
    void                SetOnFileClassVersion(Int_t vers) {fOnFileClassVersion=vers;}
    void                TagFile(TFile *fFile);
