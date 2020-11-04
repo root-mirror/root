@@ -126,7 +126,7 @@ public:
    TVirtualStreamerInfo();
    TVirtualStreamerInfo(TClass * /*cl*/);
    virtual            ~TVirtualStreamerInfo();
-   virtual void        Build() = 0;
+   virtual void        Build(Bool_t isTransient = kFALSE) = 0;
    virtual void        BuildCheck(TFile *file = 0, Bool_t load = kTRUE) = 0;
    virtual void        BuildEmulated(TFile *file) = 0;
    virtual void        BuildOld() = 0;

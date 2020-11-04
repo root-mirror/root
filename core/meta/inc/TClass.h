@@ -322,6 +322,8 @@ private:
    // if no entries have been made.)
    static THashTable* fgClassTypedefHash;
 
+   TVirtualStreamerInfo     *GetStreamerInfoImpl(Int_t version, Bool_t silent) const;
+
 private:
    TClass(const TClass& tc) = delete;
    TClass& operator=(const TClass&) = delete;
@@ -358,7 +360,7 @@ public:
    void               AdoptSchemaRules( ROOT::Detail::TSchemaRuleSet *rules );
    virtual void       Browse(TBrowser *b);
    void               BuildRealData(void *pointer=0, Bool_t isTransient = kFALSE);
-   void               BuildEmulatedRealData(const char *name, Long_t offset, TClass *cl);
+   void               BuildEmulatedRealData(const char *name, Long_t offset, TClass *cl, Bool_t isTransient = kFALSE);
    void               CalculateStreamerOffset() const;
    Bool_t             CallShowMembers(const void* obj, TMemberInspector &insp, Bool_t isTransient = kFALSE) const;
    Bool_t             CanSplit() const;
@@ -370,7 +372,7 @@ public:
    void               Dump() const { TDictionary::Dump(); }
    void               Dump(const void *obj, Bool_t noAddr = kFALSE) const;
    char              *EscapeChars(const char *text) const;
-   TVirtualStreamerInfo     *FindStreamerInfo(UInt_t checksum) const;
+   TVirtualStreamerInfo     *FindStreamerInfo(UInt_t checksum, Bool_t isTransient = kFALSE) const;
    TVirtualStreamerInfo     *GetConversionStreamerInfo( const char* onfile_classname, Int_t version ) const;
    TVirtualStreamerInfo     *FindConversionStreamerInfo( const char* onfile_classname, UInt_t checksum ) const;
    TVirtualStreamerInfo     *GetConversionStreamerInfo( const TClass* onfile_cl, Int_t version ) const;
@@ -460,7 +462,7 @@ public:
    ClassStreamerFunc_t GetStreamerFunc() const;
    ClassConvStreamerFunc_t GetConvStreamerFunc() const;
    const TObjArray          *GetStreamerInfos() const { return fStreamerInfo; }
-   TVirtualStreamerInfo     *GetStreamerInfo(Int_t version=0) const;
+   TVirtualStreamerInfo     *GetStreamerInfo(Int_t version=0, Bool_t isTransient = kFALSE) const;
    TVirtualStreamerInfo     *GetStreamerInfoAbstractEmulated(Int_t version=0) const;
    TVirtualStreamerInfo     *FindStreamerInfoAbstractEmulated(UInt_t checksum) const;
    const std::type_info     *GetTypeInfo() const { return fTypeInfo; };

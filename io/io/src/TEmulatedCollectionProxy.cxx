@@ -113,7 +113,7 @@ TGenCollectionProxy *TEmulatedCollectionProxy::InitializeEx(Bool_t silent)
    if (fClass) return this;
 
 
-   TClass *cl = TClass::GetClass(fName.c_str());
+   TClass *cl = TClass::GetClass(fName.c_str(), kTRUE, silent);
    fEnv = 0;
    fKey = 0;
    if ( cl )  {
@@ -181,7 +181,7 @@ TGenCollectionProxy *TEmulatedCollectionProxy::InitializeEx(Bool_t silent)
                   GenerateTemporaryTEnum keyEnum(fKey->fCase, inside[1]);
                   GenerateTemporaryTEnum valueEnum(fVal->fCase, inside[2]);
 
-                  if (0==TClass::GetClass(nam.c_str())) {
+                  if (0==TClass::GetClass(nam.c_str(), kTRUE, silent)) {
                      // We need to emulate the pair
                      TVirtualStreamerInfo::Factory()->GenerateInfoForPair(inside[1],inside[2], silent);
                   }

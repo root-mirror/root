@@ -254,7 +254,7 @@ namespace {
 ///
 /// A list of TStreamerElement derived classes is built by scanning
 /// one by one the list of data members of the analyzed class.
-void TStreamerInfo::Build()
+void TStreamerInfo::Build(Bool_t isTransient)
 {
    // Did another thread already do the work?
    if (fIsCompiled) return;
@@ -291,7 +291,7 @@ void TStreamerInfo::Build()
 
    TStreamerElement::Class()->IgnoreTObjectStreamer();
 
-   fClass->BuildRealData();
+   fClass->BuildRealData(nullptr, isTransient);
 
    fCheckSum = fClass->GetCheckSum();
 
@@ -322,8 +322,9 @@ void TStreamerInfo::Build()
             continue;
          }
          if (offset == kNeedObjectForVirtualBaseClass) {
-            Error("Build()", "Cannot stream virtual base %s of class %s",
-                  base->GetName(), fClass->GetName());
+            if (!isTransient)
+               Error("Build()", "Cannot stream virtual base %s of class %s",
+                     base->GetName(), fClass->GetName());
             continue;
          }
          const char* bname  = base->GetName();
@@ -337,13 +338,14 @@ void TStreamerInfo::Build()
             else       element = new TStreamerSTL(bname, btitle, offset, bname, 0, kFALSE);
             if (fClass->IsLoaded() && ((TStreamerSTL*)element)->GetSTLtype() != ROOT::kSTLvector) {
                if (!element->GetClassPointer()->IsLoaded()) {
-                  Error("Build","The class \"%s\" is compiled and its base class \"%s\" is a collection and we do not have a dictionary for it, we will not be able to read or write this base class.",GetName(),bname);
+                  if (!isTransient)
+                     Error("Build","The class \"%s\" is compiled and its base class \"%s\" is a collection and we do not have a dictionary for it, we will not be able to read or write this base class.",GetName(),bname);
                   delete element;
                   continue;
                }
             }
          } else {
-            element = new TStreamerBase(bname, btitle, offset);
+            element = new TStreamerBase(bname, btitle, offset, isTransient);
             TClass* clm = element->GetClassPointer();
             if (!clm) {
                // We have no information about the class yet, except that since it
@@ -367,7 +369,7 @@ void TStreamerInfo::Build()
                   // element from being inserted into the compiled info.
                   element->SetType(-1);
                }
-               if (!clm->IsLoaded() && !(isCollection || isString)) {
+               if (!isTransient && !clm->IsLoaded() && !(isCollection || isString)) {
                   // Don't complain about the base classes of collections nor of
                   // std::string.
                   Warning("Build", "%s: base class %s has no streamer or dictionary it will not be saved", GetName(), clm->GetName());
@@ -452,14 +454,16 @@ void TStreamerInfo::Build()
             const char* counterName = dm->GetArrayIndex();
             TRealData* rdCounter = (TRealData*) fClass->GetListOfRealData()->FindObject(counterName);
             if (!rdCounter || rdCounter->TestBit(TRealData::kTransient)) {
-               Error("Build", "%s, discarding: %s %s, illegal %s\n", GetName(), dmFull, dmName, dmTitle);
+               if (!isTransient)
+                  Error("Build", "%s, discarding: %s %s, illegal %s\n", GetName(), dmFull, dmName, dmTitle);
                continue;
             }
             dmCounter = rdCounter->GetDataMember();
             TDataType* dtCounter = dmCounter->GetDataType();
             Bool_t isInteger = dtCounter && ((dtCounter->GetType() == 3) || (dtCounter->GetType() == 13));
             if (!dtCounter || !isInteger) {
-               Error("Build", "%s, discarding: %s %s, illegal [%s] (must be Int_t)\n", GetName(), dmFull, dmName, counterName);
+               if (!isTransient)
+                  Error("Build", "%s, discarding: %s %s, illegal [%s] (must be Int_t)\n", GetName(), dmFull, dmName, counterName);
                continue;
             }
             TStreamerBasicType* bt = TStreamerInfo::GetElementCounter(counterName, dmCounter->GetClass());
@@ -467,7 +471,8 @@ void TStreamerInfo::Build()
                if (dmCounter->GetClass()->Property() & kIsAbstract) {
                   continue;
                }
-               Error("Build", "%s, discarding: %s %s, illegal [%s] must be placed before \n", GetName(), dmFull, dmName, counterName);
+               if (!isTransient)
+                  Error("Build", "%s, discarding: %s %s, illegal [%s] must be placed before \n", GetName(), dmFull, dmName, counterName);
                continue;
             }
          }
@@ -482,7 +487,8 @@ void TStreamerInfo::Build()
             dsize = sizeof(char*);
          }
          if (dtype == kOther_t || dtype == kNoType_t) {
-            Error("Build", "%s, unknown type: %s %s", GetName(), dmFull, dmName);
+            if (!isTransient)
+               Error("Build", "%s, unknown type: %s %s", GetName(), dmFull, dmName);
             continue;
          } else if (dmIsPtr && (dtype != kCharStar)) {
             if (dmCounter) {
@@ -492,7 +498,8 @@ void TStreamerInfo::Build()
                if ((fName == "TString") || (fName == "TClass")) {
                   continue;
                }
-               Error("Build", "%s, discarding: %s %s, no [dimension]\n", GetName(), dmFull, dmName);
+               if (!isTransient)
+                  Error("Build", "%s, discarding: %s %s, no [dimension]\n", GetName(), dmFull, dmName);
                continue;
             }
          } else {
@@ -517,7 +524,8 @@ void TStreamerInfo::Build()
             if (((TStreamerSTL*)element)->GetSTLtype() != ROOT::kSTLvector || hasCustomAlloc) {
                auto printErrorMsg = [&](const char* category)
                   {
-                     Error("Build","The class \"%s\" is %s and for its data member \"%s\" we do not have a dictionary for the collection \"%s\". Because of this, we will not be able to read or write this data member.",GetName(), category, dmName, dmType);
+                     if (!isTransient)
+                        Error("Build","The class \"%s\" is %s and for its data member \"%s\" we do not have a dictionary for the collection \"%s\". Because of this, we will not be able to read or write this data member.",GetName(), category, dmName, dmType);
                   };
                if (fClass->IsLoaded()) {
                   if (!element->GetClassPointer()->IsLoaded()) {
@@ -536,7 +544,8 @@ void TStreamerInfo::Build()
          } else {
             TClass* clm = TClass::GetClass(dmType);
             if (!clm) {
-               Error("Build", "%s, unknown type: %s %s\n", GetName(), dmFull, dmName);
+               if (!isTransient)
+                  Error("Build", "%s, unknown type: %s %s\n", GetName(), dmFull, dmName);
                continue;
             }
             if (isStdArray) {
@@ -553,7 +562,7 @@ void TStreamerInfo::Build()
                      element = new TStreamerObjectPointer(dmName, dmTitle, offset, dmFull);
                   } else {
                      element = new TStreamerObjectAnyPointer(dmName, dmTitle, offset, dmFull);
-                     if (!streamer && !clm->GetStreamer() && !clm->IsLoaded()) {
+                     if (!isTransient && !streamer && !clm->GetStreamer() && !clm->IsLoaded()) {
                         Error("Build", "%s: %s has no streamer or dictionary, data member %s will not be saved", GetName(), dmFull, dmName);
                      }
                   }
@@ -564,7 +573,7 @@ void TStreamerInfo::Build()
                element = new TStreamerString(dmName, dmTitle, offset);
             } else {
                element = new TStreamerObjectAny(dmName, dmTitle, offset, dmFull);
-               if (!streamer && !clm->GetStreamer() && !clm->IsLoaded()) {
+               if (!isTransient && !streamer && !clm->GetStreamer() && !clm->IsLoaded()) {
                   Warning("Build", "%s: %s has no streamer or dictionary, data member \"%s\" will not be saved", GetName(), dmFull, dmName);
                }
             }
@@ -641,7 +650,8 @@ void TStreamerInfo::Build()
    if (needAllocClass) {
       TStreamerInfo *infoalloc  = (TStreamerInfo *)Clone(TString::Format("%s@@%d",GetName(),GetClassVersion()));
       if (!infoalloc) {
-         Error("Build","Could you create a TStreamerInfo for %s\n",TString::Format("%s@@%d",GetName(),GetClassVersion()).Data());
+         if (!isTransient)
+            Error("Build","Could you create a TStreamerInfo for %s\n",TString::Format("%s@@%d",GetName(),GetClassVersion()).Data());
       } else {
          // Tell clone we should rerun BuildOld
          infoalloc->SetBit(kBuildOldUsed,false);

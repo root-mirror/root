@@ -1991,7 +1991,7 @@ void TClass::BuildRealData(void* pointer, Bool_t isTransient)
    if (!HasInterpreterInfo() || TClassEdit::IsSTLCont(GetName(), 0) || TClassEdit::IsSTLBitset(GetName())) {
       // We are an emulated class or an STL container.
       fRealData = new TList;
-      BuildEmulatedRealData("", 0, this);
+      BuildEmulatedRealData("", 0, this, isTransient);
       return;
    }
 
@@ -2050,7 +2050,7 @@ void TClass::BuildRealData(void* pointer, Bool_t isTransient)
 ////////////////////////////////////////////////////////////////////////////////
 /// Build the list of real data for an emulated class
 
-void TClass::BuildEmulatedRealData(const char *name, Long_t offset, TClass *cl)
+void TClass::BuildEmulatedRealData(const char *name, Long_t offset, TClass *cl, Bool_t isTransient)
 {
    R__LOCKGUARD(gInterpreterMutex);
 
@@ -2058,7 +2058,7 @@ void TClass::BuildEmulatedRealData(const char *name, Long_t offset, TClass *cl)
    if (Property() & kIsAbstract) {
       info = GetStreamerInfoAbstractEmulated();
    } else {
-      info = GetStreamerInfo();
+      info = GetStreamerInfoImpl(fClassVersion, isTransient);
    }
    if (!info) {
       // This class is abstract, but we don't yet have a SteamerInfo for it ...
@@ -2087,7 +2087,7 @@ void TClass::BuildEmulatedRealData(const char *name, Long_t offset, TClass *cl)
          cl->GetListOfRealData()->Add(rd);
          // Now we a dot
          rdname.Form("%s%s.",name,element->GetFullName());
-         if (cle) cle->BuildEmulatedRealData(rdname,offset+eoffset,cl);
+         if (cle) cle->BuildEmulatedRealData(rdname,offset+eoffset,cl, isTransient);
       } else {
          //others
          TString rdname; rdname.Form("%s%s",name,element->GetFullName());
@@ -2109,7 +2109,7 @@ void TClass::BuildEmulatedRealData(const char *name, Long_t offset, TClass *cl)
          //base class
          Long_t eoffset = element->GetOffset();
          TClass *cle    = element->GetClassPointer();
-         if (cle) cle->BuildEmulatedRealData(name,offset+eoffset,cl);
+         if (cle) cle->BuildEmulatedRealData(name,offset+eoffset,cl, isTransient);
       }
    }
 }
@@ -4493,7 +4493,7 @@ Int_t TClass::GetNmethods()
 ///           with TStreamer::Optimize()!
 ///
 
-TVirtualStreamerInfo* TClass::GetStreamerInfo(Int_t version /* = 0 */) const
+TVirtualStreamerInfo* TClass::GetStreamerInfo(Int_t version /* = 0 */, Bool_t isTransient /* = false */) const
 {
    TVirtualStreamerInfo *sinfo = fLastReadInfo;
 
@@ -4523,6 +4523,13 @@ TVirtualStreamerInfo* TClass::GetStreamerInfo(Int_t version /* = 0 */) const
 
    R__LOCKGUARD(gInterpreterMutex);
 
+   return GetStreamerInfoImpl(version, isTransient);
+};
+
+// Implementation of/for TStreamerInfo::GetStreamerInfo.
+// This routine assumes the global lock has been taken.
+TVirtualStreamerInfo* TClass::GetStreamerInfoImpl(Int_t version, Bool_t silent) const
+{
    // Warning: version may be -1 for an emulated class, or -2 if the
    //          user requested the emulated streamerInfo for an abstract
    //          base class, even though we have a dictionary for it.
@@ -4533,7 +4540,7 @@ TVirtualStreamerInfo* TClass::GetStreamerInfo(Int_t version /* = 0 */) const
       version = fClassVersion;
    }
 
-   sinfo = (TVirtualStreamerInfo *)fStreamerInfo->At(version);
+   TVirtualStreamerInfo *sinfo = (TVirtualStreamerInfo *)fStreamerInfo->At(version);
 
    if (!sinfo && (version != fClassVersion)) {
       // When the requested version does not exist we return
@@ -4556,7 +4563,7 @@ TVirtualStreamerInfo* TClass::GetStreamerInfo(Int_t version /* = 0 */) const
       if (HasDataMemberInfo() || fCollectionProxy) {
          // If we do not have a StreamerInfo for this version and we do not
          // have dictionary information nor a proxy, there is nothing to build!
-         sinfo->Build();
+         sinfo->Build(silent);
       }
    } else {
       if (!sinfo->IsCompiled()) {
@@ -6792,15 +6799,17 @@ void TClass::SetDirectoryAutoAdd(ROOT::DirAutoAdd_t autoAddFunc)
 ////////////////////////////////////////////////////////////////////////////////
 /// Find the TVirtualStreamerInfo in the StreamerInfos corresponding to checksum
 
-TVirtualStreamerInfo *TClass::FindStreamerInfo(UInt_t checksum) const
+TVirtualStreamerInfo *TClass::FindStreamerInfo(UInt_t checksum, Bool_t isTransient) const
 {
    TVirtualStreamerInfo *guess = fLastReadInfo;
    if (guess && guess->GetCheckSum() == checksum) {
       return guess;
    } else {
-      if (fCheckSum == checksum) return GetStreamerInfo();
+      if (fCheckSum == checksum)
+         return GetStreamerInfo(0, isTransient);
 
       R__LOCKGUARD(gInterpreterMutex);
+
       Int_t ninfos = fStreamerInfo->GetEntriesFast()-1;
       for (Int_t i=-1;i<ninfos;++i) {
          // TClass::fStreamerInfos has a lower bound not equal to 0,

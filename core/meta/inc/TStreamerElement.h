@@ -164,12 +164,12 @@ protected:
    TVirtualStreamerInfo *fStreamerInfo; //!Pointer to the current StreamerInfo for the baset class.
    TString               fErrorMsg;     //!Error message in case of checksum/version mismatch.
 
-   void InitStreaming();
+   void InitStreaming(Bool_t isTransient);
 
 public:
 
    TStreamerBase();
-   TStreamerBase(const char *name, const char *title, Int_t offset);
+   TStreamerBase(const char *name, const char *title, Int_t offset, Bool_t isTransient = kFALSE);
    virtual         ~TStreamerBase();
    Int_t            GetBaseVersion() {return fBaseVersion;}
    UInt_t           GetBaseCheckSum() {return fBaseCheckSum;}
@@ -181,10 +181,11 @@ public:
    Int_t            GetSize() const;
    TVirtualStreamerInfo *GetBaseStreamerInfo () const { return fStreamerInfo; }
    virtual void     Init(TVirtualStreamerInfo *obj=0);
+   void             Init(Bool_t isTransient = kFALSE);
    Bool_t           IsBase() const;
    virtual void     ls(Option_t *option="") const;
    Int_t            ReadBuffer (TBuffer &b, char *pointer);
-   void             SetNewBaseClass( TClass* cl ) { fNewBaseClass = cl; InitStreaming(); }
+   void             SetNewBaseClass( TClass* cl ) { fNewBaseClass = cl; InitStreaming(kFALSE); }
    void             SetBaseVersion(Int_t v) {fBaseVersion = v;}
    void             SetBaseCheckSum(UInt_t cs) {fBaseCheckSum = cs;}
    void             SetErrorMessage(const char *msg) { fErrorMsg = msg; }
