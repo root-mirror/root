@@ -6,7 +6,7 @@
 // LICENSE.TXT for details.
 //------------------------------------------------------------------------------
 
-// RUN: cat %s | %cling -Xclang -verify 2>&1 | FileCheck %s
+// RUN: %cling -Xclang -verify 2>&1 < %s | FileCheck %s
 
 #include <stdio.h>
 

@@ -6,7 +6,7 @@
 // LICENSE.TXT for details.
 //------------------------------------------------------------------------------
 
-// RUN: cat %s | %cling -Xclang -verify
+// RUN: %cling -Xclang -verify < %s
 // XFAIL: powerpc64
 // This test verifies that we get nice warning if a method on null ptr object is
 // called.

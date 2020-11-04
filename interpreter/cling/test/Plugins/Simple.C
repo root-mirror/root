@@ -1,4 +1,5 @@
-// RUN: cat %s | %cling -fplugin=%cling_obj_root/tools/plugins/example/libclingDemoPlugin%shlibext | FileCheck %s
+// REQUIRES: clingDemoPlugin
+// RUN: %cling -fplugin=%cling_obj_root/tools/plugins/example/libclingDemoPlugin%shlibext < %s | FileCheck %s
 
 // CHECK:Action::ParseArgs
 // CHECK-NEXT:Action::CreateASTConsumer

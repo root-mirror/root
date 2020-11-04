@@ -6,8 +6,8 @@
 // LICENSE.TXT for details.
 //------------------------------------------------------------------------------
 
-// RUN: cat %s | %cling -Xclang -verify 2>&1 | FileCheck %s
-// FIXME: cat %s | %cling -fsyntax-only -Xclang -verify 2>&1
+// RUN: %cling -Xclang -verify 2>&1 < %s | FileCheck %s
+// FIXME: %cling -fsyntax-only -Xclang -verify 2>&1 < %s
 
 // Test to check functions registered via atexit are intercepted, and __dso_handle
 // is properly overridden in for child interpreters.

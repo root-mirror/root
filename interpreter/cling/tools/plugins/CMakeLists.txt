@@ -5,11 +5,8 @@
 # of Illinois Open Source License or the GNU Lesser General Public License. See
 # LICENSE.TXT for details.
 #-------------------------------------------------------------------------------
-if (CLING_INCLUDE_TESTS OR CLING_BUILD_PLUGINS)
-  add_subdirectory(example)
-endif()
+add_subdirectory(example)
 
-if (CLING_BUILD_PLUGINS)
 #  # If we drop a compatible cmake project in this folder we should automatically
 #  # pick it up and build it.
 #  function(LISTSUBDIRS result curdir)
@@ -27,5 +24,4 @@ if (CLING_BUILD_PLUGINS)
 #  foreach(subdir ${SUBDIRS})
 #    add_subdirectory(${subdir})
 #  endforeach()
-  add_subdirectory(clad)
-endif(CLING_BUILD_PLUGINS)
+add_subdirectory(clad)

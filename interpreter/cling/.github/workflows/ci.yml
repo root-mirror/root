@@ -51,6 +51,10 @@ jobs:
             compiler: gcc
             version: "9"
 
+          - name: windows-2019-visual-studio
+            os: windows-2019
+            generator: Visual Studio 16 2019
+
     steps:
     - uses: actions/checkout@v2
     - name: Setup compiler on Linux
@@ -79,9 +83,10 @@ jobs:
           echo "CXX=clang++" >> $GITHUB_ENV
         fi
       if: runner.os == 'macOS'
-    - name: Display compiler version
+    - name: Display compiler version on Unix systems
       run: $CC --version
-    - name: Execute cpt
+      if: runner.os != 'Windows'
+    - name: Execute cpt on Linux/OS X
       run: |
         if [ ${{ github.event_name }} = 'pull_request' ]; then
           REPO="${{ github.event.pull_request.head.repo.full_name }}"
@@ -103,3 +108,16 @@ jobs:
           ./cpt.py -y --check-requirements --current-dev=tar --with-cmake-flags="$CLING_BUILD_FLAGS" --with-cling-url=https://github.com/$REPO --cling-branch=${{ github.head_ref }} --with-binary-llvm
         fi
       working-directory: tools/packaging/
+      if: runner.os != 'Windows'
+    - name: Execute cpt on Windows
+      run: |
+        IF "${{ github.event_name }}"=="pull_request" (
+          set REPO=${{ github.event.pull_request.head.repo.full_name }}
+        ) ELSE (
+          set REPO=%GITHUB_REPOSITORY%
+        )
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        C:\hostedtoolcache\windows\Python\3.7.9\x64\python.exe cpt.py --current-dev=tar --with-cmake-flags="-DLLVM_OPTIMIZED_TABLEGEN=ON -DCLING_BUILD_PLUGINS=Off -DCMAKE_C_COMPILER=\"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.27.29110\bin\Hostx64\x64\cl.exe\" -DCMAKE_CXX_COMPILER=\"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.27.29110\bin\Hostx64\x64\cl.exe\" -G \"${{ matrix.generator}}\"" --with-cling-url=https://github.com/%REPO% --cling-branch=${{ github.head_ref }} --skip-cleanup
+      working-directory: tools\packaging\
+      shell: cmd
+      if: runner.os == 'Windows'

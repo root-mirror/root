@@ -6,7 +6,7 @@
 // LICENSE.TXT for details.
 //------------------------------------------------------------------------------
 
-// RUN: cat %s | %cling -I%S -Xclang -verify
+// RUN: %cling -I%S -Xclang -verify < %s
 // XFAIL: vanilla-cling
 // Test FwdPrinterTest
 

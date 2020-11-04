@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 
 // Windows wants -Wno-deprecated-declarations
-//RUN: cat %s | %cling -Wno-deprecated-declarations -Xclang -verify 2>&1 | FileCheck %s
+//RUN: %cling -Wno-deprecated-declarations -Xclang -verify 2>&1 < %s | FileCheck %s
 
 #include <stdlib.h>
 #ifdef _WIN32
