@@ -5619,6 +5619,8 @@ static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const std:
          }
          return nullptr;
       }
+      if (clm->GetState() <= TClass::kForwardDeclared)
+         return nullptr;
       // a pointer to a class
       if ( dmIsPtr ) {
          if (clm->IsTObject()) {
