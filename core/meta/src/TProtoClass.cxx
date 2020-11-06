@@ -77,6 +77,8 @@ TProtoClass::TProtoClass(TClass* cl):
       for (auto realDataObj: *cl->GetListOfRealData()) {
          TRealData *rd = (TRealData*)realDataObj;
          if (!precRd) precRd = rd;
+         if (!rd->GetDataMember())
+            continue;
          TClass* clRD = rd->GetDataMember()->GetClass();
          TProtoRealData protoRealData(rd);
          if (clRD != clCurrent) {
@@ -427,6 +429,7 @@ TProtoClass::TProtoRealData::TProtoRealData(const TRealData* rd):
    fStatusFlag(0)
 {
    TDataMember * dm = rd->GetDataMember();
+   assert(rd->GetDataMember());
    TClass * cl = dm->GetClass();
    assert(cl != NULL);
    fDMIndex = DataMemberIndex(cl,dm->GetName());
