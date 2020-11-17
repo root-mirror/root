@@ -2908,6 +2908,11 @@ TVirtualIsAProxy* TClass::GetIsAProxy() const
 
 TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
 {
+   return TClass::GetClass(name, load, silent, 0, 0);
+}
+
+TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent, size_t hint_pair_offset, size_t hint_pair_size)
+{
    if (!name || !name[0]) return 0;
 
    if (strstr(name, "(anonymous)")) return 0;
@@ -3067,7 +3072,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent)
    if (cl) return cl;
 
    if (ispair) {
-      auto pairinfo = TVirtualStreamerInfo::Factory()->GenerateInfoForPair(normalizedName, silent);
+      auto pairinfo = TVirtualStreamerInfo::Factory()->GenerateInfoForPair(normalizedName, silent, hint_pair_offset, hint_pair_size);
       //return pairinfo ? pairinfo->GetClass() : nullptr;
       if (pairinfo)
          return pairinfo->GetClass();

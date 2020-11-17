@@ -183,7 +183,7 @@ TGenCollectionProxy *TEmulatedCollectionProxy::InitializeEx(Bool_t silent)
 
                   if (0==TClass::GetClass(nam.c_str(), kTRUE, silent)) {
                      // We need to emulate the pair
-                     TVirtualStreamerInfo::Factory()->GenerateInfoForPair(inside[1],inside[2], silent);
+                     TVirtualStreamerInfo::Factory()->GenerateInfoForPair(inside[1],inside[2], silent, 0, 0);
                   }
                }
                fValue = new Value(nam,silent);
