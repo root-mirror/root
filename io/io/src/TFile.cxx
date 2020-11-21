@@ -3655,7 +3655,6 @@ void TFile::WriteStreamerInfo()
    listOfRules.SetName("listOfRules");
    std::set<TClass*> classSet;
 
-
    while ((info = (TStreamerInfo*)next())) {
       Int_t uid = info->GetNumber();
       if (fClassIndex->fArray[uid]) {

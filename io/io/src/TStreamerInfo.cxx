@@ -211,6 +211,12 @@ TStreamerInfo::TStreamerInfo(TClass *cl)
 
 TStreamerInfo::~TStreamerInfo()
 {
+   // Note: If a StreamerInfo is loaded from a file and is the same information
+   // as an existing one, it is assigned the same "unique id" and we need to double
+   // check before removing it from the global list.
+   if (fNumber >=0 && gROOT->GetListOfStreamerInfo()->At(fNumber) == this)
+      gROOT->GetListOfStreamerInfo()->RemoveAt(fNumber);
+
    delete [] fComp;     fComp     = 0;
    delete [] fCompFull; fCompFull = 0;
    delete [] fCompOpt;  fCompOpt  = 0;
