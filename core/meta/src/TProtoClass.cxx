@@ -343,7 +343,9 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
    int prevLevel = 0;
    bool first = true;
    if (fPRealData.size()  > 0) {
+      size_t element_next_idx = 0;
       for (auto element: fPRealData) {
+         ++element_next_idx;
          //if (element->IsA() == TObjString::Class()) {
          if (element.IsAClass() ) {
             // We now check for the TClass entry, w/o loading. Indeed we did that above.
@@ -353,16 +355,34 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
             // will be issued.
             TInterpreter::SuspendAutoParsing autoParseRaii(gInterpreter);
 
+            const char *classname = GetClassName(element.fClassIndex);
+
             // Disable autoparsing which might be triggered by the use of ResolvedTypedef
             // and the fallback new TClass() below.
-            currentRDClass = TClass::GetClass(GetClassName(element.fClassIndex), false /* Load */ );
+            currentRDClass = TClass::GetClass(classname, false /* Load */ );
             //printf("element is a class - name %s  - index %d  %s \n ",currentRDClass->GetName(), element.fClassIndex, GetClassName(element.fClassIndex) );
             if (!currentRDClass && !element.TestFlag(TProtoRealData::kIsTransient)) {
-               if (gDebug>1)
-                  Info("FillTClass()",
-                       "Cannot find TClass for %s; Creating an empty one in the kForwardDeclared state.",
-                       GetClassName(element.fClassIndex));
-               currentRDClass = new TClass(GetClassName(element.fClassIndex),1,TClass::kForwardDeclared, true /*silent*/);
+
+               if (TClassEdit::IsStdPair(classname) && element.fDMIndex == 0 && fPRealData.size() > element_next_idx) {
+                  size_t hint_offset = fPRealData[element_next_idx].fOffset - element.fOffset;
+                  size_t hint_size = 0;
+                  // Now find the size.
+                  size_t end = element_next_idx + 1;
+                  while (end < fPRealData.size() && fPRealData[end].fLevel > element.fLevel)
+                     ++end;
+                  if (end < fPRealData.size()) {
+                     hint_size = fPRealData[end].fOffset - element.fOffset;
+                  } else {
+                     hint_size = fSizeof - element.fOffset;
+                  }
+                  currentRDClass = TClass::GetClass(classname, true, false, hint_offset, hint_size);
+               }
+               if (!currentRDClass) {
+                  if (gDebug > 1)
+                     Info("FillTClass()",
+                          "Cannot find TClass for %s; Creating an empty one in the kForwardDeclared state.", classname);
+                  currentRDClass = new TClass(classname, 1, TClass::kForwardDeclared, true /*silent*/);
+               }
             }
          }
          //else {
@@ -463,10 +483,10 @@ TRealData* TProtoClass::TProtoRealData::CreateRealData(TClass* dmClass,
    //TDataMember* dm = (TDataMember*)dmClass->GetListOfDataMembers()->FindObject(fName);
    TDataMember* dm = TProtoClass::FindDataMember(dmClass, fDMIndex);
 
-   if (!dm && dmClass->GetState()!=TClass::kForwardDeclared) {
+   if (!dm && dmClass->GetState()!=TClass::kForwardDeclared && !dmClass->fIsSyntheticPair) {
       ::Error("CreateRealData",
-              "Cannot find data member # %d of class %s for parent %s!", fDMIndex, dmClass->GetName(),
-              parent->GetName());
+            "Cannot find data member # %d of class %s for parent %s!", fDMIndex, dmClass->GetName(),
+            parent->GetName());
       return nullptr;
    }
 
@@ -475,6 +495,9 @@ TRealData* TProtoClass::TProtoRealData::CreateRealData(TClass* dmClass,
    TString realMemberName;
    // keep an empty name if data member is not found
    if (dm) realMemberName = dm->GetName();
+   else if (dmClass->fIsSyntheticPair) {
+      realMemberName = (fDMIndex == 0) ? "first" : "second";
+   }
    if (TestFlag(kIsPointer) )
       realMemberName = TString("*")+realMemberName;
    else if (dm){
@@ -561,7 +584,7 @@ TDataMember * TProtoClass::FindDataMember(TClass * cl, Int_t index)
          return dm;
       i++;
    }
-   if (cl->GetState()!=TClass::kForwardDeclared)
+   if (cl->GetState()!=TClass::kForwardDeclared && !cl->fIsSyntheticPair)
       ::Error("TProtoClass::FindDataMember","data member with index %d is not found in class %s",index,cl->GetName());
    return nullptr;
 }
