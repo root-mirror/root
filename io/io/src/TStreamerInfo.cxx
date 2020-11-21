@@ -772,6 +772,13 @@ void TStreamerInfo::BuildCheck(TFile *file /* = 0 */, Bool_t load /* = kTRUE */)
             return;
          }
       }
+      if (fClass->fIsSyntheticPair) {
+         // The format never change, no need to import the old StreamerInof
+         // (which anyway would have issue when being setup due to the lack
+         // of TDataMember in the TClass.
+         SetBit(kCanDelete);
+         return;
+      }
 
       if (0 == strcmp("string",fClass->GetName())) {
          // We know we do not need any offset check for a string
