@@ -217,7 +217,13 @@ private:
    ClassConvStreamerFunc_t fConvStreamerFunc;   //Wrapper around this class custom conversion Streamer member function.
    Int_t               fSizeof;         //Sizeof the class.
 
-           Int_t      fCanSplit;          //!Indicates whether this class can be split or not.
+   // Bit field
+   Int_t fCanSplit : 3;          //!Indicates whether this class can be split or not. Values are -1, 0, 1, 2
+
+   //! Indicates whether this class represent a pair and was not created from a dictionary nor interpreter info but has
+   //! compiler compatible offset and size (and all the info is in the StreamerInfo per se)
+   Bool_t fIsSyntheticPair : 1;  //!
+
    mutable std::atomic<Long_t> fProperty; //!Property See TClass::Property() for details
    mutable Long_t     fClassProperty;     //!C++ Property of the class (is abstract, has virtual table, etc.)
 
@@ -378,7 +384,7 @@ public:
    TVirtualStreamerInfo     *FindConversionStreamerInfo( const char* onfile_classname, UInt_t checksum ) const;
    TVirtualStreamerInfo     *GetConversionStreamerInfo( const TClass* onfile_cl, Int_t version ) const;
    TVirtualStreamerInfo     *FindConversionStreamerInfo( const TClass* onfile_cl, UInt_t checksum ) const;
-   Bool_t             HasDataMemberInfo() const { return fHasRootPcmInfo || HasInterpreterInfo(); }
+   Bool_t             HasDataMemberInfo() const { return fIsSyntheticPair || fHasRootPcmInfo || HasInterpreterInfo(); }
    Bool_t             HasDefaultConstructor() const;
    Bool_t             HasInterpreterInfoInMemory() const { return 0 != fClassInfo; }
    Bool_t             HasInterpreterInfo() const { return fCanLoadClassInfo || fClassInfo; }

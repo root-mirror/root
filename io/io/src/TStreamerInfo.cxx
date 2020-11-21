@@ -5684,7 +5684,11 @@ TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firs
    gErrorIgnoreLevel = kError;
    i->BuildCheck(nullptr, kFALSE); // Skipping the loading part (it would leads to infinite recursion on this very routine)
    gErrorIgnoreLevel = oldlevel;
+
+   i->GetClass()->fIsSyntheticPair = kTRUE;
+
    i->BuildOld();
+
    if (hint_pair_size)
       i->GetClass()->SetClassSize(hint_pair_size);
    return i;
