@@ -3539,7 +3539,7 @@ void TFile::ReadStreamerInfo()
             Int_t asize = fClassIndex->GetSize();
             if (uid >= asize && uid <100000) fClassIndex->Set(2*asize);
             if (uid >= 0 && uid < fClassIndex->GetSize()) fClassIndex->fArray[uid] = 1;
-            else if (!isstl) {
+            else if (!isstl && !info->GetClass()->IsSyntheticPair()) {
                printf("ReadStreamerInfo, class:%s, illegal uid=%d\n",info->GetName(),uid);
             }
             if (gDebug > 0) printf(" -class: %s version: %d info read at slot %d\n",info->GetName(), info->GetClassVersion(),uid);

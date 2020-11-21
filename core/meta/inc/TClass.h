@@ -495,6 +495,7 @@ public:
    Bool_t             IsLoaded() const;
    Bool_t             IsForeign() const;
    Bool_t             IsStartingWithTObject() const;
+   Bool_t             IsSyntheticPair() const { return fIsSyntheticPair; }
    Bool_t             IsVersioned() const { return !( GetClassVersion()<=1 && IsForeign() ); }
    Bool_t             IsTObject() const;
    static TClass     *LoadClass(const char *requestedname, Bool_t silent);
