@@ -2417,7 +2417,7 @@ void TStreamerInfo::BuildOld()
          element->SetOffset(kMissing);
       }
 
-      if (offset != kMissing && fClass->GetState() <= TClass::kEmulated) {
+      if (offset != kMissing && fClass->GetState() <= TClass::kEmulated && !fClass->fIsSyntheticPair) {
          // Note the initialization in this case are
          // delayed until __after__ the schema evolution
          // section, just in case the info has changed.
@@ -3081,6 +3081,13 @@ Bool_t TStreamerInfo::CompareContent(TClass *cl, TVirtualStreamerInfo *info, Boo
 
 void TStreamerInfo::ComputeSize()
 {
+   if (this == fClass->GetCurrentStreamerInfo()) {
+      if (fClass->GetState() >= TClass::kInterpreted || fClass->fIsSyntheticPair) {
+         fSize = fClass->GetClassSize();
+         return;
+      }
+   }
+
    TStreamerElement *element = (TStreamerElement*)fElements->Last();
    //faster and more precise to use last element offset +size
    //on 64 bit machines, offset may be forced to be a multiple of 8 bytes
@@ -5692,8 +5699,13 @@ TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firs
    gErrorIgnoreLevel = kError;
    i->BuildCheck(nullptr, kFALSE); // Skipping the loading part (it would leads to infinite recursion on this very routine)
    gErrorIgnoreLevel = oldlevel;
-
-   i->GetClass()->fIsSyntheticPair = kTRUE;
+   // In the state emulated, BuildOld would recalculate the offset and undo the offset update.
+   // Note: we should consider adding a new state just for this (the hints indicates that we are mapping a compiled class but
+   // then we would have to investigate all use of the state with <= and >= condition to make sure they are still appropriate).
+   if (hint_pair_size) {
+      i->GetClass()->SetClassSize(hint_pair_size);
+      i->GetClass()->fIsSyntheticPair = kTRUE;
+   }
 
    i->BuildOld();
 
