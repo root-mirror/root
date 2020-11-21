@@ -3158,7 +3158,7 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent, size_t hi
 ////////////////////////////////////////////////////////////////////////////////
 /// Return pointer to class with name.
 
-TClass *TClass::GetClass(const std::type_info& typeinfo, Bool_t load, Bool_t /* silent */)
+TClass *TClass::GetClass(const std::type_info& typeinfo, Bool_t load, Bool_t /* silent */, size_t hint_pair_offset, size_t hint_pair_size)
 {
    if (!gROOT->GetListOfClasses())
       return 0;
@@ -3223,9 +3223,20 @@ TClass *TClass::GetClass(const std::type_info& typeinfo, Bool_t load, Bool_t /* 
    if (autoload_old && gInterpreter->AutoLoad(typeinfo,kTRUE)) {
       // Disable autoload to avoid potential infinite recursion
       TInterpreter::SuspendAutoloadingRAII autoloadOff(gInterpreter);
-      cl = GetClass(typeinfo, load);
+      cl = GetClass(typeinfo, load, hint_pair_offset, hint_pair_size);
       if (cl) {
          return cl;
+      }
+   }
+
+   if (hint_pair_offset) {
+      int err = 0;
+      char* demangled_name = TClassEdit::DemangleTypeIdName(typeinfo, err);
+      if (!err) {
+         cl = TClass::GetClass(demangled_name, load, kTRUE, hint_pair_offset, hint_pair_size);
+         free(demangled_name);
+         if (cl)
+            return cl;
       }
    }
 

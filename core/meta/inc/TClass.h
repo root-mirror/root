@@ -552,7 +552,7 @@ public:
    static void           RemoveClassDeclId(TDictionary::DeclId_t id);
    static TClass        *GetClass(const char *name, Bool_t load = kTRUE, Bool_t silent = kFALSE);
    static TClass        *GetClass(const char *name, Bool_t load, Bool_t silent, size_t hint_pair_offset, size_t hint_pair_size);
-   static TClass        *GetClass(const std::type_info &typeinfo, Bool_t load = kTRUE, Bool_t silent = kFALSE);
+   static TClass        *GetClass(const std::type_info &typeinfo, Bool_t load = kTRUE, Bool_t silent = kFALSE, size_t hint_pair_offset = 0, size_t hint_pair_size = 0);
    static TClass        *GetClass(ClassInfo_t *info, Bool_t load = kTRUE, Bool_t silent = kFALSE);
    template<typename T>
    static TClass        *GetClass(Bool_t load = kTRUE, Bool_t silent = kFALSE);
@@ -598,9 +598,25 @@ TClass *GetClassHelper(Bool_t, Bool_t, std::true_type)
 }
 
 template <typename T>
+struct TClassGetClassHelper {
+   static TClass *GetClass(Bool_t load, Bool_t silent) {
+      return TClass::GetClass(typeid(T), load, silent);
+   }
+};
+
+template <typename F, typename S>
+struct TClassGetClassHelper<std::pair<F, S> > {
+   static TClass *GetClass(Bool_t load, Bool_t silent) {
+      std::pair<F, S> *p = nullptr;
+      size_t hint_offset = ((char*)&(p->second)) - (char*)p;
+      return TClass::GetClass(typeid(std::pair<F, S>), load, silent, hint_offset, sizeof(std::pair<F,S>));
+   }
+};
+
+template <typename T>
 TClass *GetClassHelper(Bool_t load, Bool_t silent, std::false_type)
 {
-   return TClass::GetClass(typeid(T), load, silent);
+   return TClassGetClassHelper<T>::GetClass(load, silent);
 }
 
 } // namespace Internal
