@@ -3071,12 +3071,11 @@ TClass *TClass::GetClass(const char *name, Bool_t load, Bool_t silent, size_t hi
    // TClass if we have one.
    if (cl) return cl;
 
-   if (ispair) {
+   if (ispair &&  hint_pair_offset && hint_pair_size) {
       auto pairinfo = TVirtualStreamerInfo::Factory()->GenerateInfoForPair(normalizedName, silent, hint_pair_offset, hint_pair_size);
       //return pairinfo ? pairinfo->GetClass() : nullptr;
       if (pairinfo)
          return pairinfo->GetClass();
-
    } else if (TClassEdit::IsSTLCont( normalizedName.c_str() )) {
 
       return gInterpreter->GenerateTClass(normalizedName.c_str(), kTRUE, silent);
