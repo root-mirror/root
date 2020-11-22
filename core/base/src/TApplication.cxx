@@ -493,9 +493,11 @@ void TApplication::GetOptions(Int_t *argc, char **argv)
          Long_t id, flags, modtime;
          char *arg = strchr(argv[i], '(');
          if (arg) *arg = '\0';
-         char *dir = gSystem->ExpandPathName(argv[i]);
-         // ROOT-9959: we do not continue if we could not expand the path
-         if (!dir) continue;
+         TString dir(argv[i]);
+         if (!gSystem->ExpandPathName(dir)) {
+            // ROOT-9959: we do not continue if we could not expand the path
+            continue;
+         }
          TUrl udir(dir, kTRUE);
          // remove options and anchor to check the path
          TString sfx = udir.GetFileAndOptions();
@@ -517,7 +519,7 @@ void TApplication::GetOptions(Int_t *argc, char **argv)
                   gSystem->ChangeDirectory(dir);
                   argv[i] = null;
                } else if (!strcmp(gROOT->GetName(), "Rint")) {
-                  Warning("GetOptions", "only one directory argument can be specified (%s)", dir);
+                  Warning("GetOptions", "only one directory argument can be specified (%s)", dir.Data());
                }
             } else if (size > 0) {
                // if file add to list of files to be processed
@@ -525,7 +527,7 @@ void TApplication::GetOptions(Int_t *argc, char **argv)
                fFiles->Add(new TObjString(path.Data()));
                argv[i] = null;
             } else {
-               Warning("GetOptions", "file %s has size 0, skipping", dir);
+               Warning("GetOptions", "file %s has size 0, skipping", dir.Data());
             }
          } else {
             if (TString(udir.GetFile()).EndsWith(".root")) {
@@ -533,7 +535,7 @@ void TApplication::GetOptions(Int_t *argc, char **argv)
                   // file ending on .root but does not exist, likely a typo
                   // warn user if plain root...
                   if (!strcmp(gROOT->GetName(), "Rint"))
-                     Warning("GetOptions", "file %s not found", dir);
+                     Warning("GetOptions", "file %s not found", dir.Data());
                } else {
                   // remote file, give it the benefit of the doubt and add it to list of files
                   if (!fFiles) fFiles = new TObjArray;
