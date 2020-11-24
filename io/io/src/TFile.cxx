@@ -306,6 +306,16 @@ TFile::TFile() : TDirectoryFile(), fCompress(ROOT::RCompressionSetting::EAlgorit
 TFile::TFile(const char *fname1, Option_t *option, const char *ftitle, Int_t compress)
            : TDirectoryFile(), fCompress(compress), fUrl(fname1,kTRUE)
 {
+   auto handleZombie = [this] {
+      // error in file opening occurred, make this object a zombie
+      {
+         R__LOCKGUARD(gROOTMutex);
+         gROOT->GetListOfClosedObjects()->Add(this);
+      }
+      MakeZombie();
+      gDirectory = gROOT;
+   };
+
    if (!gROOT)
       ::Fatal("TFile::TFile", "ROOT system not initialized");
 
@@ -386,7 +396,8 @@ TFile::TFile(const char *fname1, Option_t *option, const char *ftitle, Int_t com
 
    if (!fname1 || !fname1[0]) {
       Error("TFile", "file name is not specified");
-      goto zombie;
+      handleZombie();
+      return;
    }
 
    // support dumping to /dev/null on UNIX
@@ -401,15 +412,15 @@ TFile::TFile(const char *fname1, Option_t *option, const char *ftitle, Int_t com
       SetBit(kDevNull);
    }
 
-   const char *fname;
-   if ((fname = gSystem->ExpandPathName(fname1))) {
-      SetName(fname);
-      delete [] fname;
+   TString fname(fname1);
+   if (gSystem->ExpandPathName(fname)) {
+      SetName(fname.Data());
       fRealName = GetName();
       fname = fRealName.Data();
    } else {
       Error("TFile", "error expanding path %s", fname1);
-      goto zombie;
+      handleZombie();
+      return;
    }
 
    // If the user supplied a value to the option take it as the name to set for
@@ -421,80 +432,76 @@ TFile::TFile(const char *fname1, Option_t *option, const char *ftitle, Int_t com
    }
 
    if (recreate) {
-      if (!gSystem->AccessPathName(fname, kFileExists)) {
-         if (gSystem->Unlink(fname) != 0) {
+      if (!gSystem->AccessPathName(fname.Data(), kFileExists)) {
+         if (gSystem->Unlink(fname.Data()) != 0) {
             SysError("TFile", "could not delete %s (errno: %d)",
-                     fname, gSystem->GetErrno());
-            goto zombie;
+                     fname.Data(), gSystem->GetErrno());
+            handleZombie();
+            return;
          }
       }
       recreate = kFALSE;
       create   = kTRUE;
       fOption  = "CREATE";
    }
-   if (create && !devnull && !gSystem->AccessPathName(fname, kFileExists)) {
-      Error("TFile", "file %s already exists", fname);
-      goto zombie;
+   if (create && !devnull && !gSystem->AccessPathName(fname.Data(), kFileExists)) {
+      Error("TFile", "file %s already exists", fname.Data());
+      handleZombie();
+      return;
    }
    if (update) {
-      if (gSystem->AccessPathName(fname, kFileExists)) {
+      if (gSystem->AccessPathName(fname.Data(), kFileExists)) {
          update = kFALSE;
          create = kTRUE;
       }
-      if (update && gSystem->AccessPathName(fname, kWritePermission)) {
-         Error("TFile", "no write permission, could not open file %s", fname);
-         goto zombie;
+      if (update && gSystem->AccessPathName(fname.Data(), kWritePermission)) {
+         Error("TFile", "no write permission, could not open file %s", fname.Data());
+         handleZombie();
+         return;
       }
    }
    if (read) {
-      if (gSystem->AccessPathName(fname, kFileExists)) {
-         Error("TFile", "file %s does not exist", fname);
-         goto zombie;
+      if (gSystem->AccessPathName(fname.Data(), kFileExists)) {
+         Error("TFile", "file %s does not exist", fname.Data());
+         handleZombie();
+         return;
       }
-      if (gSystem->AccessPathName(fname, kReadPermission)) {
-         Error("TFile", "no read permission, could not open file %s", fname);
-         goto zombie;
+      if (gSystem->AccessPathName(fname.Data(), kReadPermission)) {
+         Error("TFile", "no read permission, could not open file %s", fname.Data());
+         handleZombie();
+         return;
       }
    }
 
    // Connect to file system stream
    if (create || update) {
 #ifndef WIN32
-      fD = TFile::SysOpen(fname, O_RDWR | O_CREAT, 0644);
+      fD = TFile::SysOpen(fname.Data(), O_RDWR | O_CREAT, 0644);
 #else
-      fD = TFile::SysOpen(fname, O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE);
+      fD = TFile::SysOpen(fname.Data(), O_RDWR | O_CREAT | O_BINARY, S_IREAD | S_IWRITE);
 #endif
       if (fD == -1) {
-         SysError("TFile", "file %s can not be opened", fname);
-         goto zombie;
+         SysError("TFile", "file %s can not be opened", fname.Data());
+         handleZombie();
+         return;
       }
       fWritable = kTRUE;
    } else {
 #ifndef WIN32
-      fD = TFile::SysOpen(fname, O_RDONLY, 0644);
+      fD = TFile::SysOpen(fname.Data(), O_RDONLY, 0644);
 #else
-      fD = TFile::SysOpen(fname, O_RDONLY | O_BINARY, S_IREAD | S_IWRITE);
+      fD = TFile::SysOpen(fname.Data(), O_RDONLY | O_BINARY, S_IREAD | S_IWRITE);
 #endif
       if (fD == -1) {
-         SysError("TFile", "file %s can not be opened for reading", fname);
-         goto zombie;
+         SysError("TFile", "file %s can not be opened for reading", fname.Data());
+         handleZombie();
+         return;
       }
       fWritable = kFALSE;
    }
 
    // calling virtual methods from constructor not a good idea, but it is how code was developed
    TFile::Init(create);                        // NOLINT: silence clang-tidy warnings
-
-   return;
-
-zombie:
-   // error in file opening occurred, make this object a zombie
-   {
-      R__LOCKGUARD(gROOTMutex);
-      gROOT->GetListOfClosedObjects()->Add(this);
-   }
-   MakeZombie();
-   gDirectory = gROOT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4755,11 +4762,10 @@ TFile::EFileType TFile::GetType(const char *name, Option_t *option, TString *pre
             Bool_t read = (opt.IsNull() ||
                           !opt.CompareTo("READ", TString::kIgnoreCase)) ? kTRUE : kFALSE;
             if (read) {
-               char *fn;
-               if ((fn = gSystem->ExpandPathName(TUrl(lfname).GetFile()))) {
+               TString fn = TUrl(lfname).GetFile();
+               if (gSystem->ExpandPathName(fn)) {
                   if (gSystem->AccessPathName(fn, kReadPermission))
                      localFile = kFALSE;
-                  delete [] fn;
                }
             }
             // Return full local path if requested (and if the case)
