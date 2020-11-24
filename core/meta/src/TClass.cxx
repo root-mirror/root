@@ -556,6 +556,7 @@ void TDumpMembers::Inspect(TClass *cl, const char *pname, const char *mname, con
    const char *memberTitle;
    Bool_t isapointer;
    Bool_t isbasic;
+   Bool_t isarray;
 
    if (TDataMember *member = cl->GetDataMember(mname)) {
       if (member->GetDataType()) {
@@ -567,6 +568,7 @@ void TDumpMembers::Inspect(TClass *cl, const char *pname, const char *mname, con
       isapointer = member->IsaPointer();
       isbasic = member->IsBasic();
       membertype = member->GetDataType();
+      isarray = member->GetArrayDim();
    } else if (!cl->IsLoaded()) {
       // The class is not loaded, hence it is 'emulated' and the main source of
       // information is the StreamerInfo.
@@ -591,6 +593,7 @@ void TDumpMembers::Inspect(TClass *cl, const char *pname, const char *mname, con
       membertype = gROOT->GetType(memberFullTypeName);
 
       isbasic = membertype !=0;
+      isarray = element->GetArrayDim();
    } else {
       return;
    }
@@ -697,6 +700,10 @@ void TDumpMembers::Inspect(TClass *cl, const char *pname, const char *mname, con
       i = strlen(&line[0]); line[i] = ' ';
       assert(250 > ktitle);
       strlcpy(&line[ktitle],memberTitle,250-ktitle+1); // strlcpy copy 'size-1' characters.
+   }
+   if (isarray) {
+      // Should iterate over the element
+      strncat(line, " ...", kline-strlen(line)-1);
    }
    Printf("%s", line);
 }

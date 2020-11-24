@@ -270,7 +270,7 @@ const char *TDataType::AsString(void *buf) const
    else if (!strcmp("bool", name))
       line.Form( "%s", *(Bool_t *)buf ? "true" : "false");
    else if (!strcmp("unsigned char", name) || !strcmp("char", name) ) {
-      line = (char*)buf;
+      line = *(char*)buf;
    } else if (!strcmp("float", name))
       line.Form( "%g", *(float *)buf);
    else if (!strcmp("double", name))
