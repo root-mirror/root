@@ -5673,6 +5673,12 @@ TVirtualStreamerInfo *TStreamerInfo::GenerateInfoForPair(const std::string &firs
    // This TStreamerInfo is then used as if it was read from a file to generate
    // and emulated TClass.
 
+   if (hint_pair_offset && hint_pair_offset == hint_pair_size) {
+      Error("GenerateInfoForPair",
+            "Called with inconsistent offset and size. For \"std::pair<%s,%s>\" requested offset is %ld but size is the same (%ld)",
+            firstname.c_str(), secondname.c_str(), (long)hint_pair_offset, (long)hint_pair_offset);
+      return nullptr;
+   }
    TStreamerInfo *i = (TStreamerInfo*)TClass::GetClass("pair<const int,int>")->GetStreamerInfo()->Clone();
    std::string pname = "pair<" + firstname + "," + secondname;
    pname += (pname[pname.length()-1]=='>') ? " >" : ">";
