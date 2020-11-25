@@ -220,8 +220,8 @@ private:
    // Bit field
    Int_t fCanSplit : 3;          //!Indicates whether this class can be split or not. Values are -1, 0, 1, 2
 
-   //! Indicates whether this class represent a pair and was not created from a dictionary nor interpreter info but has
-   //! compiler compatible offset and size (and all the info is in the StreamerInfo per se)
+   /// Indicates whether this class represents a pair and was not created from a dictionary nor interpreter info but has
+   /// compiler compatible offset and size (and all the info is in the StreamerInfo per se)
    Bool_t fIsSyntheticPair : 1;  //!
 
    mutable std::atomic<Long_t> fProperty; //!Property See TClass::Property() for details
