@@ -29,6 +29,8 @@
 #ifndef TMVA_DNN_DEEPNET
 #define TMVA_DNN_DEEPNET
 
+#include "TString.h"
+
 #include "TMVA/DNN/Functions.h"
 #include "TMVA/DNN/TensorDataLoader.h"
 
@@ -264,7 +266,7 @@ public:
 
    /*! Function that executes the entire backward pass in the network. */
    void Backward(const Tensor_t &input, const Matrix_t &groundTruth, const Matrix_t &weights);
-
+   void Backward(const Tensor_t &input, const Matrix_t &groundTruth, const Matrix_t &weights, const Matrix_t &activationGradients);
 
 #ifdef USE_PARALLEL_DEEPNET
    /*! Function for parallel forward in the vector of deep nets, where the master
@@ -1051,6 +1053,30 @@ auto TDeepNet<Architecture_t, Layer_t>::Backward(const Tensor_t &input, const Ma
    // are not computed for the first layer
    Tensor_t dummy;
    fLayers[0]->Backward(dummy, input);
+}
+
+
+//Copy of the function above that also allows you to get the gradients
+template <typename Architecture_t, typename Layer_t>
+auto TDeepNet<Architecture_t, Layer_t>::Backward(const Tensor_t &input, const Matrix_t &groundTruth,
+                                                 const Matrix_t &weights, const Matrix_t &activationGradients) -> void
+{
+   Matrix_t last_actgrad = fLayers.back()->GetActivationGradientsAt(0);
+   Matrix_t last_output = fLayers.back()->GetOutputAt(0);
+   evaluateGradients<Architecture_t>(last_actgrad, this->GetLossFunction(), groundTruth,
+                                     last_output, weights);
+
+   for (size_t i = fLayers.size() - 1; i > 0; i--) {
+      auto &activation_gradient_backward = fLayers[i - 1]->GetActivationGradients();
+      auto &activations_backward = fLayers[i - 1]->GetOutput();
+      fLayers[i]->Backward(activation_gradient_backward, activations_backward);
+   }
+
+   // need to have a dummy tensor (size=0) to pass for activation gradient backward which
+   // are not computed for the first layer
+   Tensor_t dummy;
+   fLayers[0]->Backward(dummy, input);
+   activationGradients = fLayers[0]->GetActivationGradients();
 }
 
 #ifdef USE_PARALLEL_DEEPNET

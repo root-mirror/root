@@ -351,3 +351,62 @@ TEST(RTensor, SliceColumnMajor)
       }
    }
 }
+
+TEST(RTensor, Concatenate1)
+{
+   float data1[4] = {0, 1, 2, 3};
+   float data2[4] = {4, 5, 6, 7};
+   RTensor<float> x(data1, {2, 2});
+   RTensor<float> y(data2, {2, 2});
+   RTensor<float> z = x.Concatenate(y);
+   float * new_data = z.GetData();
+   auto shape = z.GetShape();
+
+   EXPECT_EQ(new_data[0], 0);
+   EXPECT_EQ(new_data[1], 1);
+   EXPECT_EQ(new_data[2], 2);
+   EXPECT_EQ(new_data[3], 3);
+   EXPECT_EQ(new_data[4], 4);
+   EXPECT_EQ(new_data[5], 5);
+   EXPECT_EQ(new_data[6], 6);
+   EXPECT_EQ(new_data[7], 7);
+   EXPECT_EQ(shape[0], 4);
+   EXPECT_EQ(shape[1], 2);
+}
+
+TEST(RTensor, Concatenate2)
+{
+   float data1[4] = {0, 1, 2, 3};
+   float data2[4] = {4, 5, 6, 7};
+   RTensor<float> x(data1, {2, 2});
+   RTensor<float> y(data2, {2, 2});
+   RTensor<float> z = x.Concatenate(y, 1);
+   float * new_data = z.GetData();
+   auto shape = z.GetShape();
+
+   EXPECT_EQ(new_data[0], 0);
+   EXPECT_EQ(new_data[1], 1);
+   EXPECT_EQ(new_data[2], 4);
+   EXPECT_EQ(new_data[3], 5);
+   EXPECT_EQ(new_data[4], 2);
+   EXPECT_EQ(new_data[5], 3);
+   EXPECT_EQ(new_data[6], 6);
+   EXPECT_EQ(new_data[7], 7);
+   EXPECT_EQ(shape[0], 2);
+   EXPECT_EQ(shape[1], 4);
+}
+
+TEST(RTensor, Flatten)
+{
+   float data1[4] = {0, 1, 2, 3};
+   RTensor<float> x(data1, {2, 2});
+   RTensor<float> z = x.Flatten();
+   float * new_data = z.GetData();
+   auto shape = z.GetShape();
+
+   EXPECT_EQ(new_data[0], 0);
+   EXPECT_EQ(new_data[1], 1);
+   EXPECT_EQ(new_data[2], 2);
+   EXPECT_EQ(new_data[3], 3);
+   EXPECT_EQ(shape[0], 4);
+}

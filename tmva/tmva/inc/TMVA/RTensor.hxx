@@ -258,6 +258,15 @@ public:
    RTensor<Value_t, Container_t> ExpandDims(int idx);
    RTensor<Value_t, Container_t> Reshape(const Shape_t &shape);
    RTensor<Value_t, Container_t> Slice(const Slice_t &slice);
+   RTensor<Value_t, Container_t> Flatten();
+
+   RTensor<Value_t, Container_t> Concatenate(RTensor<Value_t, Container_t> &a, std::size_t idx = 0);
+   RTensor<Value_t, Container_t> operator[] (const std::size_t idx);
+
+   RTensor<Value_t, Container_t>& operator+= (RTensor<Value_t, Container_t> &a);
+   RTensor<Value_t, Container_t> operator+ (RTensor<Value_t, Container_t> &a);
+   void CopyData (RTensor<Value_t, Container_t> &a);
+
 
    // Iterator class
    class Iterator : public std::iterator<std::random_access_iterator_tag, Value_t> {
@@ -591,6 +600,205 @@ std::ostream &operator<<(std::ostream &os, RTensor<T> &x)
    }
    return os;
 }
+
+
+
+
+/// \brief Concatenates two tensors
+/// \param[in] a RTensor to concatenate with the given one.
+/// \param[in] idx Index of the axis to concatenate alongside of 
+/// \returns New RTensor
+/// Concatenates the vector with a second one along the provided axis.
+template <typename Value_t, typename Container_t>
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Concatenate(RTensor<Value_t, Container_t> &a, std::size_t idx)
+{   
+      // Checking that required dimentions is within the limits of tensor shapes
+   if (this->fShape.size() <= idx){
+      std::stringstream ss;
+      ss << "The required dimention index " << idx << " is less than the number of dimentions of the first tensor: " << this->fShape.size();
+      throw std::runtime_error(ss.str());
+   }
+
+   if (a.fShape.size() <= idx){
+      std::stringstream ss;
+      ss << "The required dimention index " << idx << " is less than the number of dimentions of the second tensor: " << a.fShape.size();
+      throw std::runtime_error(ss.str());
+   }
+
+
+   // Checks for the shape to be equal except along the axis of concatenation
+   bool shapes_valid = (a.fShape.size() == this->fShape.size());
+   if (shapes_valid) {
+      for (std::size_t i = 0; i < this->fShape.size(); i++) {
+         if (a.fShape[i] != this->fShape[i]) {
+            shapes_valid = false;
+            break;
+         }
+      }
+   }
+
+   // Throwing the error for incorrect shapes
+   if (!shapes_valid){
+      std::stringstream dim1;
+      std::stringstream dim2;
+
+      std::copy(this->fShape.begin(), this->fShape.end(), std::ostream_iterator<std::size_t>(dim1, ", "));
+      std::copy(a.fShape.begin(), a.fShape.end(), std::ostream_iterator<std::size_t>(dim2, ", "));
+
+      std::stringstream ss;
+      ss << "Tensors have incompatible shapes concatenating alongside axis " << idx << std::endl <<"The dimentions of the tensors are {" << dim1.str() << "}, and {"<< dim1.str() <<"}";
+      throw std::runtime_error(ss.str());
+   }
+
+   // TODO: Checking the memory layout?
+   // It should work either way due to the usage of operator()
+
+   Shape_t new_fShape = this->fShape;
+   new_fShape[idx] = this->fShape[idx] + a.fShape[idx];
+   
+   std::size_t new_fSize = Internal::GetSizeFromShape(new_fShape);
+
+   Value_t * new_fData = new Value_t [new_fSize];
+
+   // Trivial case of concatenation alongside the 0th dimention
+   if (idx == 0){
+      for (std::size_t i = 0; i < this->fSize; i++) {
+         new_fData[i] = this->fData[i];
+      }
+      for (std::size_t i = 0; i < a.fSize; i++) {
+         new_fData[i + this->fSize] = a.fData[i];
+      }
+   }
+   else{
+      // Since our concatenation here is only from two tensors, we can take chunks of the data iteratively one after another
+      // We pick the size of this chunk based on the size of the tensor after the index of the dimension
+
+      // This is the size of the chunk without the the target dimension axis
+      std::size_t chunk_size = 1;
+
+      for (std::size_t i = idx + 1; i < this->fShape.size(); i++){
+         chunk_size *= this->fShape[i];
+      }
+
+      std::size_t cs1 = chunk_size * this->fShape[idx];
+      std::size_t cs2 = chunk_size * a.fShape[idx];
+
+      for (std::size_t i = 0; (i * cs1 < this->fSize) && (i * cs2 < a.fSize); i++){
+         for (std::size_t j = 0; j < cs1 + cs2; j++) {
+            new_fData[i * (cs1 + cs2) + j] = (j < cs1) ? this->fData[ (i*cs1) + j] : a.fData[(i*cs2) + j - cs1];
+
+         }
+      }  
+   }
+
+   RTensor<Value_t, Container_t> res (new_fData, new_fShape, this->fLayout);
+
+   return res;
+}
+
+/// \brief Flattens a vector
+/// \returns New RTensor
+/// Flattens a vector into a 1d array and returns a new one, flattened
+template <typename Value_t, typename Container_t>
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Flatten(){
+   Shape_t new_fShape = {this->fSize};
+   RTensor<Value_t, Container_t> new_tensor (this->fData, new_fShape, this->fLayout);
+   return new_tensor;
+}
+
+
+
+/// \brief Dimension-wise slicing
+/// \param[in] idx Index of the axis to concatenate alongside of 
+/// \returns New RTensor
+/// Slices a dimension of a tensor. Works as if the tensor is a bunch of nested arrays. Data is not copied but referenced!
+template <typename Value_t, typename Container_t>
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::operator[](std::size_t idx)
+{   
+      // Checking that required dimentions is within the limits of tensor shapes
+   if (this->fShape[0] <= idx){
+      std::stringstream ss;
+      ss << "The required dimention index " << idx << " is out of bound for the top-most dimensionality of the tensor: " << this->fShape[0];
+      throw std::runtime_error(ss.str());
+   }
+
+   Shape_t new_fShape;
+
+   if (this->fShape.size() >= 2 ){
+      new_fShape = this->fShape;
+      new_fShape.erase(new_fShape.begin());
+   }
+   else {
+      new_fShape = {0};
+   }
+      
+   std::size_t elements_per_top_dim = this->fSize / this->fShape[0]; 
+
+   std::size_t beginning_index =  elements_per_top_dim * idx; 
+
+   // This may not work for different layouts, but I don't think there's an easy way to do it without copying for column-layout. 
+
+   Value_t * new_fData = &(this->fData[beginning_index]);
+
+   RTensor<Value_t, Container_t> new_tensor (new_fData, new_fShape, this->fLayout);
+   return new_tensor;
+}
+
+/// \brief Copies data
+/// \param[in] a RTensor to concatenate with the given one.
+/// \returns New RTensor
+/// Copies the data from one tensor to another
+template <typename Value_t, typename Container_t>
+inline void RTensor<Value_t, Container_t>::CopyData(RTensor<Value_t, Container_t> &x){
+   if (this->fSize != x.fSize){
+      std::stringstream ss;
+      ss << "The size of the original tensor " << this->fSize << " is differs from the size of the tensor to copy: " << x.fSize;
+      throw std::runtime_error(ss.str());
+   }
+
+   for (int i = 0; i < this->fSize; i++){
+      this->fData[i] = x.fData[i];
+   }
+}
+
+/// \brief Adds two tensors
+/// \param[in] a RTensor to add
+/// \returns New RTensor
+/// Adds two tensors and create a third tensor with a shape of the first tensor
+template <typename Value_t, typename Container_t>
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::operator+(RTensor<Value_t, Container_t> &x){
+   if (this->fSize != x.fSize){
+      std::stringstream ss;
+      ss << "The size of the original tensor " << this->fSize << " is differs from the size of the tensor to copy: " << x.fSize;
+      throw std::runtime_error(ss.str());
+   }
+   Value_t *new_fData = new Value_t [this->fSize];
+
+   for (int i = 0; i < this->size; i++){
+      new_fData[i] = this->fData[i] + x.fData[i];
+   }
+
+   RTensor<Value_t, Container_t> new_tensor (new_fData, this->fShape, this->fLayout);
+
+}
+
+/// \brief Adds a tensor to a given tensor 
+/// \param[in] a RTensor to add
+/// Takes a tensor and adds to the values in it values of another tensor
+template <typename Value_t, typename Container_t>
+inline RTensor<Value_t, Container_t>& RTensor<Value_t, Container_t>::operator+=(RTensor<Value_t, Container_t> &x){
+   if (this->fSize != x.fSize){
+      std::stringstream ss;
+      ss << "The size of the original tensor " << this->fSize << " is differs from the size of the tensor to copy: " << x.fSize;
+      throw std::runtime_error(ss.str());
+   }
+
+   for (int i = 0; i < this->size; i++){
+      this->fData[i] += x.fData[i];
+   }
+   return *this;
+}
+
 
 } // namespace TMVA::Experimental
 } // namespace TMVA
