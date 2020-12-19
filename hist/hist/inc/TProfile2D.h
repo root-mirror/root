@@ -131,7 +131,7 @@ public:
    TProfile         *ProfileY(const char *name="_pfy", Int_t firstxbin=0, Int_t lastxbin=-1, Option_t *option="") const;   // *MENU*
    virtual void      PutStats(Double_t *stats);
    virtual void      Reset(Option_t *option="");
-   virtual TProfile2D *Rebin2D(Int_t nxgroup=2, Int_t nygroup=2, const char *newname="");
+   virtual TProfile2D *Rebin2D(Int_t nxgroup=2, Int_t nygroup=2, const char *newname="", const Double_t *xbins=0, const Double_t *ybins=0);
    virtual TProfile2D *RebinX(Int_t ngroup=2, const char *newname="");
    virtual TProfile2D *RebinY(Int_t ngroup=2, const char *newname="");
    virtual void      SavePrimitive(std::ostream &out, Option_t *option = "");

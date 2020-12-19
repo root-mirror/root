@@ -1521,9 +1521,11 @@ void TProfile2D::ExtendAxis(Double_t x, TAxis *axis)
 ////////////////////////////////////////////////////////////////////////////////
 /// Rebin this histogram grouping nxgroup/nygroup bins along the xaxis/yaxis together.
 ///
-/// if newname is not blank a new profile hnew is created.
+/// ## case 1  `xbins`=0 || `ybins`=0
+///
+/// if `newname` is not blank a new profile hnew is created.
 /// else the current histogram is modified (default)
-/// The parameter nxgroup/nygroup indicate how many bins along the xaxis/yaxis of this
+/// The parameters `nxgroup`/`nygroup` indicate how many bins along the xaxis/yaxis of this
 /// have to be merged into one bin of hnew
 /// If the original profile has errors stored (via Sumw2), the resulting
 /// profile has new errors correctly calculated.
@@ -1539,14 +1541,33 @@ void TProfile2D::ExtendAxis(Double_t x, TAxis *axis)
 ///                                                  // merging 5 bins of hpxpy along the yaxis in one bin
 /// ~~~
 ///
-///  NOTE : If nxgroup/nygroup is not an exact divider of the number of bins,
+///  \note : If `nxgroup`/`nygroup` is not an exact divider of the number of bins,
 ///         along the xaxis/yaxis the top limit(s) of the rebinned profile
 ///         is changed to the upper edge of the xbin=newxbins*nxgroup resp.
 ///          ybin=newybins*nygroup and the remaining bins are added to
 ///          the overflow bin.
 ///          Statistics will be recomputed from the new bin contents.
+///
+///  ## case 2  `xbins`!=0 && `ybins`!=0
+///  a new profile is created (you should specify `newname`).
+///  The parameter `nxgroup` (`nygroup`) is the number of variable size bins for the x-axis
+///  (y-axis) in the created profile.
+///  The arrays `xbins` and `ybins` must contain `nxgroup+1` and `nygroup+1` elements that
+///  represent the low-edge of the x and y bins respectively.
+///  The data of the old bins are added to the new bin which contains the bin center
+///  of the old bins. It is possible that information from the old binning are attached
+///  to the under-/overflow bins of the new binning.
+///
+///  examples: if hp is an existing TProfile2D with 100 bins on x-axis
+///  and 100 bins y-axis
+///
+/// ~~~ {.cpp}
+///      Double_t xbins[25] = {...} array of low-edges for x-axis (xbins[25] is the upper edge of last bin)
+///      Double_t ybins[25] = {...} array of low-edges for y-axis (ybins[25] is the upper edge of last bin)
+///      hp->Rebin(24,24,"hpnew",xbins,ybins);  //creates a new variable bin size profile hpnew
+/// ~~~
 
-TProfile2D * TProfile2D::Rebin2D(Int_t nxgroup ,Int_t nygroup,const char * newname ) {
+TProfile2D * TProfile2D::Rebin2D(Int_t nxgroup ,Int_t nygroup,const char * newname, const Double_t *xbins, const Double_t *ybins) {
    //something to do?
    if((nxgroup != 1) || (nygroup != 1)){
       Int_t nxbins  = fXaxis.GetNbins();
@@ -1556,23 +1577,46 @@ TProfile2D * TProfile2D::Rebin2D(Int_t nxgroup ,Int_t nygroup,const char * newna
       Double_t ymin  = fYaxis.GetXmin();
       Double_t ymax  = fYaxis.GetXmax();
       if ((nxgroup <= 0) || (nxgroup > nxbins)) {
-         Error("Rebin", "Illegal value of nxgroup=%d",nxgroup);
+         Error("Rebin2D", "Illegal value of nxgroup=%d",nxgroup);
          return 0;
       }
       if ((nygroup <= 0) || (nygroup > nybins)) {
-         Error("Rebin", "Illegal value of nygroup=%d",nygroup);
+         Error("Rebin2D", "Illegal value of nygroup=%d",nygroup);
          return 0;
       }
 
       Int_t newxbins = nxbins/nxgroup;
-      Int_t newybins = nybins/nygroup;
-
-      //warning if bins are added to the overflow bin
-      if(newxbins*nxgroup != nxbins) {
-         Warning("Rebin", "nxgroup=%d should be an exact divider of nxbins=%d",nxgroup,nxbins);
+      if (!xbins) {
+         Int_t nbg = nxbins/nxgroup;
+         //warning if bins are added to the overflow bin
+         if (nbg*nxgroup != nxbins) {
+            Warning("Rebin2D", "nxgroup=%d should be an exact divider of nxbins=%d",nxgroup,nxbins);
+         }
       }
-      if(newybins*nygroup != nybins) {
-         Warning("Rebin", "nygroup=%d should be an exact divider of nybins=%d",nygroup,nybins);
+      else {
+         // in the case of xbins given (rebinning in variable bins) ngroup is the new number of bins.
+         // and number of grouped bins is not constant.
+         // when looping for setting the contents for the new histogram we
+         // need to loop on all bins of original histogram. Set then nxgroup=nxbins
+         newxbins = nxgroup;
+         nxgroup = nxbins;
+      }
+
+      Int_t newybins = nybins/nygroup;
+      if (!ybins) {
+         Int_t nbg = nybins/nygroup;
+         //warning if bins are added to the overflow bin
+         if (nbg*nygroup != nybins) {
+            Warning("Rebin2D", "nygroup=%d should be an exact divider of nybins=%d",nygroup,nybins);
+         }
+      }
+      else {
+         // in the case of ybins given (rebinning in variable bins) ngroup is the new number of bins.
+         // and number of grouped bins is not constant.
+         // when looping for setting the contents for the new histogram we
+         // need to loop on all bins of original histogram. Set then nygroup=nybins
+         newybins = nygroup;
+         nygroup = nybins;
       }
 
       //save old bin contents in new arrays
@@ -1593,35 +1637,38 @@ TProfile2D * TProfile2D::Rebin2D(Int_t nxgroup ,Int_t nygroup,const char * newna
 
       // create a clone of the old profile if newname is specified
       TProfile2D *hnew = this;
-      if(newname && strlen(newname) > 0) {
+      if((newname && strlen(newname) > 0) || xbins || ybins) {
          hnew = (TProfile2D*)Clone(newname);
       }
 
       // in case of nxgroup/nygroup not an exact divider of nxbins/nybins,
       // top limit is changed (see NOTE in method comment)
-      if(newxbins*nxgroup != nxbins) {
+      if(!xbins && (newxbins*nxgroup != nxbins)) {
          xmax = fXaxis.GetBinUpEdge(newxbins*nxgroup);
          hnew->fTsumw = 0; //stats must be reset because top bins will be moved to overflow bin
       }
-      if(newybins*nygroup != nybins) {
+      if(!ybins && (newybins*nygroup != nybins)) {
          ymax = fYaxis.GetBinUpEdge(newybins*nygroup);
          hnew->fTsumw = 0; //stats must be reset because top bins will be moved to overflow bin
       }
 
       //rebin the axis
-      if((fXaxis.GetXbins()->GetSize() > 0) || (fYaxis.GetXbins()->GetSize() > 0)){
-         Double_t* xbins = new Double_t[newxbins+1];
-         Double_t* ybins = new Double_t[newybins+1];
+      if((!xbins && (fXaxis.GetXbins()->GetSize() > 0)) || (!ybins && (fYaxis.GetXbins()->GetSize() > 0))){
+         // for rebinning of variable bins in a constant group
+         Double_t* xbinsTmp = new Double_t[newxbins+1];
+         Double_t* ybinsTmp = new Double_t[newybins+1];
          for(Int_t i=0; i < newxbins+1; i++)
-            xbins[i] = fXaxis.GetBinLowEdge(1+i*nxgroup);
+            xbinsTmp[i] = fXaxis.GetBinLowEdge(1+i*nxgroup);
          for(Int_t j=0; j < newybins+1; j++)
-            ybins[j] = fYaxis.GetBinLowEdge(1+j*nygroup);
+            ybinsTmp[j] = fYaxis.GetBinLowEdge(1+j*nygroup);
          hnew->SetBins(newxbins,xbins,newybins,ybins);
-         delete [] xbins;
-         delete [] ybins;
-      }
+         delete [] xbinsTmp;
+         delete [] ybinsTmp;
+      // when rebinning in variable bins
+      } else if (xbins && ybins) {
+          hnew->SetBins(newxbins,xbins,newybins,ybins);
       //fixed bin size
-      else{
+      } else{
          hnew->SetBins(newxbins,xmin,xmax,newybins,ymin,ymax);
       }
 
