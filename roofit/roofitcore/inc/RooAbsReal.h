@@ -23,6 +23,7 @@
 #include "RooArgList.h"
 #include "RooGlobalFunc.h"
 #include "RooSpan.h"
+
 #include <map>
 
 class RooArgList ;
@@ -43,9 +44,10 @@ class RooAbsMoment ;
 class RooDerivative ;
 class RooVectorDataStore ;
 namespace RooBatchCompute{
-class BatchInterfaceAccessor;
 struct RunContext;
+typedef std::unordered_map<const RooAbsReal*,RooSpan<const double>> DataMap;
 }
+namespace rbc = RooBatchCompute;
 struct TreeReadBuffer; /// A space to attach TBranches
 
 class TH1;
@@ -391,6 +393,8 @@ protected:
   const RooAbsReal* createPlotProjection(const RooArgSet& depVars, const RooArgSet& projVars, RooArgSet*& cloneSet) const ;
   const RooAbsReal *createPlotProjection(const RooArgSet &dependentVars, const RooArgSet *projectedVars,
 				         RooArgSet *&cloneSet, const char* rangeName=0, const RooArgSet* condObs=0) const;
+  virtual void computeBatch(double*, size_t, rbc::DataMap&) const {throw std::runtime_error("computeBatch not implemented in this derived class"); }
+
  protected:
 
   RooFitResult* chi2FitDriver(RooAbsReal& fcn, RooLinkedList& cmdList) ;

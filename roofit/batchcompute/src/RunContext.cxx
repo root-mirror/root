@@ -44,8 +44,10 @@
 
 
 #include "RunContext.h"
+#include "RooBatchCompute.h"
 
 #include <limits>
+#include <iostream>
 
 class RooAbsReal;
 
@@ -98,6 +100,12 @@ RooSpan<double> RunContext::makeBatch(const RooAbsReal* owner, std::size_t size)
 
   spans[owner] = RooSpan<const double>(item->second);
   return {item->second};
+}
+
+void RunContext::clear() {
+  spans.clear();
+  //~  dispatch->clearCuda(*this);
+  rangeName = nullptr;
 }
 
 }

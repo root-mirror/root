@@ -146,21 +146,21 @@ Double_t RooPolynomial::evaluate() const
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Compute multiple values of Polynomial.  
-RooSpan<double> RooPolynomial::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
-  RooSpan<const double> xData = _x->getValues(evalData, normSet);
-  int batchSize = xData.size();  
-  RooSpan<double> output = evalData.makeBatch(this, batchSize);
+RooSpan<double> RooPolynomial::evaluateSpan(RooBatchCompute::RunContext& , const RooArgSet* ) const {
+  //~  RooSpan<const double> xData = _x->getValues(evalData, normSet);
+  //~  int batchSize = xData.size();  
+  //~  RooSpan<double> output = evalData.makeBatch(this, batchSize);
 
-  const int nCoef = _coefList.getSize();
-  const RooArgSet* listNormSet = _coefList.nset();
-  std::vector<RooBatchCompute::BracketAdapterWithMask> coefList;
-  for (int i=0; i<nCoef; i++) {
-    auto valBatch = static_cast<RooAbsReal&>(_coefList[i]).getValues(evalData, listNormSet);
-    coefList.emplace_back(valBatch);
-  }
+  //~  const int nCoef = _coefList.getSize();
+  //~  const RooArgSet* listNormSet = _coefList.nset();
+  //~  std::vector<RooBatchCompute::BracketAdapterWithMask> coefList;
+  //~  for (int i=0; i<nCoef; i++) {
+    //~  auto valBatch = static_cast<RooAbsReal&>(_coefList[i]).getValues(evalData, listNormSet);
+    //~  coefList.emplace_back(valBatch);
+  //~  }
 
-  RooBatchCompute::dispatch->computePolynomial(batchSize, output.data(), xData.data(), _lowestOrder, coefList);
-  return output;
+  //~  RooBatchCompute::dispatch->computePolynomial(batchSize, output.data(), xData.data(), _lowestOrder, coefList);
+  return {};//output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

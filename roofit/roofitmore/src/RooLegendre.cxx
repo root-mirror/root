@@ -22,7 +22,7 @@
 **/
 
 #include "RooLegendre.h"
-#include "RooBatchCompute.h"
+#include "RunContext.h"
 #include "RooAbsReal.h"
 
 #include "Math/SpecFunc.h"

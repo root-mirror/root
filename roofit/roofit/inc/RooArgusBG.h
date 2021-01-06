@@ -40,7 +40,7 @@ protected:
   RooRealProxy p ;
 
   Double_t evaluate() const ;
-  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
+  void computeBatch(double* output, size_t size, rbc::DataMap& dataMap) const;
 
 //   void initGenerator();
 

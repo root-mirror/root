@@ -60,6 +60,7 @@ have to appear in any specific place in the list.
 #include "RooTrace.h"
 #include "RooBatchCompute.h"
 #include "RooHelpers.h"
+#include "RunContext.h"
 #include "strtok.h"
 
 #include <cstring>

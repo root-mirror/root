@@ -210,13 +210,11 @@ public:
     return getNorm(&nset) ; 
   }
   virtual Double_t getNorm(const RooArgSet* set=0) const ;
+  inline const RooAbsReal* getIntegral() const { return _norm; }
+
 
   virtual void resetErrorCounters(Int_t resetValue=10) ;
   void setTraceCounter(Int_t value, Bool_t allNodes=kFALSE) ;
-private:
-  Bool_t traceEvalPdf(Double_t value) const;
-
-public:
 
   Double_t analyticalIntegralWN(Int_t code, const RooArgSet* normSet, const char* rangeName=0) const ;
 
@@ -268,9 +266,6 @@ public:
 
   const RooAbsReal* getNormIntegral(const RooArgSet& nset) const { return getNormObj(0,&nset,0) ; }
   
-protected:   
-
-public:
   virtual const RooAbsReal* getNormObj(const RooArgSet* set, const RooArgSet* iset, const TNamed* rangeName=0) const ;
 
   virtual RooAbsGenContext* binnedGenContext(const RooArgSet &vars, Bool_t verbose= kFALSE) const ;
@@ -280,7 +275,7 @@ public:
 
   virtual RooAbsGenContext* autoGenContext(const RooArgSet &vars, const RooDataSet* prototype=0, const RooArgSet* auxProto=0, 
 					   Bool_t verbose=kFALSE, Bool_t autoBinned=kTRUE, const char* binnedTag="") const ;
-
+  
 private:
 
   RooDataSet *generate(RooAbsGenContext& context, const RooArgSet& whatVars, const RooDataSet* prototype,
@@ -293,6 +288,8 @@ private:
 			   Double_t xmax= 0.99,Double_t ymax=0.95, const RooCmdArg* formatCmd=0) ;
 
   void logBatchComputationErrors(RooSpan<const double>& outputs, std::size_t begin) const;
+  Bool_t traceEvalPdf(Double_t value) const;
+
 
 protected:
   virtual RooPlot *plotOn(RooPlot *frame, PlotOpt o) const;  
@@ -323,6 +320,7 @@ protected:
   mutable Double_t _rawValue ;
   mutable RooAbsReal* _norm   ;      //! Normalization integral (owned by _normMgr)
   mutable RooArgSet* _normSet ;      //! Normalization set with for above integral
+  inline const RooArgSet* getNormSet() { return _normSet; }
 
   class CacheElem : public RooAbsCacheElement {
   public:

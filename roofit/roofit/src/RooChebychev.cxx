@@ -184,21 +184,21 @@ Double_t RooChebychev::evaluate() const
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Compute multiple values of Chebychev.  
-RooSpan<double> RooChebychev::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+RooSpan<double> RooChebychev::evaluateSpan(RooBatchCompute::RunContext& , const RooArgSet* ) const {
 
-  RooSpan<const double> xData = _x->getValues(evalData, normSet);  
-  size_t batchSize = xData.size();
-  RooSpan<double> output = evalData.makeBatch(this, batchSize);
-  const Double_t xmin = _x.min(_refRangeName?_refRangeName->GetName() : nullptr);
-  const Double_t xmax = _x.max(_refRangeName?_refRangeName->GetName() : nullptr);
+  //~  RooSpan<const double> xData = _x->getValues(evalData, normSet);  
+  //~  size_t batchSize = xData.size();
+  //~  RooSpan<double> output = evalData.makeBatch(this, batchSize);
+  //~  const Double_t xmin = _x.min(_refRangeName?_refRangeName->GetName() : nullptr);
+  //~  const Double_t xmax = _x.max(_refRangeName?_refRangeName->GetName() : nullptr);
 
-  const size_t nCoef = _coefList.size();
-  std::vector<double> coef(nCoef);
-  for (size_t i=0; i<nCoef; i++) {
-    coef[i] = static_cast<const RooAbsReal &>(_coefList[i]).getVal();
-  }
-  RooBatchCompute::dispatch->computeChebychev(batchSize, output.data(), xData.data(), xmin, xmax, coef);
-  return output;
+  //~  const size_t nCoef = _coefList.size();
+  //~  std::vector<double> coef(nCoef);
+  //~  for (size_t i=0; i<nCoef; i++) {
+    //~  coef[i] = static_cast<const RooAbsReal &>(_coefList[i]).getVal();
+  //~  }
+  //~  RooBatchCompute::dispatch->computeChebychev(batchSize, output.data(), xData.data(), xmin, xmax, coef);
+  //~  return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

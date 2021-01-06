@@ -18,16 +18,17 @@
 #ifndef ROO_MINIMIZER
 #define ROO_MINIMIZER
 
+#include "RooMinimizerFcn.h"
+
+#include "TMatrixDSymfwd.h"
 #include "TObject.h"
 #include "TStopwatch.h"
+#include "Fit/Fitter.h"
+
 #include <fstream>
 #include <vector>
 #include <string>
 #include <utility>
-#include "TMatrixDSymfwd.h"
-
-#include "Fit/Fitter.h"
-#include "RooMinimizerFcn.h"
 
 class RooAbsReal ;
 class RooFitResult ;
@@ -36,11 +37,12 @@ class RooRealVar ;
 class RooArgSet ;
 class TH2F ;
 class RooPlot ;
+class RooFitDriver;
 
 class RooMinimizer : public TObject {
 public:
 
-  RooMinimizer(RooAbsReal& function) ;
+  RooMinimizer(RooAbsReal& function, RooFitDriver* driver=nullptr) ; //driver is nullptr in scalar mode
   virtual ~RooMinimizer() ;
 
   enum Strategy { Speed=0, Balance=1, Robustness=2 } ;

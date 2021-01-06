@@ -54,13 +54,13 @@ Check the tutorial rf506_msgservice.C for details.
 **/
 
 #include "RooFormula.h"
-
-#include "RooFit.h"
+#include "BracketAdapters.h"
 #include "RooAbsReal.h"
 #include "RooAbsCategory.h"
 #include "RooArgList.h"
+#include "RooFit.h"
 #include "RooMsgService.h"
-#include "RooBatchCompute.h"
+#include "RunContext.h"
 
 #include "ROOT/RMakeUnique.hxx"
 #include "TObjString.h"

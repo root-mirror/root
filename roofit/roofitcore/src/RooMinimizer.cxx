@@ -38,20 +38,8 @@ automatic PDF optimization.
 
 #ifndef __ROOFIT_NOROOMINIMIZER
 
+#include "RooMinimizer.h"
 #include "RooFit.h"
-
-#include "TClass.h"
-
-#include <iostream>
-#include <fstream>
-
-#include "TH2.h"
-#include "TMarker.h"
-#include "TGraph.h"
-#include "Fit/FitConfig.h"
-#include "TStopwatch.h"
-#include "TMatrixDSym.h"
-
 #include "RooArgSet.h"
 #include "RooArgList.h"
 #include "RooAbsReal.h"
@@ -61,16 +49,19 @@ automatic PDF optimization.
 #include "RooSentinel.h"
 #include "RooMsgService.h"
 #include "RooPlot.h"
-
-
-#include "RooMinimizer.h"
 #include "RooFitResult.h"
 
+#include "TClass.h"
+#include "TH2.h"
+#include "TMarker.h"
+#include "TGraph.h"
+#include "Fit/FitConfig.h"
+#include "TStopwatch.h"
+#include "TMatrixDSym.h"
 #include "Math/Minimizer.h"
 
-#if (__GNUC__==3&&__GNUC_MINOR__==2&&__GNUC_PATCHLEVEL__==3)
-char* operator+( streampos&, char* );
-#endif
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -107,13 +98,13 @@ void RooMinimizer::cleanup()
 /// for HESSE and MINOS error analysis is taken from the defaultErrorLevel()
 /// value of the input function.
 
-RooMinimizer::RooMinimizer(RooAbsReal& function)
+RooMinimizer::RooMinimizer(RooAbsReal& function, RooFitDriver* driver)
 {
   RooSentinel::activate() ;
 
   // Store function reference
   _extV = 0 ;
-  _func = &function ;
+  _func = &function;
   _optConst = kFALSE ;
   _verbose = kFALSE ;
   _profile = kFALSE ;
@@ -123,7 +114,7 @@ RooMinimizer::RooMinimizer(RooAbsReal& function)
 
   if (_theFitter) delete _theFitter ;
   _theFitter = new ROOT::Fit::Fitter;
-  _fcn = new RooMinimizerFcn(_func,this,_verbose);
+  _fcn = new RooMinimizerFcn(_func,this,_verbose, driver);
   _theFitter->Config().SetMinimizer(_minimizerType.c_str());
   setEps(1.0); // default tolerance
   // default max number of calls

@@ -16,12 +16,13 @@
 #ifndef ROO_MINIMIZER_FCN
 #define ROO_MINIMIZER_FCN
 
+#include "RooAbsReal.h"
+#include "RooArgList.h"
+#include "RooFitDriver.h"
+
 #include "Math/IFunction.h"
 #include "Fit/ParameterSettings.h"
 #include "Fit/FitResult.h"
-
-#include "RooAbsReal.h"
-#include "RooArgList.h"
 
 #include <fstream>
 #include <vector>
@@ -34,8 +35,7 @@ class RooMinimizerFcn : public ROOT::Math::IBaseFunctionMultiDim {
 
  public:
 
-  RooMinimizerFcn(RooAbsReal *funct, RooMinimizer *context, 
-	       bool verbose = false);
+  RooMinimizerFcn(RooAbsReal *funct, RooMinimizer *context, bool verbose=false, RooFitDriver* driver=nullptr);
   RooMinimizerFcn(const RooMinimizerFcn& other);
   virtual ~RooMinimizerFcn();
 
@@ -84,6 +84,7 @@ class RooMinimizerFcn : public ROOT::Math::IBaseFunctionMultiDim {
 
 
   RooAbsReal *_funct;
+  RooFitDriver* _driver;
   const RooMinimizer *_context;
 
   mutable double _maxFCN;
