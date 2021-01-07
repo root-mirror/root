@@ -509,6 +509,11 @@ if (uring)
 else()
   set(hasuring undef)
 endif()
+if (ryml)
+  set(hasryml define)
+else()
+  set(hasryml undef)
+endif()
 
 # clear cache to allow reconfiguring
 # with a different CMAKE_CXX_STANDARD

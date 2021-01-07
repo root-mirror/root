@@ -69,5 +69,6 @@
 #@hasrmva@ R__HAS_RMVA /**/
 
 #@hasuring@ R__HAS_URING /**/
+#@hasryml@ R__HAS_RYML /**/
 
 #endif
