@@ -1522,10 +1522,6 @@ Int_t TBranch::GetEntriesSerialized(Long64_t entry, TBuffer &user_buf, TBuffer *
    // TODO: eventually support multiple leaves.
    if (R__unlikely(fNleaves != 1)) { return -1; }
    TLeaf *leaf = static_cast<TLeaf*>(fLeaves.UncheckedAt(0));
-   if (R__unlikely(leaf->GetDeserializeType() == TLeaf::DeserializeType::kDestructive)) {
-      Error("GetEntriesSerialized", "Encountered a branch with destructive deserialization; failing.\n");
-      return -1;
-   }
 
    // Remember which entry we are reading.
    fReadEntry = entry;
