@@ -79,6 +79,9 @@ private:
 
 protected:
    TApplication      *fAppRemote;      //Current remote application, if defined
+   /// Whether nothing, "-t" or "-T" was specified at the command line interface.
+   enum EIMTSpec { kIMTNone, kIMTOn, kIMTOff};
+   EIMTSpec           fIMTEnabledAtCLI; //Whether "-t" or "-T" was passed
 
    static TList      *fgApplications;  //List of available applications
 

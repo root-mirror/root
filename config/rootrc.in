@@ -334,6 +334,9 @@ Eve.Viewer.HideMenus:    1
 Rint.Load:               rootalias.C
 Rint.Logon:              rootlogon.C
 Rint.Logoff:             rootlogoff.C
+# Whether to turn IMT automatically on on MacOS, Windows, and Linux systems
+# running X11 (aka "desktops").
+Rint.AutoIMT:            true
 ### Prompt colors
 # Whether to use default colors for light-on-dark (i.e. reverse) color scheme:
 #Rint.ReverseColor:        no

@@ -75,6 +75,15 @@ feature [here](../../README.CXXMODULES.md).
 
 ## Core Libraries
 
+### Automatic activation of implicit multithreading
+
+Provided that the build configuration featured IMT (`-DIMT=ON`), implicit multithreading (`ROOT::EnableImplicitMT()`) is now automatically enabled at runtime for the `root` binary, under the following conditions:
+it is  running on a MacOS or Windows machine;
+or on Linux machines, if an `X11` (or `Xorg` etc) process is running.
+The goal is to only enable IMT on desktop-style computers, that are not shared resources (batch systems, grid nodes, login clusters).
+
+This can be disabled by explicitly passing `-t` or `-T` as command line arguments to turn IMT on or off, and by disabling the automatic IMT setting in `rootrc` (`~/.rootrc` or `system.rootrc`).
+
 ### New command line flag "--version" for root
 
 `root --version` now displays ROOT version and build info and quits:

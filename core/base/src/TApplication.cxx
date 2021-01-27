@@ -98,7 +98,7 @@ TApplication::TApplication() :
    fArgc(0), fArgv(0), fAppImp(0), fIsRunning(kFALSE), fReturnFromRun(kFALSE),
    fNoLog(kFALSE), fNoLogo(kFALSE), fQuit(kFALSE), fUseMemstat(kFALSE),
    fFiles(0), fIdleTimer(0), fSigHandler(0), fExitOnException(kDontExit),
-   fAppRemote(0)
+   fAppRemote(0), fIMTEnabledAtCLI(kIMTNone)
 {
    ResetBit(kProcessRemotely);
 }
@@ -122,7 +122,7 @@ TApplication::TApplication(const char *appClassName, Int_t *argc, char **argv,
    fArgc(0), fArgv(0), fAppImp(0), fIsRunning(kFALSE), fReturnFromRun(kFALSE),
    fNoLog(kFALSE), fNoLogo(kFALSE), fQuit(kFALSE), fUseMemstat(kFALSE),
    fFiles(0), fIdleTimer(0), fSigHandler(0), fExitOnException(kDontExit),
-   fAppRemote(0)
+   fAppRemote(0), fIMTEnabledAtCLI(kIMTNone)
 {
    R__LOCKGUARD(gInterpreterMutex);
 
@@ -395,11 +395,14 @@ void TApplication::GetOptions(Int_t *argc, char **argv)
          fNoLog = kTRUE;
          argv[i] = null;
       } else if (!strcmp(argv[i], "-t")) {
+         fIMTEnabledAtCLI = kIMTOn;
          ROOT::EnableImplicitMT();
          // EnableImplicitMT() only enables thread safety if IMT was configured;
          // enable thread safety even with IMT off:
          ROOT::EnableThreadSafety();
          argv[i] = null;
+      } else if (!strcmp(argv[i], "-T")) {
+         fIMTEnabledAtCLI = kIMTOff;
       } else if (!strcmp(argv[i], "-q")) {
          fQuit = kTRUE;
          argv[i] = null;

@@ -50,6 +50,51 @@
 #include <signal.h>
 #endif
 
+#ifndef R__WIN32
+# ifndef R__MACOSX
+#  include <dirent.h>
+# endif
+#endif
+
+#ifdef R__USE_IMT
+namespace {
+   /// Should IMT be automatically enabled?
+   /// Yes, unless the machine is (likely) shared by multiple users,
+   /// e.g. batch / grid or lxplus. None of them have X running, so
+   /// use that as criterium.
+   static bool ShouldAutomaticallyEnableIMT()
+   {
+# ifdef R__WIN32
+      // Windows: assume single user.
+      return true;
+# else
+#  ifdef R__MACOSX
+      return true;
+#  else
+   auto hasX = []() {
+      // All current X-flavors signal their presence through /tmp/.X11-unix/
+      DIR *dir = opendir("/tmp/.X11-unix/");
+      if (!dir)
+         return false;
+      struct CloseDir_t {
+         DIR *fDir;
+         ~CloseDir_t() { closedir(fDir); }
+      } closeDirRAII{dir};
+
+      while (struct dirent *ent = readdir(dir)) {
+         if (ent->d_name[0] != '.')
+            return true;
+      }
+      return false;
+   };
+   static bool sHaveX = hasX();
+   return sHaveX;
+#  endif
+# endif
+   }
+}
+#endif // R__USE_IMT
+
 ////////////////////////////////////////////////////////////////////////////////
 
 static Int_t Key_Pressed(Int_t key)
@@ -270,6 +315,22 @@ TRint::TRint(const char *appClassName, Int_t *argc, char **argv, void *options,
 
    // tell Cling to use our getline
    gCling->SetGetline(Getline, Gl_histadd);
+
+   // IMT on/off
+#ifdef R__USE_IMT
+   if (fIMTEnabledAtCLI == kIMTNone) {
+      if (gEnv->GetValue("Rint.AutoIMT", true)) {
+         if (ShouldAutomaticallyEnableIMT()) {
+            ROOT::EnableImplicitMT();
+            // EnableImplicitMT() only enables thread safety if IMT was configured;
+            // enable thread safety even with IMT off:
+            ROOT::EnableThreadSafety();
+            if (!NoLogoOpt())
+               printf("[Implicit multithreading turned ON; can be disabled in .rootrc]\n");
+         }
+      }
+   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
