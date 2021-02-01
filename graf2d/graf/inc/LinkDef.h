@@ -55,6 +55,7 @@
 #pragma link C++ class TPieSlice+;
 #pragma link C++ class TPoints+;
 #pragma link C++ class TPolyLine-;
+#pragma link C++ class TTernaryPlot+;
 #pragma link C++ class TText-;
 #pragma link C++ class TTF;
 #pragma link C++ class TWbox+;
