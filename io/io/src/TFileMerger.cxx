@@ -371,18 +371,81 @@ Bool_t TFileMerger::Merge(Bool_t)
    return PartialMerge(kAll | kRegular);
 }
 
-namespace {
+namespace { // anonymous namespace for RNTuple merge functions
+
+using RNTupleList = std::vector<std::pair<
+   std::string,  // path
+   std::string   // ntuple name
+>>;
+
+// caller responsible for checking if dir is a valid pointer
+TString GetRootFileRelativePath(TDirectory* dir) {
+   TString path(dir->GetPath());
+   path.Remove(0, std::strlen(dir->GetFile()->GetPath()));
+   return path;
+}
+
+inline bool IsRNTupleKey(const TKey& key) {
+   return 0 == std::strcmp(key.GetClassName(), "ROOT::Experimental::RNTuple");
+}
+
+RNTupleList CullValidRNTuples(TDirectory* target, TList* sources) {
+   RNTupleList ntuples;
+   if (!target || !sources) {
+      return ntuples;
+   }
+   TString path = GetRootFileRelativePath(target);
+
+   TFile *file = (TFile*)sources->First();
+   while (file) {
+      TDirectory *file_dir = file->GetDirectory(path);
+      if (!file_dir) {
+         file = (TFile*)sources->After(file);
+         continue;
+      }
+      printf("examining %s\n", file_dir->GetPath());
+      TList* keylist = file_dir->GetListOfKeys();
+      TKey* key = (TKey*)keylist->First();
+      while (key) {
+         printf("\tgot key for type %s with name %s\n", key->GetClassName(), key->GetName());
+         if (IsRNTupleKey(*key)) {
+            ntuples.emplace_back(std::make_pair(
+               std::string(file->GetPath()),
+               std::string(key->GetName())
+            ));
+         }
+         // todo(max) handle directories by recursing
+         key = (TKey*)keylist->After(key);
+      }
+      file = (TFile*)sources->After(file);
+   }
+   return ntuples;
+}
 
 /// Merge a list of RNTuples
-Long64_t MergeRNTuples(TClass* rntupleHandle, const TString& /* target */, const TList& /* sources */) {
+Long64_t MergeRNTuples(TClass* rntupleHandle, TDirectory* target, TList* sources) {
    if (!rntupleHandle) {
-      return Long64_t(-1);
+      return -1;
    }
-   // todo(max) implement rntuple merger
-   // [ ] build complete list of sources (some sources may actually be a directory with RNTuples inside)
-   // [ ] merge them
+   std::string output_file(target->GetPath());
+   if (output_file.empty()) {
+      printf("output file path is empty\n");
+      return -1;
+   }
+   RNTupleList ntuples = CullValidRNTuples(target, sources);
+   if (ntuples.size() == 0) {
+      printf("couldn't find any ntuples to merge\n");
+      return -1;
+   }
+   for (auto ntpl: ntuples) {
+      printf("got ntuple from file '%s' named '%s'\n", ntpl.first.c_str(), ntpl.second.c_str());
+   }
+
+   TCollection* inputs = static_cast<TCollection*>(static_cast<void*>(&ntuples));
+   TFileMergeInfo* output = static_cast<TFileMergeInfo*>(static_cast<void*>(&output_file));
+
    ROOT::MergeFunc_t func = rntupleHandle->GetMerge();
-   return func(static_cast<void*>(rntupleHandle), nullptr, nullptr);
+   return func(static_cast<void*>(rntupleHandle), inputs, output);
 }
 
 } // anonymous namespace
@@ -569,7 +632,7 @@ Bool_t TFileMerger::MergeRecursive(TDirectory *target, TList *sourcelist, Int_t 
                   Warning("MergeRecursive", "merging RNTuples is experimental");
                   // todo(max): check if this works when a TDirectory is passed as the first
                   // input argument
-                  Long64_t mergeResult = MergeRNTuples(cl, *path, *sourcelist);
+                  Long64_t mergeResult = MergeRNTuples(cl, target, sourcelist);
                   if (mergeResult < 0) {
                      Error("MergeRecursive", "error merging RNTuples");
                      return kFALSE;
