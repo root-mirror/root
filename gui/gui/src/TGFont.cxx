@@ -39,14 +39,16 @@
 #include "TVirtualX.h"
 #include "TObjString.h"
 #include "TGWidget.h"
-#include <errno.h>
-#include <stdlib.h>
-#include <limits.h>
-
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TError.h"
 #include "TMath.h"
+#include "strlcpy.h"
+#include "snprintf.h"
+
+#include <cerrno>
+#include <cstdlib>
+#include <climits>
+#include <iostream>
 
 
 ClassImp(TGFont);
@@ -1985,6 +1987,7 @@ Bool_t TGFontPool::ParseFontName(const char *string, FontAttributes_t *fa)
 
       fa->fPointsize = strtol(s, &end, 0);
       if ((errno == ERANGE) || (end == s)) {
+         delete[] str;
          return kFALSE;
       }
    }

@@ -14,8 +14,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 /**
    Update of the covariance matrix for the Variable Metric minimizer (MIGRAD)
@@ -23,20 +22,17 @@ namespace ROOT {
 class BFGSErrorUpdator : public MinimumErrorUpdator {
 
 public:
+   BFGSErrorUpdator() {}
 
-  BFGSErrorUpdator() {}
+   virtual ~BFGSErrorUpdator() {}
 
-  virtual ~BFGSErrorUpdator() {}
-
-  virtual MinimumError Update(const MinimumState&, const MinimumParameters&,
-                              const FunctionGradient&) const;
+   virtual MinimumError Update(const MinimumState &, const MinimumParameters &, const FunctionGradient &) const;
 
 private:
-
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_BFGSErrorUpdator
+#endif // ROOT_Minuit2_BFGSErrorUpdator

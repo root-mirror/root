@@ -76,7 +76,6 @@
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TList.h"
-#include "TObjArray.h"
 #include "TKeyXML.h"
 #include "TObjArray.h"
 #include "TArrayC.h"

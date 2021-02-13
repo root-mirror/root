@@ -468,15 +468,12 @@ public:
       the desired data, and another to the end (12 past start).
    */
    template<class IT>
-#ifndef NDEBUG
    void SetComponents(IT begin, IT end) {
-#else
-   void SetComponents(IT begin, IT ) {
-#endif
       for (int i = 0; i <12; ++i) {
          fM[i] = *begin;
          ++begin;
       }
+      (void)end;
       assert (end==begin);
    }
 
@@ -485,15 +482,12 @@ public:
       and another to the end of the desired data (12 past start).
    */
    template<class IT>
-#ifndef NDEBUG
    void GetComponents(IT begin, IT end) const {
-#else
-   void GetComponents(IT begin, IT ) const {
-#endif
       for (int i = 0; i <12; ++i) {
          *begin = fM[i];
          ++begin;
       }
+      (void)end;
       assert (end==begin);
    }
 

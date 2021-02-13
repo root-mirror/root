@@ -22,7 +22,12 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
+
+#ifdef R__LESS_INCLUDES
+class TList;
+#else
 #include "TList.h"
+#endif
 
 class TBrowser;
 
@@ -50,7 +55,7 @@ public:
    TTask& operator=(const TTask& tt);
 
    virtual void  Abort();  // *MENU*
-   virtual void  Add(TTask *task) {fTasks->Add(task);}
+   virtual void  Add(TTask *task);
    virtual void  Browse(TBrowser *b);
    virtual void  CleanTasks();
    virtual void  Clear(Option_t *option="");

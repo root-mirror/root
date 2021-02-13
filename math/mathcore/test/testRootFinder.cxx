@@ -7,7 +7,6 @@
 #include "Math/DistFunc.h"
 
 #include <iostream>
-#include <iomanip>
 #include <cmath>
 
 #include "gtest/gtest.h"

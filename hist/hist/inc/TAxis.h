@@ -81,7 +81,7 @@ public:
 
    Bool_t     CanExtend() const { return (fBits2 & kCanExtend);  }
    Bool_t     CanBeAlphanumeric() { return !(fBits2 & kNotAlpha); }
-   Bool_t     IsAlphanumeric() { return fBits2 & kAlphanumeric; }
+   Bool_t     IsAlphanumeric() const { return fBits2 & kAlphanumeric; }
    void       SetAlphanumeric(Bool_t alphanumeric = kTRUE);
    void       SetCanExtend(Bool_t canExtend) { fBits2 = canExtend ? (fBits2 | kCanExtend) : (fBits2 & ~kCanExtend); }
    void       SetNoAlphanumeric(Bool_t noalpha = kTRUE) {
@@ -169,7 +169,7 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Center axis labels. If center = kTRUE axis labels will be centered
-/// (hori axes only) on the bin center default is to center on the primary tick marks
+/// (horizontal axes only) on the bin center. Default is to center on the primary tick marks
 /// This option does not make sense if there are more bins than tick marks
 
 inline void TAxis::CenterLabels(Bool_t center)
@@ -227,4 +227,3 @@ inline void TAxis::SetNoExponent(Bool_t noExponent)
 
 
 #endif
-

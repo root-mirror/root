@@ -44,14 +44,17 @@ private:
 
    std::vector<Primitive_t> fPrimitives;
 
-   /// RFrame with user coordinate system, if used by this pad.
-   std::unique_ptr<RFrame> fFrame;
-
    /// Disable copy construction.
    RPadBase(const RPadBase &) = delete;
 
    /// Disable assignment.
    RPadBase &operator=(const RPadBase &) = delete;
+
+   void TestIfFrameRequired(const RDrawable *drawable)
+   {
+      if (drawable->IsFrameRequired())
+         GetOrCreateFrame();
+   }
 
 protected:
    /// Allow derived classes to default construct a RPadBase.
@@ -59,7 +62,9 @@ protected:
 
    void CollectShared(Internal::RIOSharedVector_t &) override;
 
-   void DisplayPrimitives(RPadBaseDisplayItem &paditem) const;
+   void DisplayPrimitives(RPadBaseDisplayItem &paditem, RDisplayContext &ctxt);
+
+   void SetDrawableVersion(Version_t vers) override;
 
 public:
 
@@ -82,6 +87,8 @@ public:
    {
       auto drawable = std::make_shared<T>(args...);
 
+      TestIfFrameRequired(drawable.get());
+
       fPrimitives.emplace_back(drawable);
 
       return drawable;
@@ -90,19 +97,23 @@ public:
    /// Add existing drawable instance to canvas
    auto Draw(std::shared_ptr<RDrawable> &&drawable)
    {
+      TestIfFrameRequired(drawable.get());
+
       fPrimitives.emplace_back(std::move(drawable));
 
       return fPrimitives.back().get_shared();
    }
 
-   /// Add something to be painted.
-   /// The pad observes what's lifetime through a weak pointer.
-   /// Drawing options will be constructed through `args`, which can be empty for default-constructed options.
+   /// Add object to be painted.
+   /// Correspondent drawable will be created via GetDrawable() function which should be defined and be accessed at calling time.
+   /// If required, extra arguments for GetDrawable() function can be provided.
    template <class T, class... ARGS>
    auto Draw(const std::shared_ptr<T> &what, ARGS... args)
    {
       // Requires GetDrawable(what) to be known!
       auto drawable = GetDrawable(what, args...);
+
+      TestIfFrameRequired(drawable.get());
 
       fPrimitives.emplace_back(drawable);
 
@@ -122,6 +133,8 @@ public:
    std::shared_ptr<RDrawable> FindPrimitive(const std::string &id) const;
 
    std::shared_ptr<RDrawable> FindPrimitiveByDisplayId(const std::string &display_id) const;
+
+   const RPadBase *FindPadForPrimitiveWithDisplayId(const std::string &display_id) const;
 
    /// Get all primitives contained in the pad.
    auto GetPrimitives() const
@@ -168,10 +181,9 @@ public:
    /// Wipe the pad by clearing the list of primitives.
    void Wipe() { fPrimitives.clear(); }
 
-   void CreateFrameIfNeeded();
-
-   RFrame *GetOrCreateFrame();
-   const RFrame *GetFrame() const { return fFrame.get(); }
+   std::shared_ptr<RFrame> GetOrCreateFrame();
+   std::shared_ptr<RFrame> GetFrame();
+   const std::shared_ptr<RFrame> GetFrame() const;
 
    RPadUserAxisBase* GetOrCreateAxis(size_t dimension);
    RPadUserAxisBase* GetAxis(size_t dimension) const;
@@ -200,13 +212,9 @@ public:
    virtual RCanvas *GetCanvas() = 0;
 
    /// Convert user coordinates to normal coordinates.
-   std::array<RPadLength::Normal, 2> UserToNormal(const std::array<RPadLength::User, 2> &pos) const
-   {
-      return fFrame->UserToNormal(pos);
-   }
+   std::array<RPadLength::Normal, 2> UserToNormal(const std::array<RPadLength::User, 2> &pos) const;
 
    void AssignAutoColors();
-
 };
 
 } // namespace Experimental

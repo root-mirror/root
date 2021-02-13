@@ -16,21 +16,20 @@
 #include "TGraph.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "TPolyLine3D.h"
 #include "TVirtualPad.h"
-#include "Riostream.h"
 #include "TVirtualFitter.h"
 #include "TPluginManager.h"
-#include "TClass.h"
 #include "TMath.h"
-#include "TSystem.h"
-#include <stdlib.h>
+#include "TF1.h"
+#include "strlcpy.h"
 
 #include "HFitInterface.h"
 #include "Fit/DataRange.h"
 #include "Math/MinimizerOptions.h"
 
-#include <ctype.h>
+#include <iostream>
+#include <cstdlib>
+#include <cctype>
 
 extern void H1LeastSquareSeqnd(Int_t n, Double_t *a, Int_t idim, Int_t &ifail, Int_t k, Double_t *b);
 
@@ -584,7 +583,7 @@ TFitResultPtr TMultiGraph::Fit(const char *fname, Option_t *option, Option_t *, 
 ///  The list of fit options is given in parameter `option`which may takes the
 ///  following values:
 ///
-///   - "W"  Set all errors to 1
+///   - "W" Ignore all the point errors
 ///   - "U" Use a User specified fitting algorithm (via SetFCN)
 ///   - "Q" Quiet mode (minimum printing)
 ///   - "V" Verbose mode (default is between Q and V)
@@ -1079,6 +1078,14 @@ TH1F *TMultiGraph::GetHistogram()
       }
       if (g->GetN() > npt) npt = g->GetN();
    }
+   if (rwxmin == rwxmax) rwxmax += 1.;
+   if (rwymin == rwymax) rwymax += 1.;
+   double dx = 0.05*(rwxmax-rwxmin);
+   double dy = 0.05*(rwymax-rwymin);
+   rwxmin = rwxmin - dx;
+   rwxmax = rwxmax + dx;
+   rwymin = rwymin - dy;
+   rwymax = rwymax + dy;
    fHistogram = new TH1F(GetName(),GetTitle(),npt,rwxmin,rwxmax);
    if (!fHistogram) return 0;
    fHistogram->SetMinimum(rwymin);

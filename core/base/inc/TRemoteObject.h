@@ -8,8 +8,8 @@
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
-#ifndef ROOT_TObjectRemote
-#define ROOT_TObjectRemote
+#ifndef ROOT_TRemoteObject
+#define ROOT_TRemoteObject
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -27,11 +27,9 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TSystemDirectory.h"
-
-#include "TList.h"
-
 #include "TSystem.h"
+
+class TList;
 
 class TRemoteObject : public TNamed {
 

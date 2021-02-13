@@ -20,7 +20,8 @@
 #include <atomic>
 #include <string>
 #include <map>
-#include <stdlib.h>
+#include <cstdlib>
+#include <vector>
 
 class TObjArray;
 class TCollectionProxyFactory;
@@ -334,9 +335,6 @@ protected:
    virtual void DeleteItem(Bool_t force, void* ptr) const;
    // Allow to check function pointers.
    void CheckFunctions()  const;
-
-   // Set pointer to the TClass representing the content.
-   virtual void UpdateValueClass(const TClass *oldcl, TClass *newcl);
 
 private:
    TGenCollectionProxy(); // not implemented on purpose.

@@ -140,13 +140,13 @@ public:
 class REveGeomRequest {
 public:
    std::string oper;  ///< operation like HIGHL or HOVER
-   std::string path;  ///< path parameter, used with HOVER
+   std::vector<std::string> path;  ///< path parameter, used with HOVER
    std::vector<int> stack; ///< stack parameter, used with HIGHL
 };
 
 class REveGeomNodeInfo {
 public:
-   std::string fullpath;  ///< full path to node
+   std::vector<std::string> path;  ///< full path to node
    std::string node_type;  ///< node class name
    std::string node_name;  ///< node name
    std::string shape_type; ///< shape type (if any)
@@ -280,9 +280,9 @@ public:
 
    std::vector<int> MakeIdsByStack(const std::vector<int> &stack);
 
-   std::vector<int> MakeStackByPath(const std::string &path);
+   std::vector<int> MakeStackByPath(const std::vector<std::string> &path);
 
-   std::string MakePathByStack(const std::vector<int> &stack);
+   std::vector<std::string> MakePathByStack(const std::vector<int> &stack);
 
    bool ProduceDrawingFor(int nodeid, std::string &json, bool check_volume = false);
 
@@ -310,7 +310,7 @@ public:
 
    bool ChangeConfiguration(const std::string &json);
 
-   std::unique_ptr<REveGeomNodeInfo> MakeNodeInfo(const std::string &path);
+   std::unique_ptr<REveGeomNodeInfo> MakeNodeInfo(const std::vector<std::string> &path);
 };
 
 

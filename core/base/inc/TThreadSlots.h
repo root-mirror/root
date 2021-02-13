@@ -12,7 +12,7 @@
 #ifndef ROOT_TThreadSlots
 #define ROOT_TThreadSlots
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 namespace ROOT {
 

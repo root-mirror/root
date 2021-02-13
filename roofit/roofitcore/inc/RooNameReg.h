@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <string>
 
 class RooNameReg : public TNamed {
 public:

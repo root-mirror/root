@@ -7,8 +7,9 @@
  * For the licensing terms see the LICENSE file.                         *
  *************************************************************************/
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <TGLabel.h>
+#include <TVirtualX.h>
 #include <TRootHelpDialog.h>
 #include <TGMsgBox.h>
 

@@ -19,58 +19,57 @@
 \class RooSuperCategory
 \ingroup Roofitcore
 
-RooSuperCategory can join several RooAbsCategoryLValue objects into
-a single category. The states of the super category consist of all the permutations
-of the input categories. The super category is an lvalue and requires that
-all input categories are lvalues as well. This is because a modification
-of its state will back propagate into a modification of its input categories.
-To define a joined category of multiple non-lvalue categories,
-use the class RooMultiCategory.
-RooSuperCategory states are automatically defined and updated whenever an input
-category modifies its list of states.
+The RooSuperCategory can join several RooAbsCategoryLValue objects into
+a single category. For this, it uses a RooMultiCategory, which takes care
+of enumerating all the permutations of possible states.
+In addition, the super category derives from RooAbsCategoryLValue, *i.e.*, it allows for
+setting its state (opposed to the RooMultiCategory, which just reacts
+to the states of its subcategories). This requires that all input categories
+are lvalues as well. This is because a modification of the state of the
+supercategory will propagate to its input categories.
 **/
 
-#include "RooFit.h"
-
-#include "Riostream.h"
-#include "Riostream.h"
-#include <stdlib.h>
-#include "TString.h"
-#include "TClass.h"
 #include "RooSuperCategory.h"
+
+#include "RooFit.h"
+#include "Riostream.h"
 #include "RooStreamParser.h"
 #include "RooArgSet.h"
-#include "RooMultiCatIter.h"
+#include "RooFitLegacy/RooMultiCatIter.h"
 #include "RooAbsCategoryLValue.h"
 #include "RooMsgService.h"
+
+#include "TString.h"
+#include "TClass.h"
 
 using namespace std;
 
 ClassImp(RooSuperCategory);
-;
 
+RooSuperCategory::RooSuperCategory() :
+  RooAbsCategoryLValue(),
+  _multiCat("MultiCatProxy", "Stores a RooMultiCategory", this, true, true, true) { }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Construct a lvalue product of the given set of input RooAbsCategoryLValues in 'inInputCatList'
-/// The state names of this product category are {S1;S2,S3,...Sn} where Si are the state names
-/// of the input categories. A RooSuperCategory is an lvalue.
-
-RooSuperCategory::RooSuperCategory(const char *name, const char *title, const RooArgSet& inInputCatList) :
-  RooAbsCategoryLValue(name, title), _catSet("input","Input category set",this,kTRUE,kTRUE)
+/// Construct a super category from other categories.
+/// \param[in] name Name of this object
+/// \param[in] title Title (for e.g. printing)
+/// \param[in] inputCategories RooArgSet with category objects. These all need to derive from RooAbsCategoryLValue, *i.e.*
+/// one needs to be able to assign to them.
+RooSuperCategory::RooSuperCategory(const char *name, const char *title, const RooArgSet& inputCategories) :
+  RooAbsCategoryLValue(name, title),
+  _multiCat("MultiCatProxy", "Stores a RooMultiCategory", this,
+      *new RooMultiCategory((std::string(name) + "_internalMultiCat").c_str(), title, inputCategories), true, true, true)
 {  
-  // Copy category list
-  TIterator* iter = inInputCatList.createIterator() ;
-  RooAbsArg* arg ;
-  while ((arg=(RooAbsArg*)iter->Next())) {
+  // Check category list
+  for (const auto arg : inputCategories) {
     if (!arg->IsA()->InheritsFrom(RooAbsCategoryLValue::Class())) {
       coutE(InputArguments) << "RooSuperCategory::RooSuperCategory(" << GetName() << "): input category " << arg->GetName() 
-			    << " is not an lvalue" << endl ;
+			    << " is not an lvalue. Use RooMultiCategory instead." << endl ;
+      throw std::invalid_argument("Arguments of RooSuperCategory must be lvalues.");
     }
-    _catSet.add(*arg) ;
   }
-  delete iter ;
-  
-  updateIndexList() ;
+  setShapeDirty();
 }
 
 
@@ -79,170 +78,62 @@ RooSuperCategory::RooSuperCategory(const char *name, const char *title, const Ro
 /// Copy constructor
 
 RooSuperCategory::RooSuperCategory(const RooSuperCategory& other, const char *name) :
-  RooAbsCategoryLValue(other,name), _catSet("input",this,other._catSet)
+    RooAbsCategoryLValue(other, name),
+    _multiCat("MultiCatProxy", this, other._multiCat)
 {
-  updateIndexList() ;
-  setIndex(other.getIndex()) ;
+  RooSuperCategory::setIndex(other.getCurrentIndex(), true);
+  setShapeDirty();
 }
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Destructor
-
-RooSuperCategory::~RooSuperCategory() 
-{
-
-}
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Make an iterator over all state permutations of 
-/// the input categories of this supercategory
-
+/// the input categories of this supercategory.
+/// The iterator just generates state names, it does not set them.
 TIterator* RooSuperCategory::MakeIterator() const 
 {
-  return new RooMultiCatIter(_catSet) ;
+  return new RooMultiCatIter(_multiCat->inputCatList());
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
-/// Update the list of possible states of this super category
-
-void RooSuperCategory::updateIndexList()
+/// Set the value of the super category to the specified index.
+/// This will propagate to the sub-categories, and set their state accordingly.
+bool RooSuperCategory::setIndex(Int_t index, Bool_t printError)
 {
-  clearTypes() ;
-
-  RooMultiCatIter mcIter(_catSet) ;
-  TObjString* obj ;
-  Int_t i(0) ;
-  while((obj = (TObjString*) mcIter.Next())) {
-    // Register composite label
-    defineTypeUnchecked(obj->String(),i++) ;
+  if (index < 0) {
+    if (printError)
+      coutE(InputArguments) << "RooSuperCategory can only have positive index states. Got " << index << std::endl;
+    return true;
   }
 
-  // Renumbering will invalidate cache
-  setValueDirty() ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return the name of the current state, 
-/// constructed from the state names of the input categories
-
-TString RooSuperCategory::currentLabel() const
-{
-
-  // Construct composite label name
-  TString label ;
-  Bool_t first(kTRUE) ;
-  for (const auto c : _catSet) {
-    auto cat = static_cast<RooAbsCategory*>(c);
-
-    label.Append(first?"{":";") ;
-    label.Append(cat->getLabel()) ;      
-    first=kFALSE ;
-  }
-  label.Append("}") ;  
-
-  return label ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Calculate and return the current value 
-
-RooCatType RooSuperCategory::evaluate() const
-{
-  if (isShapeDirty()) {
-    const_cast<RooSuperCategory*>(this)->updateIndexList() ;
-  }
-  const RooCatType* ret = lookupType(currentLabel(),kTRUE) ;
-  if (!ret) {
-    coutE(Eval) << "RooSuperCat::evaluate(" << this << ") error: current state not defined: '" << currentLabel() << "'" << endl ;
-    printStream(ccoutE(Eval),0,kVerbose) ;
-    return RooCatType() ;
-  }
-  return *ret ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set the value of the super category by specifying the state index code
-/// by setting the states of the corresponding input category lvalues
-
-Bool_t RooSuperCategory::setIndex(Int_t index, Bool_t /*printError*/) 
-{
-  const RooCatType* type = lookupType(index,kTRUE) ;
-  if (!type) return kTRUE ;
-  return setType(type) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set the value of the super category by specifying the state name
-/// by setting the state names of the corresponding input category lvalues
-
-Bool_t RooSuperCategory::setLabel(const char* label, Bool_t /*printError*/) 
-{
-  const RooCatType* type = lookupType(label,kTRUE) ;
-  if (!type) return kTRUE ;
-  return setType(type) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set the value of the super category by specifying the state object
-/// by setting the state names of the corresponding input category lvalues
-
-Bool_t RooSuperCategory::setType(const RooCatType* type, Bool_t /*printError*/)
-{
-  char buf[1024] ;
-  strlcpy(buf,type->GetName(),1024) ;
-
-  Bool_t error(kFALSE) ;
-
-  // Parse composite label and set label of components to their values  
-  char* ptr=buf+1 ;
-  char* token = ptr ;
-  for (const auto c : _catSet) {
-    auto arg = static_cast<RooAbsCategoryLValue*>(c);
-
-    // Delimit name token for this category
-    if (*ptr=='{') {
-      // Token is composite itself, terminate at matching '}'
-      Int_t nBrak(1) ;
-      while(*(++ptr)) {
-	if (nBrak==0) {
-	  *ptr = 0 ;
-	  break ;
-	}
-	if (*ptr=='{') {
-	  nBrak++ ;
-	} else if (*ptr=='}') {
-	  nBrak-- ;
-	}
-      }	
-    } else {
-      // Simple token, terminate at next semi-colon
-      ptr = strtok(ptr,";}") ;
-      ptr += strlen(ptr) ;
+  bool error = false;
+  for (auto arg : _multiCat->_catSet) {
+    auto cat = static_cast<RooAbsCategoryLValue*>(arg);
+    if (cat->size() == 0) {
+      if (printError)
+        coutE(InputArguments) << __func__ << ": Found a category with zero states. Cannot set state for '"
+            << cat->GetName() << "'." << std::endl;
+      continue;
     }
-
-    error |= arg->setLabel(token) ;
-    token = ++ptr ;
+    const value_type thisIndex = index % cat->size();
+    error |= cat->setOrdinal(thisIndex);
+    index = (index - thisIndex) / cat->size();
   }
-  
-  return error ;
+
+  return error;
 }
 
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set the value of the super category by specifying the state name.
+/// This looks up the corresponding index number, and calls setIndex().
+Bool_t RooSuperCategory::setLabel(const char* label, Bool_t printError)
+{
+  const value_type index = _multiCat->lookupIndex(label);
+  return setIndex(index, printError);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -253,61 +144,38 @@ void RooSuperCategory::printMultiline(ostream& os, Int_t content, Bool_t verbose
   RooAbsCategory::printMultiline(os,content,verbose,indent) ;
   
   if (verbose) {     
-    os << indent << "--- RooSuperCategory ---" << endl;
-    os << indent << "  Input category list:" << endl ;
-    TString moreIndent(indent) ;
-    os << moreIndent << _catSet << endl ;
+    os << indent << "--- RooSuperCategory ---" << '\n';
+    os << indent << "  Internal RooMultiCategory:" << '\n';
+    _multiCat->printMultiline(os, content, verbose, indent+"  ");
+
+    os << std::endl;
   }
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
-/// Read object contents from given stream
-
-Bool_t RooSuperCategory::readFromStream(istream& /*is*/, Bool_t /*compact*/, Bool_t /*verbose*/) 
-{
-  return kTRUE ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Write object contents to given stream
-
-void RooSuperCategory::writeToStream(ostream& os, Bool_t compact) const
-{
-  RooAbsCategory::writeToStream(os,compact) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return true of all of the input category states are in the given range
-
+/// Check that all input category states are in the given range.
 Bool_t RooSuperCategory::inRange(const char* rangeName) const 
 {
-  for (const auto c : _catSet) {
+  for (const auto c : _multiCat->inputCatList()) {
     auto cat = static_cast<RooAbsCategoryLValue*>(c);
     if (!cat->inRange(rangeName)) {
-      return kFALSE ;
+      return false;
     }
   }
-  return kTRUE ;
+
+  return true;
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
-/// Return true if any of the input categories has a range
-/// named 'rangeName'
-
+/// Check that any of the input categories has a range with the given name.
 Bool_t RooSuperCategory::hasRange(const char* rangeName) const 
 {
-  for (const auto c : _catSet) {
+  for (const auto c : _multiCat->inputCatList()) {
     auto cat = static_cast<RooAbsCategoryLValue*>(c);
-    if (cat->hasRange(rangeName)) return kTRUE ;
+    if (cat->hasRange(rangeName)) return true;
   }
 
-  return kFALSE ;
+  return false;
 }

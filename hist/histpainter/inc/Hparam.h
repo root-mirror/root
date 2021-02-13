@@ -21,7 +21,7 @@ Used internally by `THistpainter` to manage histogram parameters.
 
 */
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 typedef struct Hparam_t {
    Double_t  xbinsize;      ///< bin size in case of equidistant bins

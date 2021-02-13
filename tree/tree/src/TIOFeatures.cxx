@@ -9,6 +9,7 @@
  *************************************************************************/
 
 #include "ROOT/TIOFeatures.hxx"
+#include "TBasket.h"
 #include "TBranch.h"
 #include "TEnum.h"
 #include "TEnumConstant.h"
@@ -16,6 +17,7 @@
 #include "TTree.h"
 
 #include <bitset>
+#include <sstream>
 
 using namespace ROOT;
 
@@ -49,7 +51,7 @@ using namespace ROOT;
 
 ////////////////////////////////////////////////////////////////////////////
 /// \brief Clear a specific IO feature from this set.
-/// \param[in] enum_bits The specific feature to disable.
+/// \param[in] input_bits The specific feature to disable.
 ///
 /// Removes a feature from the `TIOFeatures` object; emits an Error message if
 /// the IO feature is not supported by this version of ROOT.
@@ -60,7 +62,7 @@ void TIOFeatures::Clear(Experimental::EIOFeatures input_bits)
 
 ////////////////////////////////////////////////////////////////////////////
 /// \brief Clear a specific IO feature from this set.
-/// \param[in] enum_bits The specific feature to disable.
+/// \param[in] input_bits The specific feature to disable.
 ///
 /// Removes a feature from the `TIOFeatures` object; emits an Error message if
 /// the IO feature is not supported by this version of ROOT.
@@ -71,7 +73,7 @@ void TIOFeatures::Clear(Experimental::EIOUnsupportedFeatures input_bits)
 
 ////////////////////////////////////////////////////////////////////////////
 /// \brief Clear a specific IO feature from this set.
-/// \param[in] enum_bits The specific feature to disable.
+/// \param[in] input_bits The specific feature to disable.
 ///
 /// Removes a feature from the `TIOFeatures` object; emits an Error message if
 /// the IO feature is not supported by this version of ROOT.
@@ -113,7 +115,7 @@ static std::string GetUnsupportedName(TBasket::EUnsupportedIOBits enum_flag)
 
 ////////////////////////////////////////////////////////////////////////////
 /// \brief Set a specific IO feature.
-/// \param[in] enum_bits The specific feature to enable.
+/// \param[in] input_bits The specific feature to enable.
 ///
 /// Sets a feature in the `TIOFeatures` object; emits an Error message if
 /// the IO feature is not supported by this version of ROOT.
@@ -127,7 +129,7 @@ bool TIOFeatures::Set(Experimental::EIOFeatures input_bits)
 
 ////////////////////////////////////////////////////////////////////////////
 /// \brief Set a specific IO feature.
-/// \param[in] enum_bits The specific feature to enable.
+/// \param[in] input_bits The specific feature to enable.
 ///
 /// Sets a feature in the `TIOFeatures` object; emits an Error message if
 /// the IO feature is not supported by this version of ROOT.
@@ -219,7 +221,7 @@ void TIOFeatures::Print() const
 
 ////////////////////////////////////////////////////////////////////////////
 /// \brief Test to see if a given feature is set
-/// \param[in] enum_bits The specific feature to test.
+/// \param[in] input_bits The specific feature to test.
 ///
 /// Returns kTRUE if the feature is enables in this object and supported by
 /// this version of ROOT.
@@ -230,7 +232,7 @@ bool TIOFeatures::Test(Experimental::EIOFeatures input_bits) const
 
 ////////////////////////////////////////////////////////////////////////////
 /// \brief Test to see if a given feature is set
-/// \param[in] enum_bits The specific feature to test.
+/// \param[in] input_bits The specific feature to test.
 ///
 /// Returns kTRUE if the feature is enables in this object and supported by
 /// this version of ROOT.

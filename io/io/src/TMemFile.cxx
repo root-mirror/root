@@ -22,6 +22,7 @@ only from memory.
 #include "TError.h"
 #include "TSystem.h"
 #include "TROOT.h"
+#include "TObjArray.h"
 #include "TArrayC.h"
 #include "TKey.h"
 #include "TClass.h"

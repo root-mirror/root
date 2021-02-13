@@ -20,6 +20,7 @@
 #include <ROOT/RConfig.hxx>
 #include <ROOT/RDF/Utils.hxx>
 #include <ROOT/RMakeUnique.hxx>
+#include <ROOT/RRawFile.hxx>
 
 #include "TError.h"
 #include "TRandom.h"
@@ -34,9 +35,6 @@
 #include <stdexcept>
 #include <utility>
 
-#ifdef R__HAS_DAVIX
-#include <davix.hpp>
-#endif
 #include <sqlite3.h>
 
 namespace {
@@ -46,17 +44,15 @@ namespace {
 // for ROOT -- an abstraction of the operating system interface.
 //
 // SQlite allows for registering custom VFS modules, which are a set of C callback functions that SQlite invokes when
-// it needs to reads from a file, write to a file, etc. More information is available under https://sqlite.org/vfs.html
+// it needs to read from a file, write to a file, etc. More information is available under https://sqlite.org/vfs.html
 //
 // In the context of a data source, SQlite will only ever call reading functions from the VFS module, the sqlite
 // files are not modified. Therefore, only a subset of the callback functions provide a non-trivial implementation.
-// The custom VFS module is only used for HTTP(S) input paths; local paths are served by the default SQlite VFS.
+// The custom VFS module uses a RRawFile for the byte access, thereby it can access local and remote files.
 
 ////////////////////////////////////////////////////////////////////////////
 /// SQlite VFS modules are identified by string names. The name has to be unique for the entire application.
 constexpr char const *gSQliteVfsName = "ROOT-Davix-readonly";
-
-#ifdef R__HAS_DAVIX
 
 ////////////////////////////////////////////////////////////////////////////
 /// Holds the state of an open sqlite database. Objects of this struct are created in VfsRdOnlyOpen()
@@ -65,13 +61,10 @@ constexpr char const *gSQliteVfsName = "ROOT-Davix-readonly";
 /// this particular VFS module. Every callback here thus casts the sqlite3_file input parameter to its "derived"
 /// type VfsRootFile.
 struct VfsRootFile {
-   VfsRootFile() : pos(&c) {}
-   sqlite3_file pFile;
+   VfsRootFile() = default;
 
-   DAVIX_FD *fd;
-   uint64_t size; /// Caches the file size on open
-   Davix::Context c;
-   Davix::DavPosix pos;
+   sqlite3_file pFile;
+   std::unique_ptr<ROOT::Internal::RRawFile> fRawFile;
 };
 
 // The following callbacks implement the I/O operations of an open database
@@ -80,22 +73,19 @@ struct VfsRootFile {
 /// Releases the resources associated to a file opened with davix
 int VfsRdOnlyClose(sqlite3_file *pFile)
 {
-   Davix::DavixError *err = nullptr;
    VfsRootFile *p = reinterpret_cast<VfsRootFile *>(pFile);
-   auto retval = p->pos.close(p->fd, &err);
    // We can't use delete because the storage for p is managed by sqlite
    p->~VfsRootFile();
-   return (retval == -1) ? SQLITE_IOERR_CLOSE : SQLITE_OK;
+   return SQLITE_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////
-/// Issues an HTTP range request to read a chunk from a remote file
+/// Issues a byte range request for a chunk to the raw file
 int VfsRdOnlyRead(sqlite3_file *pFile, void *zBuf, int count, sqlite_int64 offset)
 {
-   Davix::DavixError *err = nullptr;
    VfsRootFile *p = reinterpret_cast<VfsRootFile *>(pFile);
-   auto retval = p->pos.pread(p->fd, zBuf, count, offset, &err);
-   return (retval == -1) ? SQLITE_IOERR : SQLITE_OK;
+   auto nbytes = p->fRawFile->ReadAt(zBuf, count, offset);
+   return (nbytes != static_cast<unsigned int>(count)) ? SQLITE_IOERR : SQLITE_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -124,7 +114,7 @@ int VfsRdOnlySync(sqlite3_file * /*pFile*/, int /*flags*/)
 int VfsRdOnlyFileSize(sqlite3_file *pFile, sqlite_int64 *pSize)
 {
    VfsRootFile *p = reinterpret_cast<VfsRootFile *>(pFile);
-   *pSize = p->size;
+   *pSize = p->fRawFile->GetSize();
    return SQLITE_OK;
 }
 
@@ -172,6 +162,31 @@ int VfsRdOnlyDeviceCharacteristics(sqlite3_file * /*pFile*/)
 }
 
 ////////////////////////////////////////////////////////////////////////////
+/// Set the function pointers of the custom VFS I/O operations in a
+/// forward-compatible way
+static sqlite3_io_methods GetSqlite3IoMethods()
+{
+   // The C style initialization is compatible with version 1 and later versions of the struct.
+   // Version 1 was introduced with sqlite 3.6, version 2 with sqlite 3.7.8, version 3 with sqlite 3.7.17
+   sqlite3_io_methods io_methods;
+   memset(&io_methods, 0, sizeof(io_methods));
+   io_methods.iVersion               = 1;
+   io_methods.xClose                 = VfsRdOnlyClose;
+   io_methods.xRead                  = VfsRdOnlyRead;
+   io_methods.xWrite                 = VfsRdOnlyWrite;
+   io_methods.xTruncate              = VfsRdOnlyTruncate;
+   io_methods.xSync                  = VfsRdOnlySync;
+   io_methods.xFileSize              = VfsRdOnlyFileSize;
+   io_methods.xLock                  = VfsRdOnlyLock;
+   io_methods.xUnlock                = VfsRdOnlyUnlock;
+   io_methods.xCheckReservedLock     = VfsRdOnlyCheckReservedLock;
+   io_methods.xFileControl           = VfsRdOnlyFileControl;
+   io_methods.xSectorSize            = VfsRdOnlySectorSize;
+   io_methods.xDeviceCharacteristics = VfsRdOnlyDeviceCharacteristics;
+   return io_methods;
+}
+
+////////////////////////////////////////////////////////////////////////////
 /// Fills a new VfsRootFile struct enclosing a Davix file
 int VfsRdOnlyOpen(sqlite3_vfs * /*vfs*/, const char *zName, sqlite3_file *pFile, int flags, int * /*pOutFlags*/)
 {
@@ -181,45 +196,21 @@ int VfsRdOnlyOpen(sqlite3_vfs * /*vfs*/, const char *zName, sqlite3_file *pFile,
 
    // This global struct contains the function pointers to all the callback operations that act on an open database.
    // It is passed via the pFile struct back to sqlite so that it can call back to the functions provided above.
-   static const sqlite3_io_methods io_methods = {
-      1, // version
-      VfsRdOnlyClose,
-      VfsRdOnlyRead,
-      VfsRdOnlyWrite,
-      VfsRdOnlyTruncate,
-      VfsRdOnlySync,
-      VfsRdOnlyFileSize,
-      VfsRdOnlyLock,
-      VfsRdOnlyUnlock,
-      VfsRdOnlyCheckReservedLock,
-      VfsRdOnlyFileControl,
-      VfsRdOnlySectorSize,
-      VfsRdOnlyDeviceCharacteristics,
-      // Version 2 and later callbacks
-      nullptr, // xShmMap
-      nullptr, // xShmLock
-      nullptr, // xShmBarrier
-      nullptr, // xShmUnmap
-      nullptr, // xFetch
-      nullptr  // xUnfetch
-   };
+   static const sqlite3_io_methods io_methods = GetSqlite3IoMethods();
 
    if (flags & (SQLITE_OPEN_READWRITE | SQLITE_OPEN_DELETEONCLOSE | SQLITE_OPEN_EXCLUSIVE))
       return SQLITE_IOERR;
 
-   Davix::DavixError *err = nullptr;
-   p->fd = p->pos.open(nullptr, zName, O_RDONLY, &err);
-
-   if (!p->fd) {
-      ::Error("VfsRdOnlyOpen", "%s\n", err->getErrMsg().c_str());
+   p->fRawFile = ROOT::Internal::RRawFile::Create(zName);
+   if (!p->fRawFile) {
+      ::Error("VfsRdOnlyOpen", "Cannot open %s\n", zName);
       return SQLITE_IOERR;
    }
 
-   struct stat buf;
-   if (p->pos.stat(nullptr, zName, &buf, nullptr) == -1) {
+   if (!(p->fRawFile->GetFeatures() & ROOT::Internal::RRawFile::kFeatureHasSize)) {
+      ::Error("VfsRdOnlyOpen", "cannot determine file size of %s\n", zName);
       return SQLITE_IOERR;
    }
-   p->size = buf.st_size;
 
    p->pFile.pMethods = &io_methods;
    return SQLITE_OK;
@@ -304,53 +295,38 @@ int VfsRdOnlyCurrentTime(sqlite3_vfs *vfs, double *prNow)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-/// A global struct of function pointers and details on the VfsRootFile class that together constitue a VFS module
-static struct sqlite3_vfs kSqlite3Vfs = {
-   1, // version of the struct
-   sizeof(VfsRootFile),
-   2000,    // maximum URL length
-   nullptr, // pNext, maintained by sqlite
-   gSQliteVfsName,
-   nullptr, // pAppData
-   VfsRdOnlyOpen,
-   VfsRdOnlyDelete,
-   VfsRdOnlyAccess,
-   VfsRdOnlyFullPathname,
-   nullptr, // xDlOpen
-   nullptr, // xDlError
-   nullptr, // xDlSym
-   nullptr, // xDlClose
-   VfsRdOnlyRandomness,
-   VfsRdOnlySleep,
-   VfsRdOnlyCurrentTime,
-   VfsRdOnlyGetLastError,
-   VfsRdOnlyCurrentTimeInt64,
-   // Version 3 and later callbacks
-   nullptr, // xSetSystemCall
-   nullptr, // xGetSystemCall
-   nullptr, // xNextSystemCall
-};
-
-#endif // R__HAS_DAVIX
-
-bool RegisterDavixVfs()
+/// Set the function pointers of the VFS implementation in a
+/// forward-compatible way
+static sqlite3_vfs GetSqlite3Vfs()
 {
-#ifdef R__HAS_DAVIX
+   // The C style initialization is compatible with version 1 and later versions of the struct.
+   // Version 1 was introduced with sqlite 3.5, version 2 with sqlite 3.7, version 3 with sqlite 3.7.6
+   sqlite3_vfs vfs;
+   memset(&vfs, 0, sizeof(vfs));
+   vfs.iVersion      = 1;
+   vfs.szOsFile      = sizeof(VfsRootFile);
+   vfs.mxPathname    = 2000;
+   vfs.zName         = gSQliteVfsName;
+   vfs.xOpen         = VfsRdOnlyOpen;
+   vfs.xDelete       = VfsRdOnlyDelete;
+   vfs.xAccess       = VfsRdOnlyAccess;
+   vfs.xFullPathname = VfsRdOnlyFullPathname;
+   vfs.xRandomness   = VfsRdOnlyRandomness;
+   vfs.xSleep        = VfsRdOnlySleep;
+   vfs.xCurrentTime  = VfsRdOnlyCurrentTime;
+   vfs.xGetLastError = VfsRdOnlyGetLastError;
+   return vfs;
+}
+
+////////////////////////////////////////////////////////////////////////////
+/// A global struct of function pointers and details on the VfsRootFile class that together constitue a VFS module
+static struct sqlite3_vfs kSqlite3Vfs = GetSqlite3Vfs();
+
+static bool RegisterSqliteVfs()
+{
    int retval;
    retval = sqlite3_vfs_register(&kSqlite3Vfs, false);
    return (retval == SQLITE_OK);
-#else
-   return false;
-#endif
-}
-
-bool IsURL(const std::string &fileName)
-{
-   if (fileName.compare(0, 7, "http://") == 0)
-      return true;
-   if (fileName.compare(0, 8, "https://") == 0)
-      return true;
-   return false;
 }
 
 } // anonymous namespace
@@ -392,19 +368,14 @@ constexpr char const *RSqliteDS::fgTypeNames[];
 RSqliteDS::RSqliteDS(const std::string &fileName, const std::string &query)
    : fDataSet(std::make_unique<Internal::RSqliteDSDataSet>()), fNSlots(0), fNRow(0)
 {
-   static bool isDavixAvailable = RegisterDavixVfs();
+   static bool hasSqliteVfs = RegisterSqliteVfs();
+   if (!hasSqliteVfs)
+      throw std::runtime_error("Cannot register SQlite VFS in RSqliteDS");
+
    int retval;
 
-   // Open using the custom vfs module
-   if (IsURL(fileName)) {
-      if (!isDavixAvailable)
-         throw std::runtime_error("Processing remote files is not available. "
-                                  "Please compile ROOT with Davix support to read from HTTP(S) locations.");
-      retval =
-        sqlite3_open_v2(fileName.c_str(), &fDataSet->fDb, SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX, gSQliteVfsName);
-   } else {
-      retval = sqlite3_open_v2(fileName.c_str(), &fDataSet->fDb, SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX, nullptr);
-   }
+   retval = sqlite3_open_v2(fileName.c_str(), &fDataSet->fDb, SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX,
+                            gSQliteVfsName);
    if (retval != SQLITE_OK)
       SqliteError(retval);
 
@@ -477,7 +448,7 @@ RSqliteDS::~RSqliteDS()
    sqlite3_finalize(fDataSet->fQuery);
    // Closing can possibly fail with SQLITE_BUSY, in which case resources are leaked. This should not happen
    // the way it is used in this class because we cleanup the prepared statement before.
-   sqlite3_close_v2(fDataSet->fDb);
+   sqlite3_close(fDataSet->fDb);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -629,7 +600,11 @@ void RSqliteDS::SetNSlots(unsigned int nSlots)
 void RSqliteDS::SqliteError(int errcode)
 {
    std::string errmsg = "SQlite error: ";
+#if SQLITE_VERSION_NUMBER < 3007015
+   errmsg += std::to_string(errcode);
+#else
    errmsg += sqlite3_errstr(errcode);
+#endif
    throw std::runtime_error(errmsg);
 }
 

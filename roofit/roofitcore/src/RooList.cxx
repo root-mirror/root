@@ -26,7 +26,6 @@ that are associated with each node. This is a utility class for RooPlot
 #include "RooFit.h"
 
 #include "RooList.h"
-#include "RooList.h"
 #include "RooMsgService.h"
 
 #include "Riostream.h"

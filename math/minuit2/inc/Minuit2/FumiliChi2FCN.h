@@ -16,9 +16,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
+namespace Minuit2 {
 
 /**
 
@@ -39,7 +37,8 @@ section on "Straight-Line Data with Errors in Both Coordinates")).
 
 @author Andras Zsenei and Lorenzo Moneta, Creation date: 24 Aug 2004
 
-@see <A HREF="http://www.cern.ch/winkler/minuit/tutorial/mntutorial.pdf">MINUIT Tutorial</A> on function minimization, section 5
+@see <A HREF="http://www.cern.ch/winkler/minuit/tutorial/mntutorial.pdf">MINUIT Tutorial</A> on function minimization,
+section 5
 
 @see FumiliStandardChi2FCN
 
@@ -47,135 +46,117 @@ section on "Straight-Line Data with Errors in Both Coordinates")).
 
 */
 
-
-
 class FumiliChi2FCN : public FumiliFCNBase {
 
 public:
+   FumiliChi2FCN() {}
 
-  FumiliChi2FCN() {}
+   virtual ~FumiliChi2FCN() {}
 
-  virtual ~FumiliChi2FCN() {}
+   /**
 
+   Sets the model function for the data (for example gaussian+linear for a peak)
 
-  /**
+   @param modelFCN a reference to the model function.
 
-  Sets the model function for the data (for example gaussian+linear for a peak)
+   */
 
-  @param modelFunction a reference to the model function.
+   void SetModelFunction(const ParametricFunction &modelFCN) { fModelFunction = &modelFCN; }
 
-  */
+   /**
 
-  void SetModelFunction(const ParametricFunction& modelFCN) { fModelFunction = &modelFCN; }
+   Returns the model function used for the data.
 
+   @return Returns a pointer to the model function.
 
+   */
 
-  /**
+   const ParametricFunction *ModelFunction() const { return fModelFunction; }
 
-  Returns the model function used for the data.
+   /**
 
-  @return Returns a pointer to the model function.
+   Evaluates the model function for the different measurement points and
+   the Parameter values supplied, calculates a figure-of-merit for each
+   measurement and returns a vector containing the result of this
+   evaluation.
 
-  */
+   @param par vector of Parameter values to feed to the model function.
 
-  const ParametricFunction *  ModelFunction() const { return fModelFunction; }
+   @return A vector containing the figures-of-merit for the model function evaluated
+   for each set of measurements.
 
+   */
 
+   virtual std::vector<double> Elements(const std::vector<double> &par) const = 0;
 
-  /**
+   /**
 
-  Evaluates the model function for the different measurement points and
-  the Parameter values supplied, calculates a figure-of-merit for each
-  measurement and returns a vector containing the result of this
-  evaluation.
+   Accessor to the parameters of a given measurement. For example in the
+   case of a chi-square fit with a one-dimensional Gaussian, the Parameter
+   characterizing the measurement will be the position. It is the Parameter
+   that is feeded to the model function.
 
-  @param par vector of Parameter values to feed to the model function.
+   @param Index Index of the measueremnt the parameters of which to return
+   @return A reference to a vector containing the values characterizing a measurement
 
-  @return A vector containing the figures-of-merit for the model function evaluated
-  for each set of measurements.
+   */
 
-  */
+   virtual const std::vector<double> &GetMeasurement(int Index) const = 0;
 
-  virtual std::vector<double> Elements(const std::vector<double>& par) const = 0;
+   /**
 
+   Accessor to the number of measurements used for calculating the
+   present figure of merit.
 
+   @return the number of measurements
 
-  /**
+   */
 
-  Accessor to the parameters of a given measurement. For example in the
-  case of a chi-square fit with a one-dimensional Gaussian, the Parameter
-  characterizing the measurement will be the position. It is the Parameter
-  that is feeded to the model function.
+   virtual int GetNumberOfMeasurements() const = 0;
 
-  @param Index Index of the measueremnt the parameters of which to return
-  @return A reference to a vector containing the values characterizing a measurement
+   /**
 
-  */
-
-  virtual const std::vector<double> &  GetMeasurement(int Index) const = 0;
-
-
-  /**
-
-  Accessor to the number of measurements used for calculating the
-  present figure of merit.
-
-  @return the number of measurements
-
-  */
-
-  virtual int GetNumberOfMeasurements() const = 0;
+   Calculates the sum of Elements squared, ie the chi-square. The user must
+   implement in a class which inherits from FumiliChi2FCN the member function
+   Elements() which will supply the Elements for the sum.
 
 
+   @param par vector containing the Parameter values for the model function
 
-  /**
+   @return The sum of Elements squared
 
-  Calculates the sum of Elements squared, ie the chi-square. The user must
-  implement in a class which inherits from FumiliChi2FCN the member function
-  Elements() which will supply the Elements for the sum.
+   @see FumiliFCNBase#elements
 
+   */
 
-  @param par vector containing the Parameter values for the model function
+   double operator()(const std::vector<double> &par) const
+   {
 
-  @return The sum of Elements squared
+      double chiSquare = 0.0;
+      std::vector<double> vecElements = Elements(par);
+      unsigned int vecElementsSize = vecElements.size();
 
-  @see FumiliFCNBase#elements
+      for (unsigned int i = 0; i < vecElementsSize; ++i)
+         chiSquare += vecElements[i] * vecElements[i];
 
-  */
+      return chiSquare;
+   }
 
-  double operator()(const std::vector<double>& par) const {
+   /**
 
-    double chiSquare = 0.0;
-    std::vector<double> vecElements =  Elements(par);
-    unsigned int vecElementsSize = vecElements.size();
+   !!!!!!!!!!!! to be commented
 
-    for (unsigned int i = 0; i < vecElementsSize; ++i)
-      chiSquare += vecElements[i]*vecElements[i];
+   */
 
-    return chiSquare;
-  }
+   virtual double Up() const { return 1.0; }
 
-
-
-  /**
-
-  !!!!!!!!!!!! to be commented
-
-  */
-
-  virtual double Up() const { return 1.0; }
-
- private:
-
-  // A pointer to the model function which describes the data
-  const ParametricFunction *fModelFunction = nullptr;
-
-
-
+private:
+   // A pointer to the model function which describes the data
+   const ParametricFunction *fModelFunction = nullptr;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_FumiliChi2FCN
+#endif // ROOT_Minuit2_FumiliChi2FCN

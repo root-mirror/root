@@ -15,10 +15,9 @@
 #ifdef WIN32
 #include "Windows4Root.h"
 #endif
-#include "TObject.h"
-#include "TROOT.h"
 
-class TBrowser;
+#include "TObject.h"
+
 class TDirectory;
 class TList;
 class TMapRec;
@@ -56,7 +55,8 @@ protected:
    TMapFile();
    TMapFile(const char *name, const char *title, Option_t *option, Int_t size, TMapFile *&newMapFile);
    TMapFile(const TMapFile &f, Long_t offset = 0);
-   void       operator=(const TMapFile &rhs);  // not implemented
+
+   TMapFile &operator=(const TMapFile &rhs) = delete;
 
    TMapFile  *FindShadowMapFile();
    void       InitDirectory();
@@ -104,7 +104,7 @@ public:
    TObject      *Remove(TObject *obj) { return Remove(obj, kTRUE); }
    TObject      *Remove(const char *name) { return Remove(name, kTRUE); }
    void          RemoveAll();
-   TObject      *Get(const char *name, TObject *retObj = 0);
+   TObject      *Get(const char *name, TObject *retObj = nullptr);
 
    static TMapFile *Create(const char *name, Option_t *option="READ", Int_t size=kDefaultMapSize, const char *title="");
    static TMapFile *WhichMapFile(void *addr);
@@ -137,8 +137,8 @@ private:
    Int_t            fBufSize;    ///< Buffer size
    TMapRec         *fNext;       ///< Next MapRec in list
 
-   TMapRec(const TMapRec&);            // Not implemented.
-   TMapRec &operator=(const TMapRec&); // Not implemented.
+   TMapRec(const TMapRec&) = delete;
+   TMapRec &operator=(const TMapRec&) = delete;
 
 public:
    TMapRec(const char *name, const TObject *obj, Int_t size, void *buf);

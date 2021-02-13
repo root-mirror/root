@@ -99,7 +99,9 @@
 #include "TGXYLayout.h"
 #include "TGFrame.h"
 #include "TGLabel.h"
-#include "Riostream.h"
+#include "TVirtualX.h"
+
+#include <iostream>
 
 
 ClassImp(TGXYLayout);

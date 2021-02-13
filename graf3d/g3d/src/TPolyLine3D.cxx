@@ -9,8 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TPolyLine3D.h"
 #include "TVirtualPad.h"
 #include "TView.h"
@@ -20,7 +20,8 @@
 #include "TGeometry.h"
 #include "TMath.h"
 
-#include <assert.h>
+#include <cassert>
+#include <iostream>
 
 ClassImp(TPolyLine3D);
 
@@ -127,7 +128,7 @@ TPolyLine3D::TPolyLine3D(Int_t n, Option_t *option)
 /// 3-D polyline normal constructor. Polyline is intialized with p.
 /// If n < 0 the default size (2 points) is set.
 
-TPolyLine3D::TPolyLine3D(Int_t n, Float_t *p, Option_t *option)
+TPolyLine3D::TPolyLine3D(Int_t n, Float_t const* p, Option_t *option)
 {
    fOption = option;
    SetBit(kCanDelete);
@@ -150,7 +151,7 @@ TPolyLine3D::TPolyLine3D(Int_t n, Float_t *p, Option_t *option)
 /// 3-D polyline normal constructor. Polyline is initialized with p
 /// (cast to float). If n < 0 the default size (2 points) is set.
 
-TPolyLine3D::TPolyLine3D(Int_t n, Double_t *p, Option_t *option)
+TPolyLine3D::TPolyLine3D(Int_t n, Double_t const* p, Option_t *option)
 {
    fOption = option;
    SetBit(kCanDelete);
@@ -173,7 +174,7 @@ TPolyLine3D::TPolyLine3D(Int_t n, Double_t *p, Option_t *option)
 /// 3-D polyline normal constructor. Polyline is initialized withe the
 /// x, y ,z arrays. If n < 0 the default size (2 points) is set.
 
-TPolyLine3D::TPolyLine3D(Int_t n, Float_t *x, Float_t *y, Float_t *z, Option_t *option)
+TPolyLine3D::TPolyLine3D(Int_t n, Float_t const* x, Float_t const* y, Float_t const* z, Option_t *option)
 {
    fOption = option;
    SetBit(kCanDelete);
@@ -201,7 +202,7 @@ TPolyLine3D::TPolyLine3D(Int_t n, Float_t *x, Float_t *y, Float_t *z, Option_t *
 /// x, y, z arrays (which are cast to float).
 /// If n < 0 the default size (2 points) is set.
 
-TPolyLine3D::TPolyLine3D(Int_t n, Double_t *x, Double_t *y, Double_t *z, Option_t *option)
+TPolyLine3D::TPolyLine3D(Int_t n, Double_t const* x, Double_t const* y, Double_t const* z, Option_t *option)
 {
    fOption = option;
    SetBit(kCanDelete);

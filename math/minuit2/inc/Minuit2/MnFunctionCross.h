@@ -15,9 +15,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
+namespace Minuit2 {
 
 class FCNBase;
 class MnUserParameterState;
@@ -31,23 +29,25 @@ class MnCross;
 class MnFunctionCross {
 
 public:
+   MnFunctionCross(const FCNBase &fcn, const MnUserParameterState &state, double fval, const MnStrategy &stra)
+      : fFCN(fcn), fState(state), fFval(fval), fStrategy(stra)
+   {
+   }
 
-  MnFunctionCross(const FCNBase& fcn, const MnUserParameterState& state, double fval, const MnStrategy& stra) : fFCN(fcn), fState(state), fFval(fval), fStrategy(stra) {}
+   ~MnFunctionCross() {}
 
-  ~MnFunctionCross() {}
-
-  MnCross operator()(const std::vector<unsigned int>&, const std::vector<double>&, const std::vector<double>&, double, unsigned int) const;
+   MnCross operator()(const std::vector<unsigned int> &, const std::vector<double> &, const std::vector<double> &,
+                      double, unsigned int) const;
 
 private:
-
-  const FCNBase& fFCN;
-  const MnUserParameterState& fState;
-  double fFval;
-  const MnStrategy& fStrategy;
+   const FCNBase &fFCN;
+   const MnUserParameterState &fState;
+   double fFval;
+   const MnStrategy &fStrategy;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnFunctionCross
+#endif // ROOT_Minuit2_MnFunctionCross

@@ -44,15 +44,15 @@ struct DataOptions {
    {}
 
 
-   bool fIntegral;    // use integral of bin content instead of bin center (default is false)
-   bool fBinVolume;   // normalize data by the bin volume (it is used in the Poisson likelihood fits)
-   bool fNormBinVolume;  // normalize data by a normalized the bin volume ( bin volume divided by a reference value)
-   bool fUseEmpty;    // use empty bins (default is false) with a fixed error of 1
-   bool fUseRange;    // use the function range when creating the fit data (default is false)
-   bool fErrors1;     // use all errors equal to 1, i.e. fit without errors (default is false)
-   bool fExpErrors;   // use expected errors from the function and not from the data
-   bool fCoordErrors; // use errors on the x coordinates when available (default is true)
-   bool fAsymErrors;  // use asymmetric errors in the value when available, selecting them according to the on sign of residual (default is true)
+   bool fIntegral;      /// use integral of bin content instead of bin center (default is false)
+   bool fBinVolume;     /// normalize data by the bin volume (it is used in the Poisson likelihood fits)
+   bool fNormBinVolume; /// normalize data by a normalized the bin volume (bin volume divided by a reference value)
+   bool fUseEmpty;      /// use empty bins (default is false) with a fixed error of 1
+   bool fUseRange;      /// use the function range when creating the fit data (default is false)
+   bool fErrors1;       /// use all errors equal to 1, i.e. fit without errors (default is false)
+   bool fExpErrors;     /// use expected errors from the function and not from the data
+   bool fCoordErrors;   /// use errors on the x coordinates when available (default is true)
+   bool fAsymErrors;    /// use asymmetric errors in the value when available, selecting them according to the on sign of residual (default is true)
 
 
 };

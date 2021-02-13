@@ -25,8 +25,6 @@
 #include "RooLinkedList.h"
 #include "RooLinkedListIter.h"
 
-#include <vector>
-
 namespace RooStats {
 
 class ToyMCStudy: public RooAbsStudy {

@@ -33,6 +33,7 @@
 #define ROOT_TMVA_PDEFoamDensityBase
 
 #include "TObject.h"
+#include <vector>
 
 #include "TMVA/BinarySearchTree.h"
 #include "TMVA/Event.h"

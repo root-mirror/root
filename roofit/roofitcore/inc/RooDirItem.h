@@ -21,16 +21,16 @@ class TDirectory ;
 
 class RooDirItem {
 public:
-  RooDirItem() ;
-  RooDirItem(const RooDirItem& other) ;
-  virtual ~RooDirItem() ;
+  RooDirItem() { }
+  RooDirItem(const RooDirItem&) { }
+  virtual ~RooDirItem() { }
 
 protected:
 
   void appendToDir(TObject* obj, Bool_t forceMemoryResident=kFALSE) ;
   void removeFromDir(TObject* obj) ;
 
-  TDirectory* _dir ;     //! Associated directory
+  TDirectory* _dir{nullptr};     //! Associated directory
   ClassDef(RooDirItem,1) // Base class for RooFit objects that are listed TDirectories
 };
 

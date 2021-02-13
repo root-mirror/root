@@ -30,7 +30,6 @@ by the RooRealVar::setRange() that takes RooAbsReal references as arguments
 #include "RooFit.h"
 
 #include "RooParamBinning.h"
-#include "RooParamBinning.h"
 #include "RooMsgService.h"
 
 #include "Riostream.h"

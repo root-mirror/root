@@ -16,8 +16,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class FCNBase;
 class FunctionMinimum;
@@ -34,19 +33,17 @@ class MnCross;
 class MnMinos {
 
 public:
-
+   /// construct from FCN + Minimum + strategy
+   MnMinos(const FCNBase &fcn, const FunctionMinimum &min, unsigned int stra = 1);
 
    /// construct from FCN + Minimum + strategy
-   MnMinos(const FCNBase& fcn, const FunctionMinimum& min, unsigned int stra = 1);
-
-   /// construct from FCN + Minimum + strategy
-   MnMinos(const FCNBase& fcn, const FunctionMinimum& min, const MnStrategy& stra);
+   MnMinos(const FCNBase &fcn, const FunctionMinimum &min, const MnStrategy &stra);
 
    ~MnMinos() {}
 
    /// returns the negative (pair.first) and the positive (pair.second)
    /// Minos Error of the Parameter
-   std::pair<double,double> operator()(unsigned int, unsigned int maxcalls = 0, double toler = 0.1) const;
+   std::pair<double, double> operator()(unsigned int, unsigned int maxcalls = 0, double toler = 0.1) const;
 
    /// calculate one side (negative or positive Error) of the Parameter
    /// give as input (optionally) maxcalls and tolerance
@@ -61,19 +58,17 @@ public:
    MinosError Minos(unsigned int, unsigned int maxcalls = 0, double toler = 0.1) const;
 
 protected:
-
    /// internal method to get crossing value via MnFunctionCross
-   MnCross FindCrossValue(int dir , unsigned int, unsigned int maxcalls, double toler) const;
+   MnCross FindCrossValue(int dir, unsigned int, unsigned int maxcalls, double toler) const;
 
 private:
-
-   const FCNBase& fFCN;
-   const FunctionMinimum& fMinimum;
+   const FCNBase &fFCN;
+   const FunctionMinimum &fMinimum;
    MnStrategy fStrategy;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnMinos
+#endif // ROOT_Minuit2_MnMinos

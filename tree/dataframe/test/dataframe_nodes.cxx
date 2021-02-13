@@ -1,3 +1,5 @@
+#include "ROOTUnitTestSupport.h"
+
 #include <ROOT/RDataFrame.hxx>
 #include <ROOT/RDF/RSlotStack.hxx>
 #include <TStatistic.h> // To check reading of columns with types which are mothers of the column type
@@ -5,6 +7,7 @@
 
 #include <mutex>
 #include <thread>
+#include <stdexcept> // std::runtime_error
 
 #include "gtest/gtest.h"
 
@@ -47,15 +50,11 @@ TEST(RDataFrameNodes, RLoopManagerGetLoopManagerUnchecked)
    ASSERT_EQ(&lm, lm.GetLoopManagerUnchecked());
 }
 
-TEST(RDataFrameNodes, RLoopManagerJit)
+TEST(RDataFrameNodes, RLoopManagerJitWrongCode)
 {
    ROOT::Detail::RDF::RLoopManager lm(nullptr, {});
    lm.ToJitExec("souble d = 3.14");
-   auto op = [&](){
-      testing::internal::CaptureStderr();
-      lm.Run();
-   };
-   EXPECT_ANY_THROW(op()) << "Bogus C++ code was jitted and nothing was detected!";
+   EXPECT_THROW(lm.Run(), std::runtime_error) << "Bogus C++ code was jitted and nothing was detected!";
 }
 
 TEST(RDataFrameNodes, DoubleEvtLoop)
@@ -76,17 +75,14 @@ TEST(RDataFrameNodes, DoubleEvtLoop)
    // even though TTreeReader::SetEntry() was called, which switched the tree again. Did you mean to call
    // TTreeReader::SetLocalEntry()?
 
-   testing::internal::CaptureStdout();
-   *tdf.Count();
-   auto output = testing::internal::GetCapturedStdout();
-   EXPECT_STREQ("", output.c_str()) << "An error was printed: " << output << std::endl;
+   ROOT_EXPECT_NODIAG(*tdf.Count());
 
    for (auto &f : files)
       gSystem->Unlink(f.c_str());
 }
 
 // ROOT-9736
-TEST(RDataFrameNodes, InheritanceOfCustomColumns)
+TEST(RDataFrameNodes, InheritanceOfDefines)
 {
    ROOT::RDataFrame df(1);
    const auto nBinsExpected = 42;
@@ -94,7 +90,7 @@ TEST(RDataFrameNodes, InheritanceOfCustomColumns)
    df.Define("b", [&]() { return TH1F("b", "b", nBinsExpected, 0, 1); })
       .Foreach([&](TH1 &h) { EXPECT_EQ(h.GetNbinsX(), nBinsExpected);}, {"b"});
 
-   const auto ofileName = "InheritanceOfCustomColumns.root";
+   const auto ofileName = "InheritanceOfDefines.root";
 
    const auto val = 42.;
    auto createStat = [&val]() {

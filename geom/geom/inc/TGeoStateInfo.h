@@ -48,8 +48,8 @@ struct TGeoStateInfo {
    TGeoPolygon         *fXtruPoly;       // polygon defining section shape
 
    TGeoStateInfo(Int_t maxdaughters=0);
-   TGeoStateInfo(const TGeoStateInfo &other);
-   TGeoStateInfo & operator=(const TGeoStateInfo &other);
+   TGeoStateInfo(const TGeoStateInfo &other) = delete;
+   TGeoStateInfo & operator=(const TGeoStateInfo &other) = delete;
    virtual ~TGeoStateInfo();
 
    ClassDef(TGeoStateInfo, 0)  // No I/O for this structure

@@ -13,6 +13,8 @@
 #include "TTimer.h"
 #include "TGDNDManager.h"
 #include "TRootCanvas.h"
+#include "TVirtualX.h"
+
 
 #define ROOTDND_PROTOCOL_VERSION      4
 #define XA_ATOM ((Atom_t) 4)

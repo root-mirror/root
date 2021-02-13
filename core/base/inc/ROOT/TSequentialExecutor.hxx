@@ -2,7 +2,7 @@
 // Author: Xavier Valls November 2017
 
 /*************************************************************************
- * Copyright (C) 1995-2006, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -11,153 +11,192 @@
 #ifndef ROOT_TSequentialExecutor
 #define ROOT_TSequentialExecutor
 
-#include "RConfigure.h"
+#include "ROOT/EExecutionPolicy.hxx"
+#include "ROOT/TExecutorCRTP.hxx"
+#include "ROOT/TSeq.hxx"
 
-#include "ROOT/TExecutor.hxx"
-#include <numeric>
+#include <initializer_list>
+#include <numeric> //std::accumulate
+#include <type_traits> //std::enable_if, std::result_of
+#include <utility> //std::move
 #include <vector>
 
 namespace ROOT {
 
-   class TSequentialExecutor: public TExecutor<TSequentialExecutor> {
+   class TSequentialExecutor: public TExecutorCRTP<TSequentialExecutor> {
+      friend TExecutorCRTP;
    public:
-      explicit TSequentialExecutor(){};
 
-      TSequentialExecutor(TSequentialExecutor &) = delete;
-      TSequentialExecutor &operator=(TSequentialExecutor &) = delete;
+      TSequentialExecutor() = default;
+      TSequentialExecutor(const TSequentialExecutor &) = delete;
+      TSequentialExecutor &operator=(const TSequentialExecutor &) = delete;
 
+      // Foreach
+      //
       template<class F>
       void Foreach(F func, unsigned nTimes);
       template<class F, class INTEGER>
       void Foreach(F func, ROOT::TSeq<INTEGER> args);
-      /// \cond
       template<class F, class T>
       void Foreach(F func, std::initializer_list<T> args);
-      /// \endcond
       template<class F, class T>
       void Foreach(F func, std::vector<T> &args);
+      template<class F, class T>
+      void Foreach(F func, const std::vector<T> &args);
 
-      using TExecutor<TSequentialExecutor>::Map;
+      // Map
+      //
+      using TExecutorCRTP<TSequentialExecutor>::Map;
+
+      // MapReduce
+      // the late return types also check at compile-time whether redfunc is compatible with func,
+      // other than checking that func is compatible with the type of arguments.
+      // a static_assert check in TSequentialExecutor::Reduce is used to check that redfunc is compatible with the type returned by func
+      using TExecutorCRTP<TSequentialExecutor>::MapReduce;
+
+      // Reduce
+      //
+      using TExecutorCRTP<TSequentialExecutor>::Reduce;
+
+      //////////////////////////////////////////////////////////////////////////
+      /// \brief Return the number of workers in the sequential executor: a single one.
+      ///
+      /// \return The number of workers in the pool, one.
+      unsigned GetPoolSize() const { return 1u; }
+
+   private:
+       // Implementation of the Map functions declared in the parent class (TExecutorCRTP)
+      //
       template<class F, class Cond = noReferenceCond<F>>
-      auto Map(F func, unsigned nTimes) -> std::vector<typename std::result_of<F()>::type>;
+      auto MapImpl(F func, unsigned nTimes) -> std::vector<typename std::result_of<F()>::type>;
       template<class F, class INTEGER, class Cond = noReferenceCond<F, INTEGER>>
-      auto Map(F func, ROOT::TSeq<INTEGER> args) -> std::vector<typename std::result_of<F(INTEGER)>::type>;
+      auto MapImpl(F func, ROOT::TSeq<INTEGER> args) -> std::vector<typename std::result_of<F(INTEGER)>::type>;
       template<class F, class T, class Cond = noReferenceCond<F, T>>
-      auto Map(F func, std::vector<T> &args) -> std::vector<typename std::result_of<F(T)>::type>;
-
-      // // MapReduce
-      // // the late return types also check at compile-time whether redfunc is compatible with func,
-      // // other than checking that func is compatible with the type of arguments.
-      // // a static_assert check in TSequentialExecutor::Reduce is used to check that redfunc is compatible with the type returned by func
-      using TExecutor<TSequentialExecutor>::MapReduce;
-      template<class F, class R, class Cond = noReferenceCond<F>>
-      auto MapReduce(F func, unsigned nTimes, R redfunc) -> typename std::result_of<F()>::type;
-      template<class F, class T, class R, class Cond = noReferenceCond<F, T>>
-      auto MapReduce(F func, std::vector<T> &args, R redfunc) -> typename std::result_of<F(T)>::type;
-      
-      using TExecutor<TSequentialExecutor>::Reduce;
-      template<class T, class R> auto Reduce(const std::vector<T> &objs, R redfunc) -> decltype(redfunc(objs));
+      auto MapImpl(F func, std::vector<T> &args) -> std::vector<typename std::result_of<F(T)>::type>;
+      template<class F, class T, class Cond = noReferenceCond<F, T>>
+      auto MapImpl(F func, const std::vector<T> &args) -> std::vector<typename std::result_of<F(T)>::type>;
    };
 
    /************ TEMPLATE METHODS IMPLEMENTATION ******************/
 
    //////////////////////////////////////////////////////////////////////////
-   /// Execute func (with no arguments) nTimes.
-   /// Functions that take more than zero arguments can be executed (with
-   /// fixed arguments) by wrapping them in a lambda or with std::bind.
+   /// \brief Execute a function without arguments several times, dividing the execution in nChunks.
+   ///
+   /// \param func Function to be executed.
+   /// \param nTimes Number of times function should be called.
    template<class F>
    void TSequentialExecutor::Foreach(F func, unsigned nTimes) {
       for (auto i = 0U; i < nTimes; ++i) func();
    }
 
    //////////////////////////////////////////////////////////////////////////
-   /// Execute func, taking an element of a
-   /// sequence as argument.
+   /// \brief Execute a function over a sequence of indexes, dividing the execution in nChunks.
+   ///
+   /// \param func Function to be executed. Must take an element of the sequence passed assecond argument as a parameter.
+   /// \param args Sequence of indexes to execute `func` on.
    template<class F, class INTEGER>
    void TSequentialExecutor::Foreach(F func, ROOT::TSeq<INTEGER> args) {
-       for(auto i : args) func(i);
+      for(auto i : args) func(i);
    }
 
-   /// \cond
    //////////////////////////////////////////////////////////////////////////
-   /// Execute func, taking an element of a
-   /// initializer_list as argument.
+   /// \brief Execute a function over the elements of an initializer_list, dividing the execution in nChunks.
+   ///
+   /// \param func Function to be executed on the elements of the initializer_list passed as second parameter.
+   /// \param args initializer_list for a vector to apply `func` on.
    template<class F, class T>
    void TSequentialExecutor::Foreach(F func, std::initializer_list<T> args) {
-       std::vector<T> vargs(std::move(args));
-       Foreach(func, vargs);
+      std::vector<T> vargs(std::move(args));
+      Foreach(func, vargs);
    }
-   /// \endcond
 
    //////////////////////////////////////////////////////////////////////////
-   /// Execute func, taking an element of an
-   /// std::vector as argument.
+   /// \brief Execute a function over the elements of a vector, dividing the execution in nChunks.
+   ///
+   /// \param func Function to be executed on the elements of the vector passed as second parameter.
+   /// \param args Vector of elements passed as an argument to `func`.
    template<class F, class T>
    void TSequentialExecutor::Foreach(F func, std::vector<T> &args) {
-        unsigned int nToProcess = args.size();
-        for(auto i: ROOT::TSeqI(nToProcess)) func(args[i]);
+      for(auto &&arg: args) {
+         func(arg);
+      }
    }
 
    //////////////////////////////////////////////////////////////////////////
-   /// Execute func (with no arguments) nTimes.
-   /// A vector containg executions' results is returned.
-   /// Functions that take more than zero arguments can be executed (with
-   /// fixed arguments) by wrapping them in a lambda or with std::bind.
+   /// \brief Execute a function over the elements of an immutable vector, dividing the execution in nChunks.
+   ///
+   /// \param func Function to be executed on the elements of the immutable vector passed as second parameter.
+   /// \param args Immutable vector of elements passed as an argument to `func`.
+   template<class F, class T>
+   void TSequentialExecutor::Foreach(F func, const std::vector<T> &args) {
+      for(auto &&arg: args) {
+         func(arg);
+      }
+   }
+
+   //////////////////////////////////////////////////////////////////////////
+   /// \brief Execute a function without arguments several times.
+   /// Implementation of the Map method.
+   ///
+   /// \copydetails TExecutorCRTP::Map(F func,unsigned nTimes)
    template<class F, class Cond>
-   auto TSequentialExecutor::Map(F func, unsigned nTimes) -> std::vector<typename std::result_of<F()>::type> {
+   auto TSequentialExecutor::MapImpl(F func, unsigned nTimes) -> std::vector<typename std::result_of<F()>::type> {
       using retType = decltype(func());
-      std::vector<retType> reslist(nTimes);
-      for(auto i: ROOT::TSeqI(nTimes)) reslist[i] = func();
+      std::vector<retType> reslist;
+      reslist.reserve(nTimes);
+      while(reslist.size() < nTimes) {
+         reslist.emplace_back(func());
+      }
       return reslist;
    }
 
    //////////////////////////////////////////////////////////////////////////
-   /// Execute func, taking an element of a
-   /// sequence as argument.
-   /// A vector containg executions' results is returned.
+   /// \brief Execute a function over a sequence of indexes.
+   /// Implementation of the Map method.
+   ///
+   /// \copydetails TExecutorCRTP::Map(F func,ROOT::TSeq<INTEGER> args)
    template<class F, class INTEGER, class Cond>
-   auto TSequentialExecutor::Map(F func, ROOT::TSeq<INTEGER> args) -> std::vector<typename std::result_of<F(INTEGER)>::type> {
+   auto TSequentialExecutor::MapImpl(F func, ROOT::TSeq<INTEGER> args) -> std::vector<typename std::result_of<F(INTEGER)>::type> {
       using retType = decltype(func(*args.begin()));
-      std::vector<retType> reslist(args.size());
-      for(auto i: args) reslist[i] = func(i);
+      std::vector<retType> reslist;
+      reslist.reserve(args.size());
+      for(auto i: args)
+         reslist.emplace_back(func(i));
       return reslist;
    }
 
    //////////////////////////////////////////////////////////////////////////
-   /// Execute func, taking an element of an
-   /// std::vector as argument.
-   /// A vector containg executions' results is returned.
-   // actual implementation of the Map method. all other calls with arguments eventually
-   // call this one
+   /// \brief Execute a function over the elements of a vector in parallel
+   /// Implementation of the Map method.
+   ///
+   /// \copydetails TExecutorCRTP::Map(F func,std::vector<T> &args)
    template<class F, class T, class Cond>
-   auto TSequentialExecutor::Map(F func, std::vector<T> &args) -> std::vector<typename std::result_of<F(T)>::type> {
+   auto TSequentialExecutor::MapImpl(F func, std::vector<T> &args) -> std::vector<typename std::result_of<F(T)>::type> {
       // //check whether func is callable
       using retType = decltype(func(args.front()));
-      unsigned int nToProcess = args.size();
-      std::vector<retType> reslist(nToProcess);
-      for(auto i: ROOT::TSeqI(nToProcess)) reslist[i] = func(args[i]);
+      std::vector<retType> reslist;
+      reslist.reserve(args.size());
+      for(auto &&arg: args) {
+         reslist.emplace_back(func(arg));
+      }
       return reslist;
    }
 
-   template<class F, class R, class Cond>
-   auto TSequentialExecutor::MapReduce(F func, unsigned nTimes, R redfunc) -> typename std::result_of<F()>::type {
-      return Reduce(Map(func, nTimes), redfunc);
-   }
-
-   template<class F, class T, class R, class Cond>
-   auto TSequentialExecutor::MapReduce(F func, std::vector<T> &args, R redfunc) -> typename std::result_of<F(T)>::type {
-      return Reduce(Map(func, args), redfunc);
-   }
-
    //////////////////////////////////////////////////////////////////////////
-   /// "Reduce" an std::vector into a single object by passing a
-   /// function as the second argument defining the reduction operation.
-   template<class T, class R>
-   auto TSequentialExecutor::Reduce(const std::vector<T> &objs, R redfunc) -> decltype(redfunc(objs))
-   {
-      // check we can apply reduce to objs
-      static_assert(std::is_same<decltype(redfunc(objs)), T>::value, "redfunc does not have the correct signature");
-      return redfunc(objs);
+   /// \brief Execute a function over the elements of an immutable vector.
+   /// Implementation of the Map method.
+   ///
+   /// \copydetails TExecutorCRTP::Map(F func,const std::vector<T> &args)
+   template<class F, class T, class Cond>
+   auto TSequentialExecutor::MapImpl(F func, const std::vector<T> &args) -> std::vector<typename std::result_of<F(T)>::type> {
+      // //check whether func is callable
+      using retType = decltype(func(args.front()));
+      std::vector<retType> reslist;
+      reslist.reserve(args.size());
+      for(auto &&arg: args) {
+         reslist.emplace_back(func(arg));
+      }
+      return reslist;
    }
 
 } // namespace ROOT

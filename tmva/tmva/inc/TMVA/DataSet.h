@@ -39,21 +39,10 @@
 
 #include <vector>
 #include <map>
-#include <string>
 
-#include "TObject.h"
 #include "TNamed.h"
 #include "TString.h"
 #include "TTree.h"
-//#ifndef ROOT_TCut
-//#include "TCut.h"
-//#endif
-//#ifndef ROOT_TMatrixDfwd
-//#include "TMatrixDfwd.h"
-//#endif
-//#ifndef ROOT_TPrincipal
-//#include "TPrincipal.h"
-//#endif
 #include "TRandom3.h"
 
 #include "TMVA/Types.h"

@@ -14,16 +14,12 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MnFcn;
 class MinimumParameters;
 class MnMachinePrecision;
 class MnParabolaPoint;
-
-
-
 
 /**
 
@@ -41,31 +37,29 @@ and Lorenzo Moneta
 
 */
 
-
-
-
-class MnLineSearch  {
+class MnLineSearch {
 
 public:
+   MnLineSearch() {}
 
-  MnLineSearch() {}
+   ~MnLineSearch() {}
 
-  ~MnLineSearch() {}
-
-  MnParabolaPoint operator()(const MnFcn&, const MinimumParameters&, const MnAlgebraicVector&, double, const MnMachinePrecision&, bool debug = false) const;
+   MnParabolaPoint operator()(const MnFcn &, const MinimumParameters &, const MnAlgebraicVector &, double,
+                              const MnMachinePrecision &) const;
 
 #ifdef USE_OTHER_LS
-  MnParabolaPoint CubicSearch(const MnFcn&, const MinimumParameters&, const MnAlgebraicVector&, double, double, const MnMachinePrecision&, bool debug = false) const;
+   MnParabolaPoint CubicSearch(const MnFcn &, const MinimumParameters &, const MnAlgebraicVector &, double, double,
+                               const MnMachinePrecision &) const;
 
-  MnParabolaPoint BrentSearch(const MnFcn&, const MinimumParameters&, const MnAlgebraicVector&, double, double, const MnMachinePrecision&, bool debug = false) const;
+   MnParabolaPoint BrentSearch(const MnFcn &, const MinimumParameters &, const MnAlgebraicVector &, double, double,
+                               const MnMachinePrecision &) const;
 #endif
 
 private:
-
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnLineSearch
+#endif // ROOT_Minuit2_MnLineSearch

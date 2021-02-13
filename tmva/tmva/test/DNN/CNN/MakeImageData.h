@@ -3,6 +3,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TRandom.h"
+#include <vector>
 
 void makeImages(int n = 10000, int npx = 8, int npy = 8, TString fileName = "imagesData.root") {
 

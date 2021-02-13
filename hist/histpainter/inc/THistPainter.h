@@ -35,6 +35,8 @@ class TGaxis;
 class TPainter3dAlgorithms;
 class TGraph2DPainter;
 class TPie;
+class TF3;
+
 const Int_t kMaxCuts = 16;
 
 struct THistRenderingRegion
@@ -65,6 +67,7 @@ protected:
    TString               fShowOption;        //Option to draw the projection
    Int_t                 fXHighlightBin;     //X highlight bin
    Int_t                 fYHighlightBin;     //Y highlight bin
+   TF3                  *fCurrentF3;         //current TF3 function
 
 private:
    mutable TString fObjectInfo;

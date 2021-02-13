@@ -14,15 +14,16 @@
 Implement TBuffer for a SQL backend.
 */
 
-#include <stdio.h>
-#include "Riostream.h"
 #include "TError.h"
 
 #include "TBasketSQL.h"
 #include "TBufferSQL.h"
 #include "TSQLResult.h"
 #include "TSQLRow.h"
-#include <stdlib.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 
 ClassImp(TBufferSQL);
 

@@ -11,9 +11,7 @@
 
 #include "TH2GL.h"
 #include "TH2.h"
-#include "TVirtualPad.h"
 #include "TAxis.h"
-#include "TMath.h"
 
 #include "TGLSurfacePainter.h"
 #include "TGLHistPainter.h"

@@ -68,6 +68,7 @@ TParticle *TMCManagerStack::PopNextTrack(Int_t &itrack)
    }
    itrack = mcStack->top();
    mcStack->pop();
+   SetCurrentTrack(itrack);
    return fParticles->operator[](itrack);
 }
 

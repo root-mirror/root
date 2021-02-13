@@ -1,8 +1,9 @@
 
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <vector>
 
 #ifndef ROOT_Math_MixMaxEngineImpl
 #define ROOT_Math_MixMaxEngineImpl

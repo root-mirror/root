@@ -10,6 +10,7 @@
  *************************************************************************/
 
 #include "TObjectSpy.h"
+#include "TSeqCollection.h"
 #include "TROOT.h"
 #include "TVirtualMutex.h"
 

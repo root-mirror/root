@@ -8,6 +8,7 @@
 #include <TGFrame.h>
 #include <TGLayout.h>
 #include <TGWindow.h>
+#include <snprintf.h>
 
 #include "XSVarious.h"
 #include "XSElementList.h"

@@ -18,6 +18,11 @@
 // Functionality, interface, and data format is still subject to changes.
 // Do not use for real data!
 
+// Until C++ runtime modules are universally used, we explicitly load the ntuple library.  Otherwise
+// triggering autoloading from the use of templated types would require an exhaustive enumeration
+// of "all" template instances in the LinkDef file.
+R__LOAD_LIBRARY(ROOTNTuple)
+
 #include <ROOT/RField.hxx>
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RNTupleModel.hxx>
@@ -61,13 +66,13 @@ void Convert() {
       TLeaf *l = static_cast<TLeaf*>(b->GetListOfLeaves()->First());
 
       // Create an ntuple field with the same name and type than the tree branch
-      auto field = RFieldBase::Create(l->GetName(), l->GetTypeName());
+      auto field = RFieldBase::Create(l->GetName(), l->GetTypeName()).Unwrap();
       std::cout << "Convert leaf " << l->GetName() << " [" << l->GetTypeName() << "]"
                 << " --> " << "field " << field->GetName() << " [" << field->GetType() << "]" << std::endl;
 
       // Hand over ownership of the field to the ntuple model.  This will also create a memory location attached
       // to the model's default entry, that will be used to place the data supposed to be written
-      model->AddField(std::unique_ptr<RFieldBase>(field));
+      model->AddField(std::move(field));
 
       // We connect the model's default entry's memory location for the new field to the branch, so that we can
       // fill the ntuple with the data read from the TTree
@@ -106,7 +111,7 @@ void ntpl003_lhcbOpenData()
    TH1F h("h", "B Flight Distance", 200, 0, 140);
    h.SetFillColor(48);
 
-   for (auto i : ntuple->GetViewRange()) {
+   for (auto i : ntuple->GetEntryRange()) {
       // Note that we do not load an entry in this loop, i.e. we avoid the memory copy of loading the data into
       // the memory location given by the entry
       h.Fill(viewFlightDistance(i));

@@ -385,8 +385,8 @@ void THLimitsFinder::OptimizeLimits(Int_t nbins, Int_t &newbins, Double_t &xmin,
       xmax    = binhigh;
    }
    if (isInteger) {
-      Int_t ixmin = Int_t(xmin);
-      Int_t ixmax = Int_t(xmax);
+      Long64_t ixmin = Long64_t(xmin);
+      Long64_t ixmax = Long64_t(xmax);
       Double_t dxmin = Double_t(ixmin);
       Double_t dxmax = Double_t(ixmax);
       if (xmin < 0 && xmin != dxmin) xmin = dxmin - 1;
@@ -395,7 +395,7 @@ void THLimitsFinder::OptimizeLimits(Int_t nbins, Int_t &newbins, Double_t &xmin,
       else if (xmax ==0 && xmax == dxmax) xmax = 1;
       else                                xmax = dxmax;
       if (xmin >= xmax) xmax = xmin+1;
-      Int_t bw = Int_t((xmax-xmin)/nbins);
+      Long64_t bw = Long64_t((xmax-xmin)/nbins);
       if (bw == 0) bw = 1;
       nbins = Int_t((xmax-xmin)/bw);
       if (xmin +nbins*bw < umax) {nbins++; xmax = xmin +nbins*bw;}

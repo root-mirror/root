@@ -36,7 +36,9 @@ enum class EActivationFunction
    kTanh     = 3,
    kSymmRelu = 4,
    kSoftSign = 5,
-   kGauss    = 6
+   kGauss    = 6,
+   kFastTanh = 7
+
 };
 
 /*! Enum that represents output functions */
@@ -111,6 +113,8 @@ inline void evaluate(typename Architecture_t::Tensor_t &A,
         break;
     case EActivationFunction::kGauss    :  Architecture_t::Gauss(A);
         break;
+    case EActivationFunction::kFastTanh :  Architecture_t::FastTanh(A);
+        break;
     }
 }
 
@@ -138,7 +142,27 @@ inline void evaluateDerivative(typename Architecture_t::Tensor_t & B,
         break;
     case EActivationFunction::kGauss    : Architecture_t::GaussDerivative(B, A);
         break;
+    case EActivationFunction::kFastTanh : Architecture_t::FastTanhDerivative(B, A);
+        break;
     }
+}
+
+// matrix version of the function (for backward comp.)
+template<typename Architecture_t>
+inline void evaluateMatrix( typename Architecture_t::Matrix_t &A,
+                        EActivationFunction f)
+{
+    typename Architecture_t::Tensor_t t(A);
+    evaluate<Architecture_t>(t,f);
+}
+
+template<typename Architecture_t>
+inline void evaluateDerivativeMatrix( typename Architecture_t::Matrix_t &B,
+                        EActivationFunction f,
+                        const typename Architecture_t::Matrix_t & A)
+{
+    typename Architecture_t::Tensor_t t(B);
+    evaluateDerivative<Architecture_t>(t,f, typename Architecture_t::Tensor_t(A));
 }
 //______________________________________________________________________________
 //

@@ -37,7 +37,7 @@ public:
    virtual  void     Circle(Double_t &x, Double_t &y, Double_t r);
    virtual  Double_t Exp(Double_t tau);
    virtual  Double_t Gaus(Double_t mean=0, Double_t sigma=1);
-   virtual  UInt_t   GetSeed() const {return fSeed;}
+   virtual  UInt_t   GetSeed() const;
    virtual  UInt_t   Integer(UInt_t imax);
    virtual  Double_t Landau(Double_t mean=0, Double_t sigma=1);
    virtual  Int_t    Poisson(Double_t mean);

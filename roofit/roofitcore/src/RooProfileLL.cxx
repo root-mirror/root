@@ -31,7 +31,6 @@ as a MIGRAD minimization step is executed for each function evaluation
 #include "RooMinimizer.h"
 #include "RooMsgService.h"
 #include "RooRealVar.h"
-#include "RooMsgService.h"
 
 using namespace std ;
 

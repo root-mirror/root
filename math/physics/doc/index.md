@@ -5,7 +5,7 @@
 Several documents describing these classes are listed below:
 
   - The main histogram class is documented in class TGeoManager.
-  - [The Chapter about the Physics Vectors classes in the Users Guide](ftp://root.cern.ch/root/doc/17PhysicsVectors.pdf)
+  - [The Chapter about the Physics Vectors classes in the Users Guide](https://root.cern.ch/root/htmldoc/guides/users-guide/ROOTUsersGuide.html#physics-vectors)
 
 #### The Physics Vector package consists of five classes:
   - TVector2

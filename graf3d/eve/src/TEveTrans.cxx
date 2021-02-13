@@ -16,8 +16,7 @@
 #include "TClass.h"
 #include "TMath.h"
 
-#include "Riostream.h"
-
+#include <iostream>
 #include <cctype>
 
 #define F00  0
@@ -771,8 +770,8 @@ TVector3 TEveTrans::Multiply(const TVector3& v, Double_t w) const
 void TEveTrans::Multiply(const Double_t *vin, Double_t* vout, Double_t w) const
 {
    vout[0] = fM[F00]*vin[0] + fM[F01]*vin[1] + fM[F02]*vin[2] + fM[F03]*w;
-   vout[1] = fM[F10]*vin[0] + fM[F11]*vin[1] + fM[F12]*vin[1] + fM[F13]*w;
-   vout[2] = fM[F20]*vin[0] + fM[F21]*vin[1] + fM[F22]*vin[1] + fM[F23]*w;
+   vout[1] = fM[F10]*vin[0] + fM[F11]*vin[1] + fM[F12]*vin[2] + fM[F13]*w;
+   vout[2] = fM[F20]*vin[0] + fM[F21]*vin[1] + fM[F22]*vin[2] + fM[F23]*w;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -22,14 +22,15 @@
 #include "RooFit.h"
 
 #include "RooBlindTools.h"
-#include "RooBlindTools.h"
 
 #include "RooErrorHandler.h"
-#include "Riostream.h"
+#include "strlcpy.h"
+
+#include <iostream>
 #include <fstream>
-#include <math.h>
-#include <string.h>
-#include <ctype.h>
+#include <cmath>
+#include <cstring>
+#include <cctype>
 
 using namespace std;
 

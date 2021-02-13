@@ -25,7 +25,7 @@
  **********************************************************************************/
 
 #include "TestOptimization.h"
-#include "TMVA/DNN/Architectures/TCudnn.h"
+#include "TMVA/DNN/Architectures/Cuda.h"
 
 #include <iostream>
 

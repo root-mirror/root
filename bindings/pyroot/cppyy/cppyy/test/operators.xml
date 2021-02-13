@@ -1,0 +1,35 @@
+<lcgdict>
+
+  <class name="number" />
+  <class pattern="operator_*" />
+  <class pattern="v_opeq_*" />
+  <class pattern="YAMatrix*" />
+  <class name="AssocADD" />
+  <class name="NonAssocRADD" />
+  <class name="AssocMUL" />
+  <class name="NonAssocRMUL" />
+
+  <function name="operator*" />
+  <function name="operator+" />
+
+  <namespace name="MultiLookup" />
+  <class name="MultiLookup::Vector2" />
+  <function name="MultiLookup::operator*" />
+  <function name="MultiLookup::operator/" />
+  <function name="MultiLookup::operator+" />
+  <function name="MultiLookup::operator-" />
+
+  <class name="SomeGlobalNumber" />
+  <function name="operator-" />
+  <!-- <function name="operator+" /> -->
+  <function name="operator~" />
+
+  <namespace name="Unary" />
+  <class name="Unary::SomeNumber" />
+  <function name="Unary::operator-" />
+  <function name="Unary::operator+" />
+  <function name="Unary::operator~" />
+
+  <class name="CommaOperator" />
+
+</lcgdict>

@@ -20,7 +20,6 @@ TApplication (see TRint).
 */
 
 #include "RConfigure.h"
-#include "Riostream.h"
 #include "TApplication.h"
 #include "TException.h"
 #include "TGuiFactory.h"
@@ -37,7 +36,6 @@ TApplication (see TRint).
 #include "TVirtualPad.h"
 #include "TEnv.h"
 #include "TColor.h"
-#include "TClassTable.h"
 #include "TPluginManager.h"
 #include "TClassTable.h"
 #include "TBrowser.h"
@@ -48,12 +46,14 @@ TApplication (see TRint).
 #include "TDataMember.h"
 #include "TApplicationCommandLineOptionsHelp.h"
 #include "TPRegexp.h"
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
 
-TApplication *gApplication = 0;
+TApplication *gApplication = nullptr;
 Bool_t TApplication::fgGraphNeeded = kFALSE;
 Bool_t TApplication::fgGraphInit = kFALSE;
-TList *TApplication::fgApplications = 0;  // List of available applications
+TList *TApplication::fgApplications = nullptr;  // List of available applications
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1066,9 +1066,9 @@ void TApplication::Help(const char *line)
       gInterpreter->ProcessLine(line);
       Printf("\nROOT special commands.");
       Printf("==========================================================================");
-      Printf("   pwd                 : show current directory, pad and style");
-      Printf("   ls                  : list contents of current directory");
-      Printf("   which [file]        : shows path of macro file");
+      Printf("   .pwd                : show current directory, pad and style");
+      Printf("   .ls                 : list contents of current directory");
+      Printf("   .which [file]       : shows path of macro file");
       Printf("   .help Class         : opens the reference guide for that class");
       Printf("   .help Class::Member : opens the reference guide for function/member");
       return;

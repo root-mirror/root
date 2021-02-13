@@ -38,14 +38,12 @@ Class that contains all the data information.
 #include "TMVA/Types.h"
 #include "TEventList.h"
 #include "TCut.h"
-#include "TFile.h"
-#include "TROOT.h"
 #include "TTree.h"
 
 #include "TMVA/Configurable.h"
 
 #include <vector>
-#include <iostream>
+#include <fstream>
 
 ////////////////////////////////////////////////////////////////////////////////
 /// constructor

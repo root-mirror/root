@@ -75,8 +75,6 @@ The learning method used by the CFMlpANN is only stochastic.
 #include "TMVA/Types.h"
 
 #include "TMatrix.h"
-#include "TObjString.h"
-#include "Riostream.h"
 #include "TMath.h"
 
 #include <cstdlib>

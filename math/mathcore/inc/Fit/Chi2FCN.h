@@ -13,19 +13,16 @@
 #ifndef ROOT_Fit_Chi2FCN
 #define ROOT_Fit_Chi2FCN
 
+#include "ROOT/EExecutionPolicy.hxx"
 #include "Fit/BasicFCN.h"
-
-#include "Math/IParamFunction.h"
-
+#include "Fit/BinData.h"
+#include "Fit/FitUtil.h"
 #include "Math/IFunction.h"
 #include "Math/IFunctionfwd.h"
-
-#include "Fit/BinData.h"
-
-
-#include "Fit/FitUtil.h"
+#include "Math/IParamFunction.h"
 
 #include <memory>
+#include <vector>
 
 /**
 @defgroup FitMethodFunc Fit Method Classes
@@ -63,7 +60,7 @@ public:
    /**
       Constructor from data set (binned ) and model function
    */
-   Chi2FCN (const std::shared_ptr<BinData> & data, const std::shared_ptr<IModelFunction> & func, const ::ROOT::Fit::ExecutionPolicy &executionPolicy = ::ROOT::Fit::ExecutionPolicy::kSerial) :
+   Chi2FCN (const std::shared_ptr<BinData> & data, const std::shared_ptr<IModelFunction> & func, const ::ROOT::EExecutionPolicy &executionPolicy = ::ROOT::EExecutionPolicy::kSequential) :
       BaseFCN( data, func),
       fNEffPoints(0),
       fGrad ( std::vector<double> ( func->NPar() ) ),
@@ -74,7 +71,7 @@ public:
       Same Constructor from data set (binned ) and model function but now managed by the user
       we clone the function but not the data
    */
-   Chi2FCN ( const BinData & data, const IModelFunction & func, const ::ROOT::Fit::ExecutionPolicy &executionPolicy = ::ROOT::Fit::ExecutionPolicy::kSerial) :
+   Chi2FCN ( const BinData & data, const IModelFunction & func, const ::ROOT::EExecutionPolicy &executionPolicy = ::ROOT::EExecutionPolicy::kSequential) :
       BaseFCN(std::shared_ptr<BinData>(const_cast<BinData*>(&data), DummyDeleter<BinData>()), std::shared_ptr<IModelFunction>(dynamic_cast<IModelFunction*>(func.Clone() ) ) ),
       fNEffPoints(0),
       fGrad ( std::vector<double> ( func.NPar() ) ),
@@ -162,7 +159,7 @@ private:
    mutable unsigned int fNEffPoints;  // number of effective points used in the fit
 
    mutable std::vector<double> fGrad; // for derivatives
-   ::ROOT::Fit::ExecutionPolicy fExecutionPolicy;
+   ::ROOT::EExecutionPolicy fExecutionPolicy;
 
 };
 

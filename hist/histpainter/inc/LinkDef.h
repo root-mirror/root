@@ -14,16 +14,9 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class TPainter3dAlgorithms;
 #pragma link C++ class TGraph2DPainter;
 #pragma link C++ class TGraphPainter;
 #pragma link C++ class THistPainter;
 #pragma link C++ class TPaletteAxis+;
-
-// needed since new class definition of TGraph2DPainter
-#pragma extra_include "TGraph2D.h";
-#pragma extra_include "TGraphDelaunay.h";
-#pragma extra_include "TGraphDelaunay2D.h";
-
 
 #endif

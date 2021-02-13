@@ -80,6 +80,7 @@
 #include "TTree.h"
 #include "TF1.h"
 #include "TF2.h"
+#include "snprintf.h"
 
 #include "Math/IFunction.h"
 #include "Math/IParamFunction.h"
@@ -89,6 +90,7 @@
 #include "TUnuran.h"
 #include "TUnuranMultiContDist.h"
 #include "Math/MinimizerOptions.h"
+#include "Math/IntegratorOptions.h"
 #include "TBackCompFitter.h"
 #include "TVirtualFitter.h"
 
@@ -137,6 +139,8 @@ unsigned int __DRAW__ = 0;
 
 int gSelectedTest = 0;
 
+bool gEnableMT = kFALSE;
+
 // set a small tolerance for the tests
 // The default of 10*-2 make sometimes Simplex do not converge
 const double gDefaultTolerance = 1.E-4;
@@ -170,10 +174,8 @@ public:
    CompareResult(int _opts = cmpPars, double _tolPar = 3, double _tolChi2 = 0.01):
       refValue(0), opts(_opts), tolPar(_tolPar), tolChi2(_tolChi2) {};
 
-   CompareResult(CompareResult const& copy):
-      refValue(copy.refValue), opts(copy.opts),
-      tolPar(copy.tolPar), tolChi2(copy.tolChi2) {};
-
+   // use default copy-ctor and assignment operator
+   
    void setRefValue(struct RefValue* _refValue)
    {
       refValue = _refValue;
@@ -573,19 +575,21 @@ int testFit(const char* str1, const char* str2, const char* str3,
 
    if ( opts & testOptErr )
    {
-      assert(TVirtualFitter::GetFitter() != 0 );
-      TBackCompFitter* fitter = dynamic_cast<TBackCompFitter*>( TVirtualFitter::GetFitter() );
-      assert(fitter != 0);
-      const ROOT::Fit::FitResult& fitResult = fitter->GetFitResult();
-      if ( debug )
-         printf("err: ");
-      int n = func->GetNpar();
-      for ( int i = 0; i < n; ++i ) {
+      // TVirtualFItter is not available in all case (e.g. when running with ROOT IMT)
+      if (TVirtualFitter::GetFitter() != 0 ) {
+         TBackCompFitter* fitter = dynamic_cast<TBackCompFitter*>( TVirtualFitter::GetFitter() );
+         assert(fitter != 0);
+         const ROOT::Fit::FitResult& fitResult = fitter->GetFitResult();
          if ( debug )
-            printf("%c ", (fitResult.LowerError(i) == fitResult.UpperError(i))?'E':'D');
+            printf("err: ");
+         int n = func->GetNpar();
+         for ( int i = 0; i < n; ++i ) {
+            if ( debug )
+               printf("%c ", (fitResult.LowerError(i) == fitResult.UpperError(i))?'E':'D');
+         }
+         if ( debug )
+            printf("| ");
       }
-      if ( debug )
-         printf("| ");
    }
 
    if ( opts != 0 )
@@ -699,66 +703,86 @@ int test1DObjects(vector< vector<algoType> >& listH,
       func->SetParameters(&(listOfFunctions[j].origPars[0]));
       SetParsLimits(listOfFunctions[j].parLimits, func);
 
-      // fill an histogram
-      if ( h1 ) delete h1;
-      h1 = new TH1D("histogram1D","h1-title",nbinsX,minX,maxX);
-      for ( int i = 0; i <= h1->GetNbinsX() + 1; ++i )
-         h1->SetBinContent( i, rndm.Poisson( func->Eval( h1->GetBinCenter(i) ) ) );
-
-      double v[nbinsX + 1];
-      FillVariableRange(v, nbinsX, minX, maxX);
-      if ( h2 ) delete h2;
-      h2 = new TH1D("histogram1D_Variable","h2-title",nbinsX, v);
-      for ( int i = 0; i <= h2->GetNbinsX() + 1; ++i )
-         h2->SetBinContent( i, rndm.Poisson( func->Eval( h2->GetBinCenter(i) ) ) );
+      // create here h1 since it is used to make TGrpahs's and THnsparse
+      if (h1) delete h1;
+      h1 = new TH1D("h1", "Histogram1D Equal Bins", nbinsX, minX, maxX);
+      for (int i = 0; i <= h1->GetNbinsX() + 1; ++i)
+         h1->SetBinContent(i, rndm.Poisson(func->Eval(h1->GetBinCenter(i))));
 
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
-         delete c0; c0 = new TCanvas("c0-1D", "Histogram1D Variable");
-         if ( __DRAW__ ) h2->DrawCopy();
-         ObjectWrapper<TH1D*> owh2(h2);
-         globalStatus += status = testFitters(&owh2, func, listH, listOfFunctions[j]);
+         // fill equal bin 1D  histogram
+         TString hname = TString::Format("H1D_%d", gTestIndex);
+         h1->SetName(hname);
+
+         if (c1 && !__DRAW__) delete c1;
+         c1 = new TCanvas(TString::Format("c%d_H1D",gTestIndex), "Histogram1D");
+         ObjectWrapper<TH1D*> owh1(h1);
+         globalStatus += status = testFitters(&owh1, func, listH, listOfFunctions[j]);
+         if (__DRAW__) {
+            h1->DrawCopy();
+            func->DrawCopy("SAME");
+         }
          printf("%s\n", (status?"FAILED":"OK"));
       }
 
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
-         delete c1; c1 = new TCanvas("c1_1D", "Histogram1D");
-         if ( __DRAW__ ) h1->DrawCopy();
-         ObjectWrapper<TH1D*> owh1(h1);
-         globalStatus += status = testFitters(&owh1, func, listH, listOfFunctions[j]);
-         printf("%s\n", (status?"FAILED":"OK"));
+         // variable bin test
+         double v[nbinsX + 1];
+         FillVariableRange(v, nbinsX, minX, maxX);
+         if (h2) delete h2;
+         TString hname = TString::Format("H1D_%d", gTestIndex);
+         h2 = new TH1D(hname, "HIstogram1D Variable Bins", nbinsX, v);
+         for (int i = 0; i <= h2->GetNbinsX() + 1; ++i)
+            h2->SetBinContent(i, rndm.Poisson(func->Eval(h2->GetBinCenter(i))));
+
+         if (c0 && !__DRAW__) delete c0;
+         c0 = new TCanvas(TString::Format("c%d_H1D", gTestIndex), "Histogram1D Variable");
+         ObjectWrapper<TH1D *> owh2(h2);
+         globalStatus += status = testFitters(&owh2, func, listH, listOfFunctions[j]);
+         printf("%s\n", (status ? "FAILED" : "OK"));
+         if (__DRAW__) {
+            h2->DrawCopy();
+            func->DrawCopy("SAME");
+         }
       }
 
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
          delete g1; g1 = new TGraph(h1);
-         g1->SetName("TGraph1D");
-         g1->SetTitle("TGraph 1D - title");
-         if ( c2 ) delete c2;
-         c2 = new TCanvas("c2_1D","TGraph");
-         if ( __DRAW__ ) g1->DrawClone("AB*");
+         g1->SetName("TGraph1D");   // no need for unique name of TGraphs
+         g1->SetTitle("TGraph 1D");
+         if (c2 && !__DRAW__) delete c2;
+         c2 = new TCanvas(TString::Format("c%d_G1D", gTestIndex), "TGraph");
          ObjectWrapper<TGraph*> owg1(g1);
          globalStatus += status = testFitters(&owg1, func, listG, listOfFunctions[j]);
          printf("%s\n", (status?"FAILED":"OK"));
+         if (__DRAW__) {
+            g1->DrawClone("AB*");
+            func->DrawCopy("SAME");
+         }
       }
 
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
          delete ge1; ge1 = new TGraphErrors(h1);
          ge1->SetName("TGraphErrors1D");
-         ge1->SetTitle("TGraphErrors 1D - title");
-         if ( c3 ) delete c3;
-         c3 = new TCanvas("c3_1D","TGraphError");
-         if ( __DRAW__ ) ge1->DrawClone("AB*");
+         ge1->SetTitle("TGraphErrors 1D");
+         if (c3 && !__DRAW__) delete c3;
+         c3 = new TCanvas(TString::Format("c%d_G1D", gTestIndex), "TGraphError");
          ObjectWrapper<TGraphErrors*> owge1(ge1);
          globalStatus += status = testFitters(&owge1, func, listGE, listOfFunctions[j]);
          printf("%s\n", (status?"FAILED":"OK"));
+         if (__DRAW__) {
+            ge1->DrawClone("AB*");
+            func->DrawCopy("SAME");
+         }
       }
 
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
-         delete s1; s1 = THnSparse::CreateSparse("THnSparse 1D", "THnSparse 1D - title", h1);
+         delete s1; s1 = THnSparse::CreateSparse("THnSparse1D", "THnSparse 1D", h1);
          ObjectWrapper<THnSparse*> ows1(s1);
          globalStatus += status = testFitters(&ows1, func, listH, listOfFunctions[j]);
          printf("%s\n", (status?"FAILED":"OK"));
@@ -806,95 +830,115 @@ int test2DObjects(vector< vector<algoType> >& listH,
       func->SetParameters(&(listOfFunctions[h].origPars[0]));
       SetParsLimits(listOfFunctions[h].parLimits, func);
 
-      // fill an histogram
-      if ( h1 ) delete h1;
-      h1 = new TH2D("histogram2D","h1-title",nbinsX,minX,maxX,nbinsY,minY,maxY);
-      if ( ge1 ) delete ge1;
+      // fill histogram 2D
+      if (h1) delete h1;
+      h1 = new TH2D("h2d", "Histogram2D Equal Bins", nbinsX, minX, maxX, nbinsY, minY, maxY);
+      if (ge1)
+         delete ge1;
       ge1 = new TGraph2DErrors((h1->GetNbinsX() + 1) * (h1->GetNbinsY() + 1));
       ge1->SetName("Graph2DErrors");
       ge1->SetTitle("Graph2D with Errors");
       unsigned int counter = 0;
-      for ( int i = 0; i <= h1->GetNbinsX() + 1; ++i )
-         for ( int j = 0; j <= h1->GetNbinsY() + 1; ++j )
-         {
+      for (int i = 0; i <= h1->GetNbinsX() + 1; ++i) {
+         for (int j = 0; j <= h1->GetNbinsY() + 1; ++j) {
             double xc = h1->GetXaxis()->GetBinCenter(i);
             double yc = h1->GetYaxis()->GetBinCenter(j);
-            double content = rndm.Poisson( func->Eval( xc, yc ) );
-            h1->SetBinContent( i, j, content );
+            double content = rndm.Poisson(func->Eval(xc, yc));
+            h1->SetBinContent(i, j, content);
             ge1->SetPoint(counter, xc, yc, content);
-            ge1->SetPointError(counter,
-                               h1->GetXaxis()->GetBinWidth(i) / 2,
-                               h1->GetYaxis()->GetBinWidth(j) / 2,
-                               h1->GetBinError(i,j));
+            ge1->SetPointError(counter, h1->GetXaxis()->GetBinWidth(i) / 2, h1->GetYaxis()->GetBinWidth(j) / 2,
+                               h1->GetBinError(i, j));
             counter += 1;
          }
-
-      if ( h2 ) delete h2;
-      double x[nbinsX + 1];
-      FillVariableRange(x, nbinsX, minX, maxX);
-      double y[nbinsY + 1];
-      FillVariableRange(y, nbinsY, minY, maxY);
-      h2 = new TH2D("Histogram 2D Variable","h2-title",nbinsX, x, nbinsY, y);
-      for ( int i = 0; i <= h2->GetNbinsX() + 1; ++i )
-         for ( int j = 0; j <= h2->GetNbinsY() + 1; ++j )
-         {
-            double xc = h2->GetXaxis()->GetBinCenter(i);
-            double yc = h2->GetYaxis()->GetBinCenter(j);
-            double content = rndm.Poisson( func->Eval( xc, yc ) );
-            h2->SetBinContent( i, j, content );
-         }
-
-      gTestIndex++;
-      if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
-         if ( c0 ) delete c0;
-         c0 = new TCanvas("c0_2D", "Histogram2D Variable");
-         if ( __DRAW__ ) h2->DrawCopy();
-         ObjectWrapper<TH2D*> owh2(h2);
-         globalStatus += status = testFitters(&owh2, func, listH, listOfFunctions[h]);
-         printf("%s\n", (status?"FAILED":"OK"));
       }
 
+      // 2D Equal bins test
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
-         if ( c1 ) delete c1;
-         c1 = new TCanvas("c1_2D", "Histogram2D");
-         if ( __DRAW__ ) h1->DrawCopy();
+         TString hname = TString::Format("H2D_%d", gTestIndex);
+         h1->SetName(hname);
+         if ( c1 && ! __DRAW__) delete c1;
+         c1 = new TCanvas(TString::Format("c%d_H2D", gTestIndex), "Histogram2D");
          ObjectWrapper<TH2D*> owh1(h1);
          globalStatus += status = testFitters(&owh1, func, listH, listOfFunctions[h]);
          printf("%s\n", (status?"FAILED":"OK"));
+         if (__DRAW__) {
+            h1->DrawCopy("COLZ");
+            func->DrawCopy("SAME");
+         }
       }
 
-      if ( g1 ) delete g1;
-      g1 = new TGraph2D(h1);
-      g1->SetName("TGraph2D");
-      g1->SetTitle("TGraph 2D - title");
-
+      // 2D Variable bins test
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
-         if ( c2 ) delete c2;
-         c2 = new TCanvas("c2_2D","TGraph");
-         if ( __DRAW__ ) g1->DrawClone("AB*");
+         // fill and test 2D variable bins histograms
+         if (h2) delete h2;
+         double x[nbinsX + 1];
+         FillVariableRange(x, nbinsX, minX, maxX);
+         double y[nbinsY + 1];
+         FillVariableRange(y, nbinsY, minY, maxY);
+         TString hname = TString::Format("H2D_%d", gTestIndex);
+         h2 = new TH2D(hname, "Histogram2D Variable Bins", nbinsX, x, nbinsY, y);
+         for (int i = 0; i <= h2->GetNbinsX() + 1; ++i) {
+            for (int j = 0; j <= h2->GetNbinsY() + 1; ++j) {
+               double xc = h2->GetXaxis()->GetBinCenter(i);
+               double yc = h2->GetYaxis()->GetBinCenter(j);
+               double content = rndm.Poisson(func->Eval(xc, yc));
+               h2->SetBinContent(i, j, content);
+            }
+         }
+
+         if (c0 && ! __DRAW__) delete c0;
+         c0 = new TCanvas(TString::Format("c%d_H2D", gTestIndex), "Histogram2D Variable");
+         ObjectWrapper<TH2D *> owh2(h2);
+         globalStatus += status = testFitters(&owh2, func, listH, listOfFunctions[h]);
+         printf("%s\n", (status ? "FAILED" : "OK"));
+         if (__DRAW__) {
+            h2->DrawCopy("COLZ");
+            func->DrawCopy("SAME");
+         }
+      }
+
+      // TGraph 2D test
+      gTestIndex++;
+      if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
+         if (g1) delete g1;
+         g1 = new TGraph2D(h1);
+         g1->SetName("TGraph2D");
+         g1->SetTitle("TGraph 2D");
+
+         if ( c2 && !__DRAW__) delete c2;
+         c2 = new TCanvas(TString::Format("c%d_G2D", gTestIndex), "TGraph");
          ObjectWrapper<TGraph2D*> owg1(g1);
          globalStatus += status = testFitters(&owg1, func, listG, listOfFunctions[h]);
          printf("%s\n", (status?"FAILED":"OK"));
+         if (__DRAW__) {
+            //g1->DrawClone("AB*");
+            g1->DrawClone("surf1");
+            func->DrawCopy("SAME");
+         }
       }
 
-      ge1->SetName("TGraphErrors2DGE");
-      ge1->SetTitle("TGraphErrors 2DGE - title");
 
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
-         if ( c3 ) delete c3;
-         c3 = new TCanvas("c3_2DGE","TGraphError");
-         if ( __DRAW__ ) ge1->DrawClone("AB*");
+         ge1->SetName("TGraphErrors2DGE");
+         ge1->SetTitle("TGraphErrors 2D");
+
+         if (c3 && !__DRAW__) delete c3;
+         c3 = new TCanvas(TString::Format("c%d_G2DE", gTestIndex), "TGraphError");
          ObjectWrapper<TGraph2DErrors*> owge1(ge1);
          globalStatus += status = testFitters(&owge1, func, listGE, listOfFunctions[h]);
          printf("%s\n", (status?"FAILED":"OK"));
+         if (__DRAW__) {
+            ge1->DrawClone("AB*");
+            func->DrawCopy("SAME");
+         }
       }
 
       gTestIndex++;
       if (gSelectedTest == 0 || gSelectedTest == gTestIndex) {
-         delete s1; s1 = THnSparse::CreateSparse("THnSparse2D", "THnSparse 2D - title", h1);
+         delete s1; s1 = THnSparse::CreateSparse("THnSparse2D", "THnSparse 2D", h1);
          ObjectWrapper<THnSparse*> ows1(s1);
          globalStatus += status = testFitters(&ows1, func, listH, listOfFunctions[h]);
          printf("%s\n", (status?"FAILED":"OK"));
@@ -1047,35 +1091,35 @@ int testUnBinnedFit(int n = 10000)
 // fitting functions.
 void init_structures()
 {
-   commonAlgos.push_back( algoType( "Minuit",      "Migrad",      "Q0", CompareResult())  );
-   commonAlgos.push_back( algoType( "Minuit",      "Minimize",    "Q0", CompareResult())  );
-   commonAlgos.push_back( algoType( "Minuit",      "Scan",        "Q0", CompareResult(0)) );
-   commonAlgos.push_back( algoType( "Minuit",      "Seek",        "Q0", CompareResult())  );
-   commonAlgos.push_back( algoType( "Minuit2",     "Migrad",      "Q0", CompareResult())  );
-   commonAlgos.push_back( algoType( "Minuit2",     "Minimize",    "Q0", CompareResult())  );
-   commonAlgos.push_back( algoType( "Minuit2",     "Scan",        "Q0", CompareResult(0)) );
-   commonAlgos.push_back( algoType( "Minuit2",     "Fumili2",     "Q0", CompareResult())  );
+   commonAlgos.push_back( algoType( "Minuit",      "Migrad",      "Q0X", CompareResult())  );
+   commonAlgos.push_back( algoType( "Minuit",      "Minimize",    "Q0X", CompareResult())  );
+   commonAlgos.push_back( algoType( "Minuit",      "Scan",        "Q0X", CompareResult(0)) );
+   commonAlgos.push_back( algoType( "Minuit",      "Seek",        "Q0X", CompareResult())  );
+   commonAlgos.push_back( algoType( "Minuit2",     "Migrad",      "Q0X", CompareResult())  );
+   commonAlgos.push_back( algoType( "Minuit2",     "Minimize",    "Q0X", CompareResult())  );
+   commonAlgos.push_back( algoType( "Minuit2",     "Scan",        "Q0X", CompareResult(0)) );
+   commonAlgos.push_back( algoType( "Minuit2",     "Fumili2",     "Q0X", CompareResult())  );
 #ifdef R__HAS_MATHMORE
-   commonAlgos.push_back( algoType( "GSLMultiMin", "conjugatefr", "Q0", CompareResult()) );
-   commonAlgos.push_back( algoType( "GSLMultiMin", "conjugatepr", "Q0", CompareResult()) );
-   commonAlgos.push_back( algoType( "GSLMultiMin", "bfgs2",       "Q0", CompareResult()) );
-   commonAlgos.push_back( algoType( "GSLSimAn",    "",            "Q0", CompareResult()) );
+   commonAlgos.push_back( algoType( "GSLMultiMin", "conjugatefr", "Q0X", CompareResult()) );
+   commonAlgos.push_back( algoType( "GSLMultiMin", "conjugatepr", "Q0X", CompareResult()) );
+   commonAlgos.push_back( algoType( "GSLMultiMin", "bfgs2",       "Q0X", CompareResult()) );
+   commonAlgos.push_back( algoType( "GSLSimAn",    "",            "Q0X", CompareResult()) );
 #endif
 
 // simplex
-   simplexAlgos.push_back( algoType( "Minuit",      "Simplex",     "Q0", CompareResult()) );
+   simplexAlgos.push_back( algoType( "Minuit",      "Simplex",     "Q0X", CompareResult()) );
    //simplex MInuit2 does not work well (needs to be checked)
    // simplexAlgos.push_back( algoType( "Minuit2",     "Simplex",     "Q0", CompareResult())  );
 
-   specialAlgos.push_back( algoType( "Minuit",      "Migrad",      "QE0", CompareResult()) );
-   specialAlgos.push_back( algoType( "Minuit",      "Migrad",      "QW0", CompareResult()) );
+   specialAlgos.push_back( algoType( "Minuit",      "Migrad",      "QE0X", CompareResult()) );
+   specialAlgos.push_back( algoType( "Minuit",      "Migrad",      "QW0X", CompareResult()) );
 
-   noGraphAlgos.push_back( algoType( "Minuit",      "Migrad",      "Q0I",  CompareResult()) );
-   noGraphAlgos.push_back( algoType( "Minuit",      "Migrad",      "QL0",  CompareResult()) );
-   noGraphAlgos.push_back( algoType( "Minuit",      "Migrad",      "QLI0", CompareResult()) );
+   noGraphAlgos.push_back( algoType( "Minuit",      "Migrad","      Q0IX", CompareResult()) );
+   noGraphAlgos.push_back( algoType( "Minuit",      "Migrad","      QL0", CompareResult()) );
+   noGraphAlgos.push_back( algoType( "Minuit",      "Migrad","     QLI0", CompareResult()) );
 
-// Gradient algorithms
-// No Minuit algorithms to use with the 'G' options until some stuff is fixed.
+   // Gradient algorithms
+   // No Minuit algorithms to use with the 'G' options until some stuff is fixed.
    noGraphAlgos.push_back( algoType( "Minuit",      "Migrad",      "GQ0", CompareResult()) );
 //    noGraphAlgos.push_back( algoType( "Minuit",      "Minimize",    "GQ0", CompareResult()) );
    noGraphAlgos.push_back( algoType( "Minuit2",     "Migrad",      "GQ0", CompareResult()) );
@@ -1112,9 +1156,9 @@ void init_structures()
    histGaus2D.push_back( algoType( "Minuit",      "Migrad",      "QE0",  CompareResult(cmpPars,6)) );
    histGaus2D.push_back( algoType( "Minuit",      "Migrad",      "QW0",  CompareResult())          );
    // noGraphAlgos
-   histGaus2D.push_back( algoType( "Minuit",      "Migrad",      "Q0I",  CompareResult(cmpPars,6)) );
+   histGaus2D.push_back( algoType( "Minuit",    "Migrad", "       Q0I",  CompareResult(cmpPars,6)) );
    histGaus2D.push_back( algoType( "Minuit",      "Migrad",      "QL0",  CompareResult())          );
-   histGaus2D.push_back( algoType( "Minuit",      "Migrad",      "QLI0", CompareResult())          );
+   histGaus2D.push_back( algoType( "Minuit",    "Migrad", "      QLI0", CompareResult())          );
 
 // Gradient algorithms
    histGaus2D.push_back( algoType( "Minuit",      "Migrad",      "GQ0", CompareResult()) );
@@ -1204,6 +1248,10 @@ int stressHistoFit()
 {
    rndm.SetSeed(10);
 
+   if (gEnableMT) ROOT::EnableImplicitMT();
+
+   ROOT::Math::IntegratorOneDimOptions::SetDefaultIntegrator("Adaptive");
+
    init_structures();
 
    int iret = 0;
@@ -1218,6 +1266,7 @@ int stressHistoFit()
    std::cout << "\nTest 1D and 2D objects\n\n";
    iret += test1DObjects(listTH1DAlgos, listAlgosTGraph, listAlgosTGraphError, l1DFunctions);
    iret += test2DObjects(listTH2DAlgos, listAlgosTGraph2D, listAlgosTGraph2DError, l2DFunctions);
+
    std::cout << "\nTest Linear fits\n\n";
    iret += test1DObjects(listLinearAlgos, listLinearAlgos, listLinearAlgos, l1DLinearFunctions);
    iret += test2DObjects(listLinearAlgos, listLinearAlgos, listLinearAlgos, l2DLinearFunctions);
@@ -1242,8 +1291,6 @@ int main(int argc, char** argv)
 {
 
    TApplication* theApp = 0;
-
-
 
    Int_t  verbose     =      0;
    Int_t testNumber   =      0;
@@ -1271,6 +1318,9 @@ int main(int argc, char** argv)
       } else if (arg == "-g") {
          cout << "stressHistoFit: running in graphics mode " << endl;
          doDraw = kTRUE;
+      } else if (arg == "-t") {
+         cout << "stressHistoFit: running in multi-thread mode " << endl;
+         gEnableMT = kTRUE;
       } else if (arg == "-h") {
          cout << "usage: stressHistoFit [ options ] " << endl;
          cout << "" << endl;
@@ -1279,6 +1329,7 @@ int main(int argc, char** argv)
          cout << "       -g        : create a TApplication and produce plots" << endl;
          cout << "       -v/-vv    : set verbose mode (show result of each regression test) or very verbose mode (show all roofit output as well)" << endl;
          cout << "       -d N      : set ROOT gDebug flag to N" << endl ;
+         cout << "       -t        : set ROOT to run in Multi-thread mode" << endl;
          cout << " " << endl ;
          return 0 ;
       }

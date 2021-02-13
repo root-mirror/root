@@ -14,8 +14,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class FunctionMinimum;
 class MnFcn;
@@ -28,19 +27,18 @@ class MinimumSeed;
 class ScanBuilder : public MinimumBuilder {
 
 public:
+   ScanBuilder() {}
 
-  ScanBuilder() {}
+   ~ScanBuilder() {}
 
-  ~ScanBuilder() {}
-
-  virtual FunctionMinimum Minimum(const MnFcn&, const GradientCalculator&, const MinimumSeed&, const MnStrategy&, unsigned int, double) const;
+   virtual FunctionMinimum Minimum(const MnFcn &, const GradientCalculator &, const MinimumSeed &, const MnStrategy &,
+                                   unsigned int, double) const;
 
 private:
-
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_ScanBuilder
+#endif // ROOT_Minuit2_ScanBuilder

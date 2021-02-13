@@ -6,7 +6,7 @@
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 from __future__ import print_function
 import ROOT
@@ -29,13 +29,13 @@ f = ROOT.RooRealVar("f", "f", 0., 1.)
 model = ROOT.RooAddPdf(
     "model", "model", ROOT.RooArgList(gx, px), ROOT.RooArgList(f))
 
-# Generated 10000 events in (x,y) from p.d.f. model
+# Generated 10000 events in (x,y) from pdf model
 modelData = model.generate(ROOT.RooArgSet(x), 10000)
 
 # Fit full range
 # ---------------------------
 
-# Fit p.d.f to all data
+# Fit pdf to all data
 r_full = model.fitTo(modelData, ROOT.RooFit.Save(ROOT.kTRUE))
 
 # Fit partial range
@@ -44,7 +44,7 @@ r_full = model.fitTo(modelData, ROOT.RooFit.Save(ROOT.kTRUE))
 # Define "signal" range in x as [-3,3]
 x.setRange("signal", -3, 3)
 
-# Fit p.d.f only to data in "signal" range
+# Fit pdf only to data in "signal" range
 r_sig = model.fitTo(modelData, ROOT.RooFit.Save(
     ROOT.kTRUE), ROOT.RooFit.Range("signal"))
 

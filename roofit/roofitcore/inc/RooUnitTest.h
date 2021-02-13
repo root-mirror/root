@@ -15,8 +15,7 @@
 #ifndef ROO_UNIT_TEST
 #define ROO_UNIT_TEST
 
-#include "Rtypes.h"
-#include "TNamed.h" 
+#include "TNamed.h"
 #include "RooTable.h"
 #include "RooWorkspace.h"
 #include "RooFitResult.h"
@@ -25,7 +24,7 @@
 #include "TH1.h"
 #include <list>
 #include <string>
-#include <map>
+#include <utility>
 
 /*
  * The tolerance for the curve test is put to 0.4 instead of 0.2 to take into

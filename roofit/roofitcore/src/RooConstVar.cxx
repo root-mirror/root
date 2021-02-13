@@ -22,26 +22,22 @@
 RooConstVar represent a constant real-valued object
 **/
 
-
-#include "RooFit.h"
-
-#include "Riostream.h"
 #include "RooConstVar.h"
+#include "RunContext.h"
 
 using namespace std;
 
 ClassImp(RooConstVar);
-  ;
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor with value
-///_fast = kTRUE ;
-
 RooConstVar::RooConstVar(const char *name, const char *title, Double_t value) : 
-  RooAbsReal(name,title), _value(value)
-{  
+  RooAbsReal(name,title)
+{
+  _fast = true;
+  _value = value;
   setAttribute("Constant",kTRUE) ;
 }
 
@@ -49,22 +45,23 @@ RooConstVar::RooConstVar(const char *name, const char *title, Double_t value) :
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Copy constructor
-///_fast = kTRUE ;
-
 RooConstVar::RooConstVar(const RooConstVar& other, const char* name) : 
-  RooAbsReal(other, name), _value(other._value)
+  RooAbsReal(other, name)
 {
+  _fast = true;
 }
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Destructor
+/// Return batch with 1 constant element.
+RooSpan<const double> RooConstVar::getValues(RooBatchCompute::RunContext& evalData, const RooArgSet*) const {
+  auto item = evalData.spans.find(this);
+  if (item == evalData.spans.end()) {
+    return evalData.spans[this] = {&_value, 1};
+  }
 
-RooConstVar::~RooConstVar() 
-{
+  return evalData.spans[this];
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Write object contents to stream

@@ -39,7 +39,7 @@ class REvePointSet : public REveElement,
    friend class REvePointSetArray;
 
 private:
-   REvePointSet &operator=(const REvePointSet &); // Not implemented
+   REvePointSet &operator=(const REvePointSet &) = delete;
 
 protected:
    std::vector<REveVector> fPoints;
@@ -94,8 +94,8 @@ class REvePointSetArray : public REveElement,
                           public REveProjectable,
                           public TAttMarker
 {
-   REvePointSetArray(const REvePointSetArray &);            // Not implemented
-   REvePointSetArray &operator=(const REvePointSetArray &); // Not implemented
+   REvePointSetArray(const REvePointSetArray &) = delete;
+   REvePointSetArray &operator=(const REvePointSetArray &) = delete;
 
 protected:
    REvePointSet **fBins{nullptr};       //  Pointers to subjugated REvePointSet's.
@@ -147,8 +147,8 @@ class REvePointSetProjected : public REvePointSet,
                               public REveProjected
 {
 private:
-   REvePointSetProjected(const REvePointSetProjected &);            // Not implemented
-   REvePointSetProjected &operator=(const REvePointSetProjected &); // Not implemented
+   REvePointSetProjected(const REvePointSetProjected &) = delete;
+   REvePointSetProjected &operator=(const REvePointSetProjected &) = delete;
 
 protected:
    void SetDepthLocal(Float_t d) override;

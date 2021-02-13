@@ -17,6 +17,7 @@
 
 #include "TGEventHandler.h"
 #include "TGWindow.h"
+#include "TVirtualX.h"
 
 ClassImp(TGEventHandler);
 

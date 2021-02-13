@@ -40,6 +40,7 @@
 #include "XProofProtUtils.h"
 #include "Bytes.h"
 
+#include <cstdio>
 
 namespace XPD {
 

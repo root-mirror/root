@@ -37,6 +37,7 @@ http://www.idav.ucdavis.edu/education/CAGDNotes/Bernstein-Polynomials.pdf
 #include "RooAbsReal.h"
 #include "RooRealVar.h"
 #include "RooArgList.h"
+#include "RooBatchCompute.h"
 
 #include "TMath.h"
 
@@ -55,7 +56,7 @@ RooBernstein::RooBernstein()
 /// Constructor
 
 RooBernstein::RooBernstein(const char* name, const char* title,
-                           RooAbsReal& x, const RooArgList& coefList):
+                           RooAbsRealLValue& x, const RooArgList& coefList):
   RooAbsPdf(name, title),
   _x("x", "Dependent", this, x),
   _coefList("coefficients","List of coefficients",this)
@@ -84,10 +85,22 @@ RooBernstein::RooBernstein(const RooBernstein& other, const char* name) :
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// Force use of a given normalisation range.
+/// Needed for functions or PDFs (e.g. RooAddPdf) whose shape depends on the choice of normalisation.
+void RooBernstein::selectNormalizationRange(const char* rangeName, Bool_t force)
+{
+  if (rangeName && (force || !_refRangeName.empty())) {
+     _refRangeName = rangeName;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Double_t RooBernstein::evaluate() const
 {
-  Double_t xmin = _x.min();
-  Double_t x = (_x - xmin) / (_x.max() - xmin); // rescale to [0,1]
+  double xmax,xmin;
+  std::tie(xmin, xmax) = _x->getRange(_refRangeName.empty() ? nullptr : _refRangeName.c_str());
+  Double_t x = (_x - xmin) / (xmax - xmin); // rescale to [0,1]
   Int_t degree = _coefList.getSize() - 1; // n+1 polys of degree n
   RooFIter iter = _coefList.fwdIterator();
 
@@ -128,90 +141,25 @@ Double_t RooBernstein::evaluate() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Compute multiple values of Bernstein distribution.  
+RooSpan<double> RooBernstein::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  RooSpan<const double> xData = _x->getValues(evalData, normSet);
+  const size_t batchSize = xData.size();  
+  RooSpan<double> output = evalData.makeBatch(this, batchSize);
 
-namespace {
-//Author: Emmanouil Michalainas, CERN 16 AUGUST 2019  
-
-void compute(  size_t batchSize, double xmax, double xmin,
-               double * __restrict output,
-               const double * __restrict const xData,
-               const RooListProxy& coefList)
-{
-  constexpr size_t block = 128;
-  const int nCoef = coefList.size();
-  const int degree = nCoef-1;
-  double X[block], _1_X[block], powX[block], pow_1_X[block];
-  double *Binomial = new double[nCoef+5];
-  //Binomial stores values c(degree,i) for i in [0..degree]
-  
-  Binomial[0] = 1.0;
-  for (int i=1; i<=degree; i++) {
-    Binomial[i] = Binomial[i-1]*(degree-i+1)/i;
+  const int nCoef = _coefList.size();
+  std::vector<double> coef(nCoef);
+  for (int i=0; i<nCoef; i++) {
+    coef[i] = static_cast<RooAbsReal&>(_coefList[i]).getVal();
   }
-  
-  for (size_t i=0; i<batchSize; i+=block) {
-    const size_t stop = (i+block > batchSize) ? batchSize-i : block;
-    
-    //initialization
-    for (size_t j=0; j<stop; j++) {
-      powX[j] = pow_1_X[j] = 1.0;
-      X[j] = (xData[i+j]-xmin) / (xmax-xmin);
-      _1_X[j] = 1-X[j];
-      output[i+j] = 0.0;
-    }
-    
-    //raising 1-x to the power of degree
-    for (int k=2; k<=degree; k+=2) 
-      for (size_t j=0; j<stop; j++) 
-        pow_1_X[j] *= _1_X[j]*_1_X[j];
-
-    if (degree%2 == 1)
-      for (size_t j=0; j<stop; j++) 
-        pow_1_X[j] *= _1_X[j];
-        
-    //inverting 1-x ---> 1/(1-x)
-    for (size_t j=0; j<stop; j++) 
-      _1_X[j] = 1/_1_X[j];
-
-    for (int k=0; k<nCoef; k++) {
-      double coef = static_cast<RooAbsReal&>(coefList[k]).getVal();
-      for (size_t j=0; j<stop; j++) {
-        output[i+j] += coef*Binomial[k]*powX[j]*pow_1_X[j];
-        
-        //calculating next power for x and 1-x
-        powX[j] *= X[j];
-        pow_1_X[j] *= _1_X[j];
-      }
-    }
-  }
-  delete[] Binomial;
-}
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-RooSpan<double> RooBernstein::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  auto xData = _x.getValBatch(begin, batchSize);
-  if (xData.empty()) {
-        return {};
-  }
-  
-  batchSize = xData.size();
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-  const double xmax = _x.max();
-  const double xmin = _x.min();
-  compute(batchSize, xmax, xmin, output.data(), xData.data(), _coefList);
+  RooBatchCompute::dispatch->computeBernstein(batchSize, output.data(), xData.data(), _x.min(), _x.max(), coef);
   return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// No analytical calculation available (yet) of integrals over subranges
 
-Int_t RooBernstein::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName) const
+Int_t RooBernstein::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const
 {
-  if (rangeName && strlen(rangeName)) {
-    return 0 ;
-  }
 
   if (matchArgs(allVars, analVars, _x)) return 1;
   return 0;
@@ -222,7 +170,12 @@ Int_t RooBernstein::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVar
 Double_t RooBernstein::analyticalIntegral(Int_t code, const char* rangeName) const
 {
   R__ASSERT(code==1) ;
-  Double_t xmin = _x.min(rangeName); Double_t xmax = _x.max(rangeName);
+
+  double xmax,xmin;
+  std::tie(xmin, xmax) = _x->getRange(_refRangeName.empty() ? nullptr : _refRangeName.c_str());
+  const Double_t xlo = (_x.min(rangeName) - xmin) / (xmax - xmin);
+  const Double_t xhi = (_x.max(rangeName) - xmin) / (xmax - xmin);
+
   Int_t degree= _coefList.getSize()-1; // n+1 polys of degree n
   Double_t norm(0) ;
 
@@ -234,7 +187,7 @@ Double_t RooBernstein::analyticalIntegral(Int_t code, const char* rangeName) con
     // where the integral is straight forward.
     temp = 0;
     for (int j=i; j<=degree; ++j){ // power basis≈ß
-      temp += pow(-1.,j-i) * TMath::Binomial(degree, j) * TMath::Binomial(j,i) / (j+1);
+      temp += pow(-1.,j-i) * TMath::Binomial(degree, j) * TMath::Binomial(j,i) * (TMath::Power(xhi,j+1) - TMath::Power(xlo,j+1)) / (j+1);
     }
     temp *= ((RooAbsReal*)iter.next())->getVal(); // include coeff
     norm += temp; // add this basis's contribution to total

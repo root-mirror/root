@@ -13,6 +13,10 @@
 #define ROO_PARAMHISTFUNC
 
 #include <map>
+#include <vector>
+#include <list>
+#include <string>
+
 #include "RooAbsReal.h"
 #include "RooRealProxy.h"
 #include "RooListProxy.h"

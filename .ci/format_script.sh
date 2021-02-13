@@ -15,14 +15,16 @@ if [ "$RESULT_OUTPUT" == "no modified files to format" ] \
 else
   echo "clang-format failed."
   echo "To reproduce it locally please run"
-  echo -e "\tgit checkout $TRAVIS_BRANCH"
+  echo -e "\tgit checkout $TRAVIS_PULL_REQUEST_BRANCH"
   echo -e "\tgit-clang-format --commit $BASE_COMMIT --diff --binary $(which clang-format)"
   echo "$RESULT_OUTPUT"
 
   echo -e "\n\nPlease apply the code formatting changes without bloating the history."
   echo -e "\tConsider running:"
-  echo -e "\t\tgit checkout $TRAVIS_BRANCH"
-  echo -e "\t\tgit rebase -i --autosquash -x 'git-clang-format-7 master && git commit -a --amend --no-edit' master"
+  echo -e "\t\tgit checkout $TRAVIS_PULL_REQUEST_BRANCH"
+  echo -e "\t\tgit rebase -i -x \"git-clang-format-7 master && git commit -a --allow-empty --fixup=HEAD\" --strategy-option=theirs origin/master"
+  echo -e "\t Then inspect the results with git log --oneline"
+  echo -e "\t Then squash without poluting the history with: git rebase --autosquash -i master"
 
   exit 1
 fi

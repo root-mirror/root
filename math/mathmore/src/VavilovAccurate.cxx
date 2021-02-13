@@ -38,7 +38,6 @@
 
 #include <cassert>
 #include <iostream>
-#include <iomanip>
 #include <cmath>
 #include <limits>
 
@@ -46,7 +45,7 @@
 namespace ROOT {
 namespace Math {
 
-VavilovAccurate *VavilovAccurate::fgInstance = 0;
+VavilovAccurate *VavilovAccurate::fgInstance = nullptr;
 
 
 VavilovAccurate::VavilovAccurate(double kappa, double beta2, double epsilonPM, double epsilon)

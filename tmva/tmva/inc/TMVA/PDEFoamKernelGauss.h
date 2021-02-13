@@ -30,6 +30,7 @@
 
 #include "TMVA/PDEFoam.h"
 #include "TMVA/PDEFoamKernelBase.h"
+#include <vector>
 
 namespace TMVA
 {

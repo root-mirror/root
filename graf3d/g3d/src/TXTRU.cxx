@@ -10,14 +10,14 @@
  *************************************************************************/
 
 #include "TXTRU.h"
-#include "TVirtualPad.h"
 
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TGeometry.h"
 #include "TMath.h"
 
-#include "Riostream.h"
+#include <iostream>
+#include <iomanip>
 
 ClassImp(TXTRU);
 

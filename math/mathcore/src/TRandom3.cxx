@@ -15,12 +15,12 @@ Random number generator class based on
 For more information see the Mersenne Twister homepage
   [http://www.math.keio.ac.jp/~matumoto/emt.html]
 
-Advantage: 
+Advantage:
 
 -  large period 2**19937 -1
 -  relativly fast (slightly slower than TRandom2 but much faster than TRandom1)
 
-Drawback: 
+Drawback:
 -  a relative large internal state of 624 integers 
 - generate only 32 random bits 
 - not passing all the random generator tests. It fails some tests in TestU01
@@ -58,14 +58,13 @@ fast as Mersenne and Twister is MIXMAX (TRandomMixMax).
 #include "TRandom3.h"
 #include "TBuffer.h"
 #include "TRandom2.h"
-#include "TClass.h"
 #include "TUUID.h"
 
 TRandom *gRandom = new TRandom3();
 #ifdef R__COMPLETE_MEM_TERMINATION
 namespace {
    struct TRandomCleanup {
-      ~TRandomCleanup() { delete gRandom; gRandom = 0; }
+      ~TRandomCleanup() { delete gRandom; gRandom = nullptr; }
    };
    static TRandomCleanup gCleanupRandom;
 }

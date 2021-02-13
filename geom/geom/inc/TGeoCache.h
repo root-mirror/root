@@ -15,7 +15,11 @@
 
 #include "TGeoNode.h"
 
+#ifdef R__LESS_INCLUDES
+struct TGeoStateInfo;
+#else
 #include "TGeoStateInfo.h"
+#endif
 
 // forward declarations
 class TGeoManager;
@@ -74,8 +78,8 @@ private:
    TGeoStateInfo        *fPWInfo;           //! State info for the parallel world
    Int_t                *fNodeIdArray;      //! array of node id's
 
-   TGeoNodeCache(const TGeoNodeCache&); // Not implemented
-   TGeoNodeCache& operator=(const TGeoNodeCache&); // Not implemented
+   TGeoNodeCache(const TGeoNodeCache&) = delete;
+   TGeoNodeCache& operator=(const TGeoNodeCache&) = delete;
 
 public:
    TGeoNodeCache();
@@ -109,7 +113,7 @@ public:
    const char          *GetPath();
    Int_t                GetStackLevel() const  {return fStackLevel;}
    Int_t                GetNodeId() const;
-   Bool_t               HasIdArray() const {return (fNodeIdArray)?kTRUE:kFALSE;}
+   Bool_t               HasIdArray() const { return fNodeIdArray ? kTRUE : kFALSE; }
    Bool_t               IsDummy() const {return kTRUE;}
 
    void                 LocalToMaster(const Double_t *local, Double_t *master) const;

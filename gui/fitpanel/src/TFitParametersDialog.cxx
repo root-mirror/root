@@ -20,7 +20,6 @@
 #include "TFitParametersDialog.h"
 #include "TF1.h"
 #include "TGButton.h"
-#include "TGFrame.h"
 #include "TGLabel.h"
 #include "TGLayout.h"
 #include "TGTextEntry.h"

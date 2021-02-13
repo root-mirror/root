@@ -56,9 +56,8 @@ subtree, defined to be the subtree with the best quality index for the validatio
 
 #include "RtypesCore.h"
 
-#include <fstream>
 #include <limits>
-#include <math.h>
+#include <cmath>
 
 using namespace TMVA;
 

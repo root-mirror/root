@@ -17,16 +17,11 @@
 
 #include "TEveGValuators.h"
 
-#include "TVirtualPad.h"
-#include "TColor.h"
-
 #include "TGedEditor.h"
 #include "TAttMarkerEditor.h"
 #include "TGLabel.h"
 #include "TG3DLine.h"
 #include "TGButton.h"
-#include "TGNumberEntry.h"
-#include "TGColorSelect.h"
 #include "TGDoubleSlider.h"
 
 /** \class TEveTrackEditor

@@ -2,9 +2,8 @@
 <html lang="en">
    <head>
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <title>Eve7</title>
-      <script type="text/javascript" src="jsrootsys/scripts/JSRootCore.js"></script>
+      <script type="text/javascript" src="jsrootsys/scripts/JSRoot.core.js"></script>
       <style>
          html { height: 100%; }
          body { min-height: 100%; margin: 0; overflow: hidden }
@@ -27,37 +26,34 @@
 
       <script type='text/javascript'>
 
-        function InitUI(handle) {
-
-           sap.ui.require(["sap/ui/core/ComponentContainer"], function(ComponentContainer) {
-              new ComponentContainer({
-                 name: "rootui5.eve7",
-                 manifest: true,
-                 async: true,
-                 settings: {
-                    componentData: {
-                       conn_handle: handle
-                    }
-                 },
-                 height: "100%"
-              }).placeAt("EveDiv")
-           });
-        }
-
-        if (JSROOT.GetUrlOption('nogl')!==null) JSROOT.gStyle.NoWebGL = true;
-        if (JSROOT.GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
-        
-        JSROOT.ConnectWebWindow({
-           prereq: "openui5",
-//           openui5src: "jsroot",    // use JSROOT provided package, experimental
-//           openui5src: "https://openui5.hana.ondemand.com/",
-           openui5libs: "sap.ui.core", // customize openui5 libs
+        JSROOT.connectWebWindow({
+           // socket_kind: "file",  // used for offline
+           prereq: "painter;openui5",
            prereq_logdiv: "EveDiv",
-           callback: InitUI
+//           openui5src: "jsroot",    // use JSROOT provided package, experimental
+//           openui5src: "https://openui5.hana.ondemand.com/1.82.2/",
+           openui5libs: "sap.ui.core" // customize openui5 libs
+        }).then(handle => {
+//          sap.ui.loader.config({ paths: { rootui5: "../rootui5/" } });  // used for offline
+
+            sap.ui.require(["sap/ui/core/ComponentContainer"], ComponentContainer => {
+               new ComponentContainer({
+                  name: "rootui5.eve7",
+                  manifest: true,
+                  async: true,
+                  settings: {
+                     componentData: {
+                        conn_handle: handle
+                     }
+                  },
+                  height: "100%"
+               }).placeAt("EveDiv")
+            });
+
         });
 
-      </script>
-   
+        </script>
+
    </body>
-   
+
 </html>

@@ -22,8 +22,6 @@
 #include "TColor.h"
 #include "TString.h"
 #include "TGLabel.h"
-#include "TClass.h"
-#include "TGTab.h"
 #include "TGComboBox.h"
 #include "TError.h"
 

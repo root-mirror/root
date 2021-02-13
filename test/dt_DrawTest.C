@@ -85,11 +85,11 @@ TDirectory* GenerateDrawHist(TTree *tree, int quietLevel = 0, int level = 3)
    DrawSkippable(tree,"fH.GetMean()","hHmean");
    if (level>0) DrawSkippable(tree,"fH.fXaxis.fXmax","hHAxisMax");
    if (level>0) DrawSkippable(tree,"fH.fXaxis.GetXmax()","hHAxisGetMax");
-   DrawSkippable(tree,"fH.GetXaxis().GetXmax()","hHGetAxisGetMax",(level>0));
-   DrawSkippable(tree,"fH.GetXaxis().fXmax","hHGetAxisMax",(level>0));
-   DrawSkippable(tree,"GetHistogram().GetXaxis().GetXmax()","hGetHGetAxisMax",
+   DrawSkippable(tree,"fH.GetXaxis()->GetXmax()","hHGetAxisGetMax",(level>0));
+   DrawSkippable(tree,"fH.GetXaxis()->fXmax","hHGetAxisMax",(level>0));
+   DrawSkippable(tree,"GetHistogram()->GetXaxis()->GetXmax()","hGetHGetAxisMax",
                  (level>0&&gHasLibrary));
-   DrawSkippable(tree,"event.GetHistogram().GetXaxis().GetXmax()",
+   DrawSkippable(tree,"event.GetHistogram()->GetXaxis()->GetXmax()",
                  "hGetRefHGetAxisMax",(level>0&&gHasLibrary));
 
    DrawSkippable(tree,"fTracks.fPx","fEvtHdr.fEvtNum%10 == 0","hPx");

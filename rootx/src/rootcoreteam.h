@@ -17,19 +17,19 @@ const char *gROOTCoreTeam[] = {
    "Olivier Couet",
    "Lorenzo Moneta",
    "Vassil Vassilev",
+   "Sergey Linev",
    "Danilo Piparo",
    "Gerardo Ganis",
    "Bertrand Bellenot",
-   "Sergey Linev",
-   "Wouter Verkerke",
    "Enrico Guiraud",
+   "Guilherme Amadio",
+   "Wouter Verkerke",
    "Pere Mato Vila",
    "Timur Pocheptsov",
-   "Guilherme Amadio",
    "Matevz Tadel",
    "Wim Lavrijsen",
-   "Ilka Antcheva",
    "Enric Tejedor Saavedra",
+   "Ilka Antcheva",
    0 };
 
 } // namespace ROOTX

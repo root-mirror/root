@@ -9,7 +9,6 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "TVirtualPad.h"
 #include "KeySymbols.h"
 #include "TVirtualX.h"
 #include "Buttons.h"

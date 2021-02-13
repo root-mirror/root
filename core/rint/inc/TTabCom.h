@@ -36,9 +36,8 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "TObjString.h"
+#include "TString.h"
 #include "TRegexp.h"
-
 
 #define MAX_LEN_PAT 1024               // maximum length of a pattern
 #define dblquote(x) "\"" << x << "\""
@@ -188,12 +187,12 @@ public: // enums
    };
 
 private: // member functions
-   TTabCom(const TTabCom &);           //private and not implemented
-   TTabCom& operator=(const TTabCom&); //private and not implemented
+   TTabCom(const TTabCom &) = delete;
+   TTabCom& operator=(const TTabCom&) = delete;
 
    Int_t      Complete(const TRegexp& re, const TSeqCollection* pListOfCandidates,
                        const char appendage[], std::ostream& out, TString::ECaseCompare cmp = TString::kExact);
-   void       CopyMatch( char dest[], const char localName[], const char appendage[]=0, const char fullName[]=0 ) const;
+   void       CopyMatch( char dest[], const char localName[], const char appendage[] = nullptr, const char fullName[] = nullptr) const;
    EContext_t DetermineContext() const;
    TString    DeterminePath( const TString& fileName, const char defaultPath[] ) const;
    TString    ExtendPath( const char originalPath[], TString newBase ) const;

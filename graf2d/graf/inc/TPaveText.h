@@ -15,8 +15,8 @@
 
 #include "TPave.h"
 #include "TText.h"
-#include "TLine.h"
 
+class TLine;
 
 class TPaveText : public TPave, public TAttText {
 

@@ -20,6 +20,7 @@
 #include "TEveCalo.h"
 
 #include <map>
+#include <vector>
 
 class TEveCaloLego;
 

@@ -17,6 +17,7 @@
 #include "TPolyLine3D.h"
 #include "TVirtualX.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TClass.h"
 #include "TList.h"
 #include "TPluginManager.h"

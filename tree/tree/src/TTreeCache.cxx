@@ -1125,7 +1125,8 @@ Bool_t TTreeCache::FillBuffer()
          }
       }
       if (fIsLearning) { //  Learning mode
-         entry = 0;
+         // The learning phase should start from the minimum entry in the cache
+         entry = fEntryMin;
       }
       if (fFirstTime) {
          //try to detect if it is normal or reverse read
@@ -1250,9 +1251,10 @@ Bool_t TTreeCache::FillBuffer()
       return kFALSE;
    }
 
+   // If there is overlap between the found cluster and the authorized range
+   // update the cache data members with the information about the current cluster.
    fEntryCurrent = entryCurrent;
    fEntryNext = entryNext;
-
 
    auto firstClusterEnd = fEntryNext;
    if (showMore || gDebug > 6)

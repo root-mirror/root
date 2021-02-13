@@ -18,10 +18,12 @@
 
 #include "Rtypes.h"
 #include "TObject.h"
+#include "TList.h"
 #include "RooArgSet.h"
 #include "RooArgList.h"
 #include "RooAbsData.h"
 #include <list>
+
 class RooSimultaneous ;
 class RooAbsPdf ;
 class RooCategory ;

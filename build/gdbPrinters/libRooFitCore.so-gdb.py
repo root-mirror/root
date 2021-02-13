@@ -63,7 +63,6 @@ class RooSpanPrinter(object):
       for i in range(0, min(length, 10)):
          values += ' ' + str((self.val['_span']['data_']+i).dereference())
       yield 'Values', values + '...'
-      yield 'Aux storage', self.val['_auxStorage']
 
    def display_hint(self):
       return 'RooSpan printer'

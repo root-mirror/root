@@ -30,6 +30,8 @@
 
 #include <iosfwd>
 #include <cassert>
+#include <vector>
+#include <map>
 
 #include "TH2D.h"
 #include "TObjArray.h"

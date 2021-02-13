@@ -17,7 +17,7 @@
 #define TMVA_DNN_ARCHITECTURES_CPU_CPUBUFFER
 
 #include "TMVA/DNN/DataLoader.h"
-#include <vector>
+
 #include <memory>
 
 namespace TMVA

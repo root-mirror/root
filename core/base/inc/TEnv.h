@@ -129,8 +129,8 @@ private:
    TString           fRcName;    // resource file base name
    Bool_t            fIgnoreDup; // ignore duplicates, don't issue warning
 
-   TEnv(const TEnv&);            // not implemented
-   TEnv& operator=(const TEnv&); // not implemented
+   TEnv(const TEnv&) = delete;
+   TEnv& operator=(const TEnv&) = delete;
 
    const char       *Getvalue(const char *name) const;
 
@@ -140,7 +140,7 @@ public:
 
    THashList          *GetTable() const { return fTable; }
    Bool_t              Defined(const char *name) const
-                                    { return Getvalue(name) != 0; }
+                                    { return Getvalue(name) != nullptr; }
 
    virtual const char *GetRcName() const { return fRcName; }
    virtual void        SetRcName(const char *name) { fRcName = name; }
@@ -151,7 +151,7 @@ public:
 
    virtual void        SetValue(const char *name, const char *value,
                                 EEnvLevel level = kEnvChange,
-                                const char *type = 0);
+                                const char *type = nullptr);
    virtual void        SetValue(const char *name, EEnvLevel level = kEnvChange);
    virtual void        SetValue(const char *name, Int_t value);
    virtual void        SetValue(const char *name, Double_t value);

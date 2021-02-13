@@ -35,6 +35,8 @@
 #include "Math/IParamFunction.h"
 #include "Math/VavilovAccurate.h"
 
+#include <string>
+
 namespace ROOT {
 namespace Math {
 

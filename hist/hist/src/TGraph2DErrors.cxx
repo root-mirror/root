@@ -9,16 +9,13 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
-#include "TROOT.h"
-#include "TClass.h"
+#include <iostream>
+#include "TBuffer.h"
 #include "TGraph2DErrors.h"
-#include "TMath.h"
-#include "TPolyMarker.h"
+#include "TH2.h"
 #include "TVirtualPad.h"
 #include "TVirtualFitter.h"
 #include "THLimitsFinder.h"
-#include "TStyle.h"
 
 ClassImp(TGraph2DErrors);
 
@@ -323,6 +320,53 @@ void TGraph2DErrors::Set(Int_t n)
    fNpoints = n;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Deletes point number ipoint
+
+Int_t TGraph2DErrors::RemovePoint(Int_t ipoint)
+{
+   if (ipoint < 0) return -1;
+   if (ipoint >= fNpoints) return -1;
+
+   fNpoints--;
+   Double_t *newX  = new Double_t[fNpoints];
+   Double_t *newY  = new Double_t[fNpoints];
+   Double_t *newZ  = new Double_t[fNpoints];
+   Double_t *newEX = new Double_t[fNpoints];
+   Double_t *newEY = new Double_t[fNpoints];
+   Double_t *newEZ = new Double_t[fNpoints];
+
+   Int_t j = -1;
+   for (Int_t i = 0; i < fNpoints + 1; i++) {
+      if (i == ipoint) continue;
+      j++;
+      newX[j] = fX[i];
+      newY[j] = fY[i];
+      newZ[j] = fZ[i];
+      newEX[j] = fEX[i];
+      newEY[j] = fEY[i];
+      newEZ[j] = fEZ[i];
+   }
+   delete [] fX;
+   delete [] fY;
+   delete [] fZ;
+   delete [] fEX;
+   delete [] fEY;
+   delete [] fEZ;
+   fX  = newX;
+   fY  = newY;
+   fZ  = newZ;
+   fEX = newEX;
+   fEY = newEY;
+   fEZ = newEZ;
+   fSize = fNpoints;
+   if (fHistogram) {
+      delete fHistogram;
+      fHistogram = nullptr;
+      fDelaunay = nullptr;
+   }
+   return ipoint;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Set x, y and z values for point number i

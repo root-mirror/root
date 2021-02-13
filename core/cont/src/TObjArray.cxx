@@ -50,6 +50,7 @@ set to the owner of its own content.
 #include "TObjArray.h"
 #include "TError.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TVirtualMutex.h"
 #include <stdlib.h>
 

@@ -30,7 +30,6 @@ Rectified Linear Unit activation function for TNeuron
 
 #include "TMVA/TActivation.h"
 
-#include "TMath.h"
 #include "TString.h"
 
 #include <iostream>

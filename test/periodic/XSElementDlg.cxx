@@ -12,6 +12,7 @@
 #include <TGWindow.h>
 #include <TGButton.h>
 #include <TGMsgBox.h>
+#include <TVirtualX.h>
 
 #include "XSElementList.h"
 #include "XSPeriodicTable.h"

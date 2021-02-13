@@ -122,6 +122,7 @@ NSObject<X11Window> *CocoaPrivate::GetWindow(Window_t windowID)const
       } else {
          NSLog(@"This window not found among allocated/deleted drawables");
       }
+      return 0;
    }
 #endif
    assert(winIter != fDrawables.end() && "GetWindow, non-existing window requested");

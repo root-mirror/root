@@ -257,7 +257,7 @@ inline myuint fmodmulM61(myuint cum, myuint a, myuint b){
 
 inline myuint fmodmulM61(myuint cum, myuint s, myuint a)
 {
-    register myuint o,ph,pl,ah,al;
+    myuint o,ph,pl,ah,al;
     o=(s)*a;
     ph = ((s)>>32);
     pl = (s) & MASK32;

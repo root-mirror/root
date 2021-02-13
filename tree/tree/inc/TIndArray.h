@@ -8,14 +8,14 @@
 #ifndef ROOT_TIndArray
 #define ROOT_TIndArray
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 
 class TIndArray
 {
    public:
       TIndArray():
-         fElems( 0 ), fCapacity( 0 ), fArr( 0 ) {};
+         fElems( 0 ), fCapacity( 0 ), fArr( nullptr ) {};
 
       virtual ~TIndArray()
       {

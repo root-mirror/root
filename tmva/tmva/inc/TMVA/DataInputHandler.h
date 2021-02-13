@@ -39,7 +39,6 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <fstream>
 
 #include "TTree.h"
 #include "TCut.h"
@@ -49,7 +48,7 @@
 namespace TMVA {
 
    class MsgLogger;
-   
+
    class TreeInfo:public TObject {
 
    public:

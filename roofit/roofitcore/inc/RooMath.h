@@ -19,7 +19,6 @@
 #include <cmath>
 #include <complex>
 
-#include "Rtypes.h"
 #include "TMath.h"
 
 typedef Double_t* pDouble_t;

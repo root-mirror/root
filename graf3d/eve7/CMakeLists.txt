@@ -9,11 +9,18 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTEve
     ROOT/REveChunkManager.hxx
     ROOT/REveClient.hxx
     ROOT/REveCompound.hxx
-    ROOT/REveDataClasses.hxx
+    ROOT/REveBox.hxx
+    ROOT/REveBoxSet.hxx
+    ROOT/REveCaloData.hxx
+    ROOT/REveCalo.hxx
+    ROOT/REveDataCollection.hxx
     ROOT/REveDataProxyBuilderBase.hxx
     ROOT/REveDataSimpleProxyBuilder.hxx
     ROOT/REveDataSimpleProxyBuilderTemplate.hxx
+    ROOT/REveDataTable.hxx
+    ROOT/REveDigitSet.hxx
     ROOT/REveElement.hxx
+    ROOT/REveFrameBox.hxx
     ROOT/REveGeoPolyShape.hxx
     ROOT/REveGeoShapeExtract.hxx
     ROOT/REveGeoShape.hxx
@@ -31,6 +38,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTEve
     ROOT/REveProjectionManager.hxx
     ROOT/REveProjections.hxx
     ROOT/REveRenderData.hxx
+    ROOT/REveRGBAPalette.hxx
     ROOT/REveScalableStraightLineSet.hxx
     ROOT/REveScene.hxx
     ROOT/REveSceneInfo.hxx
@@ -64,10 +72,17 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTEve
     glu/tess.c
     glu/tessmono.c
     src/REveChunkManager.cxx
+    src/REveBox.cxx
+    src/REveBoxSet.cxx
+    src/REveCalo.cxx
+    src/REveCaloData.cxx
     src/REveCompound.cxx
-    src/REveDataClasses.cxx
+    src/REveDataCollection.cxx
     src/REveDataProxyBuilderBase.cxx
     src/REveDataSimpleProxyBuilder.cxx
+    src/REveDataTable.cxx
+    src/REveDigitSet.cxx
+    src/REveFrameBox.cxx
     src/REveElement.cxx
     src/REveGeoPolyShape.cxx
     src/REveGeoShape.cxx
@@ -86,6 +101,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTEve
     src/REveProjectionManager.cxx
     src/REveProjections.cxx
     src/REveRenderData.cxx
+    src/REveRGBAPalette.cxx
     src/REveScalableStraightLineSet.cxx
     src/REveScene.cxx
     src/REveSceneInfo.cxx
@@ -117,10 +133,13 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTEve
     ROOTBrowserv7
 )
 
-target_include_directories(ROOTEve
-  PRIVATE
-    ${CMAKE_SOURCE_DIR}/io/io/res
-    ${CMAKE_SOURCE_DIR}/graf3d/eve7
-)
+if(builtin_nlohmannjson)
+   target_include_directories(ROOTEve PRIVATE ${CMAKE_SOURCE_DIR}/builtins)
+else()
+   target_link_libraries(ROOTEve PUBLIC nlohmann_json::nlohmann_json)
+endif()
+
+# this is required for glew
+target_include_directories(ROOTEve PRIVATE ${CMAKE_SOURCE_DIR}/graf3d/eve7)
 
 ROOT_ADD_TEST_SUBDIRECTORY(test)

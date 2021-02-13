@@ -59,6 +59,8 @@ private:
 
    void Init(bool afterReading);
 
+   void ExtractOptionsFromComment();
+
 protected:
    TDataMember(const TDataMember&);
    TDataMember& operator=(const TDataMember&);
@@ -79,7 +81,7 @@ public:
    const char    *GetTrueTypeName() const;
    const char    *GetArrayIndex() const;
    Int_t          GetUnitSize() const;
-   TList         *GetOptions() const;
+   TList         *GetOptions();
    TMethodCall   *SetterMethod(TClass *cl);
    TMethodCall   *GetterMethod(TClass *cl = 0);
 

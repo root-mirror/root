@@ -274,5 +274,7 @@ Int_t multidimfit(bool doFit = true)
 
    // We're done
    delete fit;
+   delete [] xMin;
+   delete [] xMax;
    return compare;
 }

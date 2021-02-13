@@ -18,9 +18,12 @@
 #include <set>
 #include <string>
 #include <unordered_set>
+#include <vector>
+#include <list>
+#include <map>
+#include <utility>
 
-//#include <atomic>
-#include <stdlib.h>
+#include <cstdlib>
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -187,10 +190,13 @@ public:
 //______________________________________________________________________________
 class AnnotatedRecordDecl {
 private:
+   static std::string BuildDemangledTypeInfo(const clang::RecordDecl *rDecl,
+                                             const std::string &normalizedName);
    long fRuleIndex;
    const clang::RecordDecl* fDecl;
    std::string fRequestedName;
    std::string fNormalizedName;
+   std::string fDemangledTypeInfo;
    bool fRequestStreamerInfo;
    bool fRequestNoStreamer;
    bool fRequestNoInputOperator;
@@ -261,6 +267,7 @@ public:
 
    const char *GetRequestedName() const { return fRequestedName.c_str(); }
    const char *GetNormalizedName() const { return fNormalizedName.c_str(); }
+   const std::string &GetDemangledTypeInfo() const { return fDemangledTypeInfo; }
    bool HasClassVersion() const { return fRequestedVersionNumber >=0 ; }
    bool RequestStreamerInfo() const {
       // Equivalent to CINT's cl.RootFlag() & G__USEBYTECOUNT
@@ -349,10 +356,16 @@ clang::QualType AddDefaultParameters(clang::QualType instanceType,
 //______________________________________________________________________________
 llvm::StringRef DataMemberInfo__ValidArrayIndex(const clang::DeclaratorDecl &m, int *errnum = 0, llvm::StringRef  *errstr = 0);
 
-enum class EIOCtorCategory : short {kAbsent, kDefault, kIOPtrType, kIORefType};
+enum class EIOCtorCategory : short { kAbsent, kDefault, kIOPtrType, kIORefType };
 
 //______________________________________________________________________________
 EIOCtorCategory CheckConstructor(const clang::CXXRecordDecl*, const RConstructorType&, const cling::Interpreter& interp);
+
+//______________________________________________________________________________
+bool CheckDefaultConstructor(const clang::CXXRecordDecl*, const cling::Interpreter& interp);
+
+//______________________________________________________________________________
+EIOCtorCategory CheckIOConstructor(const clang::CXXRecordDecl*, const char *, const clang::CXXRecordDecl *, const cling::Interpreter& interp);
 
 //______________________________________________________________________________
 const clang::FunctionDecl* ClassInfo__HasMethod(const clang::DeclContext *cl, char const*, const cling::Interpreter& interp);

@@ -15,6 +15,8 @@
 #include "TGLObject.h"
 #include "TEveDigitSet.h"
 
+#include <set>
+
 class TGLViewer;
 class TGLScene;
 

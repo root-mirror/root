@@ -4,7 +4,7 @@
 #ifndef ROOT_CsgOps
 #define ROOT_CsgOps
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 class TBuffer3D;
 

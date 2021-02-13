@@ -14,14 +14,13 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
+bool mnlsame(const char *, const char *);
+int mnxerbla(const char *, int);
 
-bool mnlsame(const char*, const char*);
-int mnxerbla(const char*, int);
-
-int mndspr(const char* uplo, unsigned int n, double alpha,
-           const double* x, int incx, double* ap) {
+int mndspr(const char *uplo, unsigned int n, double alpha, const double *x, int incx, double *ap)
+{
    /* System generated locals */
    int i__1, i__2;
 
@@ -98,7 +97,6 @@ int mndspr(const char* uplo, unsigned int n, double alpha,
    /*           AP is overwritten by the Lower triangular part of the */
    /*           updated matrix. */
 
-
    /*  Level 2 Blas routine. */
 
    /*  -- Written on 22-October-1986. */
@@ -106,7 +104,6 @@ int mndspr(const char* uplo, unsigned int n, double alpha,
    /*     Jeremy Du Croz, Nag Central Office. */
    /*     Sven Hammarling, Nag Central Office. */
    /*     Richard Hanson, Sandia National Labs. */
-
 
    /*     .. Parameters .. */
    /*     .. Local Scalars .. */
@@ -123,7 +120,7 @@ int mndspr(const char* uplo, unsigned int n, double alpha,
 
    /* Function Body */
    info = 0;
-   if (! mnlsame(uplo, "U") && ! mnlsame(uplo, "L")) {
+   if (!mnlsame(uplo, "U") && !mnlsame(uplo, "L")) {
       info = 1;
    }
    //     else if (n < 0) {
@@ -241,7 +238,6 @@ int mndspr(const char* uplo, unsigned int n, double alpha,
 
 } /* dspr_ */
 
+} // namespace Minuit2
 
-   }  // namespace Minuit2
-
-}  // namespace ROOT
+} // namespace ROOT

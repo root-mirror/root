@@ -13,6 +13,7 @@
 #define ROOT_TGDMLWRITE
 
 #include "TGeoMatrix.h"
+#include "TGeoElement.h"
 #include "TXMLEngine.h"
 #include "TGeoVolume.h"
 #include "TGeoParaboloid.h"
@@ -27,7 +28,6 @@
 #include "TGeoTorus.h"
 #include "TGeoPgon.h"
 #include "TGeoXtru.h"
-#include "TGeoPgon.h"
 #include "TGeoEltu.h"
 #include "TGeoHype.h"
 #include "TGeoBoolNode.h"
@@ -39,7 +39,6 @@
 
 #include <map>
 #include <set>
-#include <vector>
 #include <iostream>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -117,7 +116,7 @@ private:
    SurfaceList fSurfaceList;  //list of optical surfaces
    VolList     fVolumeList;   //list of volumes
    NodeList    fNodeList;     //list of placed volumes
-  
+
    NameLst *fNameList; //list of names (pointer mapped)
 
    //Data members
@@ -125,6 +124,7 @@ private:
    Int_t  fgNamingSpeed;                                   //input option for volume and solid naming
    Bool_t fgG4Compatibility;                               //input option for Geant4 compatibility
    XMLDocPointer_t  fGdmlFile;                             //pointer storing xml file
+   TString fDefault_lunit;                                 //Default unit of length (depends on ROOT unit system)
    TString fTopVolumeName;                                 //name of top volume
    TXMLEngine *fGdmlE;                                     //xml engine pointer
 
@@ -242,7 +242,7 @@ private:
    // Backwards compatibility (to be removed in the future): Combined implementation to extract GDML information from the geometry tree
    void WriteGDMLfile(TGeoManager * geomanager, TGeoVolume* top_vol, TList* materialsLst, const char* filename, TString option);
    void ExtractVolumes(TGeoVolume* topVolume);    //result <volume> node...  + corresp. shape
-  
+
    ClassDef(TGDMLWrite, 0)    //imports GDML using DOM and binds it to ROOT
 };
 

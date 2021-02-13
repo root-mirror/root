@@ -19,6 +19,7 @@
 #include "RooAbsReal.h"
 #include "RooListProxy.h"
 #include "RooObjCacheManager.h"
+#include <list>
 
 class RooRealVar;
 class RooArgList ;

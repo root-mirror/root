@@ -9,64 +9,18 @@
 #ifndef ROOT7_RLegend
 #define ROOT7_RLegend
 
-#include <ROOT/RBox.hxx>
-
-#include <ROOT/RAttrText.hxx>
+#include <ROOT/RPave.hxx>
+#include <ROOT/RAttrLine.hxx>
+#include <ROOT/RAttrFill.hxx>
+#include <ROOT/RAttrMarker.hxx>
+#include <ROOT/RDisplayItem.hxx>
 
 #include <initializer_list>
 #include <memory>
+#include <vector>
 
 namespace ROOT {
 namespace Experimental {
-
-class RLegend;
-
-namespace Internal {
-
-/** \class RLegendEntry
-\ingroup GrafROOT7
-\brief An entry in RLegend, references RDrawable and its attributes
-\author Sergey Linev <S.Linev@gsi.de>
-\date 2019-10-09
-\warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
-*/
-
-
-class RLegendEntry {
-
-   friend class ROOT::Experimental::RLegend;
-
-   std::string fLabel;    ///< label shown for the entry
-
-   std::string fLine, fFill, fMarker;  ///< prefixes for line, fill, marker attributes
-
-   RIOShared<RDrawable> fDrawable;  ///< reference to RDrawable
-
-public:
-
-   RLegendEntry() = default;
-
-   RLegendEntry(std::shared_ptr<RDrawable> drawable, const std::string &lbl = "")
-   {
-      fDrawable = drawable;
-      fLabel = lbl;
-   }
-
-   RLegendEntry &SetLabel(const std::string &lbl) { fLabel = lbl; return *this; }
-   const std::string &GetLabel() const { return fLabel; }
-
-   RLegendEntry &SetLine(const std::string &lbl) { fLine = lbl; return *this; }
-   const std::string &GetLine() const { return fLine; }
-
-   RLegendEntry &SetFill(const std::string &lbl) { fFill = lbl; return *this; }
-   const std::string &GetFill() const { return fFill; }
-
-   RLegendEntry &SetMarker(const std::string &lbl) { fMarker = lbl; return *this; }
-   const std::string &GetMarker() const { return fMarker; }
-
-};
-
-}
 
 /** \class RLegend
 \ingroup GrafROOT7
@@ -76,16 +30,143 @@ public:
 \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 */
 
-class RLegend : public RBox {
+class RLegend : public RPave {
 
-   std::string fTitle;                  ///< legend title
+public:
+   /** \class REntry
+   \ingroup GrafROOT7
+   \brief An entry in RLegend, references RDrawable and its attributes
+   \author Sergey Linev <S.Linev@gsi.de>
+   \date 2019-10-09
+   \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
+   is welcome!
+   */
 
-   std::vector<Internal::RLegendEntry> fEntries; ///< list of entries which should be displayed
+   class REntry {
 
-   RAttrText  fAttrTitle{this, "title_"};    ///<! title attributes
+      friend class RLegend;
+
+      std::string fLabel; ///< label shown for the entry
+
+      bool fLine{true}, fFill{false}, fMarker{false}; ///< enable line, fill, marker showing
+
+      Internal::RIOShared<RDrawable> fDrawable; ///< reference to RDrawable
+
+      std::string fDrawableId; ///< drawable id, used only when display item
+
+      bool IsCustomDrawable() const { return fDrawableId == "custom"; }
+
+      bool EnsureCustomDrawable()
+      {
+         if (!IsCustomDrawable())
+            return false;
+
+         if (!fDrawable)
+            fDrawable = std::make_shared<RDrawable>("lentry");
+
+         return true;
+      }
+
+   public:
+      REntry() = default;
+
+      /** Create entry without reference to existing drawable object, can assign attributes */
+      REntry(const std::string &lbl)
+      {
+         fLabel = lbl;
+         fDrawableId = "custom";
+      }
+
+      /** Create entry with reference to existing drawable object */
+      REntry(std::shared_ptr<RDrawable> drawable, const std::string &lbl)
+      {
+         fDrawable = drawable;
+         fLabel = lbl;
+      }
+
+      REntry &SetLabel(const std::string &lbl)
+      {
+         fLabel = lbl;
+         return *this;
+      }
+      const std::string &GetLabel() const { return fLabel; }
+
+      REntry &SetLine(bool on = true)
+      {
+         fLine = on;
+         return *this;
+      }
+      bool GetLine() const { return fLine; }
+
+      REntry &SetAttrLine(const RAttrLine &attr)
+      {
+         if (EnsureCustomDrawable()) {
+            RAttrLine(fDrawable.get()) = attr;
+            SetLine(true);
+         }
+         return *this;
+      }
+
+      RAttrLine GetAttrLine() const
+      {
+         if (IsCustomDrawable() && fDrawable)
+            return RAttrLine(const_cast<RDrawable *>(fDrawable.get()));
+         return {};
+      }
+
+      REntry &SetFill(bool on = true)
+      {
+         fFill = on;
+         return *this;
+      }
+      bool GetFill() const { return fFill; }
+
+      REntry &SetAttrFill(const RAttrFill &attr)
+      {
+         if (EnsureCustomDrawable()) {
+            RAttrFill(fDrawable.get()) = attr;
+            SetFill(true);
+         }
+         return *this;
+      }
+
+      RAttrFill GetAttrFill() const
+      {
+         if (IsCustomDrawable() && fDrawable)
+            return RAttrFill(const_cast<RDrawable *>(fDrawable.get()));
+         return {};
+      }
+
+      REntry &SetMarker(bool on = true)
+      {
+         fMarker = on;
+         return *this;
+      }
+      bool GetMarker() const { return fMarker; }
+
+      REntry &SetAttrMarker(const RAttrMarker &attr)
+      {
+         if (EnsureCustomDrawable()) {
+            RAttrMarker(fDrawable.get()) = attr;
+            SetMarker(true);
+         }
+         return *this;
+      }
+
+      RAttrMarker GetAttrMarker() const
+      {
+         if (IsCustomDrawable() && fDrawable)
+            return RAttrMarker(const_cast<RDrawable *>(fDrawable.get()));
+         return {};
+      }
+   };
+
+private:
+   std::string fTitle; ///< legend title
+
+   std::vector<REntry> fEntries; ///< list of entries which should be displayed
 
 protected:
-
    void CollectShared(Internal::RIOSharedVector_t &vect) override
    {
       for (auto &entry : fEntries) {
@@ -95,25 +176,50 @@ protected:
       }
    }
 
-public:
-
-   RLegend() : RBox("legend") {}
-
-   RLegend(const RPadPos &p1, const RPadPos &p2, const std::string &title = "") : RLegend()
+   /** hide I/O pointers when creating display item */
+   std::unique_ptr<RDisplayItem> Display(const RDisplayContext &) override
    {
-      SetP1(p1);
-      SetP2(p2);
-      SetTitle(title);
+      for (auto &entry : fEntries) {
+         if (!entry.IsCustomDrawable()) {
+            entry.fDrawableId = RDisplayItem::ObjectIDFromPtr(entry.fDrawable.get());
+            entry.fDrawable.reset_io();
+         }
+      }
+
+      return std::make_unique<RDrawableDisplayItem>(*this);
    }
 
-   RLegend &SetTitle(const std::string &title) { fTitle = title; return *this; }
+   /** when display item destroyed - restore I/O pointers */
+   void OnDisplayItemDestroyed(RDisplayItem *) const override
+   {
+      for (auto &centry : fEntries) {
+         if (!centry.IsCustomDrawable()) {
+            auto entry = const_cast<REntry *>(&centry);
+            entry->fDrawable.restore_io();
+            entry->fDrawableId.clear();
+         }
+      }
+   }
+
+public:
+   RLegend() : RPave("legend") {}
+
+   RLegend(const std::string &title) : RLegend() { SetTitle(title); }
+
+   RLegend &SetTitle(const std::string &title)
+   {
+      fTitle = title;
+      return *this;
+   }
    const std::string &GetTitle() const { return fTitle; }
 
-   const RAttrText &GetAttrTitle() const { return fAttrTitle; }
-   RLegend &SetAttrTitle(const RAttrText &attr) { fAttrTitle = attr; return *this; }
-   RAttrText &AttrTitle() { return fAttrTitle; }
+   REntry &AddEntry(const std::string &lbl)
+   {
+      fEntries.emplace_back(lbl);
+      return fEntries.back();
+   }
 
-   Internal::RLegendEntry &AddEntry(std::shared_ptr<RDrawable> drawable, const std::string &lbl = "")
+   REntry &AddEntry(std::shared_ptr<RDrawable> drawable, const std::string &lbl)
    {
       fEntries.emplace_back(drawable, lbl);
       return fEntries.back();
@@ -121,7 +227,7 @@ public:
 
    auto NumEntries() const { return fEntries.size(); }
 
-
+   auto &GetEntry(int n) { return fEntries[n]; }
 };
 
 } // namespace Experimental

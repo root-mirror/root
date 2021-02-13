@@ -9,6 +9,9 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
+#ifdef _MSC_VER
+#define LZMA_API_STATIC
+#endif
 #include "ZipLZMA.h"
 #include "lzma.h"
 #include <stdio.h>

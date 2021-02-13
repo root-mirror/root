@@ -15,9 +15,9 @@
 using namespace ROOT::Detail::RDF;
 
 RFilterBase::RFilterBase(RLoopManager *implPtr, std::string_view name, const unsigned int nSlots,
-                         const RDFInternal::RBookedCustomColumns &customColumns)
+                         const RDFInternal::RBookedDefines &defines)
    : RNodeBase(implPtr), fLastResult(nSlots), fAccepted(nSlots), fRejected(nSlots), fName(name), fNSlots(nSlots),
-     fCustomColumns(customColumns) {}
+     fDefines(defines) {}
 
 // outlined to pin virtual table
 RFilterBase::~RFilterBase() {}

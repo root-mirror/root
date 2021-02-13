@@ -37,6 +37,9 @@ int main()
 
 #ifdef R__HAS_TMVAGPU
    std::cout << "Testing Method DL for GPU backend: " << std::endl;
+#ifdef R__HAS_CUDNN
+   std::cout << "Using cuDNN for the implementation of the convolution operators " << std::endl;
+#endif
 
    TString archGPU  = "GPU";
    testMethodDL_CNN(archGPU);

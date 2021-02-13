@@ -12,7 +12,6 @@
 #include "TImage.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
-#include "TApplication.h"
 #include "TSystem.h"
 
 ClassImp(TImage);

@@ -15,7 +15,7 @@ TEST(BinIterNBins, NumBins) {
     (void)bin;
     ++nBins;
   }
-  EXPECT_EQ(h.GetImpl()->GetNBins(), nBins);
+  EXPECT_EQ(h.GetImpl()->GetNBinsNoOver(), nBins);
 }
 
 // Tests the bin ref: fill, retrieve.
@@ -35,7 +35,7 @@ TEST(BinIterNBins, BinRef) {
   EXPECT_EQ(7, ybin);
 
   int linbin =  h.GetImpl()->GetBinIndex({x, y});
-  const int expectedLinBin = xbin + ybin * 12;
+  const int expectedLinBin = xbin + (ybin - 1) * 10;
   EXPECT_EQ(expectedLinBin, linbin);
 
   EXPECT_FLOAT_EQ(3. * w, h.GetImpl()->GetBinContent(linbin));
@@ -45,7 +45,7 @@ TEST(BinIterNBins, BinRef) {
   double founduncert = -1.;
   RH2F::CoordArray_t foundcoord{};
 
-  int nBins = 0;
+  int nBins = 1;
   for (auto bin: h) {
     auto binCenter = bin.GetCenter();
     if (std::fabs(binCenter[0] - x) < 0.1 && std::fabs(binCenter[1] - y) < 0.1) {

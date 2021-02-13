@@ -37,11 +37,12 @@ discrete dimensions.
 #include "RooGlobalFunc.h"
 
 #include "TError.h"
+#include "TBuffer.h"
 
 using namespace std;
 
 ClassImp(RooHistPdf);
-;
+
 
 
 

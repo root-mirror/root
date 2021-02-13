@@ -35,7 +35,7 @@ public:
   void setAlwaysStartFromMin(Bool_t flag) { _startFromMin = flag ; }
   Bool_t alwaysStartFromMin() const { return _startFromMin ; }
 
-  MINIMIZER* minimizer() { return _minimizer ; }
+  MINIMIZER* minimizer() { if (!_minimizer) initializeMinimizer(); return _minimizer ; }
   RooAbsReal& nll() { return const_cast<RooAbsReal&>(_nll.arg()) ; }
   const RooArgSet& bestFitParams() const ;
   const RooArgSet& bestFitObs() const ;

@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2015, ROOT Team.
 #  Authors: Omar Zapata <Omar.Zapata@cern.ch> http://oproject.org
 #           Danilo Piparo <Danilo.Piparo@cern.ch> CERN
 #           Enric Tejedor <enric.tejedor.saavedra@cern.ch> CERN
-#  website: http://oproject.org/ROOT+Jupyter+Kernel (information only for ROOT kernel)
-#  Distributed under the terms of the Modified LGPLv3 License.
-#
-#  The full license is in the file COPYING.rst, distributed with this software.
 #-----------------------------------------------------------------------------
+
+################################################################################
+# Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.                      #
+# All rights reserved.                                                         #
+#                                                                              #
+# For the licensing terms see $ROOTSYS/LICENSE.                                #
+# For the list of contributors see $ROOTSYS/README/CREDITS.                    #
+################################################################################
 
 from __future__ import print_function
 
@@ -24,9 +27,9 @@ except ImportError:
 import ROOT
 
 from JupyROOT.helpers.utils import setStyle, invokeAclic, GetDrawers
-from JupyROOT.helpers.handlers import RunAsyncAndPrint
+from JupyROOT.helpers.handlers import RunAsyncAndPrint, Display
 from JupyROOT.helpers.cppcompleter import CppCompleter
-from JupyROOT.kernel.utils import GetIOHandler, GetExecutor, GetDeclarer, MagicLoader
+from JupyROOT.kernel.utils import GetIOHandler, GetPoller, GetExecutor, GetDeclarer, GetDisplayer, MagicLoader
 
 import IPython
 
@@ -57,16 +60,17 @@ class ROOTKernel(MetaKernel):
         MetaKernel.__init__(self,**kwargs)
         setStyle()
         self.ioHandler = GetIOHandler()
-        self.Executor  = GetExecutor()
-        self.Declarer  = GetDeclarer()#required for %%cpp -d magic
+        self.Poller    = GetPoller()
+        self.Executor  = GetExecutor(self.Poller)
+        self.Declarer  = GetDeclarer(self.Poller) #required for %%cpp -d magic
+        self.Displayer = GetDisplayer(self.Poller)
         self.ACLiC     = invokeAclic
         self.magicloader = MagicLoader(self)
         self.completer = CppCompleter()
         self.completer.activate()
 
     def __del__(self):
-        self.Executor.Stop()
-        self.Declarer.Stop()
+        self.Poller.Stop()
 
     def get_completions(self, info):
         return self.completer._completeImpl(info['code'])
@@ -84,16 +88,13 @@ class ROOTKernel(MetaKernel):
         status = 'ok'
         try:
             RunAsyncAndPrint(self.Executor,
-                             code.encode('utf8'),
+                             code,
                              self.ioHandler,
                              self.print_output,
                              silent,
                              .1)
 
-            drawers = GetDrawers()
-            for drawer in drawers:
-                for dobj in drawer.GetDrawableObjects():
-                    self.Display(dobj)
+            Display(self.Displayer, self.Display)
 
         except KeyboardInterrupt:
             ROOT.gROOT.SetInterrupt()

@@ -50,7 +50,7 @@
                 showNavButton="true" navButtonText="Back to hierarchy" navButtonPress="onPressMasterBack"
                 class="sapUiStdPage">
             <content>
-            <IconTabBar class="sapUiResponsiveContentPadding" expanded="true" visible="{/show_config}">
+            <IconTabBar expanded="true" visible="{/show_config}">
                 <items>
                   <IconTabFilter text="Configuration">
                     <VBox>
@@ -106,7 +106,7 @@
 
                </items>
             </IconTabBar>
-            <IconTabBar class="sapUiResponsiveContentPadding" expanded="false">
+            <IconTabBar expanded="false">
                 <items>
                   <IconTabFilter text="Information">
                     <VBox>
@@ -126,7 +126,7 @@
                   </IconTabFilter>
                </items>
             </IconTabBar>
-            <IconTabBar class="sapUiResponsiveContentPadding" expanded="false">
+            <IconTabBar expanded="false">
                 <items>
                   <IconTabFilter text="Clipping">
                     <VBox>
@@ -162,7 +162,7 @@
 
                </items>
             </IconTabBar>
-            <IconTabBar class="sapUiResponsiveContentPadding" expanded="false">
+            <IconTabBar expanded="false">
                 <items>
                   <IconTabFilter text="Appearance">
                     <VBox>
@@ -193,7 +193,7 @@
 
                </items>
             </IconTabBar>
-            <IconTabBar class="sapUiResponsiveContentPadding" expanded="false">
+            <IconTabBar expanded="false">
                 <items>
                   <IconTabFilter text="Advanced">
                      <VBox>
@@ -209,7 +209,7 @@
                   </IconTabFilter>
                </items>
             </IconTabBar>
-            <IconTabBar class="sapUiResponsiveContentPadding" expanded="false">
+            <IconTabBar expanded="false">
                 <items>
                   <IconTabFilter text="SSAO">
                      <VBox>
@@ -256,7 +256,7 @@
                <l:Splitter orientation="Vertical" width="100%" height="100%">
                   <VBox>
                      <layoutData><l:SplitterLayoutData size="30%"/></layoutData>
-                     <Text text="Path: {/fullpath}"/>
+                     <Text text="Path: {/strpath}"/>
                      <Text text="Node name: {/node_name}"/>
                      <Text text="Type: {/node_type}"/>
                      <Text text="Shape name: {/shape_name}"/>

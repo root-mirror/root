@@ -26,7 +26,6 @@ value.
 #include "RooFit.h"
 
 #include "RooInt.h"
-#include "RooInt.h"
 
 using namespace std;
 

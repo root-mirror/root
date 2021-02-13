@@ -23,6 +23,7 @@
 #include "RooTrace.h"
 
 #include <memory>
+#include <list>
 
 class RooArgSet ;
 
@@ -35,14 +36,14 @@ public:
   RooFormulaVar(const RooFormulaVar& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooFormulaVar(*this,newname); }
 
-  inline Bool_t ok() const { return formula().ok() ; }
+  inline Bool_t ok() const { return getFormula().ok() ; }
 
+  /// Return pointer to parameter with given name.
   inline RooAbsArg* getParameter(const char* name) const { 
-    // Return pointer to parameter with given name
     return _actualVars.find(name) ; 
   }
+  /// Return pointer to parameter at given index.
   inline RooAbsArg* getParameter(Int_t index) const { 
-    // Return pointer to parameter at given index
     return _actualVars.at(index) ; 
   }
 
@@ -55,7 +56,12 @@ public:
   void printMetaArgs(std::ostream& os) const ;
 
   // Debugging
-  void dumpFormula() { formula().dump() ; }
+  /// Dump the formula to stdout.
+  void dumpFormula() { getFormula().dump() ; }
+  /// Get reference to the internal formula object.
+  const RooFormula& formula() const {
+    return getFormula();
+  }
 
   virtual Double_t defaultErrorLevel() const ;
 
@@ -64,6 +70,7 @@ public:
 
   // Function evaluation
   virtual Double_t evaluate() const ;
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
 
   protected:
   // Post-processing of server redirection
@@ -72,7 +79,7 @@ public:
   virtual Bool_t isValidReal(Double_t /*value*/, Bool_t /*printError*/) const {return true;}
 
   private:
-  RooFormula& formula() const;
+  RooFormula& getFormula() const;
 
   RooListProxy _actualVars ;     // Actual parameters used by formula engine
   std::unique_ptr<RooFormula> _formula{nullptr}; //! Formula engine

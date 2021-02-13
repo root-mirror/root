@@ -61,7 +61,6 @@ Can compute regression value for one dimensional output
 #include "TMVA/Types.h"
 #include "TMVA/SimulatedAnnealingFitter.h"
 
-#include "Riostream.h"
 #include "TList.h"
 #include "TFormula.h"
 #include "TString.h"
@@ -69,6 +68,7 @@ Can compute regression value for one dimensional output
 #include "TRandom3.h"
 #include "TMath.h"
 
+#include <iostream>
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>

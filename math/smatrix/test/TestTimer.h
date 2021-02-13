@@ -4,7 +4,7 @@
 // simple class to measure time
 
 #include "TStopwatch.h"
-
+#include <string>
 
 namespace ROOT {
 

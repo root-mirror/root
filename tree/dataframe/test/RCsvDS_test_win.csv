@@ -1,0 +1,8 @@
+Name,Age,Height,Married,Salary
+Harry,60,185.2,true,2.5e+5
+"Bob,Bob",50,180.0,true,1.5E+5
+
+"""Joe""",40,200.5,false,9.1E+4
+"Tom",30,170.,false,1.1e+5
+ John  ,1,.7,false,1.3e+5
+ "Mary Ann" ,-1,.7,true,2.1E+5

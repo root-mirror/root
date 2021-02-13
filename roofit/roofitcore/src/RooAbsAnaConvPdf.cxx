@@ -19,7 +19,7 @@
 ///  \ingroup Roofitcore
 ///
 ///  RooAbsAnaConvPdf is the base class for PDFs that represent a
-///  physics model that can be analytically convolved with a resolution model
+///  physics model that can be analytically convolved with a resolution model.
 ///
 ///  To achieve factorization between the physics model and the resolution
 ///  model, each physics model must be able to be written in the form
@@ -83,8 +83,7 @@ ClassImp(RooAbsAnaConvPdf);
 /// Default constructor, required for persistence
 
 RooAbsAnaConvPdf::RooAbsAnaConvPdf() :
-  _isCopy(kFALSE),
-  _convNormSet(nullptr)
+  _isCopy(kFALSE)
 {
 }
 
@@ -100,11 +99,9 @@ RooAbsAnaConvPdf::RooAbsAnaConvPdf(const char *name, const char *title,
   _model("!model","Original resolution model",this,(RooResolutionModel&)model,kFALSE,kFALSE),
   _convVar("!convVar","Convolution variable",this,cVar,kFALSE,kFALSE),
   _convSet("!convSet","Set of resModel X basisFunc convolutions",this),
-  _convNormSet(nullptr),
   _coefNormMgr(this,10),
   _codeReg(10)
 {
-  _convNormSet = new RooArgSet(cVar,"convNormSet") ;
   _model.absArg()->setAttribute("NOCacheAndTrack") ;
 }
 
@@ -117,8 +114,6 @@ RooAbsAnaConvPdf::RooAbsAnaConvPdf(const RooAbsAnaConvPdf& other, const char* na
   _model("!model",this,other._model),
   _convVar("!convVar",this,other._convVar),
   _convSet("!convSet",this,other._convSet),
-  // _basisList(other._basisList),
-  _convNormSet(other._convNormSet? new RooArgSet(*other._convNormSet) : new RooArgSet() ),
   _coefNormMgr(other._coefNormMgr,this),
   _codeReg(other._codeReg)
 {
@@ -136,10 +131,6 @@ RooAbsAnaConvPdf::RooAbsAnaConvPdf(const RooAbsAnaConvPdf& other, const char* na
 
 RooAbsAnaConvPdf::~RooAbsAnaConvPdf()
 {
-  if (_convNormSet) {
-    delete _convNormSet ;
-  }
-
   if (!_isCopy) {
     std::vector<RooAbsArg*> tmp(_convSet.begin(), _convSet.end());
 
@@ -318,7 +309,7 @@ Bool_t RooAbsAnaConvPdf::isDirectGenSafe(const RooAbsArg& arg) const
 ////////////////////////////////////////////////////////////////////////////////
 /// Return a pointer to the convolution variable instance used in the resolution model
 
-const RooRealVar* RooAbsAnaConvPdf::convVar() const
+RooAbsRealLValue* RooAbsAnaConvPdf::convVar()
 {
   RooResolutionModel* conv = (RooResolutionModel*) _convSet.at(0) ;
   if (!conv) return 0 ;  

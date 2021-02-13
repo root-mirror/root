@@ -100,6 +100,9 @@ int FrequentistCalculator::PreNullHook(RooArgSet *parameterPoint, double obsTest
                                                         RooFit::ConditionalObservables(conditionalObs),
                                                         RooFit::Offset(config.useLikelihoodOffset));
       RooProfileLL* profile = dynamic_cast<RooProfileLL*>(nll->createProfile(allButNuisance));
+      // set minimier options
+      profile->minimizer()->setMinimizerType(ROOT::Math::MinimizerOptions::DefaultMinimizerType().c_str());
+      profile->minimizer()->setPrintLevel(ROOT::Math::MinimizerOptions::DefaultPrintLevel()-1); 
       profile->getVal(); // this will do fit and set nuisance parameters to profiled values
 
       // Hack to extract a RooFitResult
@@ -210,6 +213,9 @@ int FrequentistCalculator::PreAltHook(RooArgSet *parameterPoint, double obsTestS
                                                        RooFit::Offset(config.useLikelihoodOffset));
 
       RooProfileLL* profile = dynamic_cast<RooProfileLL*>(nll->createProfile(allButNuisance));
+      // set minimizer options
+      profile->minimizer()->setMinimizerType(ROOT::Math::MinimizerOptions::DefaultMinimizerType().c_str());
+      profile->minimizer()->setPrintLevel(ROOT::Math::MinimizerOptions::DefaultPrintLevel()-1); // use -1 to make more silent 
       profile->getVal(); // this will do fit and set nuisance parameters to profiled values
 
       // Hack to extract a RooFitResult

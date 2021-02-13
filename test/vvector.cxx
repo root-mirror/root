@@ -22,9 +22,9 @@
 //_____________________________batch only_____________________
 #ifndef __CINT__
 
-#include "TROOT.h"
 #include "TFile.h"
-#include "Riostream.h"
+#include <iostream>
+#include "snprintf.h"
 #include "TVectorD.h"
 #include "TMath.h"
 

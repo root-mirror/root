@@ -1,13 +1,15 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook
-/// Multidimensional models: normalization and integration of p.d.fs, construction of cumulative distribution functions
-/// from p.d.f.s in two dimensions
+/// Multidimensional models: normalization and integration of pdfs, construction of
+/// cumulative distribution functions from pdfs in two dimensions
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooGaussian.h"
@@ -29,7 +31,7 @@ void rf308_normintegration2d()
    RooRealVar x("x", "x", -10, 10);
    RooRealVar y("y", "y", -10, 10);
 
-   // Create p.d.f. gaussx(x,-2,3), gaussy(y,2,2)
+   // Create pdf gaussx(x,-2,3), gaussy(y,2,2)
    RooGaussian gx("gx", "gx", x, RooConst(-2), RooConst(3));
    RooGaussian gy("gy", "gy", y, RooConst(+2), RooConst(2));
 
@@ -69,7 +71,7 @@ void rf308_normintegration2d()
    y.setRange("signal", -3, 3);
 
    // Create an integral of gxy_Norm[x,y] over x and y in range "signal"
-   // This is the fraction of of p.d.f. gxy_Norm[x,y] which is in the
+   // This is the fraction of of pdf gxy_Norm[x,y] which is in the
    // range named "signal"
    RooAbsReal *igxy_sig = gxy.createIntegral(RooArgSet(x, y), NormSet(RooArgSet(x, y)), Range("signal"));
    cout << "gx_Int[x,y|signal]_Norm[x,y] = " << igxy_sig->getVal() << endl;

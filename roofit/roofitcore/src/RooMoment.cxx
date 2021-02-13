@@ -28,7 +28,6 @@ derivator class.
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include <math.h>
 
 #include "RooMoment.h"
@@ -45,11 +44,11 @@ derivator class.
 #include "RooRealIntegral.h"
 #include "RooNumIntConfig.h"
 #include <string>
-using namespace std ;
+using namespace std;
 
 
 ClassImp(RooMoment);
-;
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

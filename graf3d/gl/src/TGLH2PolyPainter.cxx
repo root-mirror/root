@@ -5,7 +5,6 @@
 #include "TMultiGraph.h"
 #include "TH2Poly.h"
 #include "TGraph.h"
-#include "TClass.h"
 #include "TStyle.h"
 #include "TError.h"
 #include "TColor.h"

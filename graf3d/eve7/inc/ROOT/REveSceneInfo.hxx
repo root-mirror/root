@@ -28,8 +28,8 @@ class REveScene;
 class REveSceneInfo : public REveElement
 {
 private:
-   REveSceneInfo(const REveSceneInfo &);            // Not implemented
-   REveSceneInfo &operator=(const REveSceneInfo &); // Not implemented
+   REveSceneInfo(const REveSceneInfo &) = delete;
+   REveSceneInfo &operator=(const REveSceneInfo &) = delete;
 
 protected:
    REveViewer *fViewer{nullptr};   ///<!

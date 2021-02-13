@@ -35,9 +35,11 @@
 #include "TWin32SplashThread.h"
 #include "Win32Constants.h"
 #include "TInterpreter.h"
-#include "TObjString.h"
 #include "TVirtualX.h"
 #include "TUrl.h"
+#include "ThreadLocalStorage.h"
+#include "snprintf.h"
+#include "strlcpy.h"
 
 #include <sys/utime.h>
 #include <sys/timeb.h>
@@ -933,6 +935,8 @@ namespace {
          ::SetConsoleTitle("ROOT session");
       }
       hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+      // adding the ENABLE_VIRTUAL_TERMINAL_PROCESSING flag would enable the ANSI control
+      // character sequences (e.g. `\033[39m`), but then it breaks the WRAP_AT_EOL_OUTPUT
       ::SetConsoleMode(hStdout, ENABLE_PROCESSED_OUTPUT |
                        ENABLE_WRAP_AT_EOL_OUTPUT);
       if (!::GetConsoleScreenBufferInfo(hStdout, &csbiInfo))
@@ -1757,6 +1761,8 @@ void TWinNTSystem::DispatchSignals(ESignals sig)
          if (sig == kSigFloatingException) _fpreset();
          gExceptionHandler->HandleException(sig);
       } else {
+         if (sig == kSigAbort)
+            return;
          //map to the real signal code + set the
          //high order bit to indicate a signal (?)
          StackTrace();
@@ -3872,11 +3878,8 @@ void TWinNTSystem::Exit(int code, Bool_t mode)
                   else delete (TBrowser*)0x%lx", (ULong_t)b, (ULong_t)b, (ULong_t)b, (ULong_t)b));
          }
       }
-      gROOT->EndOfProcessCleanups();
    }
-   if (gInterpreter) {
-      gInterpreter->ShutDown();
-   }
+   TROOT::ShutDown();
    gVirtualX->CloseDisplay();
 
    if (mode) {
@@ -3891,6 +3894,7 @@ void TWinNTSystem::Exit(int code, Bool_t mode)
 
 void TWinNTSystem::Abort(int)
 {
+   IgnoreSignal(kSigAbort);
    ::abort();
 }
 
@@ -4249,49 +4253,87 @@ const char *TWinNTSystem::GetLinkedLibraries()
 const char *TWinNTSystem::GetLibraries(const char *regexp, const char *options,
                                        Bool_t isRegexp)
 {
-   TString libs(TSystem::GetLibraries(regexp, options, isRegexp));
    TString ntlibs;
+   struct _stat buf;
+   std::string str;
+   char drive[_MAX_DRIVE], dir[_MAX_DIR], fname[_MAX_FNAME], ext[_MAX_EXT];
+   TString libs(TSystem::GetLibraries(regexp, options, isRegexp));
    TString opt = options;
+   std::vector<std::string> all_libs, libpaths;
 
    if ( (opt.First('L')!=kNPOS) ) {
-      TRegexp separator("[^ \\t\\s]+");
-      TRegexp user_dll("\\.dll$");
-      TRegexp user_lib("\\.lib$");
-      FileStat_t sbuf;
-      TString s;
-      Ssiz_t start, index, end;
-      start = index = end = 0;
-
-      while ((start < libs.Length()) && (index != kNPOS)) {
-         index = libs.Index(separator, &end, start);
-         if (index >= 0) {
-            // Change .dll into .lib and remove the
-            // path info if it not accessible.
-            s = libs(index, end);
-            s.ToLower();
-            if ((s.Index("c:/windows/") != kNPOS) ||
-                (s.Index("python") != kNPOS)) {
-               start += end+1;
+      libs.ReplaceAll("/","\\");
+      // get the %LIB% environment path list
+      std::stringstream libenv(gSystem->Getenv("LIB"));
+      while (getline(libenv, str, ';')) {
+         libpaths.push_back(str);
+      }
+      // now get the list of libraries
+      std::stringstream libraries(libs.Data());
+      while (getline(libraries, str, ' ')) {
+         std::string::size_type first, last;
+         // if the line begins with "-L", it's a linker option
+         // (e.g. -LIBPATH:%ROOTSYS%\\lib), so add it to the path list
+         if (str.rfind("-L", 0) == 0) {
+            first = str.find_first_of('%');
+            last = str.find_last_of('%');
+            if ((first != std::string::npos) && (last != std::string::npos) &&
+                (first != last)) {
+               // if there is a string between %%, this is an environment
+               // variable (e.g. %ROOTSYS%), so let's try to resolve it
+               // and replace it with the real path
+               std::string var = str.substr(first+1, last-first-1);
+               std::string env(gSystem->Getenv(var.c_str()));
+               if (!env.empty()) {
+                  // the environment variable exist and properly resolved
+                  // so add the last part of the path and add it to the list
+                  env += str.substr(last+1);
+                  libpaths.push_back(env);
+               }
+            }
+            // keep the linker instuction in the final list
+            ntlibs.Append(str.c_str());
+            ntlibs += " ";
+            continue;
+         }
+         // replace the '.dll' or '.DLL' extension by '.lib'
+         last = str.rfind(".dll");
+         if (last != std::string::npos)
+            str.replace(last, 4, ".lib");
+         last = str.rfind(".DLL");
+         if (last != std::string::npos)
+            str.replace(last, 4, ".lib");
+         if (str.rfind(".lib") != std::string::npos ||
+             str.rfind(".LIB") != std::string::npos) {
+            // check if the .lib with its full path exists
+            if (_stat( str.c_str(), &buf ) == 0) {
+               // file exists, so keep it with full path in our final list
+               ntlibs.Append(str.c_str());
+               ntlibs += " ";
                continue;
             }
-            if (s.Index(user_dll) != kNPOS) {
-               s.ReplaceAll(".dll",".lib");
-               if ( GetPathInfo( s, sbuf ) != 0 ) {
-                  s.Replace( 0, s.Last('/')+1, 0, 0);
-                  s.Replace( 0, s.Last('\\')+1, 0, 0);
-               }
-            } else if (s.Index(user_lib) != kNPOS) {
-               if ( GetPathInfo( s, sbuf ) != 0 ) {
-                  s.Replace( 0, s.Last('/')+1, 0, 0);
-                  s.Replace( 0, s.Last('\\')+1, 0, 0);
-               }
-            }
-            if (!ntlibs.IsNull()) ntlibs.Append(" ");
-            if ((s.Index("python") == kNPOS) && (s.Index("cppyy") == kNPOS) &&
-                (s.Index("vcruntime") == kNPOS) && (s.Index(".pyd") == kNPOS))
-              ntlibs.Append(s);
          }
-         start += end+1;
+         // full path not found, so split it to extract the library name
+         // only, set its extension to '.lib' and add it to the list of
+         // libraries to search
+         _splitpath(str.c_str(), drive, dir, fname, ext);
+         std::string libname(fname);
+         libname += ".lib";
+         all_libs.push_back(libname);
+      }
+      for (auto lib : all_libs) {
+         // loop over all libraries to check which one exists
+         for (auto libpath : libpaths) {
+            // check in each path of the %LIB% environment
+            std::string path_lib(libpath);
+            path_lib += "\\";
+            path_lib += lib;
+            if (_stat( path_lib.c_str(), &buf ) == 0) {
+                // file exists, add it to the final list of libraries
+               ntlibs.Append(lib.c_str());
+               ntlibs += " ";
+            }
+         }
       }
    } else {
       ntlibs = libs;

@@ -26,6 +26,8 @@
 #include "TBranchProxy.h"
 
 #include <type_traits>
+#include <vector>
+#include <string>
 
 class TBranch;
 class TBranchElement;
@@ -46,7 +48,7 @@ Base class of TTreeReaderValue.
       enum ESetupStatus {
          kSetupNotSetup = -7, /// No initialization has happened yet.
          kSetupTreeDestructed = -8, /// The TTreeReader has been destructed / not set.
-         kSetupMakeClassModeMismatch = -7, // readers disagree on whether TTree::SetMakeBranch() should be on
+         kSetupMakeClassModeMismatch = -9, // readers disagree on whether TTree::SetMakeBranch() should be on
          kSetupMissingCounterBranch = -6, /// The array cannot find its counter branch: Array[CounterBranch]
          kSetupMissingBranch = -5, /// The specified branch cannot be found.
          kSetupInternalError = -4, /// Some other error - hopefully the error message helps.
@@ -54,7 +56,7 @@ Base class of TTreeReaderValue.
          kSetupMismatch = -2, /// Mismatch of branch type and reader template type.
          kSetupNotACollection = -1, /// The branch class type is not a collection.
          kSetupMatch = 0, /// This branch has been set up, branch data type and reader template type match, reading should succeed.
-         kSetupMatchBranch = 0, /// This branch has been set up, branch data type and reader template type match, reading should succeed.
+         kSetupMatchBranch = 7, /// This branch has been set up, branch data type and reader template type match, reading should succeed.
          //kSetupMatchConversion = 1, /// This branch has been set up, the branch data type can be converted to the reader template type, reading should succeed.
          //kSetupMatchConversionCollection = 2, /// This branch has been set up, the data type of the branch's collection elements can be converted to the reader template type, reading should succeed.
          //kSetupMakeClass = 3, /// This branch has been set up, enabling MakeClass mode for it, reading should succeed.
@@ -76,7 +78,11 @@ Base class of TTreeReaderValue.
       template <BranchProxyRead_t Func>
       ROOT::Internal::TTreeReaderValueBase::EReadStatus ProxyReadTemplate();
 
+      /// Return true if the branch was setup \em and \em read correctly.
+      /// Use GetSetupStatus() to only check the setup status.
       Bool_t IsValid() const { return fProxy && 0 == (int)fSetupStatus && 0 == (int)fReadStatus; }
+      /// Return this TTreeReaderValue's setup status.
+      /// Use this method to check e.g. whether the TTreeReaderValue is correctly setup and ready for reading.
       ESetupStatus GetSetupStatus() const { return fSetupStatus; }
       virtual EReadStatus GetReadStatus() const { return fReadStatus; }
 
@@ -152,16 +158,21 @@ public:
    /// The returned address is guaranteed to stay constant while a given TTree is being read from a given file,
    /// unless the branch addresses are manipulated directly (e.g. through TTree::SetBranchAddress()).
    /// The address might also change when the underlying TTree/TFile is switched, e.g. when a TChain switches files.
-   T* Get() {
-      if (!fProxy){
-         Error("TTreeReaderValue::Get()", "Value reader not properly initialized, did you remember to call TTreeReader.Set(Next)Entry()?");
+   T *Get()
+   {
+      if (!fProxy) {
+         Error("TTreeReaderValue::Get()", "Value reader not properly initialized, did you call "
+                                          "TTreeReader::Set(Next)Entry() or TTreeReader::Next()?");
          return nullptr;
       }
       void *address = GetAddress(); // Needed to figure out if it's a pointer
-      return fProxy->IsaPointer() ? *(T**)address : (T*)address; }
+      return fProxy->IsaPointer() ? *(T **)address : (T *)address;
+   }
+
    /// Return a pointer to the value of the current entry.
    /// Equivalent to Get().
    T* operator->() { return Get(); }
+
    /// Return a reference to the value of the current entry.
    /// Equivalent to dereferencing the pointer returned by Get(). Behavior is undefined if no entry has been loaded yet.
    /// Most likely a crash will occur.

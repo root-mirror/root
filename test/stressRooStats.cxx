@@ -17,8 +17,6 @@
 #include "TLine.h"
 #include "TFile.h"
 #include "TClass.h"
-#include "TCanvas.h"
-#include "TH1.h"
 #include "TF1.h"
 #include "TBenchmark.h"
 
@@ -39,7 +37,7 @@
 #include "RooMath.h"
 
 // Tests file
-#include "stressRooStats_tests.cxx"
+#include "stressRooStats_tests.h"
 
 using namespace std ;
 using namespace RooFit ;

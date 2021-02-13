@@ -40,8 +40,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <vector>
-#include "Rtypes.h"
-//#include "time.h"
+#include "RtypesCore.h"
 
 namespace TMVA {
   

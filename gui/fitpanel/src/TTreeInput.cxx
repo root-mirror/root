@@ -22,6 +22,7 @@
 #include "TGButton.h"
 #include "TGLabel.h"
 #include "TGTextEntry.h"
+#include "strlcpy.h"
 
 enum ETreeInput {
    kTI_TEVARS, kTI_TECUTS

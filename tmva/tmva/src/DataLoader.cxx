@@ -32,10 +32,8 @@
 
 */
 
-#include "TFile.h"
 #include "TTree.h"
 #include "TH2.h"
-#include "TMath.h"
 #include "TMatrixD.h"
 
 #include "TMVA/DataLoader.h"
@@ -60,8 +58,24 @@
 
 ClassImp(TMVA::DataLoader);
 
-
 ////////////////////////////////////////////////////////////////////////////////
+/*** Create a data loader
+ \param[in] thedlName  name of DataLoader object. This name will be used as the
+                       top directory name where the training results
+                        (weights, i.e .XML and .C files) will be stored.
+                       The results will be stored by default in the `theDlName/weights`
+                       directory and relative to the current directory. If the directory is not existing,
+                       a new one will be created automatically.
+                       For using a different location (i.e. a different path to the current directory) one
+                       can set an absolute path location in `TMVA::gConfig()::GetIONames().fWeightFileDirPrefix`
+                       For example, by setting
+~~~~~~~~~~~~~~~{.cpp}
+   TMVA::gConfig()::GetIONames().fWeightFileDirPrefix = "/tmp";
+   TMVA::gConfig()::GetIONames().fWeightFileDir = "myTrainigResults";
+~~~~~~~~~~~~~~~
+                       The training results will be stored in the `/tmp/thedlName/myTrainingResults`
+                       directory.
+**/
 
 TMVA::DataLoader::DataLoader( TString thedlName)
 : Configurable( ),
@@ -660,7 +674,7 @@ void TMVA::DataLoader::PrepareFoldDataSet(CvSplit & s, UInt_t foldNumber, Types:
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Recombines the dataset. The precise semantics depend on the actual split.
-/// 
+///
 /// Similar to the inverse operation of `MakeKFoldDataSet` but _will_ differ.
 /// See documentation for each particular split for more information.
 ///

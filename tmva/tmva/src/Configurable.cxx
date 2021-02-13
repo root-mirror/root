@@ -38,16 +38,12 @@
 #include <cstdlib>
 #include <vector>
 
-#include "TROOT.h"
 #include "TSystem.h"
 #include "TString.h"
 #include "TObjString.h"
 #include "TQObject.h"
 #include "TSpline.h"
 #include "TMatrix.h"
-#include "TMath.h"
-#include "TFile.h"
-#include "TKey.h"
 
 #include "TMVA/Configurable.h"
 #include "TMVA/Config.h"

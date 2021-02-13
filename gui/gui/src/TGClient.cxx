@@ -48,6 +48,7 @@
 #include "TGIdleHandler.h"
 #include "TError.h"
 #include "TGlobal.h"
+#include "snprintf.h"
 
 // Global pointer to the TGClient object
 static TGClient *gClientGlobal = nullptr;
@@ -371,6 +372,7 @@ void TGClient::FreeFont(const TGFont *font)
 
 void TGClient::NeedRedraw(TGWindow *w, Bool_t force)
 {
+   if (!w) return;
    if (gVirtualX->NeedRedraw((ULong_t)w,force)) return;
    if (force) {
       w->DoRedraw();

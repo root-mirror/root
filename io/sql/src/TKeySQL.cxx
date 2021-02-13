@@ -22,13 +22,12 @@ from database tables.
 
 #include "TROOT.h"
 #include "TClass.h"
-#include "Riostream.h"
 
 #include "TSQLResult.h"
 #include "TBufferSQL2.h"
 #include "TSQLStructure.h"
 #include "TSQLFile.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 ClassImp(TKeySQL);
 

@@ -264,41 +264,21 @@ void TMVARegression( TString myMethodList = "" )
       factory->BookMethod( dataloader,  TMVA::Types::kMLP, "MLP", "!H:!V:VarTransform=Norm:NeuronType=tanh:NCycles=20000:HiddenLayers=N+20:TestRate=6:TrainingMethod=BFGS:Sampling=0.3:SamplingEpoch=0.8:ConvergenceImprove=1e-6:ConvergenceTests=15:!UseRegulator" );
 
    if (Use["DNN_CPU"]) {
-      /*
-          TString layoutString ("Layout=TANH|(N+100)*2,LINEAR");
-          TString layoutString ("Layout=SOFTSIGN|100,SOFTSIGN|50,SOFTSIGN|20,LINEAR");
-          TString layoutString ("Layout=RELU|300,RELU|100,RELU|30,RELU|10,LINEAR");
-          TString layoutString ("Layout=SOFTSIGN|50,SOFTSIGN|30,SOFTSIGN|20,SOFTSIGN|10,LINEAR");
-          TString layoutString ("Layout=TANH|50,TANH|30,TANH|20,TANH|10,LINEAR");
-          TString layoutString ("Layout=SOFTSIGN|50,SOFTSIGN|20,LINEAR");
-          TString layoutString ("Layout=TANH|100,TANH|30,LINEAR");
-       */
-      TString layoutString("Layout=TANH|50,Layout=TANH|50,Layout=TANH|50,LINEAR");
 
-      TString training0("LearningRate=1e-2,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=50,"
-                        "TestRepetitions=10,WeightDecay=0.01,Regularization=NONE,DropConfig=0.2+0.2+0.2+0.,"
-                        "DropRepetitions=2");
-      TString training1("LearningRate=1e-3,Momentum=0.9,Repetitions=1,ConvergenceSteps=20,BatchSize=50,"
-                        "TestRepetitions=5,WeightDecay=0.01,Regularization=L2,DropConfig=0.1+0.1+0.1,DropRepetitions="
-                        "1");
-      TString training2("LearningRate=1e-4,Momentum=0.3,Repetitions=1,ConvergenceSteps=10,BatchSize=50,"
-                        "TestRepetitions=5,WeightDecay=0.01,Regularization=NONE");
+      TString layoutString("Layout=TANH|50,TANH|50,TANH|50,LINEAR");
+
 
       TString trainingStrategyString("TrainingStrategy=");
-      trainingStrategyString += training0 + "|" + training1 + "|" + training2;
 
-      //       TString trainingStrategyString
-      //       ("TrainingStrategy=LearningRate=1e-1,Momentum=0.3,Repetitions=3,ConvergenceSteps=20,BatchSize=30,TestRepetitions=7,WeightDecay=0.0,L1=false,DropFraction=0.0,DropRepetitions=5");
+      trainingStrategyString +="LearningRate=1e-3,Momentum=0.3,ConvergenceSteps=20,BatchSize=50,TestRepetitions=1,WeightDecay=0.0,Regularization=None,Optimizer=Adam";
 
-      TString nnOptions(
-         "!H:V:ErrorStrategy=SUMOFSQUARES:VarTransform=G:WeightInitialization=XAVIERUNIFORM:Architecture=CPU");
-      //       TString nnOptions ("!H:V:VarTransform=Normalize:ErrorStrategy=CHECKGRADIENTS");
+      TString nnOptions("!H:V:ErrorStrategy=SUMOFSQUARES:VarTransform=G:WeightInitialization=XAVIERUNIFORM:Architecture=CPU");
       nnOptions.Append(":");
       nnOptions.Append(layoutString);
       nnOptions.Append(":");
       nnOptions.Append(trainingStrategyString);
 
-      factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_CPU", nnOptions); // NN
+      factory->BookMethod(dataloader, TMVA::Types::kDL, "DNN_CPU", nnOptions); // NN
    }
 
 

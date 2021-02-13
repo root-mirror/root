@@ -9,17 +9,15 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <string.h>
 
-#include "Riostream.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TEnv.h"
 #include "TGraph.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TStyle.h"
 #include "TMath.h"
-#include "TVector.h"
 #include "TVectorD.h"
 #include "Foption.h"
 #include "TRandom.h"
@@ -28,12 +26,16 @@
 #include "TVirtualPad.h"
 #include "TVirtualGraphPainter.h"
 #include "TBrowser.h"
-#include "TClass.h"
 #include "TSystem.h"
 #include "TPluginManager.h"
-#include <stdlib.h>
+#include "strtok.h"
+
+#include <cstdlib>
 #include <string>
 #include <cassert>
+#include <iostream>
+#include <fstream>
+#include <cstring>
 
 #include "HFitInterface.h"
 #include "Fit/DataRange.h"
@@ -368,17 +370,22 @@ TGraph::TGraph(const TF1 *f, Option_t *option)
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Graph constructor reading input from filename.
-/// filename is assumed to contain at least two columns of numbers.
-/// the string format is by default "%%lg %%lg".
-/// this is a standard c formatting for scanf. If columns of numbers should be
-/// skipped, a "%*lg" or "%*s" for each column can be added,
-/// e.g. "%%lg %%*lg %%lg" would read x-values from the first and y-values from
-/// the third column.
-/// For files separated by a specific delimiter different from ' ' and '\t' (e.g. ';' in csv files)
-/// you can avoid using %*s to bypass this delimiter by explicitly specify the "option" argument,
-/// e.g. option=" \t,;" for columns of figures separated by any of these characters (' ', '\t', ',', ';')
-/// used once (e.g. "1;1") or in a combined way (" 1;,;;  1").
-/// Note in that case, the instantiation is about 2 times slower.
+///
+/// `filename` is assumed to contain at least two columns of numbers.
+/// the string format is by default `"%lg %lg"`.
+/// This is a standard c formatting for `scanf()`.
+///
+/// If columns of numbers should be skipped, a `"%*lg"` or `"%*s"` for each column
+/// can be added,  e.g. `"%lg %*lg %lg"` would read x-values from the first and
+/// y-values from the third column.
+///
+/// For files separated by a specific delimiter different from ' ' and '\t' (e.g.
+/// ';' in csv files) you can avoid using `%*s` to bypass this delimiter by explicitly
+/// specify the `option` argument,
+/// e.g. option=`" \t,;"` for columns of figures separated by any of these characters
+/// (' ', '\t', ',', ';')
+/// used once (e.g. `"1;1"`) or in a combined way (`" 1;,;;  1"`).
+/// Note in that case, the instantiation is about two times slower.
 
 TGraph::TGraph(const char *filename, const char *format, Option_t *option)
    : TNamed("Graph", filename), TAttLine(), TAttFill(0, 1000), TAttMarker()
@@ -1081,7 +1088,7 @@ TFitResultPtr TGraph::Fit(const char *fname, Option_t *option, Option_t *, Axis_
 ///
 /// option | description
 /// -------|------------
-/// "W" | Set all weights to 1; ignore error bars
+/// "W" | Ignore all point errors when fitting a TGraphErrors or TGraphAsymmErrors
 /// "U" | Use a User specified fitting algorithm (via SetFCN)
 /// "Q" | Quiet mode (minimum printing)
 /// "V" | Verbose mode (default is between Q and V)
@@ -1094,7 +1101,7 @@ TFitResultPtr TGraph::Fit(const char *fname, Option_t *option, Option_t *, Axis_
 /// "+" | Add this new fitted function to the list of fitted functions (by default, any previous function is deleted)
 /// "C" | In case of linear fitting, do not calculate the chisquare (saves time)
 /// "F" | If fitting a polN, use the minuit fitter
-/// "EX0" | When fitting a TGraphErrors or TGraphAsymErrors do not consider errors in the coordinate
+/// "EX0" | When fitting a TGraphErrors or TGraphAsymErrors do not consider errors in the X coordinates
 /// "ROB" | In case of linear fitting, compute the LTS regression coefficients (robust (resistant) regression), using the default fraction of good points "ROB=0.x" - compute the LTS regression coefficients, using 0.x as a fraction of good points
 /// "S" |  The result of the fit is returned in the TFitResultPtr (see below Access to the Fit Result)
 ///
@@ -1538,13 +1545,18 @@ TH1F *TGraph::GetHistogram() const
    if (fNpoints > npt) npt = fNpoints;
    const char *gname = GetName();
    if (!gname[0]) gname = "Graph";
-   ((TGraph*)this)->fHistogram = new TH1F(gname, GetTitle(), npt, rwxmin, rwxmax);
+   // do not add the histogram to gDirectory
+   // use local TDirectory::TContect that will set temporarly gDirectory to a nullptr and
+   // will avoid that histogram is added in the global directory
+   {
+      TDirectory::TContext ctx(nullptr);
+      ((TGraph*)this)->fHistogram = new TH1F(gname, GetTitle(), npt, rwxmin, rwxmax);
+   }
    if (!fHistogram) return 0;
    fHistogram->SetMinimum(minimum);
    fHistogram->SetBit(TH1::kNoStats);
    fHistogram->SetMaximum(maximum);
    fHistogram->GetYaxis()->SetLimits(minimum, maximum);
-   fHistogram->SetDirectory(0);
    // Restore the axis attributes if needed
    if (historg) {
       fHistogram->GetXaxis()->SetTitle(historg->GetXaxis()->GetTitle());
@@ -1799,9 +1811,14 @@ void TGraph::InsertPointBefore(Int_t ipoint, Double_t x, Double_t y)
       return;
    }
 
-   if (ipoint > fNpoints-1) {
-      Error("TGraph", "Inserted point index should be <= %d", fNpoints-1);
+   if (ipoint > fNpoints) {
+      Error("TGraph", "Inserted point index should be <= %d", fNpoints);
       return;
+   }
+
+   if (ipoint == fNpoints) {
+       SetPoint(ipoint, x, y);
+       return;
    }
 
    Double_t **ps = ExpandAndCopy(fNpoints + 1, ipoint);
@@ -1888,9 +1905,9 @@ Int_t TGraph::IsInside(Double_t x, Double_t y) const
 /// Least squares polynomial fitting without weights.
 ///
 /// \param [in] m     number of parameters
-/// \param [in] ma     array of parameters
-/// \param [in] mfirst 1st point number to fit (default =0)
-/// \param [in] mlast  last point number to fit (default=fNpoints-1)
+/// \param [in] a     array of parameters
+/// \param [in] xmin  1st point number to fit (default =0)
+/// \param [in] xmax  last point number to fit (default=fNpoints-1)
 ///
 /// based on CERNLIB routine LSQ: Translated to C++ by Rene Brun
 

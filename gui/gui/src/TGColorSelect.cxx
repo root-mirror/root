@@ -45,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TGClient.h"
-#include "TGMsgBox.h"
+#include "TGMsgBox.h"   // for kMBOk
 #include "TGGC.h"
 #include "TGColorSelect.h"
 #include "TGColorDialog.h"
@@ -53,7 +53,9 @@
 #include "RConfigure.h"
 #include "TG3DLine.h"
 #include "TColor.h"
-#include "Riostream.h"
+#include "TVirtualX.h"
+
+#include <iostream>
 
 ClassImp(TGColorFrame);
 ClassImp(TG16ColorSelector);

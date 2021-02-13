@@ -28,7 +28,6 @@ derivator class.
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include <math.h>
 
 #include "RooDerivative.h"
@@ -46,7 +45,7 @@ derivator class.
 using namespace std;
 
 ClassImp(RooDerivative);
-;
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

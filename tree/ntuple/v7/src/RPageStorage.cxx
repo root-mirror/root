@@ -14,12 +14,14 @@
  *************************************************************************/
 
 #include <ROOT/RPageStorage.hxx>
+#include <ROOT/RPageStorageFile.hxx>
 #include <ROOT/RColumn.hxx>
 #include <ROOT/RField.hxx>
+#include <ROOT/RNTupleDescriptor.hxx>
+#include <ROOT/RNTupleMetrics.hxx>
 #include <ROOT/RNTupleModel.hxx>
 #include <ROOT/RPagePool.hxx>
-#include <ROOT/RPageStorageRaw.hxx>
-#include <ROOT/RPageStorageRoot.hxx>
+#include <ROOT/RPageStorageFile.hxx>
 #include <ROOT/RStringView.hxx>
 
 #include <Compression.h>
@@ -28,16 +30,6 @@
 #include <unordered_map>
 #include <utility>
 
-namespace {
-
-bool StrEndsWith(const std::string &str, const std::string &suffix)
-{
-   if (str.size() < suffix.size())
-      return false;
-   return (str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0);
-}
-
-} // anonymous namespace
 
 ROOT::Experimental::Detail::RPageStorage::RPageStorage(std::string_view name) : fNTupleName(name)
 {
@@ -45,6 +37,12 @@ ROOT::Experimental::Detail::RPageStorage::RPageStorage(std::string_view name) : 
 
 ROOT::Experimental::Detail::RPageStorage::~RPageStorage()
 {
+}
+
+ROOT::Experimental::Detail::RNTupleMetrics &ROOT::Experimental::Detail::RPageStorage::GetMetrics()
+{
+   static RNTupleMetrics metrics("");
+   return metrics;
 }
 
 
@@ -63,9 +61,7 @@ ROOT::Experimental::Detail::RPageSource::~RPageSource()
 std::unique_ptr<ROOT::Experimental::Detail::RPageSource> ROOT::Experimental::Detail::RPageSource::Create(
    std::string_view ntupleName, std::string_view location, const RNTupleReadOptions &options)
 {
-   if (StrEndsWith(std::string(location), ".root"))
-      return std::make_unique<RPageSourceRoot>(ntupleName, location, options);
-   return std::make_unique<RPageSourceRaw>(ntupleName, location, options);
+   return std::make_unique<RPageSourceFile>(ntupleName, location, options);
 }
 
 ROOT::Experimental::Detail::RPageStorage::ColumnHandle_t
@@ -74,7 +70,13 @@ ROOT::Experimental::Detail::RPageSource::AddColumn(DescriptorId_t fieldId, const
    R__ASSERT(fieldId != kInvalidDescriptorId);
    auto columnId = fDescriptor.FindColumnId(fieldId, column.GetIndex());
    R__ASSERT(columnId != kInvalidDescriptorId);
-   return ColumnHandle_t(columnId, &column);
+   fActiveColumns.emplace(columnId);
+   return ColumnHandle_t{columnId, &column};
+}
+
+void ROOT::Experimental::Detail::RPageSource::DropColumn(ColumnHandle_t columnHandle)
+{
+   fActiveColumns.erase(columnHandle.fId);
 }
 
 ROOT::Experimental::NTupleSize_t ROOT::Experimental::Detail::RPageSource::GetNEntries()
@@ -93,6 +95,12 @@ ROOT::Experimental::ColumnId_t ROOT::Experimental::Detail::RPageSource::GetColum
    return columnHandle.fId;
 }
 
+void ROOT::Experimental::Detail::RPageSource::UnzipCluster(RCluster *cluster)
+{
+   if (fTaskScheduler)
+      UnzipClusterImpl(cluster);
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -109,9 +117,7 @@ ROOT::Experimental::Detail::RPageSink::~RPageSink()
 std::unique_ptr<ROOT::Experimental::Detail::RPageSink> ROOT::Experimental::Detail::RPageSink::Create(
    std::string_view ntupleName, std::string_view location, const RNTupleWriteOptions &options)
 {
-   if (StrEndsWith(std::string(location), ".root"))
-      return std::make_unique<RPageSinkRoot>(ntupleName, location, options);
-   return std::make_unique<RPageSinkRaw>(ntupleName, location, options);
+   return std::make_unique<RPageSinkFile>(ntupleName, location, options);
 }
 
 ROOT::Experimental::Detail::RPageStorage::ColumnHandle_t
@@ -119,7 +125,7 @@ ROOT::Experimental::Detail::RPageSink::AddColumn(DescriptorId_t fieldId, const R
 {
    auto columnId = fLastColumnId++;
    fDescriptorBuilder.AddColumn(columnId, fieldId, column.GetVersion(), column.GetModel(), column.GetIndex());
-   return ColumnHandle_t(columnId, &column);
+   return ColumnHandle_t{columnId, &column};
 }
 
 
@@ -129,15 +135,22 @@ void ROOT::Experimental::Detail::RPageSink::Create(RNTupleModel &model)
                                 model.GetVersion(), model.GetUuid());
 
    std::unordered_map<const RFieldBase *, DescriptorId_t> fieldPtr2Id; // necessary to find parent field ids
-   const auto &rootField = *model.GetRootField();
-   fDescriptorBuilder.AddField(fLastFieldId, rootField.GetFieldVersion(), rootField.GetTypeVersion(),
-      rootField.GetName(), rootField.GetType(), rootField.GetNRepetitions(), rootField.GetStructure());
-   fieldPtr2Id[&rootField] = fLastFieldId++;
-   for (auto& f : *model.GetRootField()) {
-      fDescriptorBuilder.AddField(fLastFieldId, f.GetFieldVersion(), f.GetTypeVersion(), f.GetName(), f.GetType(),
-                                  f.GetNRepetitions(), f.GetStructure());
+   const auto &fieldZero = *model.GetFieldZero();
+   fDescriptorBuilder.AddField(
+      RDanglingFieldDescriptor::FromField(fieldZero)
+         .FieldId(fLastFieldId)
+         .MakeDescriptor()
+         .Unwrap()
+   );
+   fieldPtr2Id[&fieldZero] = fLastFieldId++;
+   for (auto& f : *model.GetFieldZero()) {
+      fDescriptorBuilder.AddField(
+         RDanglingFieldDescriptor::FromField(f)
+            .FieldId(fLastFieldId)
+            .MakeDescriptor()
+            .Unwrap()
+      );
       fDescriptorBuilder.AddFieldLink(fieldPtr2Id[f.GetParent()], fLastFieldId);
-
       Detail::RFieldFuse::Connect(fLastFieldId, *this, f); // issues in turn one or several calls to AddColumn()
       fieldPtr2Id[&f] = fLastFieldId++;
    }
@@ -155,13 +168,13 @@ void ROOT::Experimental::Detail::RPageSink::Create(RNTupleModel &model)
       fOpenPageRanges.emplace_back(std::move(pageRange));
    }
 
-   DoCreate(model);
+   CreateImpl(model);
 }
 
 
 void ROOT::Experimental::Detail::RPageSink::CommitPage(ColumnHandle_t columnHandle, const RPage &page)
 {
-   auto locator = DoCommitPage(columnHandle, page);
+   auto locator = CommitPageImpl(columnHandle, page);
 
    auto columnId = columnHandle.fId;
    fOpenColumnRanges[columnId].fNElements += page.GetNElements();
@@ -174,7 +187,7 @@ void ROOT::Experimental::Detail::RPageSink::CommitPage(ColumnHandle_t columnHand
 
 void ROOT::Experimental::Detail::RPageSink::CommitCluster(ROOT::Experimental::NTupleSize_t nEntries)
 {
-   auto locator = DoCommitCluster(nEntries);
+   auto locator = CommitClusterImpl(nEntries);
 
    R__ASSERT((nEntries - fPrevClusterNEntries) < ClusterSize_t(-1));
    fDescriptorBuilder.AddCluster(fLastClusterId, RNTupleVersion(), fPrevClusterNEntries,

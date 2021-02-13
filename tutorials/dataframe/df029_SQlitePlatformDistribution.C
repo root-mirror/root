@@ -1,6 +1,7 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -js
+/// Use RDataFrame to display data about ROOT downloads.
 ///
 /// In order to display the Platform Distribution of ROOT, we choose to create two TH1F
 /// histograms: one that includes all types of platforms, other filtering and classifying them.

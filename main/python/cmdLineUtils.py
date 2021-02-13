@@ -16,6 +16,7 @@
 from contextlib import contextmanager
 import os
 import sys
+from time import sleep
 
 # Support both Python2 and Python3 at the same time
 if sys.version_info.major > 2 :
@@ -311,7 +312,7 @@ def manyOccurenceRemove(pathSplitList,fileName):
         for n in pathSplitList:
             if pathSplitList.count(n) != 1:
                 logging.warning(MANY_OCCURENCE_WARNING.format(joinPathSplit(n),fileName))
-                while n in pathSplitList: pathSplitList.remove(n)
+                while n in pathSplitList and pathSplitList.count(n) != 1 : pathSplitList.remove(n)
 
 def patternToPathSplitList(fileName,pattern):
     """
@@ -727,7 +728,16 @@ REPLACE_HELP = "replace object if already existing"
 
 def _openBrowser(rootFile=None):
     browser = ROOT.TBrowser()
-    _input("Press enter to exit.")
+    if ROOT.gSystem.InheritsFrom('TMacOSXSystem'):
+        print("Press ctrl+c to exit.")
+        try:
+            while True:
+                ROOT.gSystem.ProcessEvents()
+                sleep(0.01)
+        except (KeyboardInterrupt, SystemExit):
+            pass
+    else:
+        _input("Press enter to exit.")
 
 def rootBrowse(fileName=None):
     if fileName:

@@ -11,9 +11,8 @@
 #include "TROOT.h"
 #include "TVirtualHistPainter.h"
 #include "TPluginManager.h"
-#include "TClass.h"
 
-TClass *TVirtualHistPainter::fgPainter = 0;
+TClass *TVirtualHistPainter::fgPainter = nullptr;
 
 
 ClassImp(TVirtualHistPainter);

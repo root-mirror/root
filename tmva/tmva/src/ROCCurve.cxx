@@ -32,7 +32,6 @@
 #include "TMVA/Version.h"
 #include "TMVA/MsgLogger.h"
 #include "TGraph.h"
-#include "TMath.h"
 
 #include <algorithm>
 #include <vector>
@@ -266,8 +265,8 @@ Double_t TMVA::ROCCurve::GetROCIntegral(const UInt_t num_points)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Returns a new TGraph containing the ROC curve. Specificity is on the x-axis,
-/// sensitivity on the y-axis.
+/// Returns a new TGraph containing the ROC curve. Sensitivity is on the x-axis,
+/// specificity on the y-axis.
 ///
 /// @param num_points Granularity of the resulting curve. The curve will be subdivided
 ///                     into num_points - 1 regions where the performance of the

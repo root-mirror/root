@@ -50,10 +50,11 @@ You can directly see RDataFrame in action through its [code examples](https://ro
 - [Cheat sheet](#cheatsheet)
 - [Introduction](#introduction)
 - [Crash course](#crash-course)
+- [Efficient analysis in Python](#python)
 - [More features](#more-features)
 - [Transformations](#transformations) -- manipulating data
 - [Actions](#actions) -- getting results
-- [Parallel execution](#parallel-execution) -- how to use it and common pitfalls
+- [Performance tips and parallel execution](#parallel-execution) -- how to use it and common pitfalls
 - [Class reference](#reference) -- most methods are implemented in the [RInterface](https://root.cern/doc/master/classROOT_1_1RDF_1_1RInterface.html) base class
 
 ## <a name="cheatsheet"></a>Cheat sheet
@@ -87,16 +88,17 @@ produce several different results in one event loop. Instant actions trigger the
 | [Cache](classROOT_1_1RDF_1_1RInterface.html#aaaa0a7bb8eb21315d8daa08c3e25f6c9) | Caches in contiguous memory columns' entries. Custom columns can be cached as well, filtered entries are not cached. Users can specify which columns to save (default is all). |
 | [Count](classROOT_1_1RDF_1_1RInterface.html#a37f9e00c2ece7f53fae50b740adc1456) | Return the number of events processed. |
 | [Display](classROOT_1_1RDF_1_1RInterface.html#aee68f4411f16f00a1d46eccb6d296f01) | Obtains the events in the dataset for the requested columns. The method returns a [RDisplay](classROOT_1_1RDF_1_1RDisplay.html) instance which can be queried to get a compressed tabular representation on the standard output or a complete representation as a string. |
-| [Fill](classROOT_1_1RDF_1_1RInterface.html#a0cac4d08297c23d16de81ff25545440a) | Fill a user-defined object with the values of the specified branches, as if by calling `Obj.Fill(branch1, branch2, ...). |
+| [Fill](classROOT_1_1RDF_1_1RInterface.html#a0cac4d08297c23d16de81ff25545440a) | Fill a user-defined object with the values of the specified columns, as if by calling `Obj.Fill(col1, col2, ...). |
 | [Graph](classROOT_1_1RDF_1_1RInterface.html#a804b466ebdbddef5c7e3400cc6b89301) | Fills a TGraph with the two columns provided. If Multithread is enabled, the order of the points may not be the one expected, it is therefore suggested to sort if before drawing. |
-| [Histo{1D,2D,3D}](classROOT_1_1RDF_1_1RInterface.html#a247ca3aeb7ce5b95015b7fae72983055) | Fill a {one,two,three}-dimensional histogram with the processed branch values. |
-| [Max](classROOT_1_1RDF_1_1RInterface.html#a057179b1e77599466a0b02200d5cd8c3) | Return the maximum of processed branch values. If the type of the column is inferred, the return type is `double`, the type of the column otherwise.|
-| [Mean](classROOT_1_1RDF_1_1RInterface.html#ade6b020284f2f4fe9d3b09246b5f376a) | Return the mean of processed branch values.|
-| [Min](classROOT_1_1RDF_1_1RInterface.html#a7005702189e601972b6d19ecebcdc80c) | Return the minimum of processed branch values. If the type of the column is inferred, the return type is `double`, the type of the column otherwise.|
-| [Profile{1D,2D}](classROOT_1_1RDF_1_1RInterface.html#a8ef7dc16b0e9f7bc9cfbe2d9e5de0cef) | Fill a {one,two}-dimensional profile with the branch values that passed all filters. |
-| [Reduce](classROOT_1_1RDF_1_1RInterface.html#a118e723ae29834df8f2a992ded347354) | Reduce (e.g. sum, merge) entries using the function (lambda, functor...) passed as argument. The function must have signature `T(T,T)` where `T` is the type of the branch. Return the final result of the reduction operation. An optional parameter allows initialization of the result object to non-default values. |
+| [Histo{1D,2D,3D}](classROOT_1_1RDF_1_1RInterface.html#a247ca3aeb7ce5b95015b7fae72983055) | Fill a {one,two,three}-dimensional histogram with the processed column values. |
+| [Max](classROOT_1_1RDF_1_1RInterface.html#a057179b1e77599466a0b02200d5cd8c3) | Return the maximum of processed column values. If the type of the column is inferred, the return type is `double`, the type of the column otherwise.|
+| [Mean](classROOT_1_1RDF_1_1RInterface.html#ade6b020284f2f4fe9d3b09246b5f376a) | Return the mean of processed column values.|
+| [Min](classROOT_1_1RDF_1_1RInterface.html#a7005702189e601972b6d19ecebcdc80c) | Return the minimum of processed column values. If the type of the column is inferred, the return type is `double`, the type of the column otherwise.|
+| [Profile{1D,2D}](classROOT_1_1RDF_1_1RInterface.html#a8ef7dc16b0e9f7bc9cfbe2d9e5de0cef) | Fill a {one,two}-dimensional profile with the column values that passed all filters. |
+| [Reduce](classROOT_1_1RDF_1_1RInterface.html#a118e723ae29834df8f2a992ded347354) | Reduce (e.g. sum, merge) entries using the function (lambda, functor...) passed as argument. The function must have signature `T(T,T)` where `T` is the type of the column. Return the final result of the reduction operation. An optional parameter allows initialization of the result object to non-default values. |
 | [Report](classROOT_1_1RDF_1_1RInterface.html#a94f322531dcb25beb8f53a602e5d6332) | Obtains statistics on how many entries have been accepted and rejected by the filters. See the section on [named filters](#named-filters-and-cutflow-reports) for a more detailed explanation. The method returns a RCutFlowReport instance which can be queried programmatically to get information about the effects of the individual cuts. |
-| [StdDev](classROOT_1_1RDF_1_1RInterface.html#a482c4e4f81fe1e421c016f89cd281572) | Return the unbiased standard deviation of the processed branch values. |
+| [Stats](https://root.cern/doc/master/classROOT_1_1RDF_1_1RInterface.html#a9e8fafb75abfa4faed4da18dcde01568) | Return a TStatistic object filled with the input columns. |
+| [StdDev](classROOT_1_1RDF_1_1RInterface.html#a482c4e4f81fe1e421c016f89cd281572) | Return the unbiased standard deviation of the processed column values. |
 | [Sum](classROOT_1_1RDF_1_1RInterface.html#a61d03407459120df6749af43ed506891) | Return the sum of the values in the column. If the type of the column is inferred, the return type is `double`, the type of the column otherwise. |
 | [Take](classROOT_1_1RDF_1_1RInterface.html#a4fd694773a2931b6b07737ddcd1e73b4) | Extract a column from the dataset as a collection of values. If the type of the column is a C-style array, the type stored in the return container is a `ROOT::VecOps::RVec<T>` to guarantee the lifetime of the data involved. |
 
@@ -119,6 +121,7 @@ produce several different results in one event loop. Instant actions trigger the
 | [GetFilterNames](classROOT_1_1RDF_1_1RInterface.html#a25026681111897058299161a70ad9bb2) | Get all the filters defined. If called on a root node, all filters will be returned. For any other node, only the filters upstream of that node. |
 | [Display](classROOT_1_1RDF_1_1RInterface.html#a652f9ab3e8d2da9335b347b540a9a941) | Provides an ASCII representation of the columns types and contents of the dataset printable by the user. |
 | [SaveGraph](namespaceROOT_1_1RDF.html#adc17882b283c3d3ba85b1a236197c533) | Store the computation graph of an RDataFrame in graphviz format for easy inspection. |
+| [GetNRuns](classROOT_1_1RDF_1_1RInterface.html#adfb0562a9f7732c3afb123aefa07e0df) | Get the number of event loops run by this RDataFrame instance. |
 
 
 ## <a name="introduction"></a>Introduction
@@ -132,7 +135,7 @@ at the same time, users can just as easily specify custom code that will be exec
 1. **build a data-frame** object by specifying your data-set
 2. **apply a series of transformations** to your data
    1.  **filter** (e.g. apply some cuts) or
-   2.  **define** a new column (e.g. the result of an expensive computation on branches)
+   2.  **define** a new column (e.g. the result of an expensive computation on columns)
 3. **apply actions** to the transformed data to produce results (e.g. fill a histogram)
 
 The following table shows how analyses based on `TTreeReader` and `TTree::Draw` translate to `RDataFrame`. Follow the
@@ -380,6 +383,78 @@ ROOT::EnableImplicitMT();
 ~~~
 Simple as that. More details are given [below](#parallel-execution).
 
+
+##  <a name="python"></a>Efficient analysis in Python
+
+You can use `RDataFrame` in Python due to the dynamic C++/Python translation of PyROOT. In general, the interface
+is the same as for C++, a simple example follows.
+
+~~~{.python}
+df = ROOT.RDataFrame("myTree", "myFile.root")
+sum = df.Filter("x > 10").Sum("y")
+print(sum.GetValue())
+~~~
+
+### Simple usage of efficient C++ code in Python
+
+To perform more complex operations in the `RDataFrame` graph, e.g., in `Filter` and `Define` nodes, which don't
+fit into a simple expression string, you can just-in-time compile such functions directly in the Python script
+via the C++ interpreter cling. This approach has the advantage that you get the efficiency of compiled C++ code
+combined with the convenient workflow of a Python script. See the following snippet for an example of how to
+use a jitted C++ function from Python.
+
+~~~{.python}
+ROOT.gInterpreter.Declare("""
+bool myFilter(float x) {
+    return x > 10;
+}
+""")
+
+df = ROOT.RDataFrame("myTree", "myFile.root")
+sum = df.Filter("myFilter(x)").Sum("y")
+print(sum.GetValue())
+~~~
+
+To increase the performance even further, you can also precompile a C++ library with full code optimizations
+and load the function into the `RDataFrame` computation as follows.
+
+~~~{.python}
+ROOT.gSystem.Load("path/to/myLibrary.so") # Library with the myFilter function
+ROOT.gInterpreter.Declare('#include "myLibrary.h"') # Header with the definition of the myFilter function
+df = ROOT.RDataFrame("myTree", "myFile.root")
+sum = df.Filter("myFilter(x)").Sum("y")
+print(sum.GetValue())
+~~~
+
+### Just-in-time compilation of Python callables with numba
+
+ROOT also offers the option to compile Python callables with fundamental types and arrays thereof using numba and then
+using the function in `RDataFrame` from C++. The workflow requires the Python packages `numba` and `cffi`
+to be installed. See the following snippet for a simple example or the full tutorial [here](pyroot004__NumbaDeclare_8py.html).
+
+~~~{.python}
+@ROOT.Numba.Declare(["float"], "bool")
+def myFilter(x):
+    return x > 10
+
+df = ROOT.RDataFrame("myTree", "myFile.root")
+sum = df.Filter("Numba::myFilter(x)").Sum("y")
+print(sum.GetValue())
+~~~
+
+### Conversion to numpy arrays
+
+Eventually, you probably would like to inspect the content of the `RDataFrame` or process the data further
+with functionality from Python libraries. For this purpose, we provide the `AsNumpy` function, which is able
+to provide you the columns of your `RDataFrame` as numpy arrays in Python. See a brief introduction below or
+a full tutorial [here](df026__AsNumpyArrays_8py.html).
+
+~~~{.python}
+df = ROOT.RDataFrame("myTree", "myFile.root")
+cols = df.Filter("x > 10").AsNumpy(["x", "y"])
+print(cols["x"], cols["y"])
+~~~
+
 ##  <a name="more-features"></a>More features
 Here is a list of the most important features that have been omitted in the "Crash course" for brevity.
 You don't need to read all these to start using `RDataFrame`, but they are useful to save typing time and runtime.
@@ -482,6 +557,11 @@ dataFrame.Min<MyNumber_t>("myObject"); // OK, "myObject" is deduced to be of typ
 Deducing types at runtime requires the just-in-time compilation of the relevant actions, which has a small runtime
 overhead, so specifying the type of the columns as template parameters to the action is good practice when performance is a goal.
 
+When deducing types at runtime, fundamental types are read as constant values, i.e. it is not possible to write to column values
+from Filters or Defines. This is typically perfectly fine and avoids certain common mistakes such as typing `x = 0` rather than `x == 0`.
+Classes and other complex types are read by non-constant references to avoid copies and to permit calls to non-const member functions.
+Note that calling non-const member functions will often not be thread-safe.
+
 ### Generic actions
 `RDataFrame` strives to offer a comprehensive set of standard actions that can be performed on each event. At the same
 time, it **allows users to execute arbitrary code (i.e. a generic action) inside the event loop** through the `Foreach`
@@ -513,7 +593,7 @@ We can take advantage of `ForeachSlot` to evaluate a thread-safe root mean squar
 ~~~{.cpp}
 // Thread-safe evaluation of RMS of branch "b" using ForeachSlot
 ROOT::EnableImplicitMT();
-const unsigned int nSlots = ROOT::GetImplicitMTPoolSize();
+const unsigned int nSlots = ROOT::GetThreadPoolSize();
 std::vector<double> sumSqs(nSlots, 0.);
 std::vector<unsigned int> ns(nSlots, 0);
 
@@ -734,7 +814,7 @@ from the names of the variables specified by the user.
 It is possible to create custom columns also as a function of the processing slot and entry numbers. The methods that can
 be invoked are:
 - `DefineSlot(name, f, columnList)`. In this case the callable f has this signature `R(unsigned int, T1, T2, ...)`: the
-first parameter is the slot number which ranges from 0 to ROOT::GetImplicitMTPoolSize() - 1.
+first parameter is the slot number which ranges from 0 to ROOT::GetThreadPoolSize() - 1.
 - `DefineSlotEntry(name, f, columnList)`. In this case the callable f has this signature `R(unsigned int, ULong64_t,
 T1, T2, ...)`: the first parameter is the slot number while the second one the number of the entry being processed.
 
@@ -744,7 +824,7 @@ Actions can be **instant** or **lazy**. Instant actions are executed as soon as 
 executed whenever the object they return is accessed for the first time. As a rule of thumb, actions with a return value
 are lazy, the others are instant.
 
-##  <a name="parallel-execution"></a>Parallel execution
+##  <a name="parallel-execution"></a>Performance tips and parallel execution
 As pointed out before in this document, `RDataFrame` can transparently perform multi-threaded event loops to speed up
 the execution of its actions. Users have to call `ROOT::EnableImplicitMT()` *before* constructing the `RDataFrame`
 object to indicate that it should take advantage of a pool of worker threads. **Each worker thread processes a distinct
@@ -753,6 +833,14 @@ More specifically, the dataset will be divided in batches of entries, and thread
 processing of these batches. There are no guarantees on the order the batches are processed, i.e. no guarantees in the
 order entries of the dataset are processed. Note that this in turn means that, for multi-thread event loops, there is no
 guarantee on the order in which `Snapshot` will _write_ entries: they could be scrambled with respect to the input dataset.
+
+\warning RDataFrame will by default start as many threads as the hardware supports, using up **all** the resources on
+a machine. On a worker node of *e.g.* a batch cluster, this might not be desired if the machine is shared with other
+users. Therefore, **when running on shared computing resources**, use
+```
+ROOT::EnableImplicitMT(i)
+```
+replacing `i` with the number of CPUs/slots that were allocated for this job.
 
 ### Thread-safety of user-defined expressions
 RDataFrame operations such as `Histo1D` or `Snapshot` are guaranteed to work correctly in multi-thread event loops.
@@ -767,25 +855,39 @@ In order to facilitate writing of thread-safe operations, some RDataFrame featur
 offer thread-aware counterparts (`ForeachSlot`, `DefineSlot`, `OnPartialResultSlot`): their only difference is that they
 will pass an extra `slot` argument (an unsigned integer) to the user-defined expression. When calling user-defined code
 concurrently, `RDataFrame` guarantees that different threads will employ different values of the `slot` parameter,
-where `slot` will be a number between 0 and `ROOT::GetImplicitMTPoolSize() - 1`.
+where `slot` will be a number between 0 and `ROOT::GetThreadPoolSize() - 1`.
 In other words, within a slot, computation runs sequentially and events are processed sequentially.
 Note that the same slot might be associated to different threads over the course of a single event loop, but two threads
 will never receive the same slot at the same time.
 This extra parameter might facilitate writing safe parallel code by having each thread write/modify a different
 *processing slot*, e.g. a different element of a list. See [here](#generic-actions) for an example usage of `ForeachSlot`.
 
+### Parallel execution of multiple `RDataFrame` event loops
+A complex analysis may require multiple `RDatFrame` objects to compute all desired results. This poses the challenge that the
+event loops of each `RDataFrame` graph can be parallelized but run sequentially one after another. In the case of many threads
+you may encounter the problem that you run out of data to serve all available resources. To improve this scenario, the helper
+`ROOT::RDF::RunGraphs` allows you to process multiple `RDataFrame` graphs concurrently, which may improve the resource usage.
+~~~{.cpp}
+ROOT::EnableImplicitMT();
+ROOT::RDataFrame df1("tree1", "f1.root");
+ROOT::RDataFrame df2("tree2", "f2.root");
+auto histo1 = df1.Histo1D("x");
+auto histo2 = df2.Histo1D("y");
+
+// just accessing result pointers, the event loops of separate RDataFrames run one after the other
+histo1->Draw(); // runs first multi-thread event loop
+histo2->Draw(); // runs second multi-thread event loop
+
+// with ROOT::RDF::RunGraphs, event loops for separate computation graphs can run concurrently
+ROOT::RDF::RunGraphs({histo1, histo2});
+~~~
 <a name="reference"></a>
 */
 // clang-format on
 
 namespace ROOT {
-namespace Detail {
-namespace RDF {
-class RCustomColumnBase;
-}
-} // namespace Detail
 
-using ColumnNames_t = ROOT::Detail::RDF::ColumnNames_t;
+using ROOT::Detail::RDF::ColumnNames_t;
 using ColumnNamesPtr_t = std::shared_ptr<const ColumnNames_t>;
 
 namespace RDFInternal = ROOT::Internal::RDF;

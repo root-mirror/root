@@ -17,7 +17,6 @@
 #define ROO_BINNING
 
 #include "Rtypes.h"
-#include "TList.h"
 #include "RooDouble.h"
 #include "RooAbsBinning.h"
 #include "RooNumber.h"

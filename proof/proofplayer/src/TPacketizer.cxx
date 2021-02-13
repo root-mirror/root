@@ -47,7 +47,6 @@ the remote machine, the locality of the database files, etc.
 #include "TUrl.h"
 #include "TClass.h"
 #include "TMath.h"
-#include "TObjString.h"
 
 //
 // The following three utility classes manage the state of the

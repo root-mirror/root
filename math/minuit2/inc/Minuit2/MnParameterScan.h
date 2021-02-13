@@ -18,8 +18,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class FCNBase;
 
@@ -30,28 +29,27 @@ class FCNBase;
 class MnParameterScan {
 
 public:
+   MnParameterScan(const FCNBase &, const MnUserParameters &);
 
-  MnParameterScan(const FCNBase&, const MnUserParameters&);
+   MnParameterScan(const FCNBase &, const MnUserParameters &, double);
 
-  MnParameterScan(const FCNBase&, const MnUserParameters&, double);
+   ~MnParameterScan() {}
 
-  ~MnParameterScan() {}
+   // returns pairs of (x,y) points, x=parameter Value, y=function Value of FCN
+   std::vector<std::pair<double, double>>
+   operator()(unsigned int par, unsigned int maxsteps = 41, double low = 0., double high = 0.);
 
-// returns pairs of (x,y) points, x=parameter Value, y=function Value of FCN
-  std::vector<std::pair<double, double> > operator()(unsigned int par, unsigned int maxsteps = 41, double low = 0., double high = 0.);
-
-  const MnUserParameters& Parameters() const {return fParameters;}
-  double Fval() const {return fAmin;}
+   const MnUserParameters &Parameters() const { return fParameters; }
+   double Fval() const { return fAmin; }
 
 private:
-
-  const FCNBase& fFCN;
-  MnUserParameters fParameters;
-  double fAmin;
+   const FCNBase &fFCN;
+   MnUserParameters fParameters;
+   double fAmin;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnParameterScan
+#endif // ROOT_Minuit2_MnParameterScan

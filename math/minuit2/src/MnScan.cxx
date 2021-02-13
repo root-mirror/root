@@ -12,16 +12,16 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-std::vector<std::pair<double, double> > MnScan::Scan(unsigned int par, unsigned int maxsteps, double low, double high) {
+std::vector<std::pair<double, double>> MnScan::Scan(unsigned int par, unsigned int maxsteps, double low, double high)
+{
    // perform a scan of the function in the parameter par
    MnParameterScan scan(fFCN, fState.Parameters());
    double amin = scan.Fval();
 
-   std::vector<std::pair<double, double> > result = scan(par, maxsteps, low, high);
-   if(scan.Fval() < amin) {
+   std::vector<std::pair<double, double>> result = scan(par, maxsteps, low, high);
+   if (scan.Fval() < amin) {
       fState.SetValue(par, scan.Parameters().Value(par));
       amin = scan.Fval();
    }
@@ -29,6 +29,6 @@ std::vector<std::pair<double, double> > MnScan::Scan(unsigned int par, unsigned 
    return result;
 }
 
-   }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT

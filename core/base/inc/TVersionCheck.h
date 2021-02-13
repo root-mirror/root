@@ -12,16 +12,14 @@
 #ifndef ROOT_TVersionCheck
 #define ROOT_TVersionCheck
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// TVersionCheck                                                        //
-//                                                                      //
-// Used to check if the shared library or plugin is compatible with     //
-// the current version of ROOT.                                         //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
 #include "RVersion.h"
+
+/** \class TVersionCheck
+\ingroup Base
+
+Used to check if the shared library or plugin is compatible with
+the current version of ROOT.
+*/
 
 class TVersionCheck {
 public:

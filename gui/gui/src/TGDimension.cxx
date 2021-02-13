@@ -33,12 +33,6 @@
 #include "TGDimension.h"
 #include "TMathBase.h"
 
-ClassImp(TGDimension);
-ClassImp(TGPosition);
-ClassImp(TGLongPosition);
-ClassImp(TGInsets);
-ClassImp(TGRectangle);
-
 void TGRectangle::Merge(const TGRectangle &r)
 {
    // Merge parameters

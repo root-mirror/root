@@ -21,7 +21,6 @@
 #include "TAttLine.h"
 #include "TAttBBox.h"
 
-#include "TEveUtil.h"
 #include "TEveElement.h"
 #include "TEveProjectionBases.h"
 #include "TEveChunkManager.h"

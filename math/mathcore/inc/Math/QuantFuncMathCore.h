@@ -41,8 +41,8 @@ namespace Math {
    *
    *  \f[ D(x) = \int_{x}^{+\infty} p(x') dx' \f]
    *
-   *  These functions are defined in the header file <em>Math/ProbFunc.h<em> or in the global one
-   *  including all statistical functions <em>Math/DistFunc.h<em>
+   *  These functions are defined in the header file <em>Math/ProbFunc.h</em> or in the global one
+   *  including all statistical functions <em>Math/DistFunc.h</em>
    *
    *
    * <strong>NOTE:</strong> In the old releases (< 5.14) the <em>_quantile</em> functions were called

@@ -14,7 +14,6 @@
 #define ROOT_Math_StdEngine
 
 #include <random>
-#include <string>
 
 namespace ROOT {
 

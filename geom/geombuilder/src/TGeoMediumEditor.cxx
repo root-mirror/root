@@ -21,7 +21,6 @@ Editor class for TGeo tracking media.
 #include "TGeoManager.h"
 #include "TGeoMedium.h"
 #include "TGeoMaterial.h"
-#include "TPad.h"
 #include "TGTab.h"
 #include "TGComboBox.h"
 #include "TGButton.h"

@@ -35,6 +35,7 @@ protected:
    std::string fSelectedVolume;              ///<! name of selected volume
    REveGeomDescription fDesc;                ///<! geometry description, send to the client as first message
    bool fShowHierarchy{true};                ///<! if hierarchy visible by default
+   std::string fTitle;                       ///<! title of geometry viewer
 
    std::shared_ptr<RWebWindow> fWebWindow;   ///<! web window to show geometry
 
@@ -48,6 +49,11 @@ public:
 
    REveGeomViewer(TGeoManager *mgr = nullptr, const std::string &volname = "");
    virtual ~REveGeomViewer();
+
+   void SetTitle(const std::string &title) { fTitle = title; }
+   const std::string &GetTitle() const { return fTitle; }
+
+   std::string GetWindowAddr() const;
 
    void SetGeometry(TGeoManager *mgr, const std::string &volname = "");
 
@@ -82,6 +88,7 @@ public:
 
 };
 
-}}
+} // namespace Experimental
+} // namespace ROOT
 
 #endif

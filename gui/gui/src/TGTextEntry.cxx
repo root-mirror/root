@@ -214,9 +214,11 @@ All other keys with valid ASCII codes insert themselves into the line.
 #include "TTimer.h"
 #include "TColor.h"
 #include "KeySymbols.h"
-#include "Riostream.h"
 #include "TClass.h"
-#include "TGMsgBox.h"
+#include "TVirtualX.h"
+#include "strlcpy.h"
+
+#include <iostream>
 
 
 TString      *TGTextEntry::fgClipboardText = 0;

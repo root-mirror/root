@@ -61,6 +61,8 @@ public:
    virtual Int_t          GetNfill() const = 0;
    virtual Long64_t       GetEntries(const char *) = 0;
    virtual Long64_t       GetSelectedRows() const = 0;
+   virtual TSelector     *GetSelector() const = 0;
+   virtual TSelector     *GetSelectorFromFile() const = 0;
    virtual TTreeFormula  *GetSelect() const = 0;
    virtual TTreeFormula  *GetVar(Int_t) const = 0;
    virtual TTreeFormula  *GetVar1() const = 0;

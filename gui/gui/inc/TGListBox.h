@@ -35,10 +35,9 @@
 #include "TGFrame.h"
 #include "TGCanvas.h"
 #include "TGScrollBar.h"
-#include "TList.h"
 
 class TGListBox;
-
+class TList;
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //

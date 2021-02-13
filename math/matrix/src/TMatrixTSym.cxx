@@ -14,7 +14,9 @@
 
  TMatrixTSym
 
- Template class of a symmetric matrix in the linear algebra package
+ Template class of a symmetric matrix in the linear algebra package.
+
+ See \ref MatrixPage for the documentation of the linear algebra package.
 
  Note that in this implementation both matrix element m[i][j] and
  m[j][i] are updated and stored in memory . However, when making the
@@ -28,7 +30,6 @@
 #include "TMatrixTSymCramerInv.h"
 #include "TDecompLU.h"
 #include "TMatrixDSymEigen.h"
-#include "TClass.h"
 #include "TMath.h"
 
 templateClassImp(TMatrixTSym);

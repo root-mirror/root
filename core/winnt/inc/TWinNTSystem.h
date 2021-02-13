@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TSystem.h"
-
+#include <string>
 
 #if !defined(__CINT__)
  #include "Windows4Root.h"

@@ -12,6 +12,7 @@
 #include "TMPIFile.h"
 #include "TFileCacheWrite.h"
 #include "TKey.h"
+#include "THashTable.h"
 #include "TMath.h"
 
 ClassImp(TMPIFile);

@@ -21,6 +21,7 @@
 #include "TMath.h"
 
 #include "Rtypes.h"
+#include <string>
 
 
 class TComplex {

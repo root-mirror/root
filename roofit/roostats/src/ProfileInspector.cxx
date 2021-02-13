@@ -28,7 +28,6 @@ Utility class to plot conditional MLE of nuisance parameters vs. Parameters of I
 #include "RooAbsReal.h"
 #include "RooArgSet.h"
 #include "RooAbsPdf.h"
-#include "RooArgSet.h"
 #include "RooCurve.h"
 #include "TAxis.h"
 

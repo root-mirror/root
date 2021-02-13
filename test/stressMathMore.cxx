@@ -33,12 +33,10 @@
 #include <iomanip>
 #include <limits>
 #include <cmath>
-#include <stdlib.h>
+#include <cstdlib>
 #include "TBenchmark.h"
 #include "TROOT.h"
 #include "TRandom3.h"
-#include "TSystem.h"
-#include "TF1.h"
 
 using namespace ROOT::Math;
 

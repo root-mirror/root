@@ -9,14 +9,13 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+#include <cctype>
+#include <iostream>
 
-#include "Riostream.h"
 #include "TROOT.h"
-#include "TClass.h"
 #include "TSystem.h"
 #include "THistPainter.h"
 #include "TH2.h"
@@ -37,7 +36,6 @@
 #include "TPaveStats.h"
 #include "TFrame.h"
 #include "TLatex.h"
-#include "TLine.h"
 #include "TPolyLine.h"
 #include "TPoints.h"
 #include "TStyle.h"
@@ -53,7 +51,6 @@
 #include "TMath.h"
 #include "TRandom2.h"
 #include "TObjArray.h"
-#include "TVectorD.h"
 #include "Hoption.h"
 #include "Hparam.h"
 #include "TPluginManager.h"
@@ -61,10 +58,12 @@
 #include "TCrown.h"
 #include "TArrow.h"
 #include "TVirtualPadEditor.h"
+#include "TVirtualX.h"
 #include "TEnv.h"
 #include "TPoint.h"
 #include "TImage.h"
 #include "TCandle.h"
+#include "strlcpy.h"
 
 /*! \class THistPainter
 \ingroup Histpainter
@@ -251,7 +250,7 @@ using `TH1::GetOption`:
 | "BAR"    | Like option "B", but bars can be drawn with a 3D effect.|
 | "HBAR"   | Like option "BAR", but bars are drawn horizontally.|
 | "C"      | Draw a smooth Curve through the histogram bins.|
-| "E0"     | Draw error bars. Markers are drawn for bins with 0 contents.|
+| "E0"     | Draw error bars. Markers are drawn for bins with 0 contents. Combined with E1 or E2 it avoids error bars clipping|
 | "E1"     | Draw error bars with perpendicular lines at the edges.|
 | "E2"     | Draw error bars with rectangles.|
 | "E3"     | Draw a fill area through the end points of the vertical error bars.|
@@ -419,7 +418,7 @@ some combinations must be use with care.
 - It does not work when combined with the `LEGO` and `SURF` options unless the
   histogram plotted with the option `SAME` has exactly the same
   ranges on the X, Y and Z axis as the currently drawn histogram. To superimpose
-  lego plots [histograms' stacks](#HP26) should be used.</li>
+  lego plots [histograms' stacks](#HP26) should be used.
 
 
 ### <a name="HP061"></a> Colors automatically picked in palette
@@ -670,7 +669,10 @@ to `gStyle->SetOptFit(111)`
 | "E2"     | Error rectangles are drawn.|
 | "E3"     | A filled area is drawn through the end points of the vertical error bars.|
 | "E4"     | A smoothed filled area is drawn through the end points of the vertical error bars.|
-| "E0"     | Draw also bins with null contents.|
+| "E0"     | Draw error bars. Markers are drawn for bins with 0 contents. Combined with E1 or E2 it avoids error bars clipping|
+| "E5"     | Like E3 but ignore the bins with 0 contents.|
+| "E6"     | Like E4 but ignore the bins with 0 contents.|
+| "X0"     | When used with one of the "E" option, it suppress the error bar along X as `gStyle->SetErrorX(0)` would do.|
 
 Begin_Macro(source)
 {
@@ -1694,15 +1696,15 @@ End_Macro
 
 The following contour options are supported:
 
-| Option   | Description                                                       |
-|----------|-------------------------------------------------------------------|
-| "CONT"   | Draw a contour plot (same as CONT0).|
-| "CONT0"  | Draw a contour plot using surface colors to distinguish contours.|
-| "CONT1"  | Draw a contour plot using the line colors to distinguish contours.|
-| "CONT2"  | Draw a contour plot using the line styles to distinguish contours.|
-| "CONT3"  | Draw a contour plot solid lines for all contours.|
-| "CONT4"  | Draw a contour plot using surface colors (`SURF` option at theta = 0).|
-| "CONT5"  | Draw a contour plot using Delaunay triangles.|
+| Option   | Description                                                                 |
+|----------|-----------------------------------------------------------------------------|
+| "CONT"   | Draw a contour plot (same as CONT0).                                        |
+| "CONT0"  | Draw a contour plot using surface colors to distinguish contours.           |
+| "CONT1"  | Draw a contour plot using the line colors to distinguish contours.          |
+| "CONT2"  | Draw a contour plot using the line styles (1 to 5) to distinguish contours. |
+| "CONT3"  | Draw a contour plot using the same line style for all contours.             |
+| "CONT4"  | Draw a contour plot using surface colors (`SURF` option at theta = 0).      |
+| "CONT5"  | Draw a contour plot using Delaunay triangles.                               |
 
 
 
@@ -1748,7 +1750,7 @@ End_Macro
 
 The following example shows a 2D histogram plotted with the option
 `CONT2`. The option `CONT2` draws a contour plot using the
-line styles to distinguish contours.
+line styles (1 to 5) to distinguish contours.
 
 Begin_Macro(source)
 {
@@ -1765,7 +1767,7 @@ Begin_Macro(source)
 End_Macro
 
 The following example shows a 2D histogram plotted with the option
-`CONT3`. The option `CONT3` draws contour plot solid lines for
+`CONT3`. The option `CONT3` draws contour plot using the same line style for
 all contours.
 
 Begin_Macro(source)
@@ -1778,6 +1780,7 @@ Begin_Macro(source)
       hcont3->Fill(px-1,5*py);
       hcont3->Fill(2+0.5*px,2*py-10.,0.1);
    }
+   hcont3->SetLineStyle(kDotted);
    hcont3->Draw("CONT3");
 }
 End_Macro
@@ -2892,7 +2895,7 @@ The supported option is:
 
 | Option   | Description                                                       |
 |----------|-------------------------------------------------------------------|
-| "GLTF3"  | Draw a TF3.|
+| "GL"     | Draw a TF3.|
 
 
 
@@ -3143,6 +3146,7 @@ THistPainter::THistPainter()
    }
    fXHighlightBin = -1;
    fYHighlightBin = -1;
+   fCurrentF3 = nullptr;
 
    gStringEntries          = gEnv->GetValue("Hist.Stats.Entries",          "Entries");
    gStringMean             = gEnv->GetValue("Hist.Stats.Mean",             "Mean");
@@ -3172,6 +3176,7 @@ THistPainter::THistPainter()
 
 THistPainter::~THistPainter()
 {
+   if (fPie) delete fPie;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4117,12 +4122,14 @@ Int_t THistPainter::MakeChopt(Option_t *choptin)
 
    l = strstr(chopt,"TF3");
    if (l) {
+      memcpy(l,"    ",3);
       l = strstr(chopt,"FB");   if (l) { Hoption.FrontBox = 0; memcpy(l,"  ",2); }
       l = strstr(chopt,"BB");   if (l) { Hoption.BackBox = 0;  memcpy(l,"  ",2); }
    }
 
    l = strstr(chopt,"ISO");
    if (l) {
+      memcpy(l,"    ",3);
       l = strstr(chopt,"FB");   if (l) { Hoption.FrontBox = 0; memcpy(l,"  ",2); }
       l = strstr(chopt,"BB");   if (l) { Hoption.BackBox = 0;  memcpy(l,"  ",2); }
    }
@@ -4292,13 +4299,13 @@ Int_t THistPainter::MakeChopt(Option_t *choptin)
    if (strstr(chopt,"E")) {
       if (hdim == 1) {
          Hoption.Error = 1;
-         if (strstr(chopt,"E0"))  Hoption.Error = 10;
          if (strstr(chopt,"E1"))  Hoption.Error = 11;
          if (strstr(chopt,"E2"))  Hoption.Error = 12;
          if (strstr(chopt,"E3"))  Hoption.Error = 13;
          if (strstr(chopt,"E4"))  Hoption.Error = 14;
          if (strstr(chopt,"E5"))  Hoption.Error = 15;
          if (strstr(chopt,"E6"))  Hoption.Error = 16;
+         if (strstr(chopt,"E0"))  Hoption.Error += 40;
          if (strstr(chopt,"X0")) {
             if (Hoption.Error == 1)  Hoption.Error += 20;
             Hoption.Error += 10;
@@ -5726,7 +5733,7 @@ void THistPainter::PaintColorLevels(Option_t*)
    }
    Int_t ndivz  = TMath::Abs(ndiv);
    if (fH->TestBit(TH1::kUserContour) == 0) fH->SetContour(ndiv);
-   Double_t scale = ndivz/dz;
+   Double_t scale = (dz ? ndivz / dz : 1.0);
 
    Int_t color;
    TProfile2D* prof2d = dynamic_cast<TProfile2D*>(fH);
@@ -6252,9 +6259,9 @@ void THistPainter::PaintErrors(Option_t *)
    Double_t *xline = 0;
    Double_t *yline = 0;
    option0 = option1 = option2 = option3 = option4 = optionE = optionEX0 = optionI0 = 0;
+   if (Hoption.Error >= 40) {Hoption.Error -=40; option0 = 1;}
    if (Int_t(Hoption.Error/10) == 2) {optionEX0 = 1; Hoption.Error -= 10;}
    if (Hoption.Error == 31) {optionEX0 = 1; Hoption.Error = 1;}
-   if (Hoption.Error == 10) option0 = 1;
    if (Hoption.Error == 11) option1 = 1;
    if (Hoption.Error == 12) option2 = 1;
    if (Hoption.Error == 13) option3 = 1;
@@ -6422,7 +6429,11 @@ void THistPainter::PaintErrors(Option_t *)
       if (!symbolsize || !errormarker) drawmarker = kFALSE;
 
       //  draw the error rectangles
-      if (option2) gPad->PaintBox(xi1,yi3,xi2,yi4);
+      if (option2) {
+         if (yi3 >= ymax) goto L30;
+         if (yi4 <= ymin) goto L30;
+         gPad->PaintBox(xi1,yi3,xi2,yi4);
+      }
 
       //  keep points for fill area drawing
       if (option3) {
@@ -6462,10 +6473,13 @@ void THistPainter::PaintErrors(Option_t *)
       //          draw line at the end of the error bars
 
       if (option1 && drawmarker) {
-         if (yi3 < yi1-s2y) gPad->PaintLine(xi3 - bxsize,yi3,xi3 + bxsize,yi3);
-         if (yi4 > yi1+s2y) gPad->PaintLine(xi3 - bxsize,yi4,xi3 + bxsize,yi4);
-         if (xi1 < xi3-s2x) gPad->PaintLine(xi1,yi1 - bysize,xi1,yi1 + bysize);
-         if (xi2 > xi3+s2x) gPad->PaintLine(xi2,yi1 - bysize,xi2,yi1 + bysize);
+
+         if (yi3 < yi1-s2y && yi3 < ymax && yi3 > ymin) gPad->PaintLine(xi3 - bxsize, yi3         , xi3 + bxsize, yi3);
+         if (yi4 > yi1+s2y && yi4 < ymax && yi4 > ymin) gPad->PaintLine(xi3 - bxsize, yi4         , xi3 + bxsize, yi4);
+         if (yi1 <= ymax && yi1 >= ymin) {
+            if (xi1 < xi3-s2x) gPad->PaintLine(xi1         , yi1 - bysize, xi1         , yi1 + bysize);
+            if (xi2 > xi3+s2x) gPad->PaintLine(xi2         , yi1 - bysize, xi2         , yi1 + bysize);
+         }
       }
 
       //          draw the marker
@@ -6892,7 +6906,10 @@ void THistPainter::PaintH3(Option_t *option)
    opt.ToLower();
    Int_t irep;
 
-   if (Hoption.Box || Hoption.Lego) {
+   if (fCurrentF3) {
+      PaintTF3();
+      return;
+   } else if (Hoption.Box || Hoption.Lego) {
       if (Hoption.Box == 11 || Hoption.Lego == 11) {
          PaintH3Box(1);
       } else if (Hoption.Box == 12 || Hoption.Lego == 12) {
@@ -10038,9 +10055,9 @@ void THistPainter::PaintTF3()
 
    fLego->SetDrawFace(&TPainter3dAlgorithms::DrawFaceMode1);
 
-   fLego->ImplicitFunction(fXbuf, fYbuf, fH->GetNbinsX(),
-                                         fH->GetNbinsY(),
-                                         fH->GetNbinsZ(), "BF");
+   fLego->ImplicitFunction(fCurrentF3, fXbuf, fYbuf, fH->GetNbinsX(),
+                                       fH->GetNbinsY(),
+                                       fH->GetNbinsZ(), "BF");
 
    if (Hoption.FrontBox) {
       fLego->InitMoveScreen(-1.1,1.1);
@@ -10159,17 +10176,8 @@ void THistPainter::PaintTitle()
 
 void THistPainter::ProcessMessage(const char *mess, const TObject *obj)
 {
-
    if (!strcmp(mess,"SetF3")) {
-      TPainter3dAlgorithms::SetF3((TF3*)obj);
-   } else if (!strcmp(mess,"SetF3ClippingBoxOff")) {
-      TPainter3dAlgorithms::SetF3ClippingBoxOff();
-   } else if (!strcmp(mess,"SetF3ClippingBoxOn")) {
-      TVectorD &v =  (TVectorD&)(*obj);
-      Double_t xclip = v(0);
-      Double_t yclip = v(1);
-      Double_t zclip = v(2);
-      TPainter3dAlgorithms::SetF3ClippingBoxOn(xclip,yclip,zclip);
+      fCurrentF3 = (TF3 *)obj;
    }
 }
 

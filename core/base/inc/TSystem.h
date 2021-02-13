@@ -23,10 +23,10 @@
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef __CINT__
-#include <stdio.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cctype>
 #include <fcntl.h>
-#ifndef WIN32
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 #endif
@@ -34,7 +34,7 @@
 #include "TNamed.h"
 #include "TInetAddress.h"
 #include "TTimer.h"
-#include "ThreadLocalStorage.h"
+#include <string>
 
 class TSeqCollection;
 class TFdSet;
@@ -300,8 +300,9 @@ protected:
    TString          fListLibs;                  //List shared libraries, cache used by GetLibraries
 
    TString          fBuildArch;                 //Architecture for which ROOT was built (passed to ./configure)
-   TString          fBuildCompiler;             // Compiler used to build this ROOT
+   TString          fBuildCompiler;             //Compiler used to build this ROOT
    TString          fBuildCompilerVersion;      //Compiler version used to build this ROOT
+   TString          fBuildCompilerVersionStr;   //Compiler version identifier string used to build this ROOT
    TString          fBuildNode;                 //Detailed information where ROOT was built
    TString          fBuildDir;                  //Location where to build ACLiC shared library and use as scratch area.
    TString          fFlagsDebug;                //Flags for debug compilation
@@ -333,8 +334,8 @@ protected:
    static const char     *StripOffProto(const char *path, const char *proto);
 
 private:
-   TSystem(const TSystem&) = delete;              // not implemented
-   TSystem& operator=(const TSystem&) = delete;   // not implemented
+   TSystem(const TSystem&) = delete;
+   TSystem& operator=(const TSystem&) = delete;
    Bool_t ExpandFileName(const char *fname, char *xname, const int kBufSize);
 
 public:
@@ -525,6 +526,7 @@ public:
    virtual const char     *GetBuildArch() const;
    virtual const char     *GetBuildCompiler() const;
    virtual const char     *GetBuildCompilerVersion() const;
+   virtual const char     *GetBuildCompilerVersionStr() const;
    virtual const char     *GetBuildNode() const;
    virtual const char     *GetBuildDir() const;
    virtual const char     *GetFlagsDebug() const;

@@ -9,8 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#ifndef ROOT_TGedTextEditor
-#define ROOT_TGedTextEditor
+#ifndef ROOT_TAttTextEditor
+#define ROOT_TAttTextEditor
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //

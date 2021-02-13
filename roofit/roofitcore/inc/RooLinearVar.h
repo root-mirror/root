@@ -17,8 +17,9 @@
 #define ROO_LINEAR_VAR
 
 #include <cmath>
-#include <float.h>
-#include "TString.h"
+#include <cfloat>
+#include <string>
+#include <list>
 #include "RooAbsRealLValue.h"
 #include "RooRealProxy.h"
 #include "RooFormula.h"

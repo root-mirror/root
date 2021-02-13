@@ -9,9 +9,7 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "TVirtualX.h"
 #include "TString.h"
-#include "TROOT.h"
 
 #include "TGLRnrCtx.h"
 #include "TGLSceneInfo.h"

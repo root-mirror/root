@@ -45,7 +45,6 @@ Kernel matrix for Support Vector Machine
 
 #include "RtypesCore.h"
 
-#include <iostream>
 #include <stdexcept>
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -32,7 +32,6 @@ of the unblind parameter
 #include "RooFit.h"
 
 #include "RooArgSet.h"
-#include "RooArgSet.h"
 #include "RooUnblindOffset.h"
 
 using namespace std;

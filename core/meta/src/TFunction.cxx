@@ -18,6 +18,7 @@ functions (accessible via TROOT::GetListOfGlobalFunctions()).
 
 #include "TFunction.h"
 #include "TMethodArg.h"
+#include "TList.h"
 #include "TROOT.h"
 #include "TInterpreter.h"
 #include "Strlen.h"

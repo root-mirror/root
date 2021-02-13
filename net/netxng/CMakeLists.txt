@@ -9,8 +9,6 @@
 # @author Lukasz Janyst <ljanyst@cern.ch>
 ############################################################################
 
-include_directories(${XROOTD_INCLUDE_DIRS})
-
 ROOT_STANDARD_LIBRARY_PACKAGE(NetxNG
   HEADERS
     TNetXNGFile.h
@@ -29,5 +27,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(NetxNG
   BUILTINS
     XROOTD
 )
+
+target_include_directories(NetxNG PRIVATE ${XROOTD_INCLUDE_DIRS})
 
 target_compile_options(NetxNG PRIVATE -Wno-shadow)

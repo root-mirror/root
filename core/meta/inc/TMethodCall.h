@@ -27,7 +27,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TDictionary.h"
+#include "TObject.h"
 
 #include "TInterpreter.h"
 

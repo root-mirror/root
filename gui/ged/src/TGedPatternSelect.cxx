@@ -43,8 +43,11 @@
 #include "RConfigure.h"
 #include "TGToolTip.h"
 #include "TGButton.h"
-#include "Riostream.h"
 #include "RStipples.h"
+#include "TVirtualX.h"
+#include "snprintf.h"
+
+#include <iostream>
 
 ClassImp(TGedPopup);
 ClassImp(TGedSelect);
@@ -53,7 +56,7 @@ ClassImp(TGedPatternSelector);
 ClassImp(TGedPatternPopup);
 ClassImp(TGedPatternSelect);
 
-TGGC* TGedPatternFrame::fgGC = 0;
+TGGC* TGedPatternFrame::fgGC = nullptr;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,8 +181,17 @@ void TGedPatternFrame::SetFillStyle(TGGC* gc, Style_t fstyle)
             gVirtualX->DeletePixmap(fillPattern);
             fillPattern = 0;
          }
+#ifdef R__WIN32
+         char pattern[32];
+         // invert (flip) gStipples bitmap bits on Windows
+         for (int i=0;i<32;++i)
+            pattern[i] = ~gStipples[stn][i];
+         fillPattern = gVirtualX->CreateBitmap(gClient->GetDefaultRoot()->GetId(),
+                                               (const char *)&pattern, 16, 16);
+#else
          fillPattern = gVirtualX->CreateBitmap(gClient->GetDefaultRoot()->GetId(),
                                                (const char*)gStipples[stn], 16, 16);
+#endif
          gc->SetStipple(fillPattern);
          break;
       default:

@@ -1,10 +1,11 @@
-<!-- HTML header for doxygen 1.8.6-->
+<!-- HTML header for doxygen 1.8.14-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen $doxygenversion"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <!--BEGIN PROJECT_NAME--><title>$projectname: $title</title><!--END PROJECT_NAME-->
 <!--BEGIN !PROJECT_NAME--><title>$title</title><!--END !PROJECT_NAME-->
 <link href="$relpath^tabs.css" rel="stylesheet" type="text/css"/>
@@ -15,6 +16,15 @@ $search
 $mathjax
 <link href="$relpath^$stylesheet" rel="stylesheet" type="text/css" />
 $extrastylesheet
+
+<!-- BEGIN version select -->
+
+<link rel="stylesheet" type="text/css" href="https://root.cern/doc/dropdown.css">
+<!--script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+</script-->
+
+<!-- END version select -->
+
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -22,13 +32,23 @@ $extrastylesheet
 <!--BEGIN TITLEAREA-->
 <div id="titlearea">
 <table bgcolor="#346295" cellspacing="0" cellpadding="0">
-  <tr>
-    <td> <a href="https://root.cern"> <img style="height:90px" alt="Logo" src="$relpath^$projectlogo"/> </a></td>
-    <td valign="middle" style="color: #FFFFFF" nowrap="nowrap"><font size="6">$projectname</font> &#160; $projectnumber <br> $projectbrief </td>
-    <td style="width:100%"> $searchbox </td>
-  </tr>
+ <tbody>
+ <tr>
+  <td> <a href="https://root.cern"> <img style="height:90px;vertical-align:bottom" alt="Logo" src="$relpath^$projectlogo"/> </a></td>
+  <td valign="middle" style="color: #FFFFFF" nowrap="nowrap"><font size="6">$projectname</font> &#160;
+  <!-- BEGIN version select -->
+<div class="dropdown">
+   <button class="dropbtn">$projectnumber</button>
+   <div class="dropdown-content">
+   </div>
+</div>
+<script type="text/javascript" src="../selectversion.js"></script>
+<!-- END version select -->
+  <br> $projectbrief </td>
+  <td style="width:100%"> $searchbox </td>
+ </tr>
+ </tbody>
 </table>
 </div>
 <!--END TITLEAREA-->
 <!-- end header part -->
-

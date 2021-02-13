@@ -1,13 +1,13 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
-## Likelihood and minimization: setting up a chi^2 fit to an unbinned dataset with X,Y,err(Y) values (and optionally err(X) values)
+## Likelihood and minimization: setting up a chi^2 fit to an unbinned dataset with X,Y,err(Y)
+## values (and optionally err(X) values)
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 import math

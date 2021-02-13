@@ -70,7 +70,7 @@
 //_____________________________batch only_____________________
 #ifndef __CINT__
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TH1.h>
@@ -82,10 +82,10 @@
 #include <TProfile.h>
 #include <TKey.h>
 #include <TCanvas.h>
-#include <TGraph.h>
 #include <TRandom.h>
 #include <TPostScript.h>
 #include <TNtuple.h>
+#include <TBranch.h>
 #include <TTreeCache.h>
 #include <TChain.h>
 #include <TCut.h>
@@ -96,6 +96,7 @@
 #include <TApplication.h>
 #include <TClassTable.h>
 #include <Compression.h>
+#include <snprintf.h>
 #include "Event.h"
 
 void stress(Int_t nevent, Int_t style, Int_t printSubBenchmark, UInt_t portion );
@@ -1614,19 +1615,19 @@ void stress16()
 void stress17()
 {
    Bprint(17,"Test mkdir");
-   
+
    // check mkdir functions as expected in TDirectory
    TDirectory *free_motherdir = new TDirectory("free_motherdir", "free_motherdir");
    TDirectory *free_daughterdir = free_motherdir->mkdir("free_daughterdir");
    TDirectory *free_daughter2 = free_motherdir->mkdir("free_daughterdir");
    TDirectory *free_daughtersame = free_motherdir->mkdir("free_daughterdir", "", true);
-   
+
    // check mkdir functions as expected inside a file
    TFile f("stress.root","update");
    TDirectory *motherdir = f.mkdir("motherdir");
    TDirectory *daughterdir = motherdir->mkdir("daughterdir");
    TDirectory *daughtersame = motherdir->mkdir("daughterdir", "", true);
-   
+
    Bool_t OK = kTRUE;
    if (daughtersame != daughterdir || free_daughter2 == free_daughterdir || free_daughtersame != free_daughterdir) OK = kFALSE;
    if (OK) printf("OK\n");

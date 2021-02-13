@@ -9,13 +9,13 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <stdio.h>
+#include <cstdio>
+#include <iostream>
 
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TLine.h"
 #include "TPolyLine.h"
-#include "TBox.h"
 #include "TMarker.h"
 #include "TLegend.h"
 #include "TList.h"
@@ -23,9 +23,9 @@
 #include "TMath.h"
 #include "TROOT.h"
 #include "TLegendEntry.h"
-#include "Riostream.h"
 #include "TMultiGraph.h"
 #include "TGraph.h"
+#include "TH1.h"
 #include "THStack.h"
 
 ClassImp(TLegend);

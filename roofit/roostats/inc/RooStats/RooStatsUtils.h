@@ -24,6 +24,7 @@
 #include "RooStats/ModelConfig.h"
 #include "RooProdPdf.h"
 #include "RooDataSet.h"
+#include "RooAbsCategoryLValue.h"
 
 
 /** \namespace RooStats

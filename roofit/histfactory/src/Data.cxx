@@ -29,6 +29,10 @@ TH1* RooStats::HistFactory::Data::GetHisto() {
   return (TH1*) fhData.GetObject();
 }
 
+const TH1* RooStats::HistFactory::Data::GetHisto() const {
+  return (TH1*) fhData.GetObject();
+}
+
 
 void RooStats::HistFactory::Data::Print( std::ostream& stream ) {
 

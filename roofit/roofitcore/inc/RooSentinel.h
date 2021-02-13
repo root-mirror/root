@@ -16,7 +16,7 @@
 #ifndef ROO_SENTINEL
 #define ROO_SENTINEL
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 class RooSentinel {
 public:

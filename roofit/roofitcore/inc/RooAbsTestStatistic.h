@@ -21,6 +21,7 @@
 #include "RooRealProxy.h"
 #include "TStopwatch.h"
 #include <string>
+#include <vector>
 
 class RooArgSet ;
 class RooAbsData ;

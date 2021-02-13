@@ -15,6 +15,7 @@
 #include "TNamed.h"
 #include "TList.h"
 #include <memory>
+#include <string>
 
 class TFolder;
 class TKey;
@@ -241,7 +242,7 @@ public:
 
    Bool_t Produce(const std::string &path, const std::string &file, const std::string &options, std::string &res);
 
-   ClassDef(TRootSniffer, 0) // Sniffer of ROOT objects (basic version)
+   ClassDefOverride(TRootSniffer, 0) // Sniffer of ROOT objects (basic version)
 };
 
 #endif

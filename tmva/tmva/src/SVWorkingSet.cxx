@@ -42,7 +42,6 @@ Working class for Support Vector Machine
 #include "TMath.h"
 #include "TRandom3.h"
 
-#include <iostream>
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////

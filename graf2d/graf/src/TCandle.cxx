@@ -9,13 +9,14 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <stdlib.h>
-#include <iostream>
-#include "TROOT.h"
+#include <cstdlib>
+
+#include "TBuffer.h"
 #include "TCandle.h"
-#include "TClass.h"
-#include "TPad.h"
+#include "TVirtualPad.h"
+#include "TH2D.h"
 #include "TRandom2.h"
+#include "strlcpy.h"
 
 Double_t TCandle::fWhiskerRange  = 1.0;
 Double_t TCandle::fBoxRange      = 0.5;

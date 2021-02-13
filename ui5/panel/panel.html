@@ -3,9 +3,8 @@
 <html lang="en">
    <head>
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <title>ROOT7 web panel</title>
-      <script type="text/javascript" src="jsrootsys/scripts/JSRootCore.js"></script>
+      <script type="text/javascript" src="jsrootsys/scripts/JSRoot.core.js"></script>
    </head>
 
    <style>
@@ -29,47 +28,42 @@
 
    <script type='text/javascript'>
 
-      function ShowOpenui5Panel(panel_handle, arg) {
+      JSROOT.connectWebWindow({
+         prereq_logdiv: "PanelDiv",
+         // openui5src: "jsroot",
+         // openui5src: "https://openui5.hana.ondemand.com/1.82.2/",
+         // openui5libs: "sap.ui.core, sap.ui.layout, sap.m",
+         first_recv: "SHOWPANEL:",
+         prereq2: "openui5" // components which can be loaded during connection establishing
+      }).then(handle => {
 
-         if (!panel_handle || !arg.first_msg || !sap) return false;
+         if (!handle || !sap) return false;
 
-         var panelid = "TopPanelId";
-
-         var viewName = arg.first_msg;
+         let viewName = handle.first_msg;
+         if (!viewName) return false;
 
          if ((viewName.indexOf("rootui5.") !== 0) && (viewName.indexOf("jsroot.") !== 0) && (viewName.indexOf("sap.") !== 0)) {
-            var p = viewName.indexOf(".");
+            let p = viewName.indexOf(".");
             if ((p > 1) && (p < viewName.length - 1)) {
-               var tgtpath = "/currentdir/";
-               var pp = JSROOT.source_dir.indexOf("/jsrootsys/");
-               if (pp>0) tgtpath = JSROOT.source_dir.substr(0,pp) + "currentdir/";
-               var _paths = {};
+               let tgtpath = "/currentdir/";
+               let pp = JSROOT.source_dir.indexOf("/jsrootsys/");
+               if (pp > 0) tgtpath = JSROOT.source_dir.substr(0,pp) + "currentdir/";
+               let _paths = {};
                _paths[viewName.substr(0,p)] = tgtpath;
                console.log('Register module path', viewName.substr(0,p), ' as ', tgtpath);
                sap.ui.loader.config({ paths: _paths });
             }
          }
 
-         sap.ui.require(["sap/ui/core/mvc/XMLView"], function(XMLView) {
+         sap.ui.require(["sap/ui/core/mvc/XMLView"], XMLView => {
             XMLView.create({
-               id: panelid,
+               id: "TopPanelId",
                viewName: viewName,
-               viewData: { handle: panel_handle }
-            }).then(function(oView) {
-               oView.placeAt("PanelDiv");
-            });
+               viewData: { handle: handle }
+            }).then(oView => oView.placeAt("PanelDiv"));
 
          });
-      }
 
-      JSROOT.ConnectWebWindow({
-         prereq_logdiv: "PanelDiv",
-         // openui5src: "jsroot",
-         // openui5src: "https://openui5.hana.ondemand.com/",
-         // openui5libs: "sap.ui.core, sap.ui.layout, sap.m",
-         first_recv: "SHOWPANEL:",
-         prereq2: "openui5",
-         callback: ShowOpenui5Panel
       });
 
    </script>

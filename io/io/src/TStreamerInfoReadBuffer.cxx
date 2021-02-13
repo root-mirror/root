@@ -24,6 +24,7 @@
 #include "TContainerConverters.h"
 #include "TVirtualArray.h"
 #include "TVirtualObject.h"
+#include "ThreadLocalStorage.h"
 
 // GetCurrentElement.
 // Currently only used by TRef::Streamer.

@@ -48,14 +48,14 @@ End_Macro
 
 #include "TGeoPcon.h"
 
-#include "Riostream.h"
+#include <iostream>
+
 #include "TBuffer.h"
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
 #include "TVirtualGeoPainter.h"
 #include "TGeoTube.h"
 #include "TGeoCone.h"
-#include "TVirtualPad.h"
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TMath.h"
@@ -70,9 +70,9 @@ TGeoPcon::TGeoPcon()
           fNz(0),
           fPhi1(0.),
           fDphi(0.),
-          fRmin(NULL),
-          fRmax(NULL),
-          fZ(NULL),
+          fRmin(nullptr),
+          fRmax(nullptr),
+          fZ(nullptr),
           fFullPhi(kFALSE),
           fC1(0.),
           fS1(0.),
@@ -93,9 +93,9 @@ TGeoPcon::TGeoPcon(Double_t phi, Double_t dphi, Int_t nz)
           fNz(nz),
           fPhi1(phi),
           fDphi(dphi),
-          fRmin(NULL),
-          fRmax(NULL),
-          fZ(NULL),
+          fRmin(nullptr),
+          fRmax(nullptr),
+          fZ(nullptr),
           fFullPhi(kFALSE),
           fC1(0.),
           fS1(0.),
@@ -134,9 +134,9 @@ TGeoPcon::TGeoPcon(const char *name, Double_t phi, Double_t dphi, Int_t nz)
           fNz(nz),
           fPhi1(phi),
           fDphi(dphi),
-          fRmin(NULL),
-          fRmax(NULL),
-          fZ(NULL),
+          fRmin(nullptr),
+          fRmax(nullptr),
+          fZ(nullptr),
           fFullPhi(kFALSE),
           fC1(0.),
           fS1(0.),
@@ -182,9 +182,9 @@ TGeoPcon::TGeoPcon(Double_t *param)
           fNz(0),
           fPhi1(0.),
           fDphi(0.),
-          fRmin(0),
-          fRmax(0),
-          fZ(0),
+          fRmin(nullptr),
+          fRmax(nullptr),
+          fZ(nullptr),
           fFullPhi(kFALSE),
           fC1(0.),
           fS1(0.),
@@ -200,60 +200,13 @@ TGeoPcon::TGeoPcon(Double_t *param)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///copy constructor
-
-TGeoPcon::TGeoPcon(const TGeoPcon& pc) :
-  TGeoBBox(pc),
-  fNz(0),
-  fPhi1(0.),
-  fDphi(0.),
-  fRmin(0),
-  fRmax(0),
-  fZ(0),
-  fFullPhi(kFALSE),
-  fC1(0.),
-  fS1(0.),
-  fC2(0.),
-  fS2(0.),
-  fCm(0.),
-  fSm(0.),
-  fCdphi(0.)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///assignment operator
-
-TGeoPcon& TGeoPcon::operator=(const TGeoPcon& pc)
-{
-   if(this!=&pc) {
-      TGeoBBox::operator=(pc);
-      fNz=0;
-      fPhi1=0.;
-      fDphi=0.;
-      fRmin=0;
-      fRmax=0;
-      fZ=0;
-      fFullPhi=kFALSE;
-      fC1=0;
-      fS1=0;
-      fC2=0;
-      fS2=0;
-      fCm=0;
-      fSm=0;
-      fCdphi=0;
-   }
-   return *this;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// destructor
 
 TGeoPcon::~TGeoPcon()
 {
-   if (fRmin) {delete[] fRmin; fRmin = 0;}
-   if (fRmax) {delete[] fRmax; fRmax = 0;}
-   if (fZ)    {delete[] fZ; fZ = 0;}
+   if (fRmin) { delete[] fRmin; fRmin = nullptr; }
+   if (fRmax) { delete[] fRmax; fRmax = nullptr; }
+   if (fZ)    { delete[] fZ; fZ = nullptr; }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -864,18 +817,10 @@ void TGeoPcon::InspectShape() const
 
 TBuffer3D *TGeoPcon::MakeBuffer3D() const
 {
-   const Int_t n = gGeoManager->GetNsegments()+1;
-   Int_t nz = GetNz();
-   if (nz < 2) return 0;
-   Int_t nbPnts = nz*2*n;
-   if (nbPnts <= 0) return 0;
-   Double_t dphi = GetDphi();
+   Int_t nbPnts, nbSegs, nbPols;
+   GetMeshNumbers(nbPnts, nbSegs, nbPols);
+   if (nbPnts <= 0) return nullptr;
 
-   Bool_t specialCase = kFALSE;
-   if (TGeoShape::IsSameWithinTolerance(dphi,360)) specialCase = kTRUE;
-
-   Int_t nbSegs = 4*(nz*n-1+(specialCase == kTRUE));
-   Int_t nbPols = 2*(nz*n-1+(specialCase == kTRUE));
    TBuffer3D* buff = new TBuffer3D(TBuffer3DTypes::kGeneric,
                                    nbPnts, 3*nbPnts, nbSegs, 3*nbSegs, nbPols, 6*nbPols);
    if (buff)
@@ -892,6 +837,11 @@ TBuffer3D *TGeoPcon::MakeBuffer3D() const
 
 void TGeoPcon::SetSegsAndPols(TBuffer3D &buff) const
 {
+   if (!HasInsideSurface()) {
+      SetSegsAndPolsNoInside(buff);
+      return;
+   }
+
    Int_t i, j;
    const Int_t n = gGeoManager->GetNsegments()+1;
    Int_t nz = GetNz();
@@ -900,8 +850,7 @@ void TGeoPcon::SetSegsAndPols(TBuffer3D &buff) const
    if (nbPnts <= 0) return;
    Double_t dphi = GetDphi();
 
-   Bool_t specialCase = kFALSE;
-   if (TGeoShape::IsSameWithinTolerance(dphi,360)) specialCase = kTRUE;
+   Bool_t specialCase = TGeoShape::IsSameWithinTolerance(dphi,360);
    Int_t c = GetBasicColor();
 
    Int_t indx, indx2, k;
@@ -963,7 +912,7 @@ void TGeoPcon::SetSegsAndPols(TBuffer3D &buff) const
       }
    }
 
-   Int_t m = n - 1 + (specialCase == kTRUE);
+   Int_t m = n - 1 + (specialCase ?  1 : 0);
    indx = 0;
 
    //bottom & top, number of polygons: 2*(n-1)
@@ -1056,6 +1005,98 @@ void TGeoPcon::SetSegsAndPols(TBuffer3D &buff) const
       }
       buff.fPols[indx-8] = indx2+n;
       buff.fPols[indx-2] = indx2+2*n-1;
+   }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Fill TBuffer3D structure for segments and polygons, when no inner surface exists
+
+void TGeoPcon::SetSegsAndPolsNoInside(TBuffer3D &buff) const
+{
+   const Int_t n = gGeoManager->GetNsegments() + 1;
+   const Int_t nz = GetNz();
+   const Int_t nbPnts = nz * n + 2;
+
+   if ((nz < 2) || (nbPnts <= 0) || (n < 2)) return;
+
+   Int_t c = GetBasicColor();
+
+   Int_t indx = 0, indx1 = 0, indx2 = 0, i, j;
+
+   //  outside circles, number of segments: nz*n
+   for (i = 0; i < nz; i++) {
+      indx2 = i * n;
+      for (j = 1; j < n; j++) {
+         buff.fSegs[indx++] = c;
+         buff.fSegs[indx++] = indx2 + j - 1;
+         buff.fSegs[indx++] = indx2 + j % (n-1);
+      }
+   }
+
+   indx2 = 0;
+   // bottom lines
+   for (j = 0; j < n; j++) {
+      buff.fSegs[indx++] = c;
+      buff.fSegs[indx++] = indx2 + j % (n-1);
+      buff.fSegs[indx++] = nbPnts - 2;
+   }
+
+   indx2 = (nz-1) * n;
+   // top lines
+   for (j = 0; j < n; j++) {
+      buff.fSegs[indx++] = c;
+      buff.fSegs[indx++] = indx2 + j % (n-1);
+      buff.fSegs[indx++] = nbPnts - 1;
+   }
+
+   // outside cylinders, number of segments: (nz-1)*n
+   for (i = 0; i < (nz - 1); i++) {
+      // outside cylinder
+      indx2 = i * n;
+      for (j = 0; j < n; j++) {
+         buff.fSegs[indx++] = c;
+         buff.fSegs[indx++] = indx2 + j % (n-1);
+         buff.fSegs[indx++] = indx2 + n + j % (n-1);
+      }
+   }
+
+   indx = 0;
+
+   // bottom cap
+   indx1 = 0; // start of first z layer
+   indx2 = nz*(n-1);
+   for (j = 0; j < n - 1; j++) {
+      buff.fPols[indx++] = c;
+      buff.fPols[indx++] = 3;
+      buff.fPols[indx++] = indx1 + j;
+      buff.fPols[indx++] = indx2 + j + 1;
+      buff.fPols[indx++] = indx2 + j;
+   }
+
+   // top cap
+   indx1 = (nz-1)*(n-1); // start last z layer
+   indx2 = nz*(n-1) + n;
+   for (j = 0; j < n - 1; j++) {
+      buff.fPols[indx++] = c;
+      buff.fPols[indx++] = 3;
+      buff.fPols[indx++] = indx1 + j; // last z layer
+      buff.fPols[indx++] = indx2 + j;
+      buff.fPols[indx++] = indx2 + j + 1;
+   }
+
+   // outside, number of polygons: (nz-1)*(n-1)
+   for (Int_t k = 0; k < (nz - 1); k++) {
+      indx1 = k*(n-1);
+      indx2 = nz*(n-1) + n*2 + k*n;
+      for (j = 0; j < n-1; j++) {
+         buff.fPols[indx++] = c;
+         buff.fPols[indx++] = 4;
+         buff.fPols[indx++] = indx1 + j;
+         buff.fPols[indx++] = indx2 + j;
+         buff.fPols[indx++] = indx1 + j + (n-1);
+         buff.fPols[indx++] = indx2 + j + 1;
+      }
    }
 }
 
@@ -1251,20 +1292,32 @@ void TGeoPcon::SetPoints(Double_t *points) const
    Int_t i, j;
    Int_t indx = 0;
 
+   Bool_t hasInside = HasInsideSurface();
+
    if (points) {
       for (i = 0; i < fNz; i++) {
-         for (j = 0; j < n; j++) {
-            phi = (fPhi1+j*dphi)*TMath::DegToRad();
-            points[indx++] = fRmin[i] * TMath::Cos(phi);
-            points[indx++] = fRmin[i] * TMath::Sin(phi);
-            points[indx++] = fZ[i];
-         }
+         if (hasInside)
+            for (j = 0; j < n; j++) {
+               phi = (fPhi1+j*dphi)*TMath::DegToRad();
+               points[indx++] = fRmin[i] * TMath::Cos(phi);
+               points[indx++] = fRmin[i] * TMath::Sin(phi);
+               points[indx++] = fZ[i];
+            }
          for (j = 0; j < n; j++) {
             phi = (fPhi1+j*dphi)*TMath::DegToRad();
             points[indx++] = fRmax[i] * TMath::Cos(phi);
             points[indx++] = fRmax[i] * TMath::Sin(phi);
             points[indx++] = fZ[i];
          }
+      }
+      if (!hasInside) {
+         points[indx++] = 0;
+         points[indx++] = 0;
+         points[indx++] = fZ[0];
+
+         points[indx++] = 0;
+         points[indx++] = 0;
+         points[indx++] = fZ[GetNz()-1];
       }
    }
 }
@@ -1280,20 +1333,32 @@ void TGeoPcon::SetPoints(Float_t *points) const
    Int_t i, j;
    Int_t indx = 0;
 
+   Bool_t hasInside = HasInsideSurface();
+
    if (points) {
       for (i = 0; i < fNz; i++) {
-         for (j = 0; j < n; j++) {
-            phi = (fPhi1+j*dphi)*TMath::DegToRad();
-            points[indx++] = fRmin[i] * TMath::Cos(phi);
-            points[indx++] = fRmin[i] * TMath::Sin(phi);
-            points[indx++] = fZ[i];
-         }
+         if (hasInside)
+            for (j = 0; j < n; j++) {
+               phi = (fPhi1+j*dphi)*TMath::DegToRad();
+               points[indx++] = fRmin[i] * TMath::Cos(phi);
+               points[indx++] = fRmin[i] * TMath::Sin(phi);
+               points[indx++] = fZ[i];
+            }
          for (j = 0; j < n; j++) {
             phi = (fPhi1+j*dphi)*TMath::DegToRad();
             points[indx++] = fRmax[i] * TMath::Cos(phi);
             points[indx++] = fRmax[i] * TMath::Sin(phi);
             points[indx++] = fZ[i];
          }
+      }
+      if (!hasInside) {
+         points[indx++] = 0;
+         points[indx++] = 0;
+         points[indx++] = fZ[0];
+
+         points[indx++] = 0;
+         points[indx++] = 0;
+         points[indx++] = fZ[GetNz()-1];
       }
    }
 }
@@ -1302,9 +1367,9 @@ void TGeoPcon::SetPoints(Float_t *points) const
 
 Int_t TGeoPcon::GetNmeshVertices() const
 {
-   Int_t n = gGeoManager->GetNsegments()+1;
-   Int_t numPoints = fNz*2*n;
-   return numPoints;
+   Int_t nvert, nsegs, npols;
+   GetMeshNumbers(nvert, nsegs, npols);
+   return nvert;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1315,16 +1380,44 @@ void TGeoPcon::Sizeof3D() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Returns true when pgon has internal surface
+/// It will be only disabled when all Rmin values are 0
+
+Bool_t TGeoPcon::HasInsideSurface() const
+{
+   // only when full 360 is used, internal part can be excluded
+   Bool_t specialCase = TGeoShape::IsSameWithinTolerance(GetDphi(), 360);
+   if (!specialCase) return kTRUE;
+
+   for (Int_t i = 0; i < GetNz(); i++)
+      if (fRmin[i] > 0.)
+         return kTRUE;
+
+   return kFALSE;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// Returns numbers of vertices, segments and polygons composing the shape mesh.
 
 void TGeoPcon::GetMeshNumbers(Int_t &nvert, Int_t &nsegs, Int_t &npols) const
 {
+   nvert = nsegs = npols = 0;
+
    Int_t n = gGeoManager->GetNsegments()+1;
    Int_t nz = GetNz();
-   nvert = nz*2*n;
-   Bool_t specialCase = TGeoShape::IsSameWithinTolerance(GetDphi(),360);
-   nsegs = 4*(nz*n-1+(specialCase == kTRUE));
-   npols = 2*(nz*n-1+(specialCase == kTRUE));
+   if (nz < 2) return;
+
+   if (HasInsideSurface()) {
+      Bool_t specialCase = TGeoShape::IsSameWithinTolerance(GetDphi(),360);
+      nvert = nz*2*n;
+      nsegs = 4*(nz*n-1+(specialCase ?  1 : 0));
+      npols = 2*(nz*n-1+(specialCase ?  1 : 0));
+   } else {
+      nvert = nz * n + 2;
+      nsegs = nz * (n - 1) + n * 2 + (nz - 1) * n;
+      npols = 2 * (n - 1) + (nz - 1) * (n - 1);
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1337,13 +1430,9 @@ const TBuffer3D & TGeoPcon::GetBuffer3D(Int_t reqSections, Bool_t localFrame) co
    TGeoBBox::FillBuffer3D(buffer, reqSections, localFrame);
 
    if (reqSections & TBuffer3D::kRawSizes) {
-      const Int_t n = gGeoManager->GetNsegments()+1;
-      Int_t nz = GetNz();
-      Int_t nbPnts = nz*2*n;
-      if (nz >= 2 && nbPnts > 0) {
-         Bool_t specialCase = TGeoShape::IsSameWithinTolerance(GetDphi(),360);
-         Int_t nbSegs = 4*(nz*n-1+(specialCase == kTRUE));
-         Int_t nbPols = 2*(nz*n-1+(specialCase == kTRUE));
+      Int_t nbPnts, nbSegs, nbPols;
+      GetMeshNumbers(nbPnts, nbSegs, nbPols);
+      if (nbPnts > 0) {
          if (buffer.SetRawSizes(nbPnts, 3*nbPnts, nbSegs, 3*nbSegs, nbPols, 6*nbPols)) {
             buffer.SetSectionsValid(TBuffer3D::kRawSizes);
          }

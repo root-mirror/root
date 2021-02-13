@@ -17,8 +17,9 @@
 #include "TAttFill.h"
 #include "TAttMarker.h"
 
-#include "TH1D.h"
 #include "TMath.h"
+
+class TH1D;
 
 const Int_t kNMAXPOINTS = 2010;  // Max outliers per candle
 

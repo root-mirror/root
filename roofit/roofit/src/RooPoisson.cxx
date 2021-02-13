@@ -13,22 +13,12 @@ Poisson pdf
 **/
 
 #include "RooPoisson.h"
-
-#include "RooAbsReal.h"
-#include "RooAbsCategory.h"
-
 #include "RooRandom.h"
 #include "RooMath.h"
-#include "TMath.h"
+#include "RooNaNPacker.h"
+#include "RooBatchCompute.h"
+
 #include "Math/ProbFuncMathCore.h"
-
-#include "BatchHelpers.h"
-#include "RooVDTHeaders.h"
-
-#include <limits>
-#include <cmath>
-
-using namespace std;
 
 ClassImp(RooPoisson);
 
@@ -42,8 +32,7 @@ RooPoisson::RooPoisson(const char *name, const char *title,
   RooAbsPdf(name,title),
   x("x","x",this,_x),
   mean("mean","mean",this,_mean),
-  _noRounding(noRounding),
-  _protectNegative(false)
+  _noRounding(noRounding)
 {
 }
 
@@ -65,75 +54,19 @@ RooPoisson::RooPoisson(const char *name, const char *title,
 Double_t RooPoisson::evaluate() const
 {
   Double_t k = _noRounding ? x : floor(x);
-  if(_protectNegative && mean<0)
-    return 1e-3;
+  if(_protectNegative && mean<0) {
+    RooNaNPacker np;
+    np.setPayload(-mean);
+    return np._payload;
+  }
   return TMath::Poisson(k,mean) ;
 }
 
-
-
-namespace {
-
-template<class Tx, class TMean>
-void compute(const size_t n, double* __restrict output, Tx x, TMean mean,
-    const bool protectNegative, const bool noRounding) {
-
-  for (size_t i = 0; i < n; ++i) { //CHECK_VECTORISE
-    const double x_i = noRounding ? x[i] : floor(x[i]);
-    // The std::lgamma yields different values than in the scalar implementation.
-    // Need to check which one is more accurate.
-//    output[i] = std::lgamma(x_i + 1.);
-    output[i] = TMath::LnGamma(x_i + 1.);
-  }
-
-
-  for (size_t i = 0; i < n; ++i) { //CHECK_VECTORISE
-    const double x_i = noRounding ? x[i] : floor(x[i]);
-    const double logMean = _rf_fast_log(mean[i]);
-    const double logPoisson = x_i * logMean - mean[i] - output[i];
-    output[i] = _rf_fast_exp(logPoisson);
-
-    // Cosmetics
-    if (x_i < 0.)
-      output[i] = 0.;
-    else if (x_i == 0.) {
-      output[i] = 1./_rf_fast_exp(mean[i]);
-    }
-    if (protectNegative && mean[i] < 0.)
-      output[i] = 1.E-3;
-  }
-}
-
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
-/// Compute Poisson values in batches.
-RooSpan<double> RooPoisson::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  using namespace BatchHelpers;
-  auto xData = x.getValBatch(begin, batchSize);
-  auto meanData = mean.getValBatch(begin, batchSize);
-  const bool batchX = !xData.empty();
-  const bool batchMean = !meanData.empty();
-
-  if (!batchX && !batchMean) {
-    return {};
-  }
-  batchSize = findSize({ xData, meanData });
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-
-  if (batchX && !batchMean ) {
-    compute(batchSize, output.data(), xData, BracketAdapter<double>(mean), _protectNegative, _noRounding);
-  }
-  else if (!batchX && batchMean ) {
-    compute(batchSize, output.data(), BracketAdapter<double>(x), meanData, _protectNegative, _noRounding);
-  }
-  else if (batchX && batchMean ) {
-    compute(batchSize, output.data(), xData, meanData, _protectNegative, _noRounding);
-  }
-  return output;
+/// Compute multiple values of the Poisson distribution.  
+RooSpan<double> RooPoisson::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  return RooBatchCompute::dispatch->computePoisson(this, evalData, x->getValues(evalData, normSet), mean->getValues(evalData, normSet), _protectNegative, _noRounding);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 

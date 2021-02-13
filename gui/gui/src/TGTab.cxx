@@ -39,12 +39,14 @@
 #include "TGTab.h"
 #include "TGResourcePool.h"
 #include "TList.h"
-#include "Riostream.h"
 #include "TClass.h"
 #include "TGPicture.h"
+#include "TVirtualX.h"
 
-const TGFont *TGTab::fgDefaultFont = 0;
-const TGGC   *TGTab::fgDefaultGC = 0;
+#include <iostream>
+
+const TGFont *TGTab::fgDefaultFont = nullptr;
+const TGGC   *TGTab::fgDefaultGC = nullptr;
 
 ClassImp(TGTabElement);
 ClassImp(TGTabLayout);

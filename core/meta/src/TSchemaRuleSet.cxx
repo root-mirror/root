@@ -7,7 +7,8 @@
 #include "TObjString.h"
 #include "TClass.h"
 #include "TROOT.h"
-#include "Riostream.h"
+#include "TBuffer.h"
+#include <iostream>
 
 #include "TVirtualCollectionProxy.h"
 #include "TVirtualStreamerInfo.h"
@@ -229,8 +230,8 @@ Bool_t TSchemaRuleSet::HasRuleWithSourceClass( const TString &source ) const
             }
          }
       }
-   } else if (!strncmp(fClass->GetName(),"std::pair<",10) || !strncmp(fClass->GetName(),"pair<",5)) {
-      if (!strncmp(source,"std::pair<",10) || !strncmp(source,"pair<",5)) {
+   } else if (TClassEdit::IsStdPair(fClass->GetName())) {
+      if (TClassEdit::IsStdPair(source)) {
          // std::pair can be converted into each other if both its parameter can be converted into
          // each other.
          TClass *src = TClass::GetClass(source);

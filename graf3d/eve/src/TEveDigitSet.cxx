@@ -13,7 +13,6 @@
 #include "TEveManager.h"
 #include "TEveTrans.h"
 
-#include "TColor.h"
 #include "TRefArray.h"
 
 

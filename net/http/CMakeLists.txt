@@ -9,14 +9,8 @@
 # @author Pere Mato, CERN
 ############################################################################
 
-if(FASTCGI_FOUND)
-  include_directories(${FASTCGI_INCLUDE_DIR})
-else()
+if(NOT FASTCGI_FOUND)
   set(FASTCGI_LIBRARY "")
-endif()
-
-if(ssl)
-  include_directories(${OPENSSL_INCLUDE_DIR})
 endif()
 
 # look for the realtime extensions library and use it if it exists
@@ -57,7 +51,16 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RHTTP
   DEPENDENCIES
     RIO
     Thread
+    Graf
 )
+
+if(ssl)
+  target_include_directories(RHTTP PRIVATE ${OPENSSL_INCLUDE_DIR})
+endif()
+
+if(FASTCGI_FOUND)
+  target_include_directories(RHTTP PRIVATE ${FASTCGI_INCLUDE_DIR})
+endif()
 
 target_compile_definitions(RHTTP PUBLIC -DUSE_WEBSOCKET)
 

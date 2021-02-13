@@ -37,9 +37,9 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
 
-#include "TROOT.h"
 #include "TClass.h"
 #include "TGListTree.h"
 #include "TGPicture.h"
@@ -57,20 +57,22 @@
 #include "TObjString.h"
 #include "TGDNDManager.h"
 #include "TBufferFile.h"
-#include "Riostream.h"
+#include "TVirtualX.h"
 #include "RConfigure.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 Pixel_t          TGListTree::fgGrayPixel = 0;
-const TGFont    *TGListTree::fgDefaultFont = 0;
-TGGC            *TGListTree::fgActiveGC = 0;
-TGGC            *TGListTree::fgDrawGC = 0;
-TGGC            *TGListTree::fgLineGC = 0;
-TGGC            *TGListTree::fgHighlightGC = 0;
-TGGC            *TGListTree::fgColorGC = 0;
-const TGPicture *TGListTree::fgOpenPic = 0;
-const TGPicture *TGListTree::fgClosedPic = 0;
-const TGPicture *TGListTree::fgCheckedPic = 0;
-const TGPicture *TGListTree::fgUncheckedPic = 0;
+const TGFont    *TGListTree::fgDefaultFont = nullptr;
+TGGC            *TGListTree::fgActiveGC = nullptr;
+TGGC            *TGListTree::fgDrawGC = nullptr;
+TGGC            *TGListTree::fgLineGC = nullptr;
+TGGC            *TGListTree::fgHighlightGC = nullptr;
+TGGC            *TGListTree::fgColorGC = nullptr;
+const TGPicture *TGListTree::fgOpenPic = nullptr;
+const TGPicture *TGListTree::fgClosedPic = nullptr;
+const TGPicture *TGListTree::fgCheckedPic = nullptr;
+const TGPicture *TGListTree::fgUncheckedPic = nullptr;
 
 
 ClassImp(TGListTreeItem);

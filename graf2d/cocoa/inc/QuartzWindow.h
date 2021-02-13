@@ -19,6 +19,31 @@
 #include "X11Events.h"
 #include "GuiTypes.h"
 
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+// CrosshairView comprises the content view of a CrosshairWindow.  //
+// It's purpose is to render two lines ... a crosshair.            //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
+@interface CrosshairView: NSView
+// Line1:
+@property (nonatomic, assign)NSPoint start1;
+@property (nonatomic, assign)NSPoint end1;
+// Line2:
+@property (nonatomic, assign)NSPoint start2;
+@property (nonatomic, assign)NSPoint end2;
+@end
+
+// CrosshairWindow is a special window: a transparent
+// transient child window that we attach to a canvas
+// to draw a crosshair on top of the pad's contents.
+// It's transparent to all mouse events and can never
+// be main or a key window. It has a transparent
+// background.
+@interface CrosshairWindow : NSWindow
+- (instancetype) init;
+@end
+
 ////////////////////////////////////////////////
 //                                            //
 // QuartzWindow class : top-level window.     //
@@ -90,6 +115,12 @@
 
 - (unsigned char *) readColorBits : (ROOT::MacOSX::X11::Rectangle) area;
 
+// Trick for crosshair drawing in TCanvas ("pseudo-XOR")
+- (void) addCrosshairWindow;
+- (void) adjustCrosshairWindowGeometry;
+- (void) adjustCrosshairWindowGeometry : (CrosshairWindow *)win;
+- (void) removeCrosshairWindow;
+- (CrosshairWindow *) findCrosshairWindow;
 
 //X11Window protocol.
 

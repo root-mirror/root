@@ -25,9 +25,14 @@ class THttpLongPollEngine : public THttpWSEngine {
 
 protected:
 
+   enum EBufKind { kNoBuf, kTxtBuf, kBinBuf };
+
    bool fRaw{false};                    ///!< if true, only content can be used for data transfer
    std::mutex fMutex;                   ///!< protect polling request to use it from different threads
    std::shared_ptr<THttpCallArg> fPoll; ///!< hold polling request, which can be immediately used for the next sending
+   EBufKind fBufKind{kNoBuf};           ///!< if buffered data available
+   std::string fBuf;                    ///!< buffered data
+   std::string fBufHeader;              ///!< buffered header
    static const std::string gLongPollNope;    ///!< default reply on the longpoll request
 
    std::string MakeBuffer(const void *buf, int len, const char *hdr = nullptr);

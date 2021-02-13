@@ -48,6 +48,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Proof
     TSlave.h
     TSlaveLite.h
     TVirtualProofPlayer.h
+    TVirtualPacketizer.h
     ${PROOF_EXTRA_HEADERS}
   SOURCES
     src/TCondor.cxx
@@ -79,6 +80,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Proof
     src/TSlave.cxx
     src/TSlaveLite.cxx
     src/TVirtualProofPlayer.cxx
+    src/TVirtualPacketizer.cxx
     ${PROOF_EXTRA_SOURCES}
   DEPENDENCIES
     MathCore

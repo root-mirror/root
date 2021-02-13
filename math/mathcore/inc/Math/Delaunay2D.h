@@ -21,7 +21,7 @@
 //#define THREAD_SAFE
 
 
-#include "TNamed.h"
+#include "RtypesCore.h"
 
 #include <map>
 #include <vector>

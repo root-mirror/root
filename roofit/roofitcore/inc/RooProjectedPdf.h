@@ -32,8 +32,6 @@ public:
   virtual Double_t analyticalIntegralWN(Int_t code, const RooArgSet* normSet, const char* rangeName=0) const ;
   virtual Bool_t forceAnalyticalInt(const RooAbsArg& dep) const ;
 
-  virtual Double_t getValV(const RooArgSet* set=0) const ;
-
   Int_t getGenerator(const RooArgSet& directVars, RooArgSet &generateVars, Bool_t staticInitOK=kTRUE) const;
   void initGenerator(Int_t /*code*/) {} ; // optional pre-generation initialization
   void generateEvent(Int_t code);
@@ -64,8 +62,6 @@ protected:
   mutable RooObjCacheManager _cacheMgr ; //! The cache manager
 
   Bool_t redirectServersHook(const RooAbsCollection& newServerList, Bool_t /*mustReplaceAll*/, Bool_t /*nameChange*/, Bool_t /*isRecursive*/) ;
-  
-  mutable RooArgSet* _curNormSet ; //!
 
   const RooAbsReal* getProjection(const RooArgSet* iset, const RooArgSet* nset, const char* rangeName, int& code) const ;
   Double_t evaluate() const ;

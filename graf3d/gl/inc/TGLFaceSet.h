@@ -16,6 +16,7 @@
 
 #include "TGLLogicalShape.h"
 #include "CsgOps.h"
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////
 class TGLFaceSet : public TGLLogicalShape

@@ -13,7 +13,6 @@
 #include "TEveTrans.h"
 #include "TEveGValuators.h"
 
-#include "TVirtualPad.h"
 #include "TMath.h"
 
 #include "TGButton.h"

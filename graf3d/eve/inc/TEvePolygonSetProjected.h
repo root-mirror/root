@@ -14,6 +14,7 @@
 
 #include "TEveVector.h"
 #include "TEveShape.h"
+#include <list>
 
 class TBuffer3D;
 
@@ -24,8 +25,8 @@ class TEvePolygonSetProjected : public TEveShape,
    friend class TEvePolygonSetProjectedEditor;
 
 private:
-   TEvePolygonSetProjected(const TEvePolygonSetProjected&);            // Not implemented
-   TEvePolygonSetProjected& operator=(const TEvePolygonSetProjected&); // Not implemented
+   TEvePolygonSetProjected(const TEvePolygonSetProjected&) = delete;
+   TEvePolygonSetProjected& operator=(const TEvePolygonSetProjected&) = delete;
 
 protected:
    struct Polygon_t

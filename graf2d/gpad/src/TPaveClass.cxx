@@ -8,10 +8,12 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "Buttons.h"
 #include "TPaveClass.h"
+#include "TClassTree.h"
+
+#include <iostream>
 
 ClassImp(TPaveClass);
 

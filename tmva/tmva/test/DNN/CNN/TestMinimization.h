@@ -27,6 +27,7 @@
 #ifndef TMVA_TEST_DNN_TEST_CNN_TEST_DL_MINIMIZER_H
 #define TMVA_TEST_DNN_TEST_CNN_TEST_DL_MINIMIZER_H
 
+#include <vector>
 #include "TMatrix.h"
 #include "TMVA/DNN/DLMinimizers.h"
 #include "TMVA/DNN/DeepNet.h"

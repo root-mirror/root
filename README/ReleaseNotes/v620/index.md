@@ -35,7 +35,7 @@ The following people have contributed to this new version:
  Lorenzo Moneta, CERN/SFT,\
  Alja Mrak-Tadel, UCSD/CMS,\
  Axel Naumann, CERN/SFT,\
- Vincenzo Eduardo Padulano, Bicocca/SFT,\
+ Vincenzo Eduardo Padulano, CERN/SFT and UPV,\
  Danilo Piparo, CERN/SFT,\
  Fons Rademakers, CERN/SFT,\
  Otto Schaile, Uni-Muenchen,\

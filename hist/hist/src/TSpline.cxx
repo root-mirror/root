@@ -15,14 +15,18 @@
 */
 
 #include "TROOT.h"
+#include "TGraph.h"
+#include "TBuffer.h"
 #include "TSpline.h"
 #include "TVirtualPad.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TSystem.h"
-#include "Riostream.h"
-#include "TClass.h"
 #include "TMath.h"
+#include "strlcpy.h"
+#include "snprintf.h"
+#include <iostream>
+#include <fstream>
 
 ClassImp(TSplinePoly);
 ClassImp(TSplinePoly3);

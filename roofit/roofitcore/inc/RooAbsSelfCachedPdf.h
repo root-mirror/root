@@ -16,8 +16,8 @@
 #include "RooRealProxy.h"
 #include "RooAbsReal.h"
 #include "RooHistPdf.h"
-#include <list>
- 
+
+
 class RooAbsSelfCachedPdf : public RooAbsCachedPdf {
 public:
 

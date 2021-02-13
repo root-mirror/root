@@ -10,14 +10,15 @@
 #define ROOT7_RAttrMarker
 
 #include <ROOT/RAttrBase.hxx>
-#include <ROOT/RColor.hxx>
+#include <ROOT/RAttrColor.hxx>
+#include <ROOT/RAttrValue.hxx>
 
 namespace ROOT {
 namespace Experimental {
 
 /** \class RAttrMarker
 \ingroup GpadROOT7
-\author Axel Naumann <axel@cern.ch>
+\authors Axel Naumann <axel@cern.ch> Sergey Linev <s.linev@gsi.de>
 \date 2018-10-12
 \brief A marker attributes.
 \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
@@ -25,21 +26,24 @@ namespace Experimental {
 
 class RAttrMarker : public RAttrBase {
 
-   RColor fColor{this, "color_"}; ///<! marker color, will access container from line attributes
+   RAttrColor           fColor{this, "color"};      ///<! marker color
+   RAttrValue<double>   fSize{this, "size", 1.};    ///<! marker size
+   RAttrValue<int>      fStyle{this, "style", 1};   ///<! marker style
 
-   R__ATTR_CLASS(RAttrMarker, "marker_", AddDouble("size", 1.).AddInt("style", 1).AddDefaults(fColor));
+   R__ATTR_CLASS(RAttrMarker, "marker");
 
    RAttrMarker &SetColor(const RColor &color) { fColor = color; return *this; }
-   const RColor &GetColor() const { return fColor; }
-   RColor &Color() { return fColor; }
+   RColor GetColor() const { return fColor.GetColor(); }
+   RAttrColor &AttrColor() { return fColor; }
 
    /// The size of the marker.
-   RAttrMarker &SetSize(float size) { SetValue("size", size); return *this; }
-   float GetSize() const { return GetValue<double>("size"); }
+   RAttrMarker &SetSize(double size) { fSize = size; return *this; }
+   double GetSize() const { return fSize; }
 
    /// The style of the marker.
-   RAttrMarker &SetStyle(int style) { SetValue("style", style); return *this; }
-   int GetStyle() const { return GetValue<int>("style"); }
+   RAttrMarker &SetStyle(int style) { fStyle = style; return *this; }
+   int GetStyle() const { return fStyle; }
+
 };
 
 } // namespace Experimental

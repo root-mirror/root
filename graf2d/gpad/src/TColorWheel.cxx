@@ -9,7 +9,6 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TColorWheel.h"
 #include "TCanvas.h"
@@ -19,6 +18,7 @@
 #include "TLine.h"
 #include "TColor.h"
 #include "TMath.h"
+#include "snprintf.h"
 
 ClassImp(TColorWheel);
 

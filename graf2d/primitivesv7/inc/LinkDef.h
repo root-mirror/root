@@ -14,11 +14,13 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class ROOT::Experimental::RText+;
-#pragma link C++ class ROOT::Experimental::Internal::RLegendEntry+;
-#pragma link C++ class ROOT::Experimental::RLegend+;
-#pragma link C++ class ROOT::Experimental::RLine+;
 #pragma link C++ class ROOT::Experimental::RBox+;
+#pragma link C++ class ROOT::Experimental::RFrameTitle+;
+#pragma link C++ class ROOT::Experimental::RLegend+;
+#pragma link C++ class ROOT::Experimental::RLegend::REntry+;
+#pragma link C++ class ROOT::Experimental::RLine+;
+#pragma link C++ class ROOT::Experimental::RPaveText+;
 #pragma link C++ class ROOT::Experimental::RMarker+;
+#pragma link C++ class ROOT::Experimental::RText+;
 
 #endif

@@ -36,4 +36,5 @@ ROOT_STANDARD_LIBRARY_PACKAGE(EG
     Graf
     Graf3d
     MathCore
+    Physics
 )

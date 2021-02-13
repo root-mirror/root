@@ -3,6 +3,7 @@
 /// This macro generates
 /// with 2 views of the NA49 detector using the old obsolete geometry package.
 ///
+/// \macro_image
 /// \macro_code
 ///
 /// \author Rene Brun

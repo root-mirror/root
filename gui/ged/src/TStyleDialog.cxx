@@ -24,15 +24,14 @@
 
 #include <TCanvas.h>
 #include <TGButton.h>
-#include <TGFrame.h>
 #include <TGLabel.h>
 #include <TGLayout.h>
 #include <TGTextEntry.h>
 #include <TROOT.h>
 #include <TStyle.h>
-#include <TVirtualPad.h>
 #include <TVirtualMutex.h>
-#include <stdlib.h>
+
+#include <cstdlib>
 
 ClassImp(TStyleDialog);
 

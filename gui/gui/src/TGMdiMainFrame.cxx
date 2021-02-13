@@ -46,8 +46,10 @@
 #include "TGMdiMenu.h"
 #include "TGGC.h"
 #include "TGResourcePool.h"
-#include "Riostream.h"
 #include "TList.h"
+#include "TVirtualX.h"
+
+#include <iostream>
 
 ClassImp(TGMdiMainFrame);
 ClassImp(TGMdiContainer);

@@ -13,10 +13,11 @@
 #include "Minuit2/MnApplication.h"
 #include "Minuit2/SimplexMinimizer.h"
 
+#include <vector>
+
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class FCNBase;
 
@@ -34,44 +35,63 @@ class FCNBase;
 class MnSimplex : public MnApplication {
 
 public:
-
    /// construct from FCNBase + std::vector for parameters and errors
-   MnSimplex(const FCNBase& fcn, const std::vector<double>& par, const std::vector<double>& err, unsigned int stra = 1) : MnApplication(fcn, MnUserParameterState(par,err), MnStrategy(stra)), fMinimizer(SimplexMinimizer()) {}
+   MnSimplex(const FCNBase &fcn, const std::vector<double> &par, const std::vector<double> &err, unsigned int stra = 1)
+      : MnApplication(fcn, MnUserParameterState(par, err), MnStrategy(stra)), fMinimizer(SimplexMinimizer())
+   {
+   }
 
    /// construct from FCNBase + std::vector for parameters and covariance
-   MnSimplex(const FCNBase& fcn, const std::vector<double>& par, unsigned int nrow, const std::vector<double>& cov,  unsigned int stra = 1) : MnApplication(fcn, MnUserParameterState(par, cov, nrow), MnStrategy(stra)), fMinimizer(SimplexMinimizer()) {}
+   MnSimplex(const FCNBase &fcn, const std::vector<double> &par, unsigned int nrow, const std::vector<double> &cov,
+             unsigned int stra = 1)
+      : MnApplication(fcn, MnUserParameterState(par, cov, nrow), MnStrategy(stra)), fMinimizer(SimplexMinimizer())
+   {
+   }
 
    /// construct from FCNBase + std::vector for parameters and MnUserCovariance
-   MnSimplex(const FCNBase& fcn, const std::vector<double>& par, const MnUserCovariance& cov, unsigned int stra = 1) : MnApplication(fcn, MnUserParameterState(par, cov), MnStrategy(stra)), fMinimizer(SimplexMinimizer()) {}
+   MnSimplex(const FCNBase &fcn, const std::vector<double> &par, const MnUserCovariance &cov, unsigned int stra = 1)
+      : MnApplication(fcn, MnUserParameterState(par, cov), MnStrategy(stra)), fMinimizer(SimplexMinimizer())
+   {
+   }
 
    /// construct from FCNBase + MnUserParameters
-   MnSimplex(const FCNBase& fcn, const MnUserParameters& par, unsigned int stra = 1) : MnApplication(fcn, MnUserParameterState(par), MnStrategy(stra)), fMinimizer(SimplexMinimizer()) {}
+   MnSimplex(const FCNBase &fcn, const MnUserParameters &par, unsigned int stra = 1)
+      : MnApplication(fcn, MnUserParameterState(par), MnStrategy(stra)), fMinimizer(SimplexMinimizer())
+   {
+   }
 
    /// construct from FCNBase + MnUserParameters + MnUserCovariance
-   MnSimplex(const FCNBase& fcn, const MnUserParameters& par, const MnUserCovariance& cov, unsigned int stra = 1) : MnApplication(fcn, MnUserParameterState(par, cov), MnStrategy(stra)), fMinimizer(SimplexMinimizer()) {}
+   MnSimplex(const FCNBase &fcn, const MnUserParameters &par, const MnUserCovariance &cov, unsigned int stra = 1)
+      : MnApplication(fcn, MnUserParameterState(par, cov), MnStrategy(stra)), fMinimizer(SimplexMinimizer())
+   {
+   }
 
    /// construct from FCNBase + MnUserParameterState + MnStrategy
-   MnSimplex(const FCNBase& fcn, const MnUserParameterState& par, const MnStrategy& str) : MnApplication(fcn, MnUserParameterState(par), str), fMinimizer(SimplexMinimizer()) {}
+   MnSimplex(const FCNBase &fcn, const MnUserParameterState &par, const MnStrategy &str)
+      : MnApplication(fcn, MnUserParameterState(par), str), fMinimizer(SimplexMinimizer())
+   {
+   }
 
-   MnSimplex(const MnSimplex& migr) : MnApplication(migr.Fcnbase(), migr.State(), migr.Strategy(), migr.NumOfCalls()), fMinimizer(migr.fMinimizer) {}
+   MnSimplex(const MnSimplex &migr)
+      : MnApplication(migr.Fcnbase(), migr.State(), migr.Strategy(), migr.NumOfCalls()), fMinimizer(migr.fMinimizer)
+   {
+   }
 
    ~MnSimplex() {}
 
-   ModularFunctionMinimizer& Minimizer() {return fMinimizer;}
-   const ModularFunctionMinimizer& Minimizer() const {return fMinimizer;}
+   ModularFunctionMinimizer &Minimizer() { return fMinimizer; }
+   const ModularFunctionMinimizer &Minimizer() const { return fMinimizer; }
 
 private:
-
    SimplexMinimizer fMinimizer;
 
 private:
-
-   //forbidden assignment of migrad (const FCNBase& = )
-   MnSimplex& operator=(const MnSimplex&) {return *this;}
+   // forbidden assignment of migrad (const FCNBase& = )
+   MnSimplex &operator=(const MnSimplex &) { return *this; }
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnSimplex
+#endif // ROOT_Minuit2_MnSimplex

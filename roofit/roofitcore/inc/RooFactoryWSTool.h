@@ -20,9 +20,9 @@
 #include "RooArgSet.h"
 #include "RooArgList.h"
 #include <string>
-#include <list>
 #include <vector>
 #include <stack>
+#include <map>
 
 class RooAbsReal ;
 class RooAbsRealLValue ;

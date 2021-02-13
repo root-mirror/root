@@ -15,10 +15,10 @@
 #define ROOT_Math_TDataPointN
 
 //STL include(s)
-#include <assert.h>
+#include <cassert>
 
 //ROOT include(s)
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 namespace ROOT
 {

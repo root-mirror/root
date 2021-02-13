@@ -1,6 +1,8 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook
+/// Implement a custom action to fill THns.
+///
 /// This tutorial shows how to implement a custom action.
 /// As an example, we build a helper for filling THns.
 ///
@@ -8,7 +10,7 @@
 /// \macro_output
 ///
 /// \date April 2018
-/// \author Enrico Guiraud, Danilo Piparo
+/// \authors Enrico Guiraud, Danilo Piparo (CERN)
 
 // This is a custom action which respects a well defined interface. It supports parallelism,
 // in the sense that it behaves correctly if implicit multi threading is enabled.
@@ -33,7 +35,7 @@ public:
    THnHelper(std::string_view name, std::string_view title, std::array<int, NDIM> nbins, std::array<double, NDIM> xmins,
              std::array<double, NDIM> xmax)
    {
-      const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetImplicitMTPoolSize() : 1;
+      const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetThreadPoolSize() : 1;
       for (auto i : ROOT::TSeqU(nSlots)) {
          fHistos.emplace_back(std::make_shared<THn_t>(std::string(name).c_str(), std::string(title).c_str(),
                                                       NDIM, nbins.data(), xmins.data(), xmax.data()));

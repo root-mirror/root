@@ -1,13 +1,13 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -draw
-/// This tutorial shows how to fill a TGraph using the Dataframe.
+/// Fill a TGraph using RDataFrame.
 ///
 /// \macro_code
 /// \macro_image
 ///
 /// \date July 2018
-/// \author Enrico Guiraud, Danilo Piparo, Massimo Tumolo
+/// \authors Enrico Guiraud, Danilo Piparo (CERN), Massimo Tumolo (Politecnico di Torino)
 
 
 

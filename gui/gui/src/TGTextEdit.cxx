@@ -34,16 +34,16 @@
 #include "TGTextEditDialogs.h"
 #include "TGResourcePool.h"
 #include "TSystem.h"
-#include "TMath.h"
 #include "TTimer.h"
 #include "TGMenu.h"
 #include "TGMsgBox.h"
 #include "TGFileDialog.h"
 #include "TGScrollBar.h"
 #include "KeySymbols.h"
-#include "Riostream.h"
 #include "RConfigure.h"
+#include "TVirtualX.h"
 
+#include <iostream>
 
 static const char *gFiletypes[] = { "All files",     "*",
                                     "Text files",    "*.txt",

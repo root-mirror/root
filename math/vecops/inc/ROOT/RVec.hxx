@@ -16,6 +16,13 @@
 #define ROOT_RVEC
 
 #ifdef _WIN32
+   #ifndef M_PI
+      #ifndef _USE_MATH_DEFINES
+         #define _USE_MATH_DEFINES
+      #endif
+      #include <math.h>
+      #undef _USE_MATH_DEFINES
+   #endif
    #define _VECOPS_USE_EXTERN_TEMPLATES false
 #else
    #define _VECOPS_USE_EXTERN_TEMPLATES true
@@ -35,14 +42,7 @@
 #include <type_traits>
 #include <vector>
 #include <utility>
-
-#define _USE_MATH_DEFINES // enable definition of M_PI
-#ifdef _WIN32
-// cmath does not expose M_PI on windows
-#include <math.h>
-#else
-#include <cmath>
-#endif
+#include <tuple>
 
 #ifdef R__HAS_VDT
 #include <vdt/vdtMath.h>
@@ -1632,12 +1632,12 @@ T InvariantMass(const RVec<T>& pt, const RVec<T>& eta, const RVec<T>& phi, const
 /// Example code, at the ROOT prompt:
 /// ~~~{.cpp}
 /// using namespace ROOT::VecOps;
-/// RVec<float> etas {.3f, 2.2f, 1.32f};
-/// RVec<float> phis {.1f, 3.02f, 2.2f};
-/// RVec<float> pts {15.5f, 34.32f, 12.95f};
-/// RVec<float> masses {105.65f, 105.65f, 105.65f};
-/// Construct<ROOT::Math::PtEtaPhiMVector> fourVects(etas, phis, pts, masses);
-/// cout << fourVects << endl;
+/// RVec<float> pts = {15.5, 34.32, 12.95};
+/// RVec<float> etas = {0.3, 2.2, 1.32};
+/// RVec<float> phis = {0.1, 3.02, 2.2};
+/// RVec<float> masses = {105.65, 105.65, 105.65};
+/// auto fourVecs = Construct<ROOT::Math::PtEtaPhiMVector>(pts, etas, phis, masses);
+/// cout << fourVecs << endl;
 /// // { (15.5,0.3,0.1,105.65), (34.32,2.2,3.02,105.65), (12.95,1.32,2.2,105.65) }
 /// ~~~
 template <typename T, typename... Args_t>

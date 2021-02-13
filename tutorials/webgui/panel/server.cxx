@@ -29,7 +29,7 @@ struct TestPanelModel {
 
 std::shared_ptr<ROOT::Experimental::RWebWindow> window;
 std::unique_ptr<TestPanelModel> model;
-
+int sendcnt = 0;
 
 void ProcessConnection(unsigned connid)
 {
@@ -47,16 +47,18 @@ void ProcessData(unsigned connid, const std::string &arg)
 {
    if (arg == "REFRESH") {
       // send model to client again
-      printf("Resend model\n");
+      printf("Send model again\n");
+      model->fButtonText = Form("Custom button %d", ++sendcnt);
       TString json = TBufferJSON::ToJSON(model.get());
       window->Send(connid, std::string("MODEL:") + json.Data());
    } else if (arg.find("MODEL:") == 0) {
-      printf("Decode model %s\n", arg.c_str());
-
+      // analyze new model send from client
       auto m = TBufferJSON::FromJSON<TestPanelModel>(arg.substr(6));
       if (m) {
          printf("New model, selected: %s\n", m->fSelectId.c_str());
          std::swap(model, m);
+      } else {
+         printf("Fail to decode model: %s\n", arg.c_str());
       }
    }
 }

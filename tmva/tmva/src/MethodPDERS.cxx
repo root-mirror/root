@@ -79,12 +79,10 @@ The adaptive range search is used by default.
 #include "TMVA/Types.h"
 
 #include "ThreadLocalStorage.h"
-#include "TBuffer.h"
 #include "TFile.h"
-#include "TObjString.h"
 #include "TMath.h"
 
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 
 namespace TMVA {

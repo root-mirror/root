@@ -1,13 +1,15 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Basic functionality: normalization and integration of p.d.fs, construction of cumulative distribution
+/// Basic functionality: normalization and integration of pdfs, construction of cumulative distribution
 /// monodimensional functions
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooGaussian.h"
@@ -26,7 +28,7 @@ void rf110_normintegration()
    // Create observables x,y
    RooRealVar x("x", "x", -10, 10);
 
-   // Create p.d.f. gaussx(x,-2,3)
+   // Create pdf gaussx(x,-2,3)
    RooGaussian gx("gx", "gx", x, RooConst(-2), RooConst(3));
 
    // R e t r i e v e   r a w  &   n o r m a l i z e d   v a l u e s   o f   R o o F i t   p . d . f . s
@@ -51,7 +53,7 @@ void rf110_normintegration()
    x.setRange("signal", -5, 5);
 
    // Create an integral of gx_Norm[x] over x in range "signal"
-   // This is the fraction of of p.d.f. gx_Norm[x] which is in the
+   // This is the fraction of of pdf gx_Norm[x] which is in the
    // range named "signal"
    RooAbsReal *igx_sig = gx.createIntegral(x, NormSet(x), Range("signal"));
    cout << "gx_Int[x|signal]_Norm[x] = " << igx_sig->getVal() << endl;
@@ -64,7 +66,7 @@ void rf110_normintegration()
    RooAbsReal *gx_cdf = gx.createCdf(x);
 
    // Plot cdf of gx versus x
-   RooPlot *frame = x.frame(Title("c.d.f of Gaussian p.d.f"));
+   RooPlot *frame = x.frame(Title("cdf of Gaussian pdf"));
    gx_cdf->plotOn(frame);
 
    // Draw plot on canvas

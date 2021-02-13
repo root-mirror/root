@@ -7,10 +7,13 @@
 using namespace ROOT::Experimental;
 
 class CustomAttrs : public RAttrBase {
-   RAttrBox fAttrBox{this, "box_"};
-   RAttrText fAttrText{this, "text_"};
+   RAttrBox fAttrBox{this, "box"};
+   RAttrText fAttrText{this, "text"};
 
-   R__ATTR_CLASS(CustomAttrs, "custom_", AddDefaults(fAttrBox).AddDefaults(fAttrText));
+protected:
+   RAttrMap CollectDefaults() const override { return RAttrMap().AddDefaults(fAttrBox).AddDefaults(fAttrText); }
+
+   R__ATTR_CLASS(CustomAttrs, "custom");
 
    const RAttrBox &GetAttrBox() const { return fAttrBox; }
    CustomAttrs &SetAttrBox(const RAttrBox &box) { fAttrBox = box; return *this; }
@@ -87,23 +90,19 @@ TEST(OptsTest, AttribDiffer) {
    CustomAttrs attrs2;
    CustomAttrs attrs3;
 
-   auto &al1 = attrs1.AttrBox().AttrBorder();
-   auto &al2 = attrs2.AttrBox().AttrBorder();
-   auto &al3 = attrs3.AttrBox().AttrBorder();
+   attrs1.AttrBox().AttrBorder().SetWidth(7.);
+   EXPECT_NE(attrs1, attrs2);
+   EXPECT_NE(attrs2, attrs1);
+   EXPECT_NE(attrs1, attrs3);
+   EXPECT_EQ(attrs2, attrs3);
+   EXPECT_EQ(attrs3, attrs2);
 
-   al1.SetWidth(7.);
-   EXPECT_NE(al1, al2);
-   EXPECT_NE(al2, al1);
-   EXPECT_NE(al1, al3);
-   EXPECT_EQ(al2, al3);
-   EXPECT_EQ(al3, al2);
-
-   al2.SetColor(RColor::kRed);
-   EXPECT_NE(al1, al2);
-   EXPECT_NE(al2, al1);
-   EXPECT_NE(al1, al3);
-   EXPECT_NE(al2, al3);
-   EXPECT_NE(al3, al2);
+   attrs2.AttrBox().AttrBorder().SetColor(RColor::kRed);
+   EXPECT_NE(attrs1, attrs2);
+   EXPECT_NE(attrs2, attrs1);
+   EXPECT_NE(attrs1, attrs3);
+   EXPECT_NE(attrs2, attrs3);
+   EXPECT_NE(attrs3, attrs2);
 }
 
 

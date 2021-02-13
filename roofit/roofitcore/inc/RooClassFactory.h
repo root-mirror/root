@@ -22,8 +22,11 @@
 #include "RooPrintable.h"
 #include "RooFactoryWSTool.h"
 
-class RooAbsReal ;
-class RooAbsPdf ;
+#include <vector>
+#include <string>
+
+class RooAbsReal;
+class RooAbsPdf;
 
 class RooClassFactory : public TNamed, public RooPrintable {
 

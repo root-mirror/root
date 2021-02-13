@@ -48,9 +48,8 @@ In terms of in our abstract problem formulation, these variables are
 the vectors x, y, z and s.
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include "TQpVar.h"
-#include "TMatrixD.h"
 
 ClassImp(TQpVar);
 

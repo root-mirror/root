@@ -134,7 +134,7 @@ ly used in compiled code:
 \endverbatim
                                                                      
 This is especially useful for example with TVirtualMC or similar.
-*/  
+*/
 
 #include "TROOT.h"
 #include "TGenerator.h"
@@ -148,7 +148,10 @@ This is especially useful for example with TVirtualMC or similar.
 #include "TText.h"
 #include "TPaveText.h"
 #include "TClonesArray.h"
-#include "Riostream.h"
+#include "strlcpy.h"
+#include "snprintf.h"
+
+#include <iostream>
 
 
 ClassImp(TGenerator);

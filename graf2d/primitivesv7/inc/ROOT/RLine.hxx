@@ -13,8 +13,6 @@
 #include <ROOT/RAttrLine.hxx>
 #include <ROOT/RPadPos.hxx>
 
-#include <memory>
-
 namespace ROOT {
 namespace Experimental {
 
@@ -28,24 +26,39 @@ namespace Experimental {
 
 class RLine : public RDrawable {
 
-   RPadPos fP1;                            ///< line begin
-   RPadPos fP2;                            ///< line end
-   RAttrLine  fAttrLine{this, "line_"};    ///<! line attributes
+   RPadPos fP1, fP2;                  ///< line begin/end
+   RAttrLine fAttrLine{this, "line"}; ///<! line attributes
 
 public:
-
    RLine() : RDrawable("line") {}
 
-   RLine(const RPadPos& p1, const RPadPos& p2) : RLine() { fP1 = p1; fP2 = p2; }
+   RLine(const RPadPos &p1, const RPadPos &p2) : RLine()
+   {
+      fP1 = p1;
+      fP2 = p2;
+   }
 
-   RLine &SetP1(const RPadPos& p1) { fP1 = p1; return *this; }
-   RLine &SetP2(const RPadPos& p2) { fP2 = p2; return *this; }
+   RLine &SetP1(const RPadPos &p1)
+   {
+      fP1 = p1;
+      return *this;
+   }
 
-   const RPadPos& GetP1() const { return fP1; }
-   const RPadPos& GetP2() const { return fP2; }
+   RLine &SetP2(const RPadPos &p2)
+   {
+      fP2 = p2;
+      return *this;
+   }
+
+   const RPadPos &GetP1() const { return fP1; }
+   const RPadPos &GetP2() const { return fP2; }
 
    const RAttrLine &GetAttrLine() const { return fAttrLine; }
-   RLine &SetAttrLine(const RAttrLine &attr) { fAttrLine = attr; return *this; }
+   RLine &SetAttrLine(const RAttrLine &attr)
+   {
+      fAttrLine = attr;
+      return *this;
+   }
    RAttrLine &AttrLine() { return fAttrLine; }
 };
 

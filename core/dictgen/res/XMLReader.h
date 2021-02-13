@@ -24,6 +24,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <string>
 
 class SelectionRules;
 

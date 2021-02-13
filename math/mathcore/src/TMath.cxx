@@ -16,10 +16,10 @@
 
 #include "TMath.h"
 #include "TError.h"
-#include <math.h>
-#include <string.h>
+#include <cmath>
+#include <cstring>
 #include <algorithm>
-#include "Riostream.h"
+#include <iostream>
 #include "TString.h"
 
 #include <Math/SpecFuncMathCore.h>
@@ -115,7 +115,7 @@ Double_t TMath::DiLog(Double_t x)
    const Double_t pi3 = pi2/3;
    const Double_t pi6 = pi2/6;
    const Double_t pi12 = pi2/12;
-   const Double_t c[20] = {0.42996693560813697, 0.40975987533077105,
+   const Double_t c[20] = {0.42996693560813697, 0.40975987533077106,
      -0.01858843665014592, 0.00145751084062268,-0.00014304184442340,
       0.00001588415541880,-0.00000190784959387, 0.00000024195180854,
      -0.00000003193341274, 0.00000000434545063,-0.00000000060578480,
@@ -548,14 +548,10 @@ Double_t TMath::Normalize(Double_t v[3])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Compute the Poisson distribution function for (x,par)
+/// Compute the Poisson distribution function for (x,par).
 /// The Poisson PDF is implemented by means of Euler's Gamma-function
-/// (for the factorial), so for any x integer argument it is correct.
-/// BUT for non-integer x values, it IS NOT equal to the Poisson distribution.
-/// see TMath::PoissonI to get a non-smooth function.
-/// Note that for large values of par, it is better to call
-///
-///     TMath::Gaus(x,par,sqrt(par),kTRUE)
+/// (for the factorial), so for any x integer argument it is the correct Poisson distribution.
+/// BUT for non-integer x values, it IS NOT equal to the Poisson distribution !
 ///
 /// Begin_Macro
 /// {
@@ -567,24 +563,21 @@ Double_t TMath::Normalize(Double_t v[3])
 
 Double_t TMath::Poisson(Double_t x, Double_t par)
 {
-   if (x<0)
+   if (par < 0)
+      return TMath::QuietNaN();
+   if (x < 0)
       return 0;
-   else if (x == 0.0)
-      return 1./Exp(par);
-   else {
-      Double_t lnpoisson = x*log(par)-par-LnGamma(x+1.);
-      return Exp(lnpoisson);
+   else if (x == 0.0 )
+      return Exp(-par);
+   else
+   {
+      return Exp( x * log(par) - LnGamma(x + 1.) - par);
    }
-   // An alternative strategy is to transition to a Gaussian approximation for
-   // large values of par ...
-   //   else {
-   //     return Gaus(x,par,Sqrt(par),kTRUE);
-   //   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Compute the Poisson distribution function for (x,par)
-/// This is a non-smooth function.
+/// Compute the Discrete Poisson distribution function for (x,par).
+/// This is a discrete and a non-smooth function.
 /// This function is equivalent to ROOT::Math::poisson_pdf
 ///
 /// Begin_Macro
@@ -864,7 +857,7 @@ Double_t TMath::KolmogorovTest(Int_t na, const Double_t *a, Int_t nb, const Doub
 /// \f[
 /// lorentz(xx) = \frac{ \frac{1}{\pi} \frac{lg}{2} }{ (xx^{2} + \frac{lg^{2}}{4}) }
 /// \f]
-/// .
+/// \.
 ///
 /// The Voigt function is known to be the real part of Faddeeva function also
 /// called complex error function [2].

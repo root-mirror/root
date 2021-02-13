@@ -52,6 +52,7 @@
 /* #endif */
 
 #include "TMVA/Event.h"
+#include <vector>
 
 namespace TMVA {
    class DataSet;

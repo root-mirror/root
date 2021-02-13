@@ -12,6 +12,8 @@
 #include <ROOT/RAttrMap.hxx>
 
 #include <string>
+#include <list>
+#include <memory>
 
 namespace ROOT {
 namespace Experimental {
@@ -32,22 +34,30 @@ class RStyle {
 public:
 
    struct Block_t {
-      std::string selector;
-      RAttrMap map; ///<    container
+      std::string selector;       ///<  css selector
+      RAttrMap map;               ///<  container with attributes
       Block_t() = default;
       Block_t(const std::string &_selector) : selector(_selector) {}
 
-      Block_t(const Block_t &) {} // dummy, should not be used, but appears in dictionary
+      Block_t(const Block_t &src) : selector(src.selector), map(src.map) {} // not required
       Block_t& operator=(const Block_t &) = delete;
    };
 
    const RAttrMap::Value_t *Eval(const std::string &field, const RDrawable &drawable) const;
+
+   const RAttrMap::Value_t *Eval(const std::string &field, const std::string &selector) const;
 
    RAttrMap &AddBlock(const std::string &selector)
    {
       fBlocks.emplace_back(selector);
       return fBlocks.back().map;
    }
+
+   void Clear();
+
+   static std::shared_ptr<RStyle> Parse(const std::string &css_code);
+
+   bool ParseString(const std::string &css_code);
 
 private:
 

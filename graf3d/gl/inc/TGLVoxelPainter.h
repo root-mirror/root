@@ -1,7 +1,6 @@
 #ifndef ROOT_TGLVoxelPainter
 #define ROOT_TGLVoxelPainter
 
-#include <utility>
 #include <vector>
 
 #include "TGLPlotPainter.h"
@@ -19,8 +18,8 @@ private:
    TString                 fPlotInfo;
    Rgl::Range_t            fMinMaxVal;
 
-   TGLVoxelPainter(const TGLVoxelPainter &);
-   TGLVoxelPainter &operator = (const TGLVoxelPainter &);
+   TGLVoxelPainter(const TGLVoxelPainter &) = delete;
+   TGLVoxelPainter &operator = (const TGLVoxelPainter &) = delete;
 
    mutable TGLLevelPalette fPalette;
    mutable std::vector<Double_t> fLevels;

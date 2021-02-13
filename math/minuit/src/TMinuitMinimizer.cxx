@@ -16,6 +16,7 @@
 
 #include "TMinuit.h"
 #include "TROOT.h"
+#include "TList.h"
 
 #include "TGraph.h" // needed for scan
 #include "TError.h"
@@ -24,7 +25,6 @@
 
 #include "ThreadLocalStorage.h"
 
-#include <iostream>
 #include <cassert>
 #include <algorithm>
 #include <functional>
@@ -804,7 +804,7 @@ bool TMinuitMinimizer::GetMinosError(unsigned int i, double & errLow, double & e
    }
 
 
-   // syntax of MINOS is MINOS [maxcalls] [parno]
+   // syntax of MINOS command is:  MINOS [maxcalls] [parno]
    // if parno = 0 all parameters are done
    arglist[0] = MaxFunctionCalls();
    arglist[1] = i+1;  // par number starts from 1 in TMInuit
@@ -815,7 +815,7 @@ bool TMinuitMinimizer::GetMinosError(unsigned int i, double & errLow, double & e
    // check also the status from fCstatu
    if (isValid && fMinuit->fCstatu != "SUCCESSFUL") {
       if (fMinuit->fCstatu == "FAILURE" ) {
-         // in this case MINOS failed on all prameter, so it is not valid !
+         // in this case MINOS failed on all parameters, so it is not valid !
          ierr = 5;
          isValid = false;
       }
@@ -824,6 +824,7 @@ bool TMinuitMinimizer::GetMinosError(unsigned int i, double & errLow, double & e
    }
 
    fStatus += 10*ierr;
+   fMinosStatus = ierr; 
 
    fMinosRun = true;
 

@@ -14,6 +14,7 @@
 #include "TPRegexp.h"
 #include "TSystem.h"
 #include "TROOT.h"
+#include "TApplication.h"
 
 /** \class TEveMacro
 \ingroup TEve
@@ -54,7 +55,6 @@ TEveMacro::TEveMacro(const char* name) :
    ReadFile(fTitle);
 }
 
-#include "TTimer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Execute the macro.
@@ -111,8 +111,6 @@ Long_t TEveMacro::Exec(const char* params, Int_t* error)
 
    return retval;
 }
-
-#include "TApplication.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Call gROOT->Reset() via interpreter.

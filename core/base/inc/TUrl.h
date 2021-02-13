@@ -26,8 +26,6 @@
 
 #include "TObject.h"
 #include "TString.h"
-#include "TMap.h"
-
 
 class THashList;
 class TMap;

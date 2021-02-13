@@ -55,13 +55,17 @@
 // S3_ACCESS_KEY, S3_SECRET_KEY, S3_REGION, S3_TOKEN. gEnv vars have higher priority.
 
 #include "TFile.h"
-#include "TUrl.h"
-#include "TSystem.h"
-#include "TMutex.h"
 
 class TDavixFileInternal;
 struct Davix_fd;
 
+namespace ROOT {
+namespace Experimental {
+class RLogChannel;
+}
+}
+
+ROOT::Experimental::RLogChannel &TDavixLogChannel();
 
 class TDavixFile : public TFile {
 private:
@@ -110,6 +114,11 @@ public:
     // TDavixFile options
     /// Enable or disable certificate authority check
     void setCACheck(Bool_t check);
+
+    // Determine the value of the current token from the process's environment.
+    // Follows the WLCG Bearer Token Discovery schema.
+    // On error or no token discovered, returns the empty string.
+    std::string DiscoverToken();
 
     /// Enable the grid mode
     /// The grid Mode configure automatically all grid-CA path, VOMS authentication

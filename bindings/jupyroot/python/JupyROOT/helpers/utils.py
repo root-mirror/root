@@ -4,6 +4,15 @@
 #  Author: Danilo Piparo <Danilo.Piparo@cern.ch> CERN
 #-----------------------------------------------------------------------------
 
+################################################################################
+# Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.                      #
+# All rights reserved.                                                         #
+#                                                                              #
+# For the licensing terms see $ROOTSYS/LICENSE.                                #
+# For the list of contributors see $ROOTSYS/README/CREDITS.                    #
+################################################################################
+
+
 from __future__ import print_function
 
 import os
@@ -39,28 +48,64 @@ console.log("JupyROOT - %%cpp magic configured");
 
 _jsNotDrawableClassesPatterns = ["TEve*","TF3","TPolyLine3D"]
 
-
-_jsROOTSourceDir = "/static/"
 _jsCanvasWidth = 800
 _jsCanvasHeight = 600
-
 _jsCode = """
+
 <div id="{jsDivId}"
      style="width: {jsCanvasWidth}px; height: {jsCanvasHeight}px">
 </div>
-<script src="/static/components/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
 <script>
- requirejs.config({{
-     paths: {{
-       'JSRootCore' : '{jsROOTSourceDir}scripts/JSRootCore',
-     }}
-   }});
- require(['JSRootCore'],
-     function(Core) {{
-       var obj = Core.JSONR_unref({jsonContent});
-       Core.draw("{jsDivId}", obj, "{jsDrawOptions}");
-     }}
- );
+if (typeof require !== 'undefined') {{
+
+    // We are in jupyter notebooks, use require.js which should be configured already
+    require(['scripts/JSRoot.core'],
+        function(Core) {{
+           display_{jsDivId}(Core);
+        }}
+    );
+
+}} else if (typeof JSROOT !== 'undefined') {{
+
+   // JSROOT already loaded, just use it
+   display_{jsDivId}(JSROOT);
+
+}} else {{
+
+    // We are in jupyterlab without require.js, directly loading jsroot
+    // Jupyterlab might be installed in a different base_url so we need to know it.
+    try {{
+        var base_url = JSON.parse(document.getElementById('jupyter-config-data').innerHTML).baseUrl;
+    }} catch(_) {{
+        var base_url = '/';
+    }}
+
+    // Try loading a local version of requirejs and fallback to cdn if not possible.
+    script_load(base_url + 'static/scripts/JSRoot.core.js', script_success, function(){{
+        console.error('Fail to load JSROOT locally, please check your jupyter_notebook_config.py file')
+        script_load('https://root.cern/js/5.9.0/scripts/JSRootCore.min.js', script_success, function(){{
+            document.getElementById("{jsDivId}").innerHTML = "Failed to load JSROOT";
+        }});
+    }});
+}}
+
+function script_load(src, on_load, on_error) {{
+    var script = document.createElement('script');
+    script.src = src;
+    script.onload = on_load;
+    script.onerror = on_error;
+    document.head.appendChild(script);
+}}
+
+function script_success() {{
+   display_{jsDivId}(JSROOT);
+}}
+
+function display_{jsDivId}(Core) {{
+   var obj = Core.parse({jsonContent});
+   Core.settings.HandleKeys = false;
+   Core.draw("{jsDivId}", obj, "{jsDrawOptions}");
+}}
 </script>
 """
 
@@ -242,6 +287,49 @@ def invokeAclic(cell):
     else:
         processCppCode(".L %s+" %fileName)
 
+def produceCanvasJson(canvas):
+   # Add extra primitives to canvas with custom colors, palette, gStyle
+   prim = canvas.GetListOfPrimitives()
+
+   style = ROOT.gStyle
+   colors = ROOT.gROOT.GetListOfColors()
+   palette = None
+
+   # always provide gStyle object
+   if prim.FindObject(style):
+      style = None
+   else:
+      prim.Add(style)
+
+   cnt = 0
+   for n in range(colors.GetLast()+1):
+      if colors.At(n): cnt = cnt+1
+
+   # add all colors if there are more than 598 colors defined
+   if cnt < 599 or prim.FindObject(colors):
+      colors = None
+   else:
+      prim.Add(colors)
+
+   if colors:
+      pal = ROOT.TColor.GetPalette()
+      palette = ROOT.TObjArray()
+      palette.SetName("CurrentColorPalette")
+      for i in range(pal.GetSize()):
+         palette.Add(colors.At(pal[i]))
+      prim.Add(palette)
+
+   ROOT.TColor.DefinedColors()
+
+   canvas_json = ROOT.TBufferJSON.ConvertToJSON(canvas, 3)
+
+   # Cleanup primitives after conversion
+   if style is not None: prim.Remove(style)
+   if colors is not None: prim.Remove(colors)
+   if palette is not None: prim.Remove(palette)
+
+   return canvas_json
+
 transformers = []
 
 class StreamCapture(object):
@@ -254,7 +342,9 @@ class StreamCapture(object):
         self.outString = ""
         self.errString = ""
 
-        self.asyncCapturer = handlers.Runner(self.syncCapture)
+        self.poller = handlers.Poller()
+        self.poller.start()
+        self.asyncCapturer = handlers.Runner(self.syncCapture, self.poller)
 
         self.isFirstPreExecute = True
         self.isFirstPostExecute = True
@@ -310,6 +400,8 @@ class StreamCapture(object):
         self.shell.events.register('pre_execute', self.pre_execute)
         self.shell.events.register('post_execute', self.post_execute)
 
+    def __del__(self):
+        self.poller.Stop()
 
 def GetCanvasDrawers():
     lOfC = ROOT.gROOT.GetListOfCanvases()
@@ -406,10 +498,9 @@ class NotebookDrawer(object):
                     return False
         return True
 
-
     def _getJsCode(self):
-        # Workaround to have ConvertToJSON work
-        json = ROOT.TBufferJSON.ConvertToJSON(self.drawableObject, 3)
+        # produce JSON for the canvas
+        json = produceCanvasJson(self.drawableObject)
 
         # Here we could optimise the string manipulation
         divId = 'root_plot_' + str(self._getUID())
@@ -425,7 +516,6 @@ class NotebookDrawer(object):
 
         thisJsCode = _jsCode.format(jsCanvasWidth = height,
                                     jsCanvasHeight = width,
-                                    jsROOTSourceDir = _jsROOTSourceDir,
                                     jsonContent = json.Data(),
                                     jsDrawOptions = options,
                                     jsDivId = divId)

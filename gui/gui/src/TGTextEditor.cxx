@@ -169,7 +169,6 @@
 #include "TGFontDialog.h"
 #include "TGTextEdit.h"
 #include "TGMenu.h"
-#include "TGButton.h"
 #include "TGStatusBar.h"
 #include "KeySymbols.h"
 #include "TGToolBar.h"
@@ -182,6 +181,7 @@
 #include "TObjString.h"
 #include "TRootHelpDialog.h"
 #include "HelpText.h"
+#include "TVirtualX.h"
 #ifdef WIN32
 #include "TWin32SplashThread.h"
 #endif

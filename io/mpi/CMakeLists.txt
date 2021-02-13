@@ -17,8 +17,10 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RMPI
      src/TMPIFile.cxx
   DEPENDENCIES
      RIO
+     MathCore
 )
 
+target_include_directories(RMPI PUBLIC ${MPI_CXX_HEADER_DIR})
 target_link_libraries(RMPI
   PRIVATE
     MPI::MPI_CXX

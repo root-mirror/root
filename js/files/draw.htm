@@ -3,21 +3,21 @@
 <html lang="en">
    <head>
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <title>Draw of single element</title>
-      <script type="text/javascript" src="jsrootsys/scripts/JSRootCore.js?gui"></script>
-
-      <script type='text/javascript'>
-         function GetCachedHierarchy() { return "$$$h.json$$$"; }
-         function GetCachedObject() { return "$$$root.json$$$"; }
-      </script>
-
+      <script type="text/javascript" src="jsrootsys/scripts/JSRoot.core.js"></script>
    </head>
 
    <body>
       <div id="drawGUI">
          loading scripts...
       </div>
+
+      <script type='text/javascript'>
+         function GetCachedHierarchy() { return "$$$h.json$$$"; }
+         function GetCachedObject() { return "$$$root.json$$$"; }
+
+         JSROOT.buildGUI("drawGUI", "draw");
+      </script>
    </body>
 
 </html>

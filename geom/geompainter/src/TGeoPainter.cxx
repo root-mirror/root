@@ -23,8 +23,9 @@ using TBuffer3D mechanism.
 #include "TView.h"
 #include "TAttLine.h"
 #include "TAttFill.h"
-#include "TPad.h"
+#include "TVirtualPad.h"
 #include "TCanvas.h"
+#include "TCanvasImp.h"
 #include "TH2F.h"
 #include "TF1.h"
 #include "TGraph.h"
@@ -33,11 +34,11 @@ using TBuffer3D mechanism.
 #include "TStopwatch.h"
 
 #include "TPolyMarker3D.h"
-#include "TVirtualGL.h"
 
 #include "TGeoAtt.h"
 #include "TGeoVolume.h"
 #include "TGeoNode.h"
+#include "TGeoElement.h"
 #include "TGeoManager.h"
 #include "TGeoTrack.h"
 #include "TGeoOverlap.h"
@@ -54,6 +55,7 @@ using TBuffer3D mechanism.
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TVirtualViewer3D.h"
+#include "TVirtualX.h"
 
 ClassImp(TGeoPainter);
 
@@ -83,14 +85,14 @@ TGeoPainter::TGeoPainter(TGeoManager *manager) : TVirtualGeoPainter(manager)
    fIsRaytracing = kFALSE;
    fTopVisible = kFALSE;
    fPaintingOverlaps = kFALSE;
-   fPlugin = 0;
+   fPlugin = nullptr;
    fVisVolumes = new TObjArray();
-   fOverlap = 0;
+   fOverlap = nullptr;
    fGlobal = new TGeoHMatrix();
    fBuffer = new TBuffer3D(TBuffer3DTypes::kGeneric,20,3*20,0,0,0,0);
-   fClippingShape = 0;
-   fLastVolume = 0;
-   fTopVolume = 0;
+   fClippingShape = nullptr;
+   fLastVolume = nullptr;
+   fTopVolume = nullptr;
    fIsPaintingShape = kFALSE;
    memset(&fCheckedBox[0], 0, 6*sizeof(Double_t));
 
@@ -328,7 +330,7 @@ Int_t TGeoPainter::GetColor(Int_t base, Float_t light) const
 
 TGeoVolume *TGeoPainter::GetDrawnVolume() const
 {
-   if (!gPad) return 0;
+   if (!gPad) return nullptr;
    return fTopVolume;
 }
 
@@ -779,7 +781,7 @@ void TGeoPainter::DrawPolygon(const TGeoPolygon *poly)
 void TGeoPainter::DrawVolume(TGeoVolume *vol, Option_t *option)
 {
    fTopVolume = vol;
-   fLastVolume = 0;
+   fLastVolume = nullptr;
    fIsPaintingShape = kFALSE;
 //   if (fVisOption==kGeoVisOnly ||
 //       fVisOption==kGeoVisBranch) fGeoManager->SetVisOption(kGeoVisLeaves);
@@ -787,7 +789,7 @@ void TGeoPainter::DrawVolume(TGeoVolume *vol, Option_t *option)
    TString opt = option;
    opt.ToLower();
    fPaintingOverlaps = kFALSE;
-   fOverlap = 0;
+   fOverlap = nullptr;
 
    if (fVisLock) {
       ClearVisibleVolumes();
@@ -832,7 +834,7 @@ void TGeoPainter::DrawShape(TGeoShape *shape, Option_t *option)
    TString opt = option;
    opt.ToLower();
    fPaintingOverlaps = kFALSE;
-   fOverlap = 0;
+   fOverlap = nullptr;
    fIsPaintingShape = kTRUE;
 
    Bool_t has_pad = (gPad==0)?kFALSE:kTRUE;
@@ -1448,11 +1450,11 @@ void TGeoPainter::PaintVolume(TGeoVolume *top, Option_t *option, TGeoMatrix* glo
 ////////////////////////////////////////////////////////////////////////////////
 /// Paint the supplied shape into the current 3D viewer
 
-Bool_t TGeoPainter::PaintShape(const TGeoShape & shape, Option_t *  option ) const
+Bool_t TGeoPainter::PaintShape(const TGeoShape &shape, Option_t *option) const
 {
    Bool_t addDaughters = kTRUE;
 
-   TVirtualViewer3D * viewer = gPad->GetViewer3D();
+   TVirtualViewer3D *viewer = gPad->GetViewer3D();
 
    if (!viewer || shape.IsA()==TGeoShapeAssembly::Class()) {
       return addDaughters;

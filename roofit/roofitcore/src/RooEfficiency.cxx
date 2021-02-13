@@ -29,10 +29,8 @@ C is 'reject'. Values of F below 0 and above 1 are clipped.
 F may have an arbitrary number of dependents and parameters
 **/
 
-#include "RooFit.h"
+#include "RooEfficiency.h"
 
-#include "RooEfficiency.h"
-#include "RooEfficiency.h"
 #include "RooStreamParser.h"
 #include "RooArgList.h"
 

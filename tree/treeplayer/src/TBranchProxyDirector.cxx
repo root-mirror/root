@@ -22,12 +22,10 @@ which will hold the directory and its associate
 #include "TTree.h"
 #include "TEnv.h"
 #include "TH1F.h"
-#include "TPad.h"
+#include "TVirtualPad.h"
 #include "TList.h"
 
 #include <algorithm>
-
-namespace std {} using namespace std;
 
 ClassImp(ROOT::Internal::TBranchProxyDirector);
 

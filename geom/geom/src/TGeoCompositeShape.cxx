@@ -164,13 +164,12 @@ rules (see TGeoVolume). Volumes created based on composite shapes cannot be
 divided. Visualization of such volumes is currently not implemented.
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include "TRandom3.h"
 
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
 #include "TGeoBoolNode.h"
-#include "TVirtualGeoPainter.h"
 
 #include "TVirtualPad.h"
 #include "TVirtualViewer3D.h"

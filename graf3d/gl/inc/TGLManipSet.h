@@ -12,7 +12,6 @@
 #ifndef ROOT_TGLManipSet
 #define ROOT_TGLManipSet
 
-#include <TObject.h>
 #include "TGLOverlay.h"
 #include "TGLPShapeRef.h"
 

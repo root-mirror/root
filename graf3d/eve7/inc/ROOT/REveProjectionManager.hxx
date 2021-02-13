@@ -29,8 +29,8 @@ class REveProjectionManager : public REveElement,
                               public TAttBBox
 {
 private:
-   REveProjectionManager(const REveProjectionManager &);            // Not implemented
-   REveProjectionManager &operator=(const REveProjectionManager &); // Not implemented
+   REveProjectionManager(const REveProjectionManager &) = delete;
+   REveProjectionManager &operator=(const REveProjectionManager &) = delete;
 
 protected:
    REveProjection *fProjections[REveProjection::kPT_End];

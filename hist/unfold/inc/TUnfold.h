@@ -94,7 +94,6 @@
 #include <TSpline.h>
 #include <TMatrixDSparse.h>
 #include <TMatrixD.h>
-#include <TObjArray.h>
 #include <TString.h>
 
 #define TUnfold_VERSION "V17.6"
@@ -180,15 +179,15 @@ class TUnfold : public TObject {
    TMatrixD *fX;
    /// covariance matrix Vxx
    TMatrixDSparse *fVxx;
-   /// inverse of covariance matrix Vxx<sup>-1</sub>
+   /// inverse of covariance matrix Vxx<sup>-1</sup>
    TMatrixDSparse *fVxxInv;
-   /// inverse of the input covariance matrix Vyy<sup>-1</sub>
+   /// inverse of the input covariance matrix Vyy<sup>-1</sup>
    TMatrixDSparse *fVyyInv;
    /// result x folded back A*x
    TMatrixDSparse *fAx;
-   /// chi**2 contribution from (y-Ax)Vyy<sup>-1</sub>(y-Ax)
+   /// chi**2 contribution from (y-Ax)Vyy<sup>-1</sup>(y-Ax)
    Double_t fChi2A;
-   /// chi**2 contribution from (x-s*x0)<sup>T</sub>L<sup>T</sub>L(x-s*x0)
+   /// chi**2 contribution from (x-s*x0)<sup>T</sup>L<sup>T</sup>L(x-s*x0)
    Double_t fLXsquared;
    /// maximum global correlation coefficient
    Double_t fRhoMax;

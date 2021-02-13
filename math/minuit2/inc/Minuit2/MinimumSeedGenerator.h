@@ -12,8 +12,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MinimumSeed;
 class MnFcn;
@@ -30,16 +29,17 @@ class AnalyticalGradientCalculator;
 class MinimumSeedGenerator {
 
 public:
+   virtual ~MinimumSeedGenerator() {}
 
-  virtual ~MinimumSeedGenerator() {}
+   virtual MinimumSeed
+   operator()(const MnFcn &, const GradientCalculator &, const MnUserParameterState &, const MnStrategy &) const = 0;
 
-  virtual MinimumSeed operator()(const MnFcn&, const GradientCalculator&, const MnUserParameterState&, const MnStrategy&) const = 0;
-
-  virtual MinimumSeed operator()(const MnFcn&, const AnalyticalGradientCalculator&, const MnUserParameterState&, const MnStrategy&) const = 0;
+   virtual MinimumSeed operator()(const MnFcn &, const AnalyticalGradientCalculator &, const MnUserParameterState &,
+                                  const MnStrategy &) const = 0;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MinimumSeedGenerator
+#endif // ROOT_Minuit2_MinimumSeedGenerator

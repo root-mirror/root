@@ -13,6 +13,8 @@
 
 #include "TGenCollectionProxy.h"
 
+#include <vector>
+
 class TEmulatedCollectionProxy : public TGenCollectionProxy  {
 
    // Friend declaration
@@ -62,11 +64,23 @@ public:
    // Virtual in-place constructor
    virtual void* New(void* memory)   const {  return new(memory) Cont_t; }
 
+   // Virtual constructor
+   virtual TClass::ObjectPtr NewObject()   const             {  return {new Cont_t, nullptr};         }
+
+   // Virtual in-place constructor
+   virtual TClass::ObjectPtr NewObject(void* memory)   const {  return {new(memory) Cont_t, nullptr}; }
+
    // Virtual array constructor
    virtual void* NewArray(Int_t nElements)   const             {  return new Cont_t[nElements];         }
 
    // Virtual in-place constructor
    virtual void* NewArray(Int_t nElements, void* memory)   const {  return new(memory) Cont_t[nElements]; }
+
+   // Virtual array constructor
+   virtual TClass::ObjectPtr NewObjectArray(Int_t nElements)   const             {  return {new Cont_t[nElements], nullptr};         }
+
+   // Virtual in-place constructor
+   virtual TClass::ObjectPtr NewObjectArray(Int_t nElements, void* memory)   const {  return {new(memory) Cont_t[nElements], nullptr}; }
 
    // Virtual destructor
    virtual void  Destructor(void* p, Bool_t dtorOnly = kFALSE) const;

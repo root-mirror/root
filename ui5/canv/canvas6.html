@@ -1,13 +1,11 @@
-<!--  this file used for ROOT6 Canvas display with TWebWindow -->
 <!DOCTYPE html>
 <html lang="en">
    <head>
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <title>ROOT6 TCanvas</title>
-      <script type="text/javascript" src="jsrootsys/scripts/JSRootCore.js"></script>
+      <script type="text/javascript" src="jsrootsys/scripts/JSRoot.core.js"></script>
    </head>
-   
+
    <style>
       html { height: 100%; }
       body { min-height: 100%; margin: 0; overflow: hidden }
@@ -26,56 +24,62 @@
          loading scripts...
       </div>
    </body>
-   
+
    <script type='text/javascript'>
-   
-      function InitV6Canvas(handle, args) {
-         
-         var painter = new JSROOT.TCanvasPainter(null);
-         
+
+      let url = JSROOT.decodeUrl(),
+          is_batch = url.has("batch_mode"),
+          is_ui5 = !url.has("noopenui") && !is_batch,
+          _prereq = 'v6';
+
+      if (is_batch) JSROOT.batch_mode = true;
+
+      if (is_ui5)
+         _prereq += ";openui5";
+      else if (!is_batch)
+         _prereq += ";jq2d";  // jq2d need for BrowserLayout
+
+      JSROOT.connectWebWindow({
+         prereq: _prereq,
+         prereq_logdiv: "CanvasDiv",
+         // openui5src: "https://openui5.hana.ondemand.com/1.82.2/",
+      }).then(handle => {
+         let painter = new JSROOT.TCanvasPainter(null, null);
+
          painter.online_canvas = true;
-         painter.use_openui = (JSROOT.GetUrlOption("noopenui") === null); 
-         painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
-         if (painter.batch_mode) JSROOT.BatchMode = true;
+         painter.use_openui = is_ui5;
+         painter.batch_mode = is_batch;
 
          if (window) {
-            window.onbeforeunload = painter.WindowBeforeUnloadHanlder.bind(painter);
+            window.onbeforeunload = () => painter.closeWebsocket(true);
             if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
          }
 
-         if (painter.use_openui && !painter.batch_mode) {
+         if (is_ui5) {
 
             painter._window_handle = handle;
-            
-            return JSROOT.AssertPrerequisites('openui5', function() {
-               
-               sap.ui.require(["sap/ui/core/ComponentContainer"], function(ComponentContainer) {
-                  new ComponentContainer({
-                     name: "rootui5.canv",
-                     manifest: true,
-                     async: true,
-                     settings: {
-                        componentData: {
-                           canvas_painter: painter
-                        }
-                     },
-                     height: "100%"
-                  }).placeAt("CanvasDiv")
-               });
-               
+
+            sap.ui.require(["sap/ui/core/ComponentContainer"], function(ComponentContainer) {
+               new ComponentContainer({
+                  name: "rootui5.canv",
+                  manifest: true,
+                  async: true,
+                  settings: {
+                     componentData: {
+                        canvas_painter: painter
+                     }
+                  },
+                  height: "100%"
+               }).placeAt("CanvasDiv")
             });
+
+         } else {
+
+            painter.setDom("CanvasDiv"); // just assign id, nothing else happens
+
+            painter.useWebsocket(handle); // when connection activated, ROOT must send new instance of the canvas
          }
 
-         painter.SetDivId("CanvasDiv", -1); // just assign id, nothing else happens
-
-         painter.UseWebsocket(handle); // when connection activated, ROOT must send new instance of the canvas
-      }
-      
-      JSROOT.ConnectWebWindow({
-         prereq: "jq2d;v6;",
-         prereq_logdiv: "CanvasDiv",
-         // openui5src: "https://openui5.hana.ondemand.com/",
-         callback: InitV6Canvas
       });
 
    </script>

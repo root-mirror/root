@@ -65,13 +65,11 @@ Multilayer Perceptron class built off of MethodANNBase
 
 #include "TH1.h"
 #include "TString.h"
-#include "TTree.h"
-#include "Riostream.h"
 #include "TFitter.h"
 #include "TMatrixD.h"
 #include "TMath.h"
-#include "TFile.h"
 
+#include <iostream>
 #include <cmath>
 #include <vector>
 

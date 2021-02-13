@@ -42,7 +42,7 @@ protected: // allow RooSpHarmonic access...
   int _l2,_m2;
 
   Double_t evaluate() const;
-  RooSpan<double> evaluateBatch(std::size_t begin, std::size_t batchSize) const;
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
 
   ClassDef(RooLegendre,1) // Legendre polynomial
 };

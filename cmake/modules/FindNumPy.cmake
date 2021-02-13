@@ -97,7 +97,7 @@ string(REGEX MATCH "[0-9]*" NUMPY_VERSION_PATCH ${NUMPY_VERSION_PATCH})
 math(EXPR NUMPY_VERSION_DECIMAL
     "(${NUMPY_VERSION_MAJOR} * 10000) + (${NUMPY_VERSION_MINOR} * 100) + ${NUMPY_VERSION_PATCH}")
 
-find_package_handle_standard_args(NUMPY
+find_package_handle_standard_args(NumPy
                                   REQUIRED_VARS NUMPY_INCLUDE_DIR
                                   VERSION_VAR NUMPY_VERSION)
 mark_as_advanced(NUMPY_INCLUDE_DIR)

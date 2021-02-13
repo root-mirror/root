@@ -1,13 +1,12 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
-## Multidimensional models: marginizalization of multi-dimensional p.d.f.s through integration
+## Multidimensional models: marginizalization of multi-dimensional pdfs through integration
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -57,7 +56,7 @@ model = ROOT.RooProdPdf(
 # modelx(x) = Int model(x,y) dy
 modelx = model.createProjection(ROOT.RooArgSet(y))
 
-# Use marginalized p.d.f. as regular 1D p.d.f.
+# Use marginalized pdf as regular 1D pdf
 # -----------------------------------------------
 
 # Sample 1000 events from modelx

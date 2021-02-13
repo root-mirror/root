@@ -463,7 +463,7 @@ Int_t TUnfoldSys::SetInput(const TH1 *hist_y,Double_t scaleBias,
 /// \param[in] bgr background distribution with uncorrelated errors
 /// \param[in] name identifier for this background source
 /// \param[in] scale normalisation factor applied to the background
-/// \param[in] scaleError normalisation uncertainty
+/// \param[in] scale_error normalisation uncertainty
 ///
 /// The contribution <b>scale</b>*<b>bgr</b> is subtracted from the
 /// measurement prior to unfolding. The following contributions are
@@ -1045,7 +1045,6 @@ Bool_t TUnfoldSys::GetDeltaSysBackgroundScale
 /// Correlated one-sigma shifts from shifting tau.
 ///
 /// \param[out] hist_delta histogram to store shifts
-/// \param[in] source  identifier of the background source
 /// \param[in] binMap (default=0) remapping of histogram bins
 ///
 /// returns true if the background source was found.
@@ -1100,8 +1099,8 @@ void TUnfoldSys::GetEmatrixSysSource
 ////////////////////////////////////////////////////////////////////////////////
 /// Covariance contribution from background normalisation uncertainty.
 ///
-/// \param[inout] ematrix output histogram
-/// \param[in] source identifier of the background source
+/// \param[in,out] ematrix output histogram
+/// \param[in] name identifier of the background source
 /// \param[in] binMap (default=0) remapping of histogram bins
 /// \param[in] clearEmat (default=true) if true, clear the histogram
 /// prior to adding the covariance matrix contribution

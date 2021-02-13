@@ -48,7 +48,7 @@ BDTEventWrapper::~BDTEventWrapper() {
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the accumulated weight, for sorted signal/background events
 ///
-/// @param fType - true for signal, false for background
+/// @param type - true for signal, false for background
 /// @param weight - the total weight
 
 void BDTEventWrapper::SetCumulativeWeight(Bool_t type, Double_t weight) {

@@ -27,8 +27,6 @@
 #include "RooMsgService.h"
 #include "RooTrace.h"
 
-#include "TMath.h"
-
 #include "RooStats/HistFactory/FlexibleInterpVar.h"
 
 using namespace std;
@@ -55,10 +53,10 @@ FlexibleInterpVar::FlexibleInterpVar()
 
 FlexibleInterpVar::FlexibleInterpVar(const char* name, const char* title, 
 		       const RooArgList& paramList, 
-		       Double_t nominal, vector<double> low, vector<double> high) :
+		       Double_t argNominal, vector<double> lowVec, vector<double> highVec) :
   RooAbsReal(name, title),
   _paramList("paramList","List of paramficients",this),
-  _nominal(nominal), _low(low), _high(high), _interpBoundary(1.)
+  _nominal(argNominal), _low(lowVec), _high(highVec), _interpBoundary(1.)
 {
   _logInit = kFALSE ;
   _paramIter = _paramList.createIterator() ;
@@ -90,18 +88,18 @@ FlexibleInterpVar::FlexibleInterpVar(const char* name, const char* title,
 
 FlexibleInterpVar::FlexibleInterpVar(const char* name, const char* title, 
 		       const RooArgList& paramList, 
-		       double nominal, const RooArgList& low, const RooArgList& high) :
+		       double argNominal, const RooArgList& lowList, const RooArgList& highList) :
   RooAbsReal(name, title),
   _paramList("paramList","List of paramficients",this),
-  _nominal(nominal), _interpBoundary(1.)
+  _nominal(argNominal), _interpBoundary(1.)
 {
-  RooFIter lowIter = low.fwdIterator() ;
+  RooFIter lowIter = lowList.fwdIterator() ;
   RooAbsReal* val ; 
   while ((val = (RooAbsReal*) lowIter.next())) {
     _low.push_back(val->getVal()) ;
   }
 
-  RooFIter highIter = high.fwdIterator() ;
+  RooFIter highIter = highList.fwdIterator() ;
   while ((val = (RooAbsReal*) highIter.next())) {
     _high.push_back(val->getVal()) ;
   }
@@ -140,11 +138,11 @@ FlexibleInterpVar::FlexibleInterpVar(const char* name, const char* title,
 
 FlexibleInterpVar::FlexibleInterpVar(const char* name, const char* title, 
 				     const RooArgList& paramList, 
-				     double nominal, vector<double> low, vector<double> high,
+				     double argNominal, vector<double> lowVec, vector<double> highVec,
 				     vector<int> code) :
   RooAbsReal(name, title),
   _paramList("paramList","List of paramficients",this),
-  _nominal(nominal), _low(low), _high(high), _interpCode(code), _interpBoundary(1.)
+  _nominal(argNominal), _low(lowVec), _high(highVec), _interpCode(code), _interpBoundary(1.)
 {
   _logInit = kFALSE ;
   _paramIter = _paramList.createIterator() ;
@@ -376,6 +374,14 @@ double FlexibleInterpVar::PolyInterpValue(int i, double x) const {
    double value = 1. + x * (a + x * ( b + x * ( c + x * ( d + x * ( e + x * f ) ) ) ) );
    return value; 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/// Const getters
+
+const RooListProxy& FlexibleInterpVar::variables() const { return _paramList; }
+double FlexibleInterpVar::nominal() const { return _nominal; }        
+const std::vector<double>& FlexibleInterpVar::low() const { return _low; }
+const std::vector<double>& FlexibleInterpVar::high() const { return _high; }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Calculate and return value of polynomial

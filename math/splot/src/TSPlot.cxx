@@ -17,6 +17,7 @@
 #include "TBrowser.h"
 #include "TClass.h"
 #include "TMath.h"
+#include "snprintf.h"
 
 extern void Yields(Int_t &, Double_t *, Double_t &f, Double_t *x, Int_t iflag);
 
@@ -868,7 +869,7 @@ void TSPlot::SetTreeSelection(const char* varexp, const char *selection, Long64_
 {
    TTreeFormula **var;
    std::vector<TString> cnames;
-   TList *formulaList = new TList();
+   TList formulaList;
    TSelectorDraw *selector = (TSelectorDraw*)(((TTreePlayer*)fTree->GetPlayer())->GetSelector());
 
    Long64_t entry, entryNumber;
@@ -886,12 +887,12 @@ void TSPlot::SetTreeSelection(const char* varexp, const char *selection, Long64_
 
 
 //*-*- Compile selection expression if there is one
-   TTreeFormula *select = 0;
+   TTreeFormula *select = nullptr;
    if (selection && strlen(selection)) {
       select = new TTreeFormula("Selection",selection,fTree);
       if (!select) return;
       if (!select->GetNdim()) { delete select; return; }
-      formulaList->Add(select);
+      formulaList.Add(select);
    }
 //*-*- if varexp is empty, take first nx + ny + ny*nspecies columns by default
 
@@ -916,17 +917,18 @@ void TSPlot::SetTreeSelection(const char* varexp, const char *selection, Long64_
 //*-*- Create the TreeFormula objects corresponding to each column
    for (i=0;i<ncols;i++) {
       var[i] = new TTreeFormula("Var1",cnames[i].Data(),fTree);
-      formulaList->Add(var[i]);
+      formulaList.Add(var[i]);
    }
 
 //*-*- Create a TreeFormulaManager to coordinate the formulas
-   TTreeFormulaManager *manager=0;
-   if (formulaList->LastIndex()>=0) {
+   TTreeFormulaManager *manager = nullptr;
+   if (formulaList.LastIndex()>=0) {
       manager = new TTreeFormulaManager;
-      for(i=0;i<=formulaList->LastIndex();i++) {
-         manager->Add((TTreeFormula*)formulaList->At(i));
+      for(i=0;i<=formulaList.LastIndex();i++) {
+         manager->Add((TTreeFormula*)formulaList.At(i));
       }
       manager->Sync();
+      formulaList.Clear();
    }
 //*-*- loop on all selected entries
    // fSelectedRows = 0;
@@ -1008,6 +1010,7 @@ void TSPlot::SetTreeSelection(const char* varexp, const char *selection, Long64_
         //    printf("ypdf[sp. %d, y %d]=%f\n", ispecies, iy, fYpdf(i, ispecies*fNy+iy));
      // }
    //}
+
    delete [] xvars;
    delete [] var;
 }

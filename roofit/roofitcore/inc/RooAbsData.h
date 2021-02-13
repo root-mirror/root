@@ -19,21 +19,31 @@
 #include "TNamed.h"
 #include "RooPrintable.h"
 #include "RooArgSet.h"
-#include "RooFormulaVar.h"
-#include <cmath>
-#include "TMatrixDSym.h"
+#include "RooArgList.h"
 #include "RooSpan.h"
+#include <map>
+#include <string>
 
 class RooAbsArg;
 class RooAbsReal ;
+class RooRealVar;
+class RooAbsRealLValue;
 class RooAbsCategory ;
+class RooAbsCategoryLValue;
 class Roo1DTable ;
 class RooPlot;
 class RooArgList;
 class TH1;
+class TH2F;
 class RooAbsBinning ;
 class Roo1DTable ;
 class RooAbsDataStore ;
+template<typename T> class TMatrixTSym;
+using TMatrixDSym = TMatrixTSym<Double_t>;
+class RooFormulaVar;
+namespace RooBatchCompute{
+struct RunContext;
+}
 
 
 class RooAbsData : public TNamed, public RooPrintable {
@@ -91,10 +101,27 @@ public:
   virtual void weightError(Double_t& lo, Double_t& hi, ErrorType etype=Poisson) const ; 
   virtual const RooArgSet* get(Int_t index) const ;
 
-  virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t last) const = 0;
+  /// Retrieve batches of data for each real-valued variable in this dataset.
+  /// \param[out]  evalData Store references to all data batches in this struct.
+  /// \param first Index of first event that ends up in the batch.
+  /// \param len   Number of events in each batch.
+  /// Needs to be overridden by derived classes. This implementation returns an empty RunContext.
+  virtual void getBatches(RooBatchCompute::RunContext& evalData,
+      std::size_t first = 0, std::size_t len = std::numeric_limits<std::size_t>::max()) const = 0;
 
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Return event weights of all events in range [first, first+len).
+  /// If no contiguous structure of weights is stored, an empty batch can be returned.
+  /// This indicates that the weight is constant. Use weight() to retrieve it.
+  virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const = 0;
+
+  /// Return number of entries in dataset, *i.e.*, count unweighted entries.
   virtual Int_t numEntries() const ;
+  /// Return effective number of entries in dataset, *i.e.*, sum all weights.
   virtual Double_t sumEntries() const = 0 ;
+  /// Return effective number of entries in dataset inside range or after cuts, *i.e.*, sum certain weights.
+  /// \param[in] cutSpec Apply given cut when counting (*e.g.* `0 < x && x < 5`). Passing `"1"` selects all events.
+  /// \param[in] cutRange If the observables have a range with this name, only count events inside this range.
   virtual Double_t sumEntries(const char* cutSpec, const char* cutRange=0) const = 0 ; // DERIVED
   virtual Bool_t isWeighted() const { 
     // Do events in dataset have weights?
@@ -107,12 +134,12 @@ public:
   virtual void reset() ;
 
 
-  Bool_t getRange(const RooRealVar& var, double& lowest, double& highest, double marginFrac=0, bool symMode=kFALSE) const ;
+  Bool_t getRange(const RooAbsRealLValue& var, Double_t& lowest, Double_t& highest, Double_t marginFrac=0, Bool_t symMode=kFALSE) const ;
 
   // Plot the distribution of a real valued arg
   virtual Roo1DTable* table(const RooArgSet& catSet, const char* cuts="", const char* opts="") const ;
   virtual Roo1DTable* table(const RooAbsCategory& cat, const char* cuts="", const char* opts="") const ;
-  /// Calls RooPlot* plotOn(RooPlot* frame, const RooLinkedList& cmdList) const ;
+  /// \see RooPlot* plotOn(RooPlot* frame, const RooLinkedList& cmdList) const
   virtual RooPlot* plotOn(RooPlot* frame, 
 			  const RooCmdArg& arg1=RooCmdArg::none(), const RooCmdArg& arg2=RooCmdArg::none(),
 			  const RooCmdArg& arg3=RooCmdArg::none(), const RooCmdArg& arg4=RooCmdArg::none(),
@@ -256,7 +283,7 @@ protected:
 
   virtual RooAbsData* cacheClone(const RooAbsArg* newCacheOwner, const RooArgSet* newCacheVars, const char* newName=0) = 0 ; // DERIVED
   virtual RooAbsData* reduceEng(const RooArgSet& varSubset, const RooFormulaVar* cutVar, const char* cutRange=0, 
-	                        Int_t nStart=0, Int_t nStop=2000000000, Bool_t copyCache=kTRUE) = 0 ; // DERIVED
+	                        std::size_t nStart = 0, std::size_t = std::numeric_limits<std::size_t>::max(), Bool_t copyCache=kTRUE) = 0 ; // DERIVED
 
   RooRealVar* dataRealVar(const char* methodname, const RooRealVar& extVar) const ;
 

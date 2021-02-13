@@ -32,7 +32,6 @@
 #include "TGListTree.h"
 #include "TGuiBldDragManager.h"
 #include "TGMsgBox.h"
-#include "TGSplitter.h"
 
 ClassImp(TGuiBldNameFrame);
 

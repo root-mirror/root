@@ -2,9 +2,8 @@
 <html lang="en">
    <head>
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <title>Geometry viewer</title>
-      <script type="text/javascript" src="jsrootsys/scripts/JSRootCore.js"></script>
+      <script type="text/javascript" src="jsrootsys/scripts/JSRoot.core.js"></script>
       <style>
          html { height: 100%; }
          body { min-height: 100%; margin: 0; overflow: hidden }
@@ -46,45 +45,20 @@
 
       <script type='text/javascript'>
 
-        function InitUI(handle) {
-
-           sap.ui.require(["sap/ui/core/mvc/XMLView"], function(XMLView) {
-              XMLView.create({
-                 id: "TopEveId",
-                 viewName: "rootui5.eve7.view.GeomViewer",
-                 viewData: { conn_handle: handle }
-              }).then(function(oView) {
-                 oView.placeAt("GeomDiv");
-              });
-           });
-
-//           sap.ui.require(["sap/ui/core/ComponentContainer"], function(ComponentContainer) {
-//               new ComponentContainer({
-//                  name: "rootui5.geom",
-//                  manifest: true,
-//                  async: true,
-//                  settings: {
-//                     componentData: {
-//                        conn_handle: handle
-//                     }
-//                  },
-//                  height: "100%"
-//               }).placeAt("GeomDiv")
-//            });
-
-        }
-
-        if (JSROOT.GetUrlOption('nogl')!==null) JSROOT.gStyle.NoWebGL = true;
-        if (JSROOT.GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
-
-        JSROOT.ConnectWebWindow({
+        JSROOT.connectWebWindow({
            prereq: "openui5",
-//           openui5src: "jsroot",    // use ROOT provided package
-//           openui5src: "https://openui5.hana.ondemand.com/",   // latest official openui5 release
-//           openui5theme: "sap_fiori_3",                        // optional theme
-           openui5libs: "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.table", // customize openui5 libs later
            prereq_logdiv: "GeomDiv",
-           callback: InitUI
+//           openui5src: "jsroot",    // use ROOT provided package
+//           openui5src: "https://openui5.hana.ondemand.com/1.82.2/",   // latest official openui5 release
+//           openui5theme: "sap_fiori_3",                        // optional theme
+           openui5libs: "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.table" // customize openui5 libs later
+        }).then(handle => {
+            sap.ui.require(["sap/ui/core/mvc/XMLView"], XMLView => {
+                XMLView.create({
+                   viewName: "rootui5.eve7.view.GeomViewer",
+                   viewData: { conn_handle: handle }
+                }).then(oView => oView.placeAt("GeomDiv"));
+             });
         });
 
       </script>

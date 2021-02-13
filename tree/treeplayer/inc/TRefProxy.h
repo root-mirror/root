@@ -16,9 +16,6 @@
 
 #include "TClassRef.h"
 
-#include <map>
-#include <string>
-
 // Forward declarations
 class TFormLeafInfoReference;
 

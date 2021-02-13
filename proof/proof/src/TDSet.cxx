@@ -19,6 +19,7 @@ See TDSet.
 #include "TDSet.h"
 
 #include "Riostream.h"
+#include "TBuffer.h"
 #include "TChain.h"
 #include "TClass.h"
 #include "TClassTable.h"
@@ -45,11 +46,10 @@ See TDSet.
 #include "TProofChain.h"
 #include "TProofServ.h"
 #include "TPluginManager.h"
-#include "TChain.h"
 #include "TChainElement.h"
 #include "TSystem.h"
-#include "THashList.h"
 #include "TSelector.h"
+#include "TObjString.h"
 
 #include "TVirtualStreamerInfo.h"
 #include "TClassRef.h"

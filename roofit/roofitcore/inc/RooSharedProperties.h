@@ -26,7 +26,7 @@ public:
   RooSharedProperties() ;
   RooSharedProperties(const char* uuidstr) ;
   virtual ~RooSharedProperties() ;
-  Bool_t operator==(const RooSharedProperties& other) ;
+  Bool_t operator==(const RooSharedProperties& other) const ;
 
   virtual RooSharedProperties* clone() = 0 ;
 
@@ -39,7 +39,7 @@ public:
   void setInSharedList() { _inSharedList = kTRUE ; }
   Bool_t inSharedList() const { return _inSharedList ; }
 
-   TString asString() { return TString(_uuid.AsString()); }
+   TString asString() const { return TString(_uuid.AsString()); }
 
 protected:
 

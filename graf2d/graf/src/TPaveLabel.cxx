@@ -9,7 +9,7 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
+#include <iostream>
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TPaveLabel.h"
@@ -110,6 +110,7 @@ void TPaveLabel::Paint(Option_t *option)
 void TPaveLabel::PaintPaveLabel(Double_t x1, Double_t y1,Double_t x2, Double_t  y2,
                       const char *label ,Option_t *option)
 {
+   if (!gPad) return;
    Int_t nch = strlen(label);
 
    // Draw the pave
@@ -132,6 +133,7 @@ void TPaveLabel::PaintPaveLabel(Double_t x1, Double_t y1,Double_t x2, Double_t  
    // Draw label
    Double_t wh   = (Double_t)gPad->XtoPixel(gPad->GetX2());
    Double_t hh   = (Double_t)gPad->YtoPixel(gPad->GetY1());
+   if (wh==0||hh==0) return;
    Double_t labelsize, textsize = GetTextSize();
    Int_t automat = 0;
    if (GetTextFont()%10 > 2) {  // fixed size font specified in pixels

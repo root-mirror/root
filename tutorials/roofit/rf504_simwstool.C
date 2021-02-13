@@ -1,12 +1,14 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -nodraw
-/// Organisation and simultaneous fits: using RooSimWSTool to construct a simultaneous p.d.f that is built of variations
-/// of an input p.d.f
+/// Organisation and simultaneous fits: using RooSimWSTool to construct a simultaneous pdf
+/// that is built of variations of an input pdf
 ///
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooCategory.h"
@@ -69,14 +71,14 @@ void rf504_simwstool()
    // B u i l d   a   s i m u l t a n e o u s   m o d e l   w i t h   o n e   s p l i t
    // ---------------------------------------------------------------------------------
 
-   // Construct a simultaneous p.d.f with the following form
+   // Construct a simultaneous pdf with the following form
    //
    // model_run1(x) = f*gauss_run1(x,m_run1,s) + (1-f)*poly
    // model_run2(x) = f*gauss_run2(x,m_run2,s) + (1-f)*poly
    // simpdf(x,c) = model_run1(x) if c=="run1"
    //             = model_run2(x) if c=="run2"
    //
-   // Returned p.d.f is owned by the workspace
+   // Returned pdf is owned by the workspace
    RooSimultaneous *model_sim = sct.build("model_sim", "model", SplitParam("m", "c"));
 
    // Print tree structure of model
@@ -92,7 +94,7 @@ void rf504_simwstool()
    // B u i l d   a   s i m u l t a n e o u s   m o d e l   w i t h   p r o d u c t   s p l i t
    // -----------------------------------------------------------------------------------------
 
-   // Build another simultaneous p.d.f using a composite split in states c X d
+   // Build another simultaneous pdf using a composite split in states c X d
    RooSimultaneous *model_sim2 = sct.build("model_sim2", "model", SplitParam("p0", "c,d"));
 
    // Print tree structure of this model

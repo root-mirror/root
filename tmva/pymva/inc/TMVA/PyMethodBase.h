@@ -28,6 +28,7 @@
 
 #include "Rtypes.h"
 #include "TString.h"
+#include <vector>
 
 class TFile;
 class TGraph;

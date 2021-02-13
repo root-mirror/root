@@ -10,17 +10,13 @@
 #ifndef ROOT_Minuit2_FumiliStandardMaximumLikelihoodFCN
 #define ROOT_Minuit2_FumiliStandardMaximumLikelihoodFCN
 
-
 #include "Minuit2/FumiliMaximumLikelihoodFCN.h"
 #include "Minuit2/ParametricFunction.h"
 #include <vector>
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
-
+namespace Minuit2 {
 
 /**
 
@@ -38,121 +34,103 @@ maximum likelihood method.
 class FumiliStandardMaximumLikelihoodFCN : public FumiliMaximumLikelihoodFCN {
 
 public:
+   /**
 
+   Constructor which initializes the measurement points for the one dimensional model function.
 
-  /**
+   @param modelFCN the model function used for describing the data.
 
-  Constructor which initializes the measurement points for the one dimensional model function.
+   @param pos vector containing the x values corresponding to the
+   measurements
 
-  @param modelFCN the model function used for describing the data.
+   */
 
-  @param pos vector containing the x values corresponding to the
-  measurements
-
-  */
-
-   FumiliStandardMaximumLikelihoodFCN(const ParametricFunction& modelFCN,
-                                      const std::vector<double>& pos)
-  {
-    this->SetModelFunction(modelFCN);
-    unsigned int n = pos.size();
-    fPositions.reserve( n );
-    std::vector<double> x(1);
-    for (unsigned int i = 0; i < n; ++i) {
-      x[0] = pos[i];
-      fPositions.push_back(x);
-    }
-  }
-
-
-
-  /**
-
-  Constructor which initializes the measurement points for the multi dimensional model function.
-
-  @param modelFCN the model function used for describing the data.
-
-  @param pos vector containing the x values corresponding to the
-  measurements
-
-  */
-
-   FumiliStandardMaximumLikelihoodFCN(const ParametricFunction& modelFCN,
-                                      const std::vector<std::vector<double> >& pos) {
+   FumiliStandardMaximumLikelihoodFCN(const ParametricFunction &modelFCN, const std::vector<double> &pos)
+   {
       this->SetModelFunction(modelFCN);
-    fPositions = pos;
+      unsigned int n = pos.size();
+      fPositions.reserve(n);
+      std::vector<double> x(1);
+      for (unsigned int i = 0; i < n; ++i) {
+         x[0] = pos[i];
+         fPositions.push_back(x);
+      }
+   }
 
-  }
+   /**
 
+   Constructor which initializes the measurement points for the multi dimensional model function.
 
+   @param modelFCN the model function used for describing the data.
 
+   @param pos vector containing the x values corresponding to the
+   measurements
 
-  ~FumiliStandardMaximumLikelihoodFCN() {}
+   */
 
+   FumiliStandardMaximumLikelihoodFCN(const ParametricFunction &modelFCN, const std::vector<std::vector<double>> &pos)
+   {
+      this->SetModelFunction(modelFCN);
+      fPositions = pos;
+   }
 
+   ~FumiliStandardMaximumLikelihoodFCN() {}
 
+   /**
 
-  /**
+   Evaluates the model function for the different measurement points and
+   the Parameter values supplied.
 
-  Evaluates the model function for the different measurement points and
-  the Parameter values supplied.
+   @param par vector of Parameter values to feed to the model function.
 
-  @param par vector of Parameter values to feed to the model function.
+   @return A vector containing the model function evaluated
+   for each measurement point.
 
-  @return A vector containing the model function evaluated
-  for each measurement point.
+   */
 
-  */
+   std::vector<double> Elements(const std::vector<double> &par) const;
 
-  std::vector<double> Elements(const std::vector<double>& par) const;
+   /**
 
+   Accessor to the position of the measurement (x coordinate).
 
+   @param Index Index of the measuerement the position of which to return.
 
+   @return the position of the measurement.
 
-  /**
+   */
 
-  Accessor to the position of the measurement (x coordinate).
+   virtual const std::vector<double> &GetMeasurement(int Index) const;
 
-  @param Index Index of the measuerement the position of which to return.
+   /**
 
-  @return the position of the measurement.
+   Accessor to the number of measurements used for calculating
+   the maximum likelihood.
 
-  */
+   @return the number of measurements.
 
-  virtual const std::vector<double> & GetMeasurement(int Index) const;
+   */
 
+   virtual int GetNumberOfMeasurements() const;
 
-  /**
+   /**
 
-  Accessor to the number of measurements used for calculating
-  the maximum likelihood.
+   Evaluate function Value, Gradient and Hessian using Fumili approximation, for values of parameters p
+   The resul is cached inside and is return from the FumiliFCNBase::Value ,  FumiliFCNBase::Gradient and
+   FumiliFCNBase::Hessian methods
 
-  @return the number of measurements.
+   @param par vector of parameters
 
-  */
+   **/
 
-  virtual int GetNumberOfMeasurements() const;
+   virtual void EvaluateAll(const std::vector<double> &par);
 
-  /**
-
-  Evaluate function Value, Gradient and Hessian using Fumili approximation, for values of parameters p
-  The resul is cached inside and is return from the FumiliFCNBase::Value ,  FumiliFCNBase::Gradient and
-  FumiliFCNBase::Hessian methods
-
-  @param par vector of parameters
-
-  **/
-
-  virtual  void EvaluateAll( const std::vector<double> & par );
-
-
- private:
-
-  std::vector<std::vector<double> > fPositions;
+private:
+   std::vector<std::vector<double>> fPositions;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_FumiliStandardMaximumLikelihoodFCN
+#endif // ROOT_Minuit2_FumiliStandardMaximumLikelihoodFCN

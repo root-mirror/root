@@ -37,7 +37,6 @@ Root finding using Brents algorithm (translated from CERNLIB function RZERO)
 #include "TMVA/Types.h"
 
 #include "TMath.h"
-#include "TObject.h"
 
 ClassImp(TMVA::RootFinder);
 

@@ -1,7 +1,6 @@
 /// \file
 /// \ingroup tutorial_FITS
 /// \notebook -draw
-///
 /// Open a FITS file whose primary array represents
 /// a spectrum (flux vs wavelength).
 ///
@@ -14,7 +13,7 @@
 void FITS_tutorial2()
 {
    // We're gonna open a FITS file that contains the primary HDU and a little data table.
-   // The primary HDU is an array of 2 rows by 2040 columns, and they represent a radiation 
+   // The primary HDU is an array of 2 rows by 2040 columns, and they represent a radiation
    // spectrum. The first row contains the flux data, whereas the second row the wavelengths.
    // Data copyright: NASA
 
@@ -22,7 +21,7 @@ void FITS_tutorial2()
 
    // Open primary HDU from file
    TFITSHDU hdu(dir + "/fitsio/sample2.fits");
-   
+
    // Dump the HDUs within the FITS file
    // and also their metadata
    hdu.Print("F+");

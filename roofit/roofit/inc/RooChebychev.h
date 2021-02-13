@@ -35,8 +35,7 @@ public:
 
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ;
-  RooSpan<double> evaluateBatch(std::size_t begin, std::size_t batchSize) const;
-
+  
   virtual void selectNormalizationRange(const char* rangeName=0, Bool_t force=kFALSE) ;
   
 private:
@@ -46,6 +45,8 @@ private:
   mutable TNamed* _refRangeName ; 
 
   Double_t evaluate() const;
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
+  
   Double_t evalAnaInt(const Double_t a, const Double_t b) const;
 
   ClassDef(RooChebychev,2) // Chebychev polynomial PDF

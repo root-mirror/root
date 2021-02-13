@@ -77,8 +77,8 @@ protected:
    static TString CompressName(const char *method_name);
 
 private:
-   TQObject(const TQObject& tqo);            // not implemented
-   TQObject& operator=(const TQObject& tqo); // not implemented
+   TQObject(const TQObject &) = delete;
+   TQObject& operator=(const TQObject &) = delete;
 
 public:
    TQObject();

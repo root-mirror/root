@@ -28,7 +28,6 @@ way that RooLinearVar does
 #include "RooFit.h"
 
 #include "RooLinTransBinning.h"
-#include "RooLinTransBinning.h"
 
 using namespace std;
 

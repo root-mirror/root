@@ -19,6 +19,7 @@
 #pragma link C++ class TMVA::OptionMap+;
 #pragma link C++ class TMVA::VariableImportance+;
 #pragma link C++ class TMVA::CrossValidation+;
+#pragma link C++ class TMVA::CrossValidationFoldResult+;
 #pragma link C++ class TMVA::CvSplit+;
 #pragma link C++ class TMVA::CvSplitKFolds + ;
 #pragma link C++ class TMVA::HyperParameterOptimisation+;

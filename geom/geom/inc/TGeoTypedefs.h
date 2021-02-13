@@ -9,6 +9,9 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
+#ifndef ROOT_TGeoTypedefs
+#define ROOT_TGeoTypedefs
+
 /// Typedefs used by the geometry group
 #include <vector>
 
@@ -18,3 +21,5 @@ namespace Tessellated {
   using VertexVec_t = std::vector<Vertex_t>;
 
 } // namespace Tessellated
+
+#endif

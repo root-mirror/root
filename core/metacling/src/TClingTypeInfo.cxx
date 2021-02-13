@@ -45,7 +45,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 
 TClingTypeInfo::TClingTypeInfo(cling::Interpreter *interp, const char *name)
-   : fInterp(interp)
+   : TClingDeclInfo(nullptr), fInterp(interp)
 {
    Init(name);
 }
@@ -125,39 +125,7 @@ long TClingTypeInfo::Property() const
       property |= kIsTypedef;
    }
    clang::QualType QT = fQualType.getCanonicalType();
-   if (QT.isConstQualified()) {
-      property |= kIsConstant;
-   }
-   while (1) {
-      if (QT->isArrayType()) {
-         QT = llvm::cast<clang::ArrayType>(QT)->getElementType();
-         continue;
-      }
-      else if (QT->isReferenceType()) {
-         property |= kIsReference;
-         QT = llvm::cast<clang::ReferenceType>(QT)->getPointeeType();
-         continue;
-      }
-      else if (QT->isPointerType()) {
-         property |= kIsPointer;
-         if (QT.isConstQualified()) {
-            property |= kIsConstPointer;
-         }
-         QT = llvm::cast<clang::PointerType>(QT)->getPointeeType();
-         continue;
-      }
-      else if (QT->isMemberPointerType()) {
-         QT = llvm::cast<clang::MemberPointerType>(QT)->getPointeeType();
-         continue;
-      }
-      break;
-   }
-   if (QT->isBuiltinType()) {
-      property |= kIsFundamental;
-   }
-   if (QT.isConstQualified()) {
-      property |= kIsConstant;
-   }
+   property = TClingDeclInfo::Property(property, QT);
    const clang::TagType *tagQT = llvm::dyn_cast<clang::TagType>(QT.getTypePtr());
    if (tagQT) {
       // Note: Now we have class, enum, struct, union only.
@@ -177,6 +145,8 @@ long TClingTypeInfo::Property() const
          else if (CRD->isUnion()) {
             property |= kIsUnion;
          }
+         // isAbstract can trigger deserialization
+         cling::Interpreter::PushTransactionRAII RAII(fInterp);
          if (CRD->isThisDeclarationADefinition() && CRD->isAbstract()) {
             property |= kIsAbstract;
          }
@@ -253,42 +223,6 @@ int TClingTypeInfo::Size() const
    clang::CharUnits::QuantityType Quantity =
       Context.getTypeSizeInChars(fQualType).getQuantity();
    return static_cast<int>(Quantity);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-const char *TClingTypeInfo::StemName() const
-{
-   if (!IsValid()) {
-      return 0;
-   }
-   clang::QualType QT = fQualType.getCanonicalType();
-   while (1) {
-      if (QT->isArrayType()) {
-         QT = llvm::cast<clang::ArrayType>(QT)->getElementType();
-         continue;
-      }
-      else if (QT->isReferenceType()) {
-         QT = llvm::cast<clang::ReferenceType>(QT)->getPointeeType();
-         continue;
-      }
-      else if (QT->isPointerType()) {
-         QT = llvm::cast<clang::PointerType>(QT)->getPointeeType();
-         continue;
-      }
-      else if (QT->isMemberPointerType()) {
-         QT = llvm::cast<clang::MemberPointerType>(QT)->getPointeeType();
-         continue;
-      }
-      break;
-   }
-   // Note: This *must* be static because we are returning a pointer inside it.
-   TTHREAD_TLS_DECL( std::string, buf);
-   buf.clear();
-   clang::PrintingPolicy Policy(fInterp->getCI()->getASTContext().
-                                getPrintingPolicy());
-   QT.getAsStringInternal(buf, Policy);
-   return buf.c_str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

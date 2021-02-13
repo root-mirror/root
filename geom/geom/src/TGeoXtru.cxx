@@ -54,11 +54,10 @@ within x3d produces incorrect end-faces
 
 #include "TGeoXtru.h"
 
-#include "Riostream.h"
-#include "TVirtualPad.h"
+#include <iostream>
+
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
-#include "TClass.h"
 #include "TMath.h"
 
 #include "TVirtualGeoPainter.h"
@@ -226,46 +225,6 @@ TGeoXtru::TGeoXtru(Double_t *param)
 {
    SetShapeBit(TGeoShape::kGeoXtru);
    SetDimensions(param);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///copy constructor
-
-TGeoXtru::TGeoXtru(const TGeoXtru& xt) :
-  TGeoBBox(xt),
-  fNvert(0),
-  fNz(0),
-  fZcurrent(0),
-  fX(0),
-  fY(0),
-  fZ(0),
-  fScale(0),
-  fX0(0),
-  fY0(0),
-  fThreadData(0),
-  fThreadSize(0)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///assignment operator
-
-TGeoXtru& TGeoXtru::operator=(const TGeoXtru& xt)
-{
-   if(this!=&xt) {
-      TGeoBBox::operator=(xt);
-      fNvert=0;
-      fNz=0;
-      fZcurrent=0;
-      fX=0;
-      fY=0;
-      fZ=0;
-      fScale=0;
-      fX0=0;
-      fY0=0;
-      fThreadSize=0;
-   }
-   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,12 +14,7 @@
 
 #include "TSQLResult.h"
 
-#if !defined(__CINT__)
 #include <libpq-fe.h>
-#else
-struct PGresult;
-#endif
-
 
 class TPgSQLResult : public TSQLResult {
 

@@ -17,7 +17,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 template<class Element> class TMatrixTSparse;
 typedef TMatrixTSparse<Float_t> TMatrixFSparse;

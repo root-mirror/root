@@ -11,18 +11,14 @@
 #define ROOT_Minuit2_FumiliMaximumLikelihoodFCN
 
 #include "FumiliFCNBase.h"
-#include <vector>
-#include <cmath>
-#include <float.h>
 #include "Minuit2/ParametricFunction.h"
 #include "Math/Util.h"
+#include <vector>
+#include <cassert>
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
-//#include <iostream>
+namespace Minuit2 {
 
 /**
 
@@ -36,7 +32,8 @@ for the different measurements times -1.
 
 @author Andras Zsenei and Lorenzo Moneta, Creation date: 3 Sep 2004
 
-@see <A HREF="http://www.cern.ch/winkler/minuit/tutorial/mntutorial.pdf">MINUIT Tutorial</A> on function minimization, section 5
+@see <A HREF="http://www.cern.ch/winkler/minuit/tutorial/mntutorial.pdf">MINUIT Tutorial</A> on function minimization,
+section 5
 
 @see FumiliStandardMaximumLikelihoodFCN
 
@@ -46,138 +43,122 @@ for the different measurements times -1.
 
 */
 
-
-
 class FumiliMaximumLikelihoodFCN : public FumiliFCNBase {
 
 public:
+   FumiliMaximumLikelihoodFCN() {}
 
-  FumiliMaximumLikelihoodFCN() {}
+   virtual ~FumiliMaximumLikelihoodFCN() {}
 
-  virtual ~FumiliMaximumLikelihoodFCN() {}
+   /**
 
+   Sets the model function for the data (for example gaussian+linear for a peak)
 
-  /**
+   @param modelFCN a reference to the model function.
 
-  Sets the model function for the data (for example gaussian+linear for a peak)
+   */
 
-  @param modelFunction a reference to the model function.
+   void SetModelFunction(const ParametricFunction &modelFCN) { fModelFunction = &modelFCN; }
 
-  */
+   /**
 
-  void SetModelFunction(const ParametricFunction& modelFCN) { fModelFunction = &modelFCN; }
+   Returns the model function used for the data.
 
+   @return Returns a pointer to the model function.
 
+   */
 
-  /**
+   const ParametricFunction *ModelFunction() const { return fModelFunction; }
 
-  Returns the model function used for the data.
+   /**
 
-  @return Returns a pointer to the model function.
+   Evaluates the model function for the different measurement points and
+   the Parameter values supplied, calculates a figure-of-merit for each
+   measurement and returns a vector containing the result of this
+   evaluation.
 
-  */
+   @param par vector of Parameter values to feed to the model function.
 
-  const ParametricFunction*  ModelFunction() const { return fModelFunction; }
+   @return A vector containing the figures-of-merit for the model function evaluated
+   for each set of measurements.
 
+   */
 
+   virtual std::vector<double> Elements(const std::vector<double> &par) const = 0;
 
-  /**
+   /**
 
-  Evaluates the model function for the different measurement points and
-  the Parameter values supplied, calculates a figure-of-merit for each
-  measurement and returns a vector containing the result of this
-  evaluation.
+   Accessor to the parameters of a given measurement. For example in the
+   case of a chi-square fit with a one-dimensional Gaussian, the Parameter
+   characterizing the measurement will be the position. It is the Parameter
+   that is feeded to the model function.
 
-  @param par vector of Parameter values to feed to the model function.
+   @param Index Index of the measueremnt the parameters of which to return
+   @return A vector containing the values characterizing a measurement
 
-  @return A vector containing the figures-of-merit for the model function evaluated
-  for each set of measurements.
+   */
 
-  */
+   virtual const std::vector<double> &GetMeasurement(int Index) const = 0;
 
-  virtual std::vector<double> Elements(const std::vector<double>& par) const = 0;
+   /**
 
+   Accessor to the number of measurements used for calculating the
+   present figure of merit.
 
+   @return the number of measurements
 
-  /**
+   */
 
-  Accessor to the parameters of a given measurement. For example in the
-  case of a chi-square fit with a one-dimensional Gaussian, the Parameter
-  characterizing the measurement will be the position. It is the Parameter
-  that is feeded to the model function.
+   virtual int GetNumberOfMeasurements() const = 0;
 
-  @param Index Index of the measueremnt the parameters of which to return
-  @return A vector containing the values characterizing a measurement
+   /**
 
-  */
-
-  virtual const std::vector<double> & GetMeasurement(int Index) const = 0;
-
-
-  /**
-
-  Accessor to the number of measurements used for calculating the
-  present figure of merit.
-
-  @return the number of measurements
-
-  */
-
-  virtual int GetNumberOfMeasurements() const = 0;
+   Calculates the function for the maximum likelihood method. The user must
+   implement in a class which inherits from FumiliChi2FCN the member function
+   Elements() which will supply the Elements for the sum.
 
 
-  /**
+   @param par vector containing the Parameter values for the model function
 
-  Calculates the function for the maximum likelihood method. The user must
-  implement in a class which inherits from FumiliChi2FCN the member function
-  Elements() which will supply the Elements for the sum.
+   @return The sum of the natural logarithm of the Elements multiplied by -1
 
+   @see FumiliFCNBase#elements
 
-  @param par vector containing the Parameter values for the model function
+   */
 
-  @return The sum of the natural logarithm of the Elements multiplied by -1
+   double operator()(const std::vector<double> &par) const
+   {
 
-  @see FumiliFCNBase#elements
+      double sumoflogs = 0.0;
+      std::vector<double> vecElements = Elements(par);
+      unsigned int vecElementsSize = vecElements.size();
 
-  */
+      for (unsigned int i = 0; i < vecElementsSize; ++i) {
+         double tmp = vecElements[i];
+         // for max likelihood probability have to be positive
+         assert(tmp >= 0);
+         sumoflogs -= ROOT::Math::Util::EvalLog(tmp);
+         // std::cout << " i " << tmp << " lik " << sumoflogs << std::endl;
+      }
 
-  double operator()(const std::vector<double>& par) const {
+      return sumoflogs;
+   }
 
-     double sumoflogs = 0.0;
-     std::vector<double> vecElements =  Elements(par);
-     unsigned int vecElementsSize = vecElements.size();
+   /**
 
-     for (unsigned int i = 0; i < vecElementsSize; ++i) {
-        double tmp = vecElements[i];
-        //for max likelihood probability have to be positive
-        assert(tmp >= 0);
-        sumoflogs -= ROOT::Math::Util::EvalLog(tmp);
-        //std::cout << " i " << tmp << " lik " << sumoflogs << std::endl;
-     }
+   !!!!!!!!!!!! to be commented
 
+   */
 
-     return sumoflogs;
-  }
+   virtual double Up() const { return 0.5; }
 
-
-
-  /**
-
-  !!!!!!!!!!!! to be commented
-
-  */
-
-  virtual double Up() const { return 0.5; }
-
- private:
-
-  // A pointer to the model function which describes the data
-  const ParametricFunction *fModelFunction;
-
+private:
+   // A pointer to the model function which describes the data
+   const ParametricFunction *fModelFunction;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_FumiliMaximumLikelihoodFCN
+#endif // ROOT_Minuit2_FumiliMaximumLikelihoodFCN

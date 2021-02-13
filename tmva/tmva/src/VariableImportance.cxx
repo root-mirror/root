@@ -23,15 +23,12 @@
 #include "TMVA/VarTransformHandler.h"
 
 #include "TAxis.h"
-#include "TGraph.h"
 #include "TCanvas.h"
 #include "TH1.h"
 #include "TRandom3.h"
 #include "TStyle.h"
-#include "TSystem.h"
 
 #include <bitset>
-#include <iostream>
 #include <memory>
 #include <utility>
 

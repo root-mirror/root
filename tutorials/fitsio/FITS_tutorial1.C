@@ -1,7 +1,6 @@
 /// \file
 /// \ingroup tutorial_FITS
 /// \notebook -draw
-///
 /// Open a FITS file and retrieve the first plane of the image array
 /// as a TImage object
 ///
@@ -38,17 +37,16 @@ void FITS_tutorial1()
    mat->Print();
 
    // Read the primary array as an image, selecting only layer 0.
-
-   std::unique_ptr<TImage> im(hdu.ReadAsImage(0));
+   TImage * im = (TImage *)hdu.ReadAsImage(0);
 
    // Read the primary array as a histogram. Depending on array dimensions, the returned
    // histogram will be 1D, 2D or 3D.
-   std::unique_ptr<TH1> hist(hdu.ReadAsHistogram());
+   TH1 * hist = (TH1 *)hdu.ReadAsHistogram();
 
    auto c = new TCanvas("c1", "FITS tutorial #1", 1400, 800);
    c->Divide(2, 1);
    c->cd(1);
-   im->DrawClone();
+   im->Draw();
    c->cd(2);
-   hist->DrawClone("COL");
+   hist->Draw("COL");
 }

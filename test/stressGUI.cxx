@@ -16,9 +16,10 @@
 //    stressGUI -help
 //
 
-#include <stdlib.h>
-#include <time.h>
-#include <Riostream.h>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <snprintf.h>
 #include <TString.h>
 #include <TROOT.h>
 #include <TClass.h>
@@ -68,6 +69,7 @@
 #include <TGImageMap.h>
 #include <TASPaletteEditor.h>
 #include <TControlBar.h>
+#include <TControlBarImp.h>
 #include <TGSpeedo.h>
 #include <TGShapedFrame.h>
 #include <TGSplitFrame.h>
@@ -78,6 +80,7 @@
 #include <TSystemDirectory.h>
 #include <TInterpreter.h>
 #include <TStopwatch.h>
+#include <TVirtualX.h>
 
 #include <TRecorder.h>
 

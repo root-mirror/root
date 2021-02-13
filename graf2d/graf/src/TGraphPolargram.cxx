@@ -45,7 +45,6 @@ End_Macro
 #include "TGaxis.h"
 #include "THLimitsFinder.h"
 #include "TVirtualPad.h"
-#include "TROOT.h"
 #include "TLatex.h"
 #include "TEllipse.h"
 #include "TMath.h"

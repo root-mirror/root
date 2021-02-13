@@ -14,7 +14,6 @@
 #include <ROOT/RPadPos.hxx>
 
 #include <initializer_list>
-#include <memory>
 
 namespace ROOT {
 namespace Experimental {
@@ -29,22 +28,28 @@ namespace Experimental {
 
 class RMarker : public RDrawable {
 
-   RPadPos fP;                                ///< position
-   RAttrMarker fMarkerAttr{this, "marker_"};  ///<! marker attributes
+   RPadPos fP;                              ///< position
+   RAttrMarker fMarkerAttr{this, "marker"}; ///<! marker attributes
 
 public:
-
    RMarker() : RDrawable("marker") {}
 
-   RMarker(const RPadPos& p) : RMarker() { fP = p; }
+   RMarker(const RPadPos &p) : RMarker() { fP = p; }
 
-   RMarker &SetP(const RPadPos& p) { fP = p; return *this; }
-   const RPadPos& GetP() const { return fP; }
+   RMarker &SetP(const RPadPos &p)
+   {
+      fP = p;
+      return *this;
+   }
+   const RPadPos &GetP() const { return fP; }
 
    const RAttrMarker &GetAttrMarker() const { return fMarkerAttr; }
-   RMarker &SetAttrMarker(const RAttrMarker &attr) { fMarkerAttr = attr; return *this; }
+   RMarker &SetAttrMarker(const RAttrMarker &attr)
+   {
+      fMarkerAttr = attr;
+      return *this;
+   }
    RAttrMarker &AttrMarker() { return fMarkerAttr; }
-
 };
 
 } // namespace Experimental

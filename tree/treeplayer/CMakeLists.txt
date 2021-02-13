@@ -17,9 +17,8 @@ if(NOT MSVC)
 endif()
 
 if(imt)
-  list(APPEND TREEPLAYER_EXTRA_HEADERS
-    ROOT/TTreeProcessorMT.hxx
-  )
+  list(APPEND TREEPLAYER_EXTRA_HEADERS ROOT/TTreeProcessorMT.hxx)
+  list(APPEND TREEPLAYER_EXTRA_DEPENDENCIES Imt)
 endif()
 
 ROOT_STANDARD_LIBRARY_PACKAGE(TreePlayer
@@ -94,7 +93,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(TreePlayer
     Graf
     Graf3d
     Hist
-    Imt
+    ${TREEPLAYER_EXTRA_DEPENDENCIES}
     MathCore
     RIO
     Tree

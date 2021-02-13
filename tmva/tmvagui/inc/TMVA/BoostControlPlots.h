@@ -1,10 +1,8 @@
 #ifndef BoostControlPlots__HH
 #define BoostControlPlots__HH
-#include <vector>
-#include <string>
-#include "TLegend.h"
-#include "TText.h"
+
 #include "tmvaglob.h"
+
 namespace TMVA{
 
 

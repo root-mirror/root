@@ -562,8 +562,8 @@ void FitResult::GetConfidenceIntervals(unsigned int n, unsigned int stride1, uns
    if (norm)
       corrFactor = TMath::StudentQuantile(0.5 + cl/2, fNdf) * std::sqrt( fChi2/fNdf );
    else
-      // value to go up in chi2 (1: 1 sigma error(CL=0.683) , 4: 2 sigma errors
-      corrFactor = ROOT::Math::chisquared_quantile(cl, 1);
+      // correction to apply to the errors given a CL different than 1 sigma (cl=0.683) 
+      corrFactor = ROOT::Math::normal_quantile(0.5 + cl/2, 1);
 
 
 

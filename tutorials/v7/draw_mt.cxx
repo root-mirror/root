@@ -22,6 +22,7 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
+#include "ROOT/RWebWindowsManager.hxx"
 #include "ROOT/RHistDrawable.hxx"
 #include "ROOT/RCanvas.hxx"
 

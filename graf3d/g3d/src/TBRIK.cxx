@@ -11,7 +11,6 @@
 
 #include "TBRIK.h"
 #include "TNode.h"
-#include "TVirtualPad.h"
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TGeometry.h"

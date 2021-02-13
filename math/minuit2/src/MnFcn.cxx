@@ -13,14 +13,15 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-MnFcn::~MnFcn() {
+MnFcn::~MnFcn()
+{
    //   std::cout<<"Total number of calls to FCN: "<<fNumCall<<std::endl;
 }
 
-double MnFcn::operator()(const MnAlgebraicVector& v) const {
+double MnFcn::operator()(const MnAlgebraicVector &v) const
+{
    // evaluate FCN converting from from MnAlgebraicVector to std::vector
    fNumCall++;
    return fFCN(MnVectorTransform()(v));
@@ -30,10 +31,16 @@ double MnFcn::operator()(const MnAlgebraicVector& v) const {
 //     return fFCN(par);
 // }
 
-double MnFcn::ErrorDef() const {return fFCN.Up();}
+double MnFcn::ErrorDef() const
+{
+   return fFCN.Up();
+}
 
-double MnFcn::Up() const {return fFCN.Up();}
+double MnFcn::Up() const
+{
+   return fFCN.Up();
+}
 
-   }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT

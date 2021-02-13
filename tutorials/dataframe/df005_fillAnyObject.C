@@ -1,6 +1,8 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -draw
+/// Using the generic Fill action.
+///
 /// This tutorial shows how to fill any object the class of which exposes a
 /// `Fill` method.
 ///
@@ -8,7 +10,7 @@
 /// \macro_image
 ///
 /// \date March 2017
-/// \author Danilo Piparo
+/// \author Danilo Piparo (CERN)
 
 // A simple helper function to fill a test tree: this makes the example
 // stand-alone.

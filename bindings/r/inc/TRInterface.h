@@ -206,7 +206,7 @@ namespace ROOT {
          The command line arguments are by deafult argc=0 and argv=NULL,
          The verbose mode is by default disabled but you can enable it to show procedures information in stdout/stderr         \note some time can produce so much noise in the output
          \param argc default 0
-         \param args default null
+         \param argv default null
          \param loadRcpp default true
          \param verbose default false
          \param interactive default true
@@ -226,7 +226,7 @@ namespace ROOT {
          /**
          Method to eval R code and you get the result in a reference to TRObject
          \param code R code
-         \param ands reference to TRObject
+         \param ans reference to TRObject
          \return an true or false if the execution was sucessful or not.
          */
          Int_t Eval(const TString &code, TRObject  &ans); // parse line, returns in ans; error code rc

@@ -20,6 +20,7 @@ Small helper class to generically acquire and release iterators.
 
 #include "TVirtualCollectionProxy.h"
 #include "TError.h"
+#include <vector>
 
 class TVirtualCollectionIterators
 {

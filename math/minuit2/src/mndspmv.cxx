@@ -14,15 +14,14 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
+bool mnlsame(const char *, const char *);
+int mnxerbla(const char *, int);
 
-bool mnlsame(const char*, const char*);
-int mnxerbla(const char*, int);
-
-int Mndspmv(const char* uplo, unsigned int n, double alpha,
-            const double* ap, const double* x, int incx, double beta,
-            double* y, int incy) {
+int Mndspmv(const char *uplo, unsigned int n, double alpha, const double *ap, const double *x, int incx, double beta,
+            double *y, int incy)
+{
    /* System generated locals */
    int i__1, i__2;
 
@@ -112,7 +111,6 @@ int Mndspmv(const char* uplo, unsigned int n, double alpha,
    /*           Y. INCY must not be zero. */
    /*           Unchanged on exit. */
 
-
    /*  Level 2 Blas routine. */
 
    /*  -- Written on 22-October-1986. */
@@ -120,7 +118,6 @@ int Mndspmv(const char* uplo, unsigned int n, double alpha,
    /*     Jeremy Du Croz, Nag Central Office. */
    /*     Sven Hammarling, Nag Central Office. */
    /*     Richard Hanson, Sandia National Labs. */
-
 
    /*     .. Parameters .. */
    /*     .. Local Scalars .. */
@@ -138,7 +135,7 @@ int Mndspmv(const char* uplo, unsigned int n, double alpha,
 
    /* Function Body */
    info = 0;
-   if (! mnlsame(uplo, "U") && ! mnlsame(uplo, "L")) {
+   if (!mnlsame(uplo, "U") && !mnlsame(uplo, "L")) {
       info = 1;
    }
    //     else if (n < 0) {
@@ -156,7 +153,7 @@ int Mndspmv(const char* uplo, unsigned int n, double alpha,
 
    /*     Quick return if possible. */
 
-   if ( ( n == 0)  || ( alpha == 0. && beta == 1.) ) {
+   if ((n == 0) || (alpha == 0. && beta == 1.)) {
       return 0;
    }
 
@@ -316,7 +313,6 @@ int Mndspmv(const char* uplo, unsigned int n, double alpha,
 
 } /* dspmv_ */
 
+} // namespace Minuit2
 
-   }  // namespace Minuit2
-
-}  // namespace ROOT
+} // namespace ROOT

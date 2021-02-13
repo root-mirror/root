@@ -29,25 +29,23 @@
 
 #include <TROOT.h>
 #include <TFile.h>
+#include <TKey.h>
 #include <TTree.h>
+#include <TKey.h>
 #include <TLeaf.h>
+#include <TBranch.h>
 #include <TEventList.h>
-#include <TH2.h>
-#include <TText.h>
-#include <TLegend.h>
 #include <TGraph.h>
-#include <TStyle.h>
 #include <TMatrixF.h>
 #include <TMatrixDSym.h>
 #include <TMultiGraph.h>
-#include <TPaletteAxis.h>
 #include <TPrincipal.h>
 #include <TMath.h>
-#include <TObjString.h>
 #include <TSystem.h>
-#include <TCanvas.h>
+
 #include <iostream>
 #include <memory>
+
 #define MinNoTrainingEvents 10
 
 //_______________________________________________________________________

@@ -9,13 +9,13 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "TGFrame.h"
 #include "TGLayout.h"
 #include "TString.h"
-#include "TGPicture.h"
 #include "TImage.h"
 #include "TGShapedFrame.h"
-#include "Riostream.h"
+#include "TVirtualX.h"
+
+#include <iostream>
 
 ClassImp(TGShapedFrame);
 

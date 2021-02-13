@@ -16,11 +16,10 @@
 #include <cassert>
 #include <csignal>
 
-//TODO: cstdxx instead of stdxx.h ?
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 
 #include <unistd.h>
 #include <pwd.h>
@@ -30,7 +29,7 @@
 #include <X11/extensions/shape.h>
 
 #include "Rtypes.h"
-#include "RConfigure.h"
+#include "snprintf.h"
 
 #include "rootcoreteam.h"
 

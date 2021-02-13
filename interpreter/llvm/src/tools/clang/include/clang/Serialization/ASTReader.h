@@ -499,21 +499,11 @@ private:
   /// that we needed but hadn't loaded yet.
   llvm::DenseMap<void *, PendingFakeDefinitionKind> PendingFakeDefinitionData;
 
-  struct PendingExceptionSpecUpdateInfo {
-    FunctionDecl *m_FD = nullptr;
-    bool ShouldUpdateESI = false;
-    FunctionProtoType::ExceptionSpecInfo m_ESI;
-    PendingExceptionSpecUpdateInfo(FunctionDecl *FD,
-                                  FunctionProtoType::ExceptionSpecInfo ESI)
-      : m_FD(FD), m_ESI(ESI), ShouldUpdateESI(true) { }
-    PendingExceptionSpecUpdateInfo(FunctionDecl *FD) : m_FD(FD) { }
-  };
   /// \brief Exception specification updates that have been loaded but not yet
   /// propagated across the relevant redeclaration chain. The map key is the
   /// canonical declaration (used only for deduplication) and the value is a
   /// declaration that has an exception specification.
-  llvm::SmallMapVector<Decl *, PendingExceptionSpecUpdateInfo, 4>
-      PendingExceptionSpecUpdates;
+  llvm::SmallMapVector<Decl *, FunctionDecl *, 4> PendingExceptionSpecUpdates;
 
   /// \brief Declarations that have been imported and have typedef names for
   /// linkage purposes.
@@ -865,8 +855,9 @@ private:
   /// \brief Delete expressions to analyze at the end of translation unit.
   SmallVector<uint64_t, 8> DelayedDeleteExprs;
 
-  // \brief A list of late parsed template function data.
-  SmallVector<uint64_t, 1> LateParsedTemplates;
+  // A list of late parsed template function data with their module files.
+  SmallVector<std::pair<ModuleFile *, SmallVector<uint64_t, 1>>, 4>
+      LateParsedTemplates;
 
 public:
   struct ImportedSubmodule {

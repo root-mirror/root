@@ -50,6 +50,7 @@ SafeAdjustWindowRectEx(RECT * lpRect,
       WIN32_API_FAILED("AdjustWindowRectEx");
       return FALSE;
    }
+#if 0 // multiple screens can give negative values
    if (lpRect->left < 0) {
       lpRect->right -= lpRect->left;
       lpRect->left = 0;
@@ -58,6 +59,7 @@ SafeAdjustWindowRectEx(RECT * lpRect,
       lpRect->bottom -= lpRect->top;
       lpRect->top = 0;
    }
+#endif
    return TRUE;
 }
 
@@ -398,7 +400,7 @@ GdkWindow *gdk_window_new(GdkWindow * parent,
       rect.right = rect.left + private->drawable.width;
       rect.bottom = rect.top + private->drawable.height;
 
-      //SafeAdjustWindowRectEx(&rect, dwStyle, FALSE, dwExStyle);
+      SafeAdjustWindowRectEx(&rect, dwStyle, FALSE, dwExStyle);
 
       if (x != CW_USEDEFAULT) {
          x = rect.left;
@@ -770,7 +772,7 @@ void gdk_window_move(GdkWindow * window, gint x, gint y)
 
          dwStyle = GetWindowLong(GDK_DRAWABLE_XID(window), GWL_STYLE);
          dwExStyle = GetWindowLong(GDK_DRAWABLE_XID(window), GWL_EXSTYLE);
-         //SafeAdjustWindowRectEx(&rect, dwStyle, FALSE, dwExStyle);
+         SafeAdjustWindowRectEx(&rect, dwStyle, FALSE, dwExStyle);
 
          x = rect.left;
          y = rect.top;

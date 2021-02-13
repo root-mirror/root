@@ -20,7 +20,6 @@
 #include "TTreeFormula.h"
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveSelectorToEventList
 \ingroup REve

@@ -21,6 +21,14 @@ originally used in the Network Computing System (NCS) and
 later in the Open Software Foundation's (OSF) Distributed Computing
 Environment (DCE).
 
+\note In the way this UUID is constructed, when used outside of
+their original concept (NCS), they are actually not Globally unique
+and indeed multiple distinct concurrent processes are actually likely
+to generate the same UUID.  Technically this is because the UUID is
+constructed only from the node information and time information.
+To make a globally unique number, this needs to be combined with
+TProcessUUID.
+
 Structure of universal unique IDs (UUIDs).
 
 Depending on the network data representation, the multi-
@@ -106,7 +114,9 @@ system clock catches up.
 */
 
 #include "TROOT.h"
+#include "TDatime.h"
 #include "TUUID.h"
+#include "TBuffer.h"
 #include "TError.h"
 #include "TSystem.h"
 #include "TInetAddress.h"

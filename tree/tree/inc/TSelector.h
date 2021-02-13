@@ -26,9 +26,7 @@
 #include "TString.h"
 #include "TSelectorList.h"
 
-
 class TTree;
-
 
 class TSelector : public TObject {
 

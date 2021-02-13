@@ -30,8 +30,8 @@ class REveShape : public REveElement,
                   public TAttBBox
 {
 private:
-   REveShape(const REveShape &);            // Not implemented
-   REveShape &operator=(const REveShape &); // Not implemented
+   REveShape(const REveShape &) = delete;
+   REveShape &operator=(const REveShape &) = delete;
 
 public:
    typedef std::vector<REveVector2> vVector2_t;

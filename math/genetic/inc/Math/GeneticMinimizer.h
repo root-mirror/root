@@ -17,6 +17,7 @@
 #include "RtypesCore.h"
 
 #include <vector>
+#include <string>
 
 namespace TMVA {
    class IFitterTarget;

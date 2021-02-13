@@ -27,7 +27,6 @@ an error contour.
 #include "RooFit.h"
 
 #include "RooEllipse.h"
-#include "RooEllipse.h"
 #include "TMath.h"
 #include "RooMsgService.h"
 

@@ -22,6 +22,7 @@
 #include "TDataMember.h"
 #include "TDataType.h"
 #include "TObjString.h"
+#include "TObjArray.h"
 #include "TUrl.h"
 #include "TImage.h"
 #include "TVirtualMutex.h"
@@ -978,7 +979,7 @@ void TRootSniffer::ScanRoot(TRootSnifferScanRec &rec)
          chld.SetField(item_prop_kind, "ROOT.TStreamerInfoList");
          chld.SetField(item_prop_title, "List of streamer infos for binary I/O");
          chld.SetField(item_prop_hidden, "true", kFALSE);
-         chld.SetField("_after_request", "JSROOT.MarkAsStreamerInfo");
+         chld.SetField("_after_request", "JSROOT.markAsStreamerInfo");
       }
    }
 

@@ -11,12 +11,9 @@
 #include "TMVA/ResultsClassification.h"
 #include "TMVA/Types.h"
 
-#include "TGraph.h"
 #include "TMultiGraph.h"
 #include "TString.h"
-#include "TSystem.h"
 
-#include <iostream>
 #include <memory>
 #include <vector>
 

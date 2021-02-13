@@ -111,7 +111,9 @@ namespace TMVA {
          Int_t   fMaxNumOfAllowedVariablesForScatterPlots;
          Int_t   fNbinsMVAoutput;
          Int_t   fNbinsXOfROCCurve;
-         Bool_t  fUsePaperStyle;
+         Bool_t  fUsePaperStyle;   // set to get eps output
+         enum { kPNG = 0, kGIF = 1, kPDF = 2, kEPS = 3 };
+         Int_t fPlotFormat; // (0: png , 1: gif, 2: pdf, 3: eps)
 
       } fVariablePlotting; // Customisable plotting properties
 

@@ -13,11 +13,7 @@
 #define ROOSTATS_MinNLLTestStat
 
 
-
-
 #include "Rtypes.h"
-
-#include <vector>
 
 #include "RooStats/RooStatsUtils.h"
 

@@ -1,7 +1,6 @@
 /// \file
 /// \ingroup tutorial_FITS
 /// \notebook
-///
 /// Open a FITS file whose primary array represents
 /// a spectrum (flux vs wavelength)
 ///

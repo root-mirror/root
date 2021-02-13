@@ -32,16 +32,15 @@
 #include "TGFileDialog.h"
 #include "TGMsgBox.h"
 #include "TSystem.h"
-#include "TApplication.h"
 #include "TRootHelpDialog.h"
 #include "TGListTree.h"
 #include "TImage.h"
-#include "TTimer.h"
 #include "TGTextEdit.h"
 #include "TGTab.h"
 #include "TGListBox.h"
 #include "TGComboBox.h"
 #include "TGProgressBar.h"
+#include "TVirtualX.h"
 
 
 //////////////////////////////////////////////////////////////////////////

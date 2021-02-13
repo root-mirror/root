@@ -60,15 +60,16 @@ TGDMLMatrix& TGDMLMatrix::operator=(const TGDMLMatrix& rhs)
    fNelem = fNrows * fNcols;
    if (rhs.fMatrix)
    {
-     fMatrix = new Double_t[fNelem];
-     memcpy(fMatrix, rhs.fMatrix, fNelem * sizeof(Double_t));
+      delete [] fMatrix;
+      fMatrix = new Double_t[fNelem];
+      memcpy(fMatrix, rhs.fMatrix, fNelem * sizeof(Double_t));
    }
    return *this;
 }
 
 //_____________________________________________________________________________
 void TGDMLMatrix::Set(size_t r, size_t c, Double_t a)
-{ 
+{
    assert(r < fNrows && c < fNcols);
    fMatrix[fNcols*r+c] = a;
 }

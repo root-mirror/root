@@ -16,7 +16,6 @@ Abstract interface for Tree Index
 */
 
 #include "TVirtualIndex.h"
-#include "TTree.h"
 
 ClassImp(TVirtualIndex);
 
@@ -25,7 +24,7 @@ ClassImp(TVirtualIndex);
 
 TVirtualIndex::TVirtualIndex(): TNamed()
 {
-   fTree         = 0;
+   fTree = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

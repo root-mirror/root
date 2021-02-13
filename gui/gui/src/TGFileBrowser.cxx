@@ -24,6 +24,8 @@
 #include "TGMimeTypes.h"
 #include "TClass.h"
 #include "TQClass.h"
+#include "TObjString.h"
+#include "TObjArray.h"
 #include "TInterpreter.h"
 #include "TRegexp.h"
 #include "TEnv.h"
@@ -34,9 +36,10 @@
 #include "TKeyMapFile.h"
 #include "TVirtualPad.h"
 #include "Getline.h"
-#include <time.h>
-#include <string.h>
-#include <stdlib.h>
+#include "snprintf.h"
+#include <ctime>
+#include <cstring>
+#include <cstdlib>
 
 #include "TGFileBrowser.h"
 #include "TRootBrowser.h"
@@ -45,6 +48,7 @@
 #include "TVirtualPadEditor.h"
 #include "TGedEditor.h"
 #include "TBaseClass.h"
+#include "TVirtualX.h"
 
 #include "RConfigure.h"
 
@@ -1316,7 +1320,8 @@ void TGFileBrowser::DoubleClicked(TGListTreeItem *item, Int_t /*btn*/)
             // than a canvas already embedded in one of the browser's tab
             obj->DrawClone();
          }
-         else if (fBrowser && !obj->InheritsFrom("TFormula"))
+         else if (fBrowser && !obj->InheritsFrom("TFormula") &&
+                  !obj->InheritsFrom("TMethodBrowsable"))
             obj->Browse(fBrowser);
          fDblClick = kFALSE;
          fNKeys = 0;

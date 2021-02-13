@@ -20,7 +20,6 @@
 
 #include "Math/GenVector/Cartesian3D.h"
 #include "Math/GenVector/DisplacementVector3D.h"
-#include "Math/GenVector/Quaternion.h"
 
 #include "Math/GenVector/Rotation3Dfwd.h"
 #include "Math/GenVector/AxisAnglefwd.h"

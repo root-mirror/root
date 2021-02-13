@@ -28,7 +28,8 @@
 #ifndef ROOT_TMVA_SVKernelFunction
 #define ROOT_TMVA_SVKernelFunction
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
+#include <vector>
 
 namespace TMVA {
 

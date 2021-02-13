@@ -160,4 +160,11 @@ TEST_F(ROCCurveTest, aucRandomWithWeights)
    // averagings.
    EXPECT_NEAR(avgAuc(10000, 10, gen_ut), 2. / 3., 0.005);
 }
+
+int main(int argc, char *argv[])
+{
+   ::testing::InitGoogleTest(&argc, argv);
+   return RUN_ALL_TESTS();
+}
+
 }

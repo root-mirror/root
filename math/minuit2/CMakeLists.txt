@@ -6,6 +6,10 @@
 
 cmake_minimum_required(VERSION 3.1)
 
+if(NOT CMAKE_PROJECT_NAME STREQUAL ROOT)
+  project(Minuit2 LANGUAGES CXX)
+endif(NOT CMAKE_PROJECT_NAME STREQUAL ROOT)
+
 option(minuit2_mpi "Enable support for MPI in Minuit2")
 option(minuit2_omp "Enable support for OpenMP in Minuit2")
 
@@ -93,8 +97,6 @@ if(CMAKE_PROJECT_NAME STREQUAL ROOT)
       Minuit2/MnPlot.h
       Minuit2/MnPosDef.h
       Minuit2/MnPrint.h
-      Minuit2/MnRefCountedPointer.h
-      Minuit2/MnReferenceCounter.h
       Minuit2/MnScan.h
       Minuit2/MnSeedGenerator.h
       Minuit2/MnSimplex.h
@@ -168,6 +170,7 @@ if(CMAKE_PROJECT_NAME STREQUAL ROOT)
       src/MnPlot.cxx
       src/MnPosDef.cxx
       src/MnPrint.cxx
+      src/MnPrintImpl.cxx
       src/MnScan.cxx
       src/MnSeedGenerator.cxx
       src/MnStrategy.cxx
@@ -245,7 +248,7 @@ if(minuit2_mpi)
 endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL ROOT)
-  add_definitions(-DWARNINGMSG)
+  add_definitions(-DUSE_ROOT_ERROR)
   ROOT_ADD_TEST_SUBDIRECTORY(test)
 else()
   include(StandAlone.cmake)

@@ -1,28 +1,29 @@
 // Author: Sergey Linev, GSI   7/12/2016
 
 /*************************************************************************
- * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2021, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// TWebGuiFactory                                                       //
-//                                                                      //
-// This class is a factory for Web GUI components. It overrides         //
-// the member functions of the abstract TGuiFactory.                    //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
 #include "TWebGuiFactory.h"
 #include "TRootGuiFactory.h"
 
 #include "TWebCanvas.h"
+#include "TEnv.h"
 
 #include <ROOT/RMakeUnique.hxx>
+
+/** \class TWebGuiFactory
+\ingroup webgui6
+
+This class is a proxy-factory for web-base ROOT GUI components.
+it overrides the member functions of the X11/win32gdk-based
+TGuiFactory.
+
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 /// TWebGuiFactory ctor.
@@ -41,19 +42,22 @@ TApplicationImp *TWebGuiFactory::CreateApplicationImp(const char *classname, int
    return fGuiProxy->CreateApplicationImp(classname, argc, argv);
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 TCanvasImp *TWebGuiFactory::CreateCanvasImp(TCanvas *c, const char *title, UInt_t width, UInt_t height)
 {
-   return new TWebCanvas(c, title, 0, 0, width, height);
+   Bool_t readonly = gEnv->GetValue("WebGui.FullCanvas", (Int_t) 0) == 0;
+
+   return new TWebCanvas(c, title, 0, 0, width, height, readonly);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 TCanvasImp *TWebGuiFactory::CreateCanvasImp(TCanvas *c, const char *title, Int_t x, Int_t y, UInt_t width, UInt_t height)
 {
-   return new TWebCanvas(c, title, x, y, width, height);
+   Bool_t readonly = gEnv->GetValue("WebGui.FullCanvas", (Int_t) 0) == 0;
+
+   return new TWebCanvas(c, title, x, y, width, height, readonly);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -36,6 +36,8 @@
 #include "TMVA/Rule.h"
 #include "TMVA/Types.h"
 
+#include <vector>
+
 class TH1F;
 
 namespace TMVA {

@@ -23,6 +23,8 @@
 
 #include "TSelector.h"
 
+#include <vector>
+
 class TTreeFormula;
 class TTreeFormulaManager;
 class TH1;

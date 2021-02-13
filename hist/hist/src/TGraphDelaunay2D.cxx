@@ -9,11 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "TMath.h"
 #include "TGraph2D.h"
 #include "TGraphDelaunay2D.h"
-
-//#include <thread>
 
 ClassImp(TGraphDelaunay2D);
 

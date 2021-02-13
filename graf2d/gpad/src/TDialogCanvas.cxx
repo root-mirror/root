@@ -12,7 +12,6 @@
 #include "TROOT.h"
 #include "TDialogCanvas.h"
 #include "TGroupButton.h"
-#include "TText.h"
 #include "TStyle.h"
 
 ClassImp(TDialogCanvas);

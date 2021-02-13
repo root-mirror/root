@@ -56,6 +56,11 @@ namespace HistFactory{
     virtual void printMultiline(std::ostream& os, Int_t contents, Bool_t verbose = kFALSE, TString indent = "") const;
     virtual void printFlexibleInterpVars(std::ostream& os) const;
 
+    const RooListProxy& variables() const;
+    double nominal() const;        
+    const std::vector<double>& low() const;
+    const std::vector<double>& high() const;    
+    
   private:
 
     double PolyInterpValue(int i, double x) const;

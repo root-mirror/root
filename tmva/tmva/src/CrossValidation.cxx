@@ -23,13 +23,13 @@
 #include "TMVA/ResultsClassification.h"
 #include "TMVA/ResultsMulticlass.h"
 #include "TMVA/ROCCurve.h"
-#include "TMVA/tmvaglob.h"
 #include "TMVA/Types.h"
 
 #include "TSystem.h"
 #include "TAxis.h"
 #include "TCanvas.h"
 #include "TGraph.h"
+#include "TLegend.h"
 #include "TMath.h"
 
 #include "ROOT/RMakeUnique.hxx"
@@ -99,7 +99,7 @@ TMultiGraph *TMVA::CrossValidationResult::GetROCCurves(Bool_t /*fLegend*/)
 ///
 /// \note You own the returned pointer.
 ///
-/// \param numSamples[in] Number of samples used for generating the average ROC
+/// \param[in] numSamples Number of samples used for generating the average ROC
 ///                       Curve. Avg. curve will be evaluated only at these
 ///                       points (using interpolation if necessary).
 ///
@@ -186,7 +186,9 @@ TCanvas* TMVA::CrossValidationResult::Draw(const TString name) const
 //
 TCanvas* TMVA::CrossValidationResult::DrawAvgROCCurve(Bool_t drawFolds, TString title) const
 {
-   TMultiGraph rocs{};
+   // note this function will create memory leak for the TMultiGraph
+   // but it needs to be kept alive in order to display the canvas
+   TMultiGraph *rocs = new TMultiGraph();
 
    // Potentially add the folds
    if (drawFolds) {
@@ -194,7 +196,7 @@ TCanvas* TMVA::CrossValidationResult::DrawAvgROCCurve(Bool_t drawFolds, TString 
          TGraph * foldRocGraph = dynamic_cast<TGraph *>(foldRocObj->Clone());
          foldRocGraph->SetLineColor(1);
          foldRocGraph->SetLineWidth(1);
-         rocs.Add(foldRocGraph);
+         rocs->Add(foldRocGraph);
       }
    }
 
@@ -203,7 +205,7 @@ TCanvas* TMVA::CrossValidationResult::DrawAvgROCCurve(Bool_t drawFolds, TString 
    avgRocGraph->SetTitle("Avg ROC Curve");
    avgRocGraph->SetLineColor(2);
    avgRocGraph->SetLineWidth(3);
-   rocs.Add(avgRocGraph);
+   rocs->Add(avgRocGraph);
 
    // Draw
    TCanvas *c = new TCanvas();
@@ -212,14 +214,15 @@ TCanvas* TMVA::CrossValidationResult::DrawAvgROCCurve(Bool_t drawFolds, TString 
       title = "Cross Validation Average ROC Curve";
    }
 
-   rocs.SetTitle(title);
-   rocs.GetXaxis()->SetTitle("Signal Efficiency");
-   rocs.GetYaxis()->SetTitle("Background Rejection");
-   rocs.DrawClone("AL");
+   rocs->SetName("cv_rocs");
+   rocs->SetTitle(title);
+   rocs->GetXaxis()->SetTitle("Signal Efficiency");
+   rocs->GetYaxis()->SetTitle("Background Rejection");
+   rocs->DrawClone("AL");
 
    // Build legend
    TLegend *leg = new TLegend();
-   TList *ROCCurveList = rocs.GetListOfGraphs();
+   TList *ROCCurveList = rocs->GetListOfGraphs();
 
    if (drawFolds) {
       Int_t nCurves = ROCCurveList->GetSize();

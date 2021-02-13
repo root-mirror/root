@@ -42,6 +42,7 @@
 #pragma link C++ class TProofLogElem;
 #pragma link C++ class TSlave;
 #pragma link C++ class TSlaveLite;
+#pragma link C++ class TVirtualPacketizer+;
 #pragma link C++ class TVirtualProofPlayer+;
 #pragma link C++ class TProofQueryResult+;
 #pragma link C++ class TQueryResultManager+;

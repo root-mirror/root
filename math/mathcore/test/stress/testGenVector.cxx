@@ -44,7 +44,7 @@ public:
    GenVectorTest() : fVectorTest(fNGen) {}
 };
 
-TYPED_TEST_CASE_P(GenVectorTest);
+TYPED_TEST_SUITE_P(GenVectorTest);
 
 // Test of Physics Vector (GenVector package)
 TYPED_TEST_P(GenVectorTest, TestGenVectors)
@@ -140,7 +140,7 @@ TYPED_TEST_P(GenVectorTest, TestGenVectors)
    }
 }
 
-REGISTER_TYPED_TEST_CASE_P(GenVectorTest, TestGenVectors);
+REGISTER_TYPED_TEST_SUITE_P(GenVectorTest, TestGenVectors);
 
 typedef testing::Types<
    VectorTestTypeWrapper<XYVector, Polar2DVector, 2>, VectorTestTypeWrapper<XYZVector, Polar3DVector, 3>,
@@ -149,4 +149,4 @@ typedef testing::Types<
    VectorTestTypeWrapper<XYZTVector, PxPyPzMVector, 4>>
    VectorGenTypes_t;
 
-INSTANTIATE_TYPED_TEST_CASE_P(StressMathCore, GenVectorTest, VectorGenTypes_t);
+INSTANTIATE_TYPED_TEST_SUITE_P(StressMathCore, GenVectorTest, VectorGenTypes_t);

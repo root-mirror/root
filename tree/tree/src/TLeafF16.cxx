@@ -19,7 +19,8 @@ A TLeaf for a 24 bit truncated floating point data type.
 #include "TBranch.h"
 #include "TBuffer.h"
 #include "TClonesArray.h"
-#include "Riostream.h"
+#include "TStreamerElement.h"
+#include <iostream>
 
 ClassImp(TLeafF16);
 

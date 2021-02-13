@@ -28,7 +28,6 @@
 #include "TGeoMedium.h"
 #include "TGeoMaterial.h"
 #include "TGeoCompositeShape.h"
-#include "TObjArray.h"
 #include "TBuffer3D.h"
 #include "TBufferJSON.h"
 
@@ -74,6 +73,9 @@ public:
          fNodeId = 0;
          return true;
       }
+
+      if (fNodeId >= (int) fDesc.fDesc.size())
+         return false;
 
       auto &node = fDesc.fDesc[fNodeId];
       if (node.chlds.size() == 0) return false;
@@ -147,8 +149,7 @@ public:
       return false;
    }
 
-   /** Navigate to specified path. For now path should start from '/' */
-
+   /** Navigate to specified path - path specified as string and should start with "/" */
    bool Navigate(const std::string &path)
    {
       size_t pos = path.find("/");
@@ -178,6 +179,28 @@ public:
 
       return true;
    }
+
+   /** Navigate to specified path  */
+   bool Navigate(const std::vector<std::string> &path)
+   {
+      Reset(); // set to the top of element
+
+      for (auto &folder : path) {
+
+         if (!Enter()) return false;
+
+         bool find = false;
+
+         do {
+            find = (folder.compare(GetName()) == 0);
+         } while (!find && Next());
+
+         if (!find) return false;
+      }
+
+      return true;
+   }
+
 
    /// Returns array of ids to currently selected node
    std::vector<int> CurrentIds() const
@@ -450,6 +473,8 @@ void ROOT::Experimental::REveGeomDescription::ProduceIdShifts()
 
 int ROOT::Experimental::REveGeomDescription::ScanNodes(bool only_visible, int maxlvl, REveGeomScanFunc_t func)
 {
+   if (fDesc.empty()) return 0;
+
    std::vector<int> stack;
    stack.reserve(25); // reserve enough space for most use-cases
    int counter{0};
@@ -541,7 +566,6 @@ std::string ROOT::Experimental::REveGeomDescription::ProcessBrowserRequest(const
 
    if (msg.empty()) {
       request = std::make_unique<RBrowserRequest>();
-      request->path = "/";
       request->first = 0;
       request->number = 100;
    }
@@ -549,7 +573,7 @@ std::string ROOT::Experimental::REveGeomDescription::ProcessBrowserRequest(const
    if (!request)
       return res;
 
-   if ((request->path.compare("/") == 0) && (request->first == 0) && (GetNumNodes() < (IsPreferredOffline() ? 1000000 : 1000))) {
+   if (request->path.empty() && (request->first == 0) && (GetNumNodes() < (IsPreferredOffline() ? 1000000 : 1000))) {
 
       std::vector<REveGeomNodeBase *> vect(fDesc.size(), nullptr);
 
@@ -568,7 +592,7 @@ std::string ROOT::Experimental::REveGeomDescription::ProcessBrowserRequest(const
 
    } else {
       std::vector<Browsable::RItem> temp_nodes;
-      bool toplevel = (request->path.compare("/") == 0);
+      bool toplevel = request->path.empty();
 
       // create temporary object for the short time
       RBrowserReply reply;
@@ -765,7 +789,7 @@ bool ROOT::Experimental::REveGeomDescription::CollectVisibles()
 
       // should not happen, but just in case
       if (shape_descr.nfaces <= 0) {
-         R__ERROR_HERE("webeve") << "No faces for the shape " << shape->GetName() << " class " << shape->ClassName();
+         R__LOG_ERROR(EveLog()) << "No faces for the shape " << shape->GetName() << " class " << shape->ClassName();
          continue;
       }
 
@@ -902,7 +926,7 @@ int ROOT::Experimental::REveGeomDescription::SearchVisibles(const std::string &f
 
       // should not happen, but just in case
       if (shape_descr.nfaces <= 0) {
-         R__ERROR_HERE("webeve") << "No faces for the shape " << shape->GetName() << " class " << shape->ClassName();
+         R__LOG_ERROR(EveLog()) << "No faces for the shape " << shape->GetName() << " class " << shape->ClassName();
          continue;
       }
 
@@ -1060,20 +1084,14 @@ std::vector<int> ROOT::Experimental::REveGeomDescription::MakeStackByIds(const s
 /// Produce stack based on string path
 /// Used to highlight geo volumes by browser hover event
 
-std::vector<int> ROOT::Experimental::REveGeomDescription::MakeStackByPath(const std::string &path)
+std::vector<int> ROOT::Experimental::REveGeomDescription::MakeStackByPath(const std::vector<std::string> &path)
 {
    std::vector<int> res;
 
    RGeomBrowserIter iter(*this);
 
-   if (iter.Navigate(path)) {
-//      auto ids = iter.CurrentIds();
-//      printf("path %s ", path.c_str());
-//      for (auto &id: ids)
-//         printf("%d ", id);
-//      printf("\n");
+   if (iter.Navigate(path))
       res = MakeStackByIds(iter.CurrentIds());
-   }
 
    return res;
 }
@@ -1110,18 +1128,13 @@ std::vector<int> ROOT::Experimental::REveGeomDescription::MakeIdsByStack(const s
 /////////////////////////////////////////////////////////////////////////////////
 /// Returns path string for provided stack
 
-std::string ROOT::Experimental::REveGeomDescription::MakePathByStack(const std::vector<int> &stack)
+std::vector<std::string> ROOT::Experimental::REveGeomDescription::MakePathByStack(const std::vector<int> &stack)
 {
-   std::string path;
+   std::vector<std::string> path;
 
    auto ids = MakeIdsByStack(stack);
-   if (ids.size() > 0) {
-      path = "/";
-      for (auto &id : ids) {
-         path.append(fDesc[id].name);
-         path.append("/");
-      }
-   }
+   for (auto &id : ids)
+      path.emplace_back(fDesc[id].name);
 
    return path;
 }
@@ -1271,7 +1284,7 @@ bool ROOT::Experimental::REveGeomDescription::ChangeNodeVisibility(int nodeid, b
 /// Change visibility for specified element
 /// Returns true if changes was performed
 
-std::unique_ptr<ROOT::Experimental::REveGeomNodeInfo> ROOT::Experimental::REveGeomDescription::MakeNodeInfo(const std::string &path)
+std::unique_ptr<ROOT::Experimental::REveGeomNodeInfo> ROOT::Experimental::REveGeomDescription::MakeNodeInfo(const std::vector<std::string> &path)
 {
    std::unique_ptr<REveGeomNodeInfo> res;
 
@@ -1285,7 +1298,7 @@ std::unique_ptr<ROOT::Experimental::REveGeomNodeInfo> ROOT::Experimental::REveGe
 
       res = std::make_unique<REveGeomNodeInfo>();
 
-      res->fullpath = path;
+      res->path = path;
       res->node_name = node->GetName();
       res->node_type = node->ClassName();
 

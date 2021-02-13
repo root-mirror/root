@@ -22,17 +22,11 @@ Plain Gaussian p.d.f
 
 #include "RooGaussian.h"
 
-#include "RooFit.h"
-#include "BatchHelpers.h"
-#include "RooAbsReal.h"
-#include "RooRealVar.h"
 #include "RooRandom.h"
 #include "RooMath.h"
+#include "RooHelpers.h"
+#include "RooBatchCompute.h"
 
-#include "RooVDTHeaders.h"
-
-using namespace BatchHelpers;
-using namespace std;
 
 ClassImp(RooGaussian);
 
@@ -46,6 +40,7 @@ RooGaussian::RooGaussian(const char *name, const char *title,
   mean("mean","Mean",this,_mean),
   sigma("sigma","Width",this,_sigma)
 {
+  RooHelpers::checkRangeOfParameters(this, {&_sigma}, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,79 +57,14 @@ Double_t RooGaussian::evaluate() const
 {
   const double arg = x - mean;
   const double sig = sigma;
-  return exp(-0.5*arg*arg/(sig*sig));
+  return std::exp(-0.5*arg*arg/(sig*sig));
 }
 
-
-namespace {
-
-///Actual computations for the batch evaluation of the Gaussian.
-///May vectorise over x, mean, sigma, depending on the types of the inputs.
-///\note The output and input spans are assumed to be non-overlapping. If they
-///overlap, results will likely be garbage.
-template<class Tx, class TMean, class TSig>
-void compute(RooSpan<double> output, Tx x, TMean mean, TSig sigma) {
-  const int n = output.size();
-
-  for (int i = 0; i < n; ++i) {
-    const double arg = x[i] - mean[i];
-    const double halfBySigmaSq = -0.5 / (sigma[i] * sigma[i]);
-
-    output[i] = _rf_fast_exp(arg*arg * halfBySigmaSq);
-  }
-}
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Compute \f$ \exp(-0.5 \cdot \frac{(x - \mu)^2}{\sigma^2} \f$ in batches.
-/// The local proxies {x, mean, sigma} will be searched for batch input data,
-/// and if found, the computation will be batched over their
-/// values. If batch data are not found for one of the proxies, the proxies value is assumed to
-/// be constant over the batch.
-/// \param[in] batchIndex Index of the batch to be computed.
-/// \param[in] batchSize Size of each batch. The last batch may be smaller.
-/// \return A span with the computed values.
-
-RooSpan<double> RooGaussian::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  auto xData = x.getValBatch(begin, batchSize);
-  auto meanData = mean.getValBatch(begin, batchSize);
-  auto sigmaData = sigma.getValBatch(begin, batchSize);
-
-  //Now explicitly write down all possible template instantiations of compute() above:
-  const bool batchX = !xData.empty();
-  const bool batchMean = !meanData.empty();
-  const bool batchSigma = !sigmaData.empty();
-
-  if (!(batchX || batchMean || batchSigma)) {
-    return {};
-  }
-
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-
-  if (batchX && !batchMean && !batchSigma) {
-    compute(output, xData, BracketAdapter<double>(mean), BracketAdapter<double>(sigma));
-  }
-  else if (batchX && batchMean && !batchSigma) {
-    compute(output, xData, meanData, BracketAdapter<double>(sigma));
-  }
-  else if (batchX && !batchMean && batchSigma) {
-    compute(output, xData, BracketAdapter<double>(mean), sigmaData);
-  }
-  else if (batchX && batchMean && batchSigma) {
-    compute(output, xData, meanData, sigmaData);
-  }
-  else if (!batchX && batchMean && !batchSigma) {
-    compute(output, BracketAdapter<double>(x), meanData, BracketAdapter<double>(sigma));
-  }
-  else if (!batchX && !batchMean && batchSigma) {
-    compute(output, BracketAdapter<double>(x), BracketAdapter<double>(mean), sigmaData);
-  }
-  else if (!batchX && batchMean && batchSigma) {
-    compute(output, BracketAdapter<double>(x), meanData, sigmaData);
-  }
-
-  return output;
+/// Compute multiple values of Gaussian distribution.  
+RooSpan<double> RooGaussian::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  return RooBatchCompute::dispatch->computeGaussian(this, evalData, x->getValues(evalData, normSet), mean->getValues(evalData, normSet), sigma->getValues(evalData, normSet));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,7 +85,7 @@ Double_t RooGaussian::analyticalIntegral(Int_t code, const char* rangeName) cons
   //The normalisation constant 1./sqrt(2*pi*sigma^2) is left out in evaluate().
   //Therefore, the integral is scaled up by that amount to make RooFit normalise
   //correctly.
-  const double resultScale = sqrt(TMath::TwoPi()) * sigma;
+  const double resultScale = std::sqrt(TMath::TwoPi()) * sigma;
 
   //Here everything is scaled and shifted into a standard normal distribution:
   const double xscale = TMath::Sqrt2() * sigma;
@@ -216,7 +146,7 @@ void RooGaussian::generateEvent(Int_t code)
       }
     }
   } else {
-    cout << "error in RooGaussian generateEvent"<< endl;
+    std::cout << "error in RooGaussian generateEvent"<< std::endl;
   }
 
   return;

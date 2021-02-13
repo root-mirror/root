@@ -13,15 +13,9 @@
 
 #include "TEveManager.h"
 
-#include "TColor.h"
-
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
-#include "TVirtualPad.h"
 #include "TVirtualViewer3D.h"
-
-#include "TROOT.h"
-#include "TRandom.h"
 
 /** \class TEveQuadSet
 \ingroup TEve

@@ -30,6 +30,7 @@
 #include "TMatrix.h"
 #include "TMVA/DNN/Optimizer.h"
 #include "TMVA/DNN/Functions.h"
+#include <vector>
 
 namespace TMVA {
 namespace DNN {

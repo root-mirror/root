@@ -425,7 +425,7 @@ inline namespace __1 {
          __pos += __n;
       else
          __pos = __sz;
-      const _CharT* __r = _VSTD::__find_end(
+      const _CharT* __r = _VSTD::find_end(
                                             __p, __p + __pos, __s, __s + __n, _Traits::eq,
                                             random_access_iterator_tag(), random_access_iterator_tag());
       if (__n > 0 && __r == __p + __pos)

@@ -1,12 +1,12 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-## Multidimensional models: usage of full p.d.f. with per-event errors
+## Multidimensional models: usage of full pdf with per-event errors
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -33,7 +33,7 @@ decay_gm = ROOT.RooDecay("decay_gm", "decay", dt,
 # Construct empirical pdf for per-event error
 # -----------------------------------------------------------------
 
-# Use landau p.d.f to get empirical distribution with long tail
+# Use landau pdf to get empirical distribution with long tail
 pdfDtErr = ROOT.RooLandau("pdfDtErr", "pdfDtErr", dterr, ROOT.RooFit.RooConst(
     1), ROOT.RooFit.RooConst(0.25))
 expDataDterr = pdfDtErr.generate(ROOT.RooArgSet(dterr), 10000)
@@ -64,7 +64,7 @@ model = ROOT.RooProdPdf(
 # ------------------------------------------------------------------
 
 # Specify external dataset with dterr values to use model_dm as
-# conditional p.d.f.
+# conditional pdf
 data = model.generate(ROOT.RooArgSet(dt, dterr), 10000)
 
 # Fit conditional decay_dm(dt|dterr)
@@ -76,7 +76,7 @@ model.fitTo(data)
 # Plot conditional decay_dm(dt|dterr)
 # ---------------------------------------------------------------------
 
-# Make two-dimensional plot of conditional p.d.f in (dt,dterr)
+# Make two-dimensional plot of conditional pdf in (dt,dterr)
 hh_model = model.createHistogram("hh_model", dt, ROOT.RooFit.Binning(
     50), ROOT.RooFit.YVar(dterr, ROOT.RooFit.Binning(50)))
 hh_model.SetLineColor(ROOT.kBlue)

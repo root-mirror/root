@@ -32,16 +32,9 @@ range when interpreted as a observable and a boundaries when
 interpreted as a parameter.
 **/
 
-#include "RooFit.h"
-
-#include <math.h>
-#include "Riostream.h"
-#include "TObjString.h"
-#include "TTree.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
 #include "RooAbsRealLValue.h"
+
+#include "RooFit.h"
 #include "RooStreamParser.h"
 #include "RooRandom.h"
 #include "RooPlot.h"
@@ -50,11 +43,16 @@ interpreted as a parameter.
 #include "RooBinning.h"
 #include "RooUniformBinning.h"
 #include "RooCmdConfig.h"
-#include "RooTreeData.h"
+#include "RooAbsData.h"
 #include "RooRealVar.h"
 #include "RooMsgService.h"
+#include "RooHelpers.h"
 
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
 
+#include <cmath>
 
 using namespace std;
 
@@ -104,19 +102,11 @@ Bool_t RooAbsRealLValue::inRange(Double_t value, const char* rangeName, Double_t
 
   // test this value against our upper fit limit
   if(!RooNumber::isInfinite(max) && value > (max+1e-6)) {
-    if (clippedValPtr) {
-//       coutW(InputArguments) << "RooAbsRealLValue::inFitRange(" << GetName() << "): value " << value
-// 			    << " rounded down to max limit " << getMax(rangeName) << endl ;
-    }
     clippedValue = max;
     isInRange = kFALSE ;
   }
   // test this value against our lower fit limit
   if(!RooNumber::isInfinite(min) && value < min-1e-6) {
-    if (clippedValPtr) {
-//       coutW(InputArguments) << "RooAbsRealLValue::inFitRange(" << GetName() << "): value " << value
-// 			    << " rounded up to min limit " << getMin(rangeName) << endl;
-    }
     clippedValue = min ;
     isInRange = kFALSE ;
   } 
@@ -258,8 +248,12 @@ RooPlot* RooAbsRealLValue::frame(const RooLinkedList& cmdList) const
     xmin = getMin(rangeName) ;
     xmax = getMax(rangeName) ;
   } else if (pc.hasProcessed("AutoRange")) {
-    RooTreeData* rangeData = static_cast<RooTreeData*>(pc.getObject("rangeData")) ;
-    rangeData->getRange((RooRealVar&)*this,xmin,xmax) ;
+    auto rangeData = static_cast<RooAbsData*>(pc.getObject("rangeData")) ;
+    const bool error = rangeData->getRange(*this,xmin,xmax);
+    if (error) {
+      xmin = getMin();
+      xmax = getMax();
+    }
     if (pc.getInt("rangeSym")==0) {
       // Regular mode: range is from xmin to xmax with given extra margin
       Double_t margin = pc.getDouble("rangeMargin")*(xmax-xmin) ;    
@@ -504,13 +498,23 @@ Bool_t RooAbsRealLValue::fitRangeOKForPlotting() const
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Check if current value is inside range with given name
-
+/// Check if current value is inside range with given name. Multiple comma-separated
+/// ranges can be passed. In this case, it will be checked if the value is in any of
+/// these ranges.
 Bool_t RooAbsRealLValue::inRange(const char* name) const 
 {
-  Double_t val = getVal() ;
-  Double_t epsilon = 1e-8 * fabs(val) ;
-  return (val >= getMin(name)-epsilon && val <= getMax(name)+epsilon) ;
+  const double val = getVal() ;
+  const double epsilon = 1e-8 * fabs(val) ;
+  if (!name || name[0] == '\0') {
+    const auto minMax = getRange(nullptr);
+    return minMax.first - epsilon <= val && val <= minMax.second + epsilon;
+  }
+
+  const auto& ranges = RooHelpers::tokenise(name, ",");
+  return std::any_of(ranges.begin(), ranges.end(), [val,epsilon,this](const std::string& range){
+    const auto minMax = this->getRange(range.c_str());
+    return minMax.first - epsilon <= val && val <= minMax.second + epsilon;
+  });
 }
 
 

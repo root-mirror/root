@@ -9,3 +9,8 @@
 ############################################################################
 
 ROOT_OBJECT_LIBRARY(RootPcmObjs src/rootclingIO.cxx)
+
+target_include_directories(RootPcmObjs PRIVATE
+   ${CMAKE_SOURCE_DIR}/io/io/inc
+   ${CMAKE_SOURCE_DIR}/core/zip/inc
+)

@@ -16,8 +16,10 @@
 #ifndef HISTFACTORY_SIMULTANEOUS
 #define HISTFACTORY_SIMULTANEOUS
 
-//#include "THashList.h"
 #include "RooSimultaneous.h"
+
+#include <string>
+#include <map>
 
 namespace RooStats{
 namespace HistFactory{

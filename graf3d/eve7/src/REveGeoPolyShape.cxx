@@ -28,15 +28,14 @@
 #include "TGeoMatrix.h"
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveGeoPolyShape
 \ingroup REve
 Description of REveGeoPolyShape
 */
 
-Bool_t REX::REveGeoPolyShape::fgAutoEnforceTriangles = kTRUE;
-Bool_t REX::REveGeoPolyShape::fgAutoCalculateNormals = kFALSE;
+Bool_t REveGeoPolyShape::fgAutoEnforceTriangles = kTRUE;
+Bool_t REveGeoPolyShape::fgAutoCalculateNormals = kFALSE;
 
 void   REveGeoPolyShape::SetAutoEnforceTriangles(Bool_t f) { fgAutoEnforceTriangles = f; }
 Bool_t REveGeoPolyShape::GetAutoEnforceTriangles()         { return fgAutoEnforceTriangles; }
@@ -283,7 +282,7 @@ void REveGeoPolyShape::CalculateNormals()
    for (Int_t i = 0, j = 0; i < fNbPols; ++i)
    {
       Int_t polEnd = fPolyDesc[j] + j + 1;
-      Int_t norm[] = {fPolyDesc[j + 1], fPolyDesc[j + 2], fPolyDesc[j + 3]};
+      UInt_t norm[] = {fPolyDesc[j + 1], fPolyDesc[j + 2], fPolyDesc[j + 3]};
       j += 4;
       Int_t check = CheckPoints(norm, norm);
       Int_t ngood = check;
@@ -312,7 +311,7 @@ void REveGeoPolyShape::CalculateNormals()
 ////////////////////////////////////////////////////////////////////////////////
 /// CheckPoints
 
-Int_t REveGeoPolyShape::CheckPoints(const Int_t *source, Int_t *dest) const
+Int_t REveGeoPolyShape::CheckPoints(const UInt_t *source, UInt_t *dest) const
 {
    const Double_t * p1 = &fVertices[source[0] * 3];
    const Double_t * p2 = &fVertices[source[1] * 3];
@@ -379,7 +378,7 @@ void REveGeoPolyShape::FillBuffer3D(TBuffer3D& b, Int_t reqSections, Bool_t) con
 
       std::map<Edge_t, Int_t> edges;
 
-      const Int_t *pd = &fPolyDesc[0];
+      const UInt_t *pd = &fPolyDesc[0];
       for (Int_t i = 0; i < fNbPols; ++i) {
          Int_t nv = pd[0];
          ++pd;

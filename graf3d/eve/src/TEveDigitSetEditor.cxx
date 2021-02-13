@@ -13,21 +13,15 @@
 #include "TEveDigitSet.h"
 
 #include "TEveGValuators.h"
-//#include "TEveTransEditor.h"
 #include "TEveRGBAPaletteEditor.h"
 #include "TEveGedEditor.h"
 
 #include "TVirtualPad.h"
-#include "TColor.h"
 #include "TH1F.h"
 #include "TStyle.h"
 
 #include "TGLabel.h"
 #include "TG3DLine.h"
-#include "TGButton.h"
-#include "TGNumberEntry.h"
-#include "TGColorSelect.h"
-#include "TGDoubleSlider.h"
 
 /** \class TEveDigitSetEditor
 \ingroup TEve

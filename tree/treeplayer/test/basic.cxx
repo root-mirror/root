@@ -308,6 +308,127 @@ TEST(TTreeReaderBasic, EntryListBeyondEnd) {
    EXPECT_EQ(TTreeReader::kEntryNotFound, aReader.GetEntryStatus());
 }
 
+// two files treereader_entrylists{1,2}.root with branch "x" and values {0,1} and {2,3}
+struct InputFilesRAII {
+   const char *fNames[2] = {"treereader_entrylists1.root", "treereader_entrylists2.root"};
+
+   InputFilesRAII()
+   {
+      int x = 0;
+      for (const auto fName : fNames) {
+         TFile f(fName, "recreate");
+         TTree t("t", "t");
+         t.Branch("x", &x);
+         t.Fill();
+         ++x;
+         t.Fill();
+         ++x;
+         t.Write();
+      }
+   }
+
+   ~InputFilesRAII()
+   {
+      gSystem->Unlink(fNames[0]);
+      gSystem->Unlink(fNames[1]);
+   }
+};
+
+void TestWithEntryList(TEntryList &l, const InputFilesRAII &files)
+{
+   TChain c("t");
+   c.Add(files.fNames[0]);
+   c.Add(files.fNames[1]);
+   if (l.GetLists()) // must associate with TChain if there are sub-entrylists
+      c.SetEntryList(&l);
+
+   TTreeReader r(&c, &l);
+   TTreeReaderValue<int> xv(r, "x");
+   const std::vector<int> values({0, 2});
+   int i = 0;
+   while (r.Next())
+      EXPECT_EQ(*xv, values.at(i++));
+}
+
+TEST(TTreeReaderBasic, TChainWithGlobalEntryList)
+{
+   InputFilesRAII files;
+
+   // if using a global list with a TChain, no need to specify treename and filename to the TEntryList (but harmless)
+   TEntryList l;
+   l.Enter(0);
+   l.Enter(2);
+
+   TestWithEntryList(l, files);
+}
+
+TEST(TTreeReaderBasic, TChainWithSubEntryLists)
+{
+   InputFilesRAII files;
+
+   TEntryList l1("l1", "l1", "t", files.fNames[0]);
+   l1.Enter(0);
+   TEntryList l2("l2", "l2", "t", files.fNames[1]);
+   l2.Enter(0);
+
+   TEntryList l;
+   l.Add(&l1);
+   l.Add(&l2);
+
+   TestWithEntryList(l, files);
+}
+
+TEST(TTreeReaderBasic, EntryListAndEntryRange)
+{
+   TTree t("t", "t");
+   int x = 0;
+   t.Branch("x", &x);
+   for (x = 0; x < 10; ++x)
+      t.Fill();
+
+   TEntryList l;
+   t.SetEntryList(&l);
+   l.Enter(1);
+   l.Enter(2);
+   l.Enter(8);
+   l.Enter(9);
+
+   TTreeReader r(&t, &l);
+   r.SetEntriesRange(1, 3);
+   TTreeReaderValue<int> rv(r, "x");
+   EXPECT_TRUE(r.Next());
+   EXPECT_EQ(*rv, 2);
+   EXPECT_TRUE(r.Next());
+   EXPECT_EQ(*rv, 8);
+   EXPECT_FALSE(r.Next());
+}
+
+TEST(TTreeReaderBasic, TChainWithSubEntryListsAndEntryRange)
+{
+   InputFilesRAII files;
+
+   TEntryList l1("l1", "l1", "t", files.fNames[0]);
+   l1.Enter(1);
+   TEntryList l2("l2", "l2", "t", files.fNames[1]);
+   l2.Enter(0);
+   l2.Enter(1);
+
+   TEntryList l;
+   l.Add(&l1);
+   l.Add(&l2);
+
+   TChain c("t");
+   c.Add(files.fNames[0]);
+   c.Add(files.fNames[1]);
+   c.SetEntryList(&l); // strictly required!
+
+   TTreeReader r(&c, &l);
+   TTreeReaderValue<int> xv(r, "x");
+   r.SetEntriesRange(1, 2);
+   EXPECT_TRUE(r.Next());
+   EXPECT_EQ(*xv, 2);
+   EXPECT_FALSE(r.Next());
+}
 
 TEST(TTreeReaderBasic, Values) {
    auto tree = MakeTree();

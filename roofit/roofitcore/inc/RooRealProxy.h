@@ -18,4 +18,8 @@
 
 #include "RooTemplateProxy.h"
 
+/// Compatibility typedef replacing the old RooRealProxy class.
+/// \deprecated Use RooTemplateProxy<RooAbsReal> or more appropriate template parameters.
+using RooRealProxy = RooTemplateProxy<RooAbsReal>;
+
 #endif

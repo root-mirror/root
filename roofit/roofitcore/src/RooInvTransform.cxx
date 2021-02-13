@@ -29,7 +29,6 @@ range cannot include zero.
 #include "RooFit.h"
 
 #include "RooInvTransform.h"
-#include "RooInvTransform.h"
 
 #include "Riostream.h"
 #include <math.h>

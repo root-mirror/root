@@ -1,7 +1,8 @@
 #ifndef    __FTCharToGlyphIndexMap__
 #define    __FTCharToGlyphIndexMap__
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <map>
 
 #include "FTGL.h"
 

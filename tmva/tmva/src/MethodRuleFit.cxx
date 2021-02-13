@@ -49,12 +49,11 @@ J Friedman's RuleFit method
 #include "TMVA/Tools.h"
 #include "TMVA/Types.h"
 
-#include "Riostream.h"
 #include "TRandom3.h"
-#include "TMath.h"
 #include "TMatrix.h"
-#include "TDirectory.h"
 
+#include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <list>
 #include <random>
@@ -443,7 +442,7 @@ void TMVA::MethodRuleFit::InitEventSample( void )
 
 void TMVA::MethodRuleFit::Train( void )
 {
-   TMVA::DecisionTreeNode::fgIsTraining=true;
+   TMVA::DecisionTreeNode::SetIsTraining(true);
    // training of rules
 
   if(!IsSilentFile()) InitMonitorNtuple();
@@ -458,7 +457,7 @@ void TMVA::MethodRuleFit::Train( void )
       TrainTMVARuleFit();
    }
    fRuleFit.GetRuleEnsemblePtr()->ClearRuleMap();
-   TMVA::DecisionTreeNode::fgIsTraining=false;
+   TMVA::DecisionTreeNode::SetIsTraining(false);
    ExitFromTraining();
 }
 

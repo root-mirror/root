@@ -28,9 +28,9 @@ actions list for both are the same.
 #include "TFile.h"
 #include "TVirtualMutex.h"
 #include "TInterpreter.h"
-#include "TROOT.h"
 #include "TExMap.h"
 #include "TError.h"
+#include "snprintf.h"
 
 ClassImp(TBufferText);
 

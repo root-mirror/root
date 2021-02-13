@@ -94,24 +94,27 @@
 #include "TGToolTip.h"
 #include "TGButtonGroup.h"
 #include "TGResourcePool.h"
-#include "Riostream.h"
 #include "TSystem.h"
 #include "TImage.h"
 #include "TEnv.h"
 #include "TClass.h"
 #include "TGMenu.h"
 #include "KeySymbols.h"
+#include "TVirtualX.h"
 
-const TGGC *TGButton::fgHibckgndGC = 0;
-const TGGC *TGButton::fgDefaultGC = 0;
+#include <iostream>
 
-const TGFont *TGTextButton::fgDefaultFont = 0;
 
-const TGFont *TGCheckButton::fgDefaultFont = 0;
-const TGGC   *TGCheckButton::fgDefaultGC = 0;
+const TGGC *TGButton::fgHibckgndGC = nullptr;
+const TGGC *TGButton::fgDefaultGC = nullptr;
 
-const TGFont *TGRadioButton::fgDefaultFont = 0;
-const TGGC   *TGRadioButton::fgDefaultGC = 0;
+const TGFont *TGTextButton::fgDefaultFont = nullptr;
+
+const TGFont *TGCheckButton::fgDefaultFont = nullptr;
+const TGGC   *TGCheckButton::fgDefaultGC = nullptr;
+
+const TGFont *TGRadioButton::fgDefaultFont = nullptr;
+const TGGC   *TGRadioButton::fgDefaultGC = nullptr;
 
 Window_t TGButton::fgReleaseBtn = 0;
 
@@ -899,7 +902,7 @@ TGPictureButton::TGPictureButton(const TGWindow *p, const TGPicture *pic,
       Int_t id, GContext_t norm, UInt_t option) : TGButton(p, id, norm, option)
 {
    if (!pic) {
-      Error("TGPictureButton", "pixmap not found for button %d", id);
+      Error("TGPictureButton", "pixmap not found or the file format is not supported for button %d", id);
       fPic = fClient->GetPicture("mb_question_s.xpm");
    } else {
       fPic = pic;
@@ -928,7 +931,7 @@ TGPictureButton::TGPictureButton(const TGWindow *p, const TGPicture *pic,
    : TGButton(p, id, norm, option)
 {
    if (!pic) {
-      Error("TGPictureButton", "pixmap not found for button\n%s",
+      Error("TGPictureButton", "pixmap not found or the file format is not supported for button\n%s",
             cmd ? cmd : "");
       fPic = fClient->GetPicture("mb_question_s.xpm");
    } else {
@@ -956,7 +959,7 @@ TGPictureButton::TGPictureButton(const TGWindow *p, const char *pic,
    Int_t id, GContext_t norm, UInt_t option) : TGButton(p, id, norm, option)
 {
    if (!pic || !pic[0]) {
-      if (p) Error("TGPictureButton", "pixmap not found for button");
+      if (p) Error("TGPictureButton", "pixmap not found or the file format is not supported for button");
       fPic = fClient->GetPicture("mb_question_s.xpm");
    } else {
       fPic = fClient->GetPicture(pic);
@@ -990,7 +993,7 @@ TGPictureButton::~TGPictureButton()
 void TGPictureButton::SetPicture(const TGPicture *new_pic)
 {
    if (!new_pic) {
-      Error("SetPicture", "pixmap not found for button %d\n%s",
+      Error("SetPicture", "pixmap not found or the file format is not supported for button %d\n%s",
             fWidgetId, fCommand.Data());
       return;
    }
@@ -1140,13 +1143,13 @@ void TGCheckButton::Init()
    Resize();
 
    if (!fOn) {
-      Error("TGCheckButton", "checked_t.xpm not found");
+      Error("TGCheckButton", "checked_t.xpm not found or the file format is not supported.");
    } else if (!fOff) {
-      Error("TGCheckButton", "unchecked_t.xpm not found");
+      Error("TGCheckButton", "unchecked_t.xpm not found or the file format is not supported.");
    } else if (!fDisOn) {
-      Error("TGCheckButton", "checked_dis_t.xpm not found");
+      Error("TGCheckButton", "checked_dis_t.xpm not found or the file format is not supported.");
    } else if (!fDisOff) {
-      Error("TGCheckButton", "unchecked_dis_t.xpm not found");
+      Error("TGCheckButton", "unchecked_dis_t.xpm not found or the file format is not supported.");
    }
    int hotchar;
 
@@ -1504,7 +1507,7 @@ void TGRadioButton::Init()
    fDisOff = fClient->GetPicture("rbutton_dis_off.xpm");
 
    if (!fOn || !fOff || !fDisOn || !fDisOff)
-      Error("TGRadioButton", "rbutton_*.xpm not found");
+      Error("TGRadioButton", "rbutton_*.xpm not found or the file format is not supported.");
 
    Resize();
 
@@ -1549,8 +1552,8 @@ TGRadioButton::~TGRadioButton()
 
 TGDimension TGRadioButton::GetDefaultSize() const
 {
-   UInt_t w = !fTWidth ? fOff->GetWidth() : fTWidth + fOff->GetWidth() + 10;
-   UInt_t h = !fTHeight ? fOff->GetHeight() : fTHeight + 2;
+   UInt_t w = !fTWidth ? ( fOff?fOff->GetWidth():10) : fTWidth + fOff->GetWidth() + 10;
+   UInt_t h = !fTHeight ? ( fOff?fOff->GetHeight():2) : fTHeight + 2;
 
    w = GetOptions() & kFixedWidth ? fWidth : w;
    h = GetOptions() & kFixedHeight ? fHeight : h;
@@ -1933,7 +1936,7 @@ void TGTextButton::SavePrimitive(std::ostream &out, Option_t *option /*= ""*/)
 void TGPictureButton::SavePrimitive(std::ostream &out, Option_t *option /*= ""*/)
 {
    if (!fPic) {
-      Error("SavePrimitive()", "pixmap not found for picture button %d ", fWidgetId);
+      Error("SavePrimitive()", "pixmap not found or the file format is not supported for picture button %d ", fWidgetId);
       return;
    }
 

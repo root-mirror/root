@@ -776,7 +776,7 @@ bool Sema::containsUnexpandedParameterPacks(Declarator &D) {
                   ->containsUnexpandedParameterPack())
             return true;
         }
-      } else if (Chunk.Fun.getExceptionSpecType() == EST_ComputedNoexcept &&
+      } else if (isComputedNoexcept(Chunk.Fun.getExceptionSpecType()) &&
                  Chunk.Fun.NoexceptExpr->containsUnexpandedParameterPack())
         return true;
 

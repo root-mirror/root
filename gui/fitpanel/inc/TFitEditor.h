@@ -27,11 +27,8 @@
 #include "Math/MinimizerOptions.h"
 #include "Fit/DataRange.h"
 
-
-
 #include <vector>
 #include <map>
-#include <utility>
 
 //--- Object types
 enum EObjectType {

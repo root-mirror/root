@@ -10,7 +10,6 @@
  *************************************************************************/
 
 #include "TMethodArg.h"
-#include "TROOT.h"
 #include "TInterpreter.h"
 #include "Strlen.h"
 #include "TMethod.h"

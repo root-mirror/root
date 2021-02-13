@@ -15,24 +15,23 @@
 #include "TKDTreeBinning.h"
 #include "TH2D.h"
 #include "TH2Poly.h"
-#include "TStyle.h"
 #include "TRandom3.h"
 #include "TCanvas.h"
 #include "TApplication.h"
 #include "TMarker.h"
 #include <iostream>
 
-bool verbose = false; 
-bool showGraphics = false; 
+bool verbose = false;
+bool showGraphics = false;
 
-using std::cout; 
+using std::cout;
 using std::cerr;
 using std::endl;
 
 void testkdTreeBinning() {
 
    // -----------------------------------------------------------------------------------------------
-   //  C r e a t e  r a n d o m  s a m p l e  
+   //  C r e a t e  r a n d o m  s a m p l e
    // -----------------------------------------------------------------------------------------------
 
    const UInt_t DATASZ = 10000;
@@ -93,57 +92,59 @@ void testkdTreeBinning() {
    if (kdBins->GetBinMinDensity() != 0) Error("testkdTreeBinning","Wrong minimum bin after sorting");
    if (kdBins->GetBinMaxDensity() != nbins-1) Error("testkdTreeBinning","Wrong maximum bin after sorting");
 
-   if (showGraphics) { 
-      new TCanvas(); 
+   if (showGraphics) {
+      new TCanvas();
       h2pol->Draw("COLZ L");
       gPad->Update();
    }
 
 
-   // test find bin 
+   // test find bin
    int ntimes = (verbose) ? 2 : 200;
    double point[2] = {0,0};
-//   double binCenter[2]; 
+//   double binCenter[2];
    gRandom->SetSeed(0);
-   bool ok = true; 
-   for (int itimes = 0; itimes < ntimes; itimes++) { 
+   bool ok = true;
+   for (int itimes = 0; itimes < ntimes; itimes++) {
 
-      // generate a random point in 2D 
+      // generate a random point in 2D
       point[0] = gRandom->Uniform(-5,5);
       point[1] = gRandom->Uniform(-5,5);
-      // int inode = tree->FindNode(point); 
-      // inode = inode - tree->GetNNodes(); 
+      // int inode = tree->FindNode(point);
+      // inode = inode - tree->GetNNodes();
 
       int ibin = kdBins->FindBin(point);
 
-      const double * binCenter = kdBins->GetBinCenter(ibin); 
-      const double * binMin = kdBins->GetBinMinEdges(ibin); 
-      const double * binMax = kdBins->GetBinMaxEdges(ibin); 
-      if (binCenter) {         
+      const double * binCenter = kdBins->GetBinCenter(ibin);
+      const double * binMin = kdBins->GetBinMinEdges(ibin);
+      const double * binMax = kdBins->GetBinMaxEdges(ibin);
+      if (binCenter) {
 
-         if (verbose) { 
+         if (verbose) {
             std::cout << "**** point *** " << itimes << "\n";
-            std::cout << " point x " << point[0] << " BIN CENTER is " << binCenter[0] << " min " << binMin[0] << " max " << binMax[0] << std::endl; 
-               std::cout << " point y " << point[1] << " BIN CENTER is " << binCenter[1] << " min " << binMin[1] << " max " << binMax[1] <<  std::endl; 
+            std::cout << " point x " << point[0] << " BIN CENTER is " << binCenter[0] << " min " << binMin[0] << " max " << binMax[0] << std::endl;
+               std::cout << " point y " << point[1] << " BIN CENTER is " << binCenter[1] << " min " << binMin[1] << " max " << binMax[1] <<  std::endl;
          }
 
          ok &= point[0] > binMin[0] && point[0] < binMax[0];
          ok &=  point[1] > binMin[1] && point[1] < binMax[1];
-         if (!ok) { 
-            Error ("testkdTreeBinning::FindBin"," Point is not in the right bin " ); 
-            std::cout << " point x " << point[0] << " BIN CENTER is " << binCenter[0] << " min " << binMin[0] << " max " << binMax[0] << std::endl; 
-            std::cout << " point y " << point[1] << " BIN CENTER is " << binCenter[1] << " min " << binMin[1] << " max " << binMax[1] <<  std::endl; 
+         if (!ok) {
+            Error ("testkdTreeBinning::FindBin"," Point is not in the right bin " );
+            std::cout << " point x " << point[0] << " BIN CENTER is " << binCenter[0] << " min " << binMin[0] << " max " << binMax[0] << std::endl;
+            std::cout << " point y " << point[1] << " BIN CENTER is " << binCenter[1] << " min " << binMin[1] << " max " << binMax[1] <<  std::endl;
          }
 
-         if (itimes < 2 && showGraphics ) { 
+         if (itimes < 2 && showGraphics ) {
 
             TMarker * m1 = new TMarker(point[0], point[1],20 );
-            TMarker * m2 = new TMarker(binCenter[0], binCenter[1], 21); 
-            m1->Draw(); 
+            TMarker * m2 = new TMarker(binCenter[0], binCenter[1], 21);
+            m1->Draw();
             m2->Draw();
          }
+
+         delete [] binCenter;
       }
-      else 
+      else
          Error("testkdTreeBinning::FindBin"," Bin %d is not existing ",ibin);
 
 

@@ -22,7 +22,7 @@ namespace Internal {
    {
       TSchemaHelper(): fTarget(), fSourceClass(),
        fSource(), fCode(), fVersion(), fChecksum(),
-       fInclude(), fEmbed(true), fFunctionPtr( 0 ),
+       fInclude(), fEmbed(true), fFunctionPtr(nullptr),
        fAttributes() {}
       std::string fTarget;
       std::string fSourceClass;

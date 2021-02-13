@@ -85,7 +85,6 @@ weighted histograms (because the likelihood computation will be incorrect).
 #include "Fit/Fitter.h"
 #include "TFitResult.h"
 #include "Math/Functor.h"
-#include "Math/Functor.h"
 #include "Math/WrappedMultiTF1.h"
 
 #include <limits>

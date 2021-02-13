@@ -36,11 +36,10 @@
 #include "TGButtonGroup.h"
 #include "TGraphEditor.h"
 #include "TGTextEntry.h"
-#include "TGToolTip.h"
-#include "TGLabel.h"
 #include "TGraph.h"
 #include "TVirtualPad.h"
 #include "TGraphErrors.h"
+#include "TVirtualX.h"
 
 ClassImp(TGraphEditor);
 

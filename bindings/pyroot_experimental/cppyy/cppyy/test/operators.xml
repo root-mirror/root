@@ -1,8 +1,0 @@
-<lcgdict>
-
-  <class name="number" />
-  <class pattern="operator_*" />
-  <class pattern="v_opeq_*" />
-  <class pattern="YAMatrix*" />
-
-</lcgdict>

@@ -10,7 +10,7 @@ Container of bits.
 This class provides a simple container of bits.
 Each bit can be set and tested via the functions SetBitNumber and
 TestBitNumber.
-                                             .
+
 The default value of all bits is kFALSE.
 The size of the container is automatically extended when a bit
 number is either set or tested.  To reduce the memory size of the
@@ -20,10 +20,10 @@ occupied by the upper bits that are 0.
 
 #include "TBits.h"
 
-#include "Riostream.h"
 #include "TObject.h"
 
-#include <string.h>
+#include <iostream>
+#include <cstring>
 
 ClassImp(TBits);
 

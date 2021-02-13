@@ -1,7 +1,7 @@
 // Author: Enrico Guiraud, Danilo Piparo CERN  09/2018
 
 /*************************************************************************
- * Copyright (C) 1995-2018, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -11,7 +11,7 @@
 #ifndef ROOT_RACTIONBASE
 #define ROOT_RACTIONBASE
 
-#include "ROOT/RDF/RBookedCustomColumns.hxx"
+#include "ROOT/RDF/RBookedDefines.hxx"
 #include "ROOT/RDF/Utils.hxx" // ColumnNames_t
 #include "RtypesCore.h"
 
@@ -23,9 +23,10 @@ namespace ROOT {
 namespace Detail {
 namespace RDF {
 class RLoopManager;
-class RCustomColumnBase;
-}
-}
+class RDefineBase;
+class RMergeableValueBase;
+} // namespace RDF
+} // namespace Detail
 
 namespace Internal {
 namespace RDF {
@@ -34,12 +35,6 @@ class GraphNode;
 }
 
 using namespace ROOT::Detail::RDF;
-
-// fwd decl for RActionBase
-namespace GraphDrawing {
-bool CheckIfDefaultOrDSColumn(const std::string &name,
-                              const std::shared_ptr<ROOT::Detail::RDF::RCustomColumnBase> &column);
-} // namespace GraphDrawing
 
 class RActionBase {
 protected:
@@ -52,23 +47,22 @@ private:
    bool fHasRun = false;
    const ColumnNames_t fColumnNames;
 
-   RBookedCustomColumns fCustomColumns;
+   RBookedDefines fDefines;
 
 public:
-   RActionBase(RLoopManager *lm, const ColumnNames_t &colNames, RBookedCustomColumns &&customColumns);
+   RActionBase(RLoopManager *lm, const ColumnNames_t &colNames, const RBookedDefines &defines);
    RActionBase(const RActionBase &) = delete;
    RActionBase &operator=(const RActionBase &) = delete;
    virtual ~RActionBase();
 
    const ColumnNames_t &GetColumnNames() const { return fColumnNames; }
-   RBookedCustomColumns &GetCustomColumns() { return fCustomColumns; }
+   RBookedDefines &GetDefines() { return fDefines; }
    RLoopManager *GetLoopManager() { return fLoopManager; }
    unsigned int GetNSlots() const { return fNSlots; }
    virtual void Run(unsigned int slot, Long64_t entry) = 0;
    virtual void Initialize() = 0;
    virtual void InitSlot(TTreeReader *r, unsigned int slot) = 0;
    virtual void TriggerChildrenCount() = 0;
-   virtual void ClearValueReaders(unsigned int slot) = 0;
    virtual void FinalizeSlot(unsigned int) = 0;
    virtual void Finalize() = 0;
    /// This method is invoked to update a partial result during the event loop, right before passing the result to a
@@ -80,10 +74,15 @@ public:
    virtual void SetHasRun() { fHasRun = true; }
 
    virtual std::shared_ptr<ROOT::Internal::RDF::GraphDrawing::GraphNode> GetGraph() = 0;
-};
 
-} // ns RDF
-} // ns Internal
-} // ns ROOT
+   /**
+      Retrieve a wrapper to the result of the action that knows how to merge
+      with others of the same type.
+   */
+   virtual std::unique_ptr<RMergeableValueBase> GetMergeableValue() const = 0;
+};
+} // namespace RDF
+} // namespace Internal
+} // namespace ROOT
 
 #endif // ROOT_RACTIONBASE

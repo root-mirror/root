@@ -1,4 +1,5 @@
 #include "TClassEdit.h"
+#include "TInterpreter.h"
 
 #include "gtest/gtest.h"
 
@@ -255,4 +256,19 @@ TEST(TClassEdit, GetNameForIO)
       EXPECT_EQ(namesp.first, TClassEdit::GetNameForIO(namesp.second.c_str()))
          << "Failure in transforming typename " << namesp.first << " into " << namesp.second;
    }
+}
+
+// ROOT-10574
+TEST(TClassEdit, ResolveTypedef)
+{
+   gInterpreter->Declare("struct testPoint{}; typedef struct testPoint testPoint;");
+   std::string non_existent = TClassEdit::ResolveTypedef("testPointAA");
+   EXPECT_STREQ("testPointAA", non_existent.c_str());
+   EXPECT_STRNE("::testPoint", TClassEdit::ResolveTypedef("::testPointXX").c_str());
+}
+
+// ROOT-11000
+TEST(TClassEdit, DefComp)
+{
+   EXPECT_FALSE(TClassEdit::IsDefComp("std::less<>", "std::string"));
 }

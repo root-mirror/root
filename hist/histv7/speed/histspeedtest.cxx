@@ -35,7 +35,6 @@ and
  /opt/build/root_builds/rootcling.cmake/include/ROOT/THistBinIter.h:53:50: error: no member named 'GetUncertainty' in
 'ROOT::Experimental::THistDataContent<2, double, ROOT::Experimental::THistDataDefaultStorage>::TBinStat<double>' auto
 GetUncertainty() const { return GetStat().GetUncertainty(); }
- ~~~~~~~~~ ^
 
  new ones (STATCLASSES)
 

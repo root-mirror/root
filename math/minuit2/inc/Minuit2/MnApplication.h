@@ -13,11 +13,11 @@
 #include "Minuit2/MnUserParameterState.h"
 #include "Minuit2/MnStrategy.h"
 
+#include <vector>
+
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
+namespace Minuit2 {
 
 class FunctionMinimum;
 class MinuitParameter;
@@ -37,15 +37,14 @@ class FCNGradientBase;
 class MnApplication {
 
 public:
-
-
    /// constructor from non-gradient functions
-   MnApplication(const FCNBase& fcn, const MnUserParameterState& state, const MnStrategy& stra, unsigned int nfcn = 0);
+   MnApplication(const FCNBase &fcn, const MnUserParameterState &state, const MnStrategy &stra, unsigned int nfcn = 0);
 
    /// constructor from gradient function
-   MnApplication(const FCNGradientBase& fcn, const MnUserParameterState& state, const MnStrategy& stra, unsigned int nfcn = 0);
+   MnApplication(const FCNGradientBase &fcn, const MnUserParameterState &state, const MnStrategy &stra,
+                 unsigned int nfcn = 0);
 
-   virtual ~MnApplication() { }
+   virtual ~MnApplication() {}
 
    /**
       Minimize the function
@@ -58,47 +57,45 @@ public:
    */
    virtual FunctionMinimum operator()(unsigned int maxfcn = 0, double tolerance = 0.1);
 
-   virtual ModularFunctionMinimizer& Minimizer() = 0;
-   virtual const ModularFunctionMinimizer& Minimizer() const = 0;
+   virtual ModularFunctionMinimizer &Minimizer() = 0;
+   virtual const ModularFunctionMinimizer &Minimizer() const = 0;
 
-   const MnMachinePrecision& Precision() const {return fState.Precision();}
-   const MnUserParameterState& State() const {return fState;}
-   const MnUserParameters& Parameters() const {return fState.Parameters();}
-   const MnUserCovariance& Covariance() const {return fState.Covariance();}
-   virtual const FCNBase& Fcnbase() const {return fFCN;}
-   const MnStrategy& Strategy() const {return fStrategy;}
-   unsigned int NumOfCalls() const {return fNumCall;}
+   const MnMachinePrecision &Precision() const { return fState.Precision(); }
+   const MnUserParameterState &State() const { return fState; }
+   const MnUserParameters &Parameters() const { return fState.Parameters(); }
+   const MnUserCovariance &Covariance() const { return fState.Covariance(); }
+   virtual const FCNBase &Fcnbase() const { return fFCN; }
+   const MnStrategy &Strategy() const { return fStrategy; }
+   unsigned int NumOfCalls() const { return fNumCall; }
 
 protected:
-
-   const FCNBase& fFCN;
+   const FCNBase &fFCN;
    MnUserParameterState fState;
    MnStrategy fStrategy;
    unsigned int fNumCall;
    bool fUseGrad;
 
 public:
+   // facade: forward interface of MnUserParameters and MnUserTransformation
+   // via MnUserParameterState
 
-// facade: forward interface of MnUserParameters and MnUserTransformation
-// via MnUserParameterState
-
-   //access to parameters (row-wise)
-   const std::vector<ROOT::Minuit2::MinuitParameter>& MinuitParameters() const;
-   //access to parameters and errors in column-wise representation
+   // access to parameters (row-wise)
+   const std::vector<ROOT::Minuit2::MinuitParameter> &MinuitParameters() const;
+   // access to parameters and errors in column-wise representation
    std::vector<double> Params() const;
    std::vector<double> Errors() const;
 
-   //access to single Parameter
-   const MinuitParameter& Parameter(unsigned int i) const;
+   // access to single Parameter
+   const MinuitParameter &Parameter(unsigned int i) const;
 
-   //add free Parameter
-   void Add(const char* Name, double val, double err);
-   //add limited Parameter
-   void Add(const char* Name, double val, double err, double , double);
-   //add const Parameter
-   void Add(const char*, double);
+   // add free Parameter
+   void Add(const char *Name, double val, double err);
+   // add limited Parameter
+   void Add(const char *Name, double val, double err, double, double);
+   // add const Parameter
+   void Add(const char *, double);
 
-   //interaction via external number of Parameter
+   // interaction via external number of Parameter
    void Fix(unsigned int);
    void Release(unsigned int);
    void SetValue(unsigned int, double);
@@ -109,22 +106,22 @@ public:
    double Value(unsigned int) const;
    double Error(unsigned int) const;
 
-   //interaction via Name of Parameter
-   void Fix(const char*);
-   void Release(const char*);
-   void SetValue(const char*, double);
-   void SetError(const char*, double);
-   void SetLimits(const char*, double, double);
-   void RemoveLimits(const char*);
+   // interaction via Name of Parameter
+   void Fix(const char *);
+   void Release(const char *);
+   void SetValue(const char *, double);
+   void SetError(const char *, double);
+   void SetLimits(const char *, double, double);
+   void RemoveLimits(const char *);
    void SetPrecision(double);
 
-   double Value(const char*) const;
-   double Error(const char*) const;
+   double Value(const char *) const;
+   double Error(const char *) const;
 
-   //convert Name into external number of Parameter
-   unsigned int Index(const char*) const;
-   //convert external number into Name of Parameter
-   const char* Name(unsigned int) const;
+   // convert Name into external number of Parameter
+   unsigned int Index(const char *) const;
+   // convert external number into Name of Parameter
+   const char *Name(unsigned int) const;
 
    // transformation internal <-> external
    double Int2ext(unsigned int, double) const;
@@ -132,11 +129,10 @@ public:
    unsigned int IntOfExt(unsigned int) const;
    unsigned int ExtOfInt(unsigned int) const;
    unsigned int VariableParameters() const;
-
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnApplication
+#endif // ROOT_Minuit2_MnApplication

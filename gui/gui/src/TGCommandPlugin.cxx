@@ -12,7 +12,6 @@
 #include "TGComboBox.h"
 #include "TGTextView.h"
 #include "TGTextEntry.h"
-#include "TGTextEdit.h"
 #include "TInterpreter.h"
 #include "Getline.h"
 
@@ -139,7 +138,7 @@ void TGCommandPlugin::CheckRemote(const char * /*str*/)
 void TGCommandPlugin::HandleCommand()
 {
    const char *string = fCommandBuf->GetString();
-   if (strlen(string) > 1) {
+   if (strlen(string) > 0) {
       // form temporary file path
       TString sPrompt = "root []";
       TString pathtmp = TString::Format("%s/command.%d.log",

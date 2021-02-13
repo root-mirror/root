@@ -22,9 +22,8 @@
 #include <ROOT/RFieldValue.hxx>
 #include <ROOT/RStringView.hxx>
 
-#include <TError.h>
-
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 namespace ROOT {
@@ -46,9 +45,15 @@ A model needs to be frozen before it can be used to create a live ntuple.
 // clang-format on
 class RNTupleModel {
    /// Hierarchy of fields consisting of simple types and collections (sub trees)
-   std::unique_ptr<RFieldRoot> fRootField;
+   std::unique_ptr<RFieldZero> fFieldZero;
    /// Contains field values corresponding to the created top-level fields
    std::unique_ptr<REntry> fDefaultEntry;
+   /// Keeps track of which field names are taken.
+   std::unordered_set<std::string> fFieldNames;
+
+   /// Checks that user-provided field names are valid in the context
+   /// of this NTuple model. Throws an RException for invalid names.
+   void EnsureValidFieldName(std::string_view fieldName);
 
 public:
    RNTupleModel();
@@ -56,15 +61,16 @@ public:
    RNTupleModel& operator =(const RNTupleModel&) = delete;
    ~RNTupleModel() = default;
 
-   RNTupleModel* Clone();
+   std::unique_ptr<RNTupleModel> Clone() const;
    static std::unique_ptr<RNTupleModel> Create() { return std::make_unique<RNTupleModel>(); }
 
    /// Creates a new field and a corresponding tree value that is managed by a shared pointer.
    template <typename T, typename... ArgsT>
    std::shared_ptr<T> MakeField(std::string_view fieldName, ArgsT&&... args) {
+      EnsureValidFieldName(fieldName);
       auto field = std::make_unique<RField<T>>(fieldName);
       auto ptr = fDefaultEntry->AddValue<T>(field.get(), std::forward<ArgsT>(args)...);
-      fRootField->Attach(std::move(field));
+      fFieldZero->Attach(std::move(field));
       return ptr;
    }
 
@@ -73,9 +79,10 @@ public:
 
    template <typename T>
    void AddField(std::string_view fieldName, T* fromWhere) {
+      EnsureValidFieldName(fieldName);
       auto field = std::make_unique<RField<T>>(fieldName);
       fDefaultEntry->CaptureValue(field->CaptureValue(fromWhere));
-      fRootField->Attach(std::move(field));
+      fFieldZero->Attach(std::move(field));
    }
 
    template <typename T>
@@ -88,8 +95,8 @@ public:
       std::string_view fieldName,
       std::unique_ptr<RNTupleModel> collectionModel);
 
-   RFieldRoot *GetRootField() const { return fRootField.get(); }
-   REntry* GetDefaultEntry() { return fDefaultEntry.get(); }
+   RFieldZero *GetFieldZero() const { return fFieldZero.get(); }
+   REntry *GetDefaultEntry() { return fDefaultEntry.get(); }
    std::unique_ptr<REntry> CreateEntry();
    RNTupleVersion GetVersion() const { return RNTupleVersion(); }
    std::string GetDescription() const { return ""; /* TODO */ }

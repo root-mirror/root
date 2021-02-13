@@ -39,7 +39,7 @@ for the underlying connection technology.
 #include "TParameter.h"
 #include "TProofDebug.h"
 #include "TProof.h"
-#include "TProofPlayer.h"
+#include "TVirtualProofPlayer.h"
 #include "TQueryResultManager.h"
 #include "TRegexp.h"
 #include "TClass.h"
@@ -51,6 +51,7 @@ for the underlying connection technology.
 #include "compiledata.h"
 #include "TProofNodeInfo.h"
 #include "XProofProtocol.h"
+#include "snprintf.h"
 
 #include <XrdClient/XrdClientConst.hh>
 #include <XrdClient/XrdClientEnv.hh>

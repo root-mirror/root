@@ -23,6 +23,8 @@
 #include "TDatime.h"
 #include "TTimeStamp.h"
 
+#include <sqlite3.h>
+
 #include <stdlib.h>
 
 ClassImp(TSQLiteStatement);

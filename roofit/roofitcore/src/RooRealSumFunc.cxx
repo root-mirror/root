@@ -38,6 +38,7 @@
 
 #include "TIterator.h"
 #include "TList.h"
+#include "TClass.h"
 #include "RooRealSumFunc.h"
 #include "RooRealProxy.h"
 #include "RooPlot.h"

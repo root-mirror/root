@@ -22,10 +22,9 @@
 **/
 
 #include "RooLegendre.h"
-
-#include "RooFit.h"
-
+#include "RooBatchCompute.h"
 #include "RooAbsReal.h"
+
 #include "Math/SpecFunc.h"
 #include "TMath.h"
 
@@ -169,18 +168,11 @@ void compute(	size_t batchSize, const int l1, const int m1, const int l2, const 
 }
 };
 
-RooSpan<double> RooLegendre::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  auto cthetaData = _ctheta.getValBatch(begin, batchSize);
-
-  if (cthetaData.empty()) {
-    return {};
-  }
-
-  batchSize = cthetaData.size();
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-
+RooSpan<double> RooLegendre::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  RooSpan<const double> cthetaData = _ctheta->getValues(evalData, normSet);
+  size_t batchSize = cthetaData.size();
+  auto output = evalData.makeBatch(this, batchSize);
   compute(batchSize, _l1, _m1, _l2, _m2, output.data(), cthetaData.data());
-
   return output;
 }
 

@@ -9,8 +9,6 @@
 #include "TLine.h"
 #include "TFile.h"
 #include "TClass.h"
-#include "TCanvas.h"
-#include "TH1.h"
 #include "TBenchmark.h"
 #include "RooGlobalFunc.h"
 #include "RooMsgService.h"
@@ -56,8 +54,7 @@ void StatusPrint(Int_t id,const TString &title,Int_t status)
 }
 
 
-//#include "stressRooFit_tests_direct.cxx"
-#include "stressRooFit_tests.cxx"
+#include "stressRooFit_tests.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -312,7 +309,7 @@ int main(int argc,const char *argv[])
       doDump=kTRUE ;
     }
 
-    if (arg=="-h") {
+    if (arg=="-h" || arg == "--help") {
       cout << "usage: stressRooFit [ options ] " << endl ;
       cout << "" << endl ;
       cout << "       -f <file> : use given reference file instead of default (" <<  refFileName << ")" << endl ;

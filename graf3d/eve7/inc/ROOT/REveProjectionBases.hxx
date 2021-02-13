@@ -37,7 +37,7 @@ class REveProjectionManager;
 class REveProjectable
 {
 private:
-   REveProjectable &operator=(const REveProjectable &); // Not implemented
+   REveProjectable &operator=(const REveProjectable &) = delete;
 
 public:
    typedef std::list<REveProjected *> ProjList_t;
@@ -80,8 +80,8 @@ public:
 
 class REveProjected {
 private:
-   REveProjected(const REveProjected &);            // Not implemented
-   REveProjected &operator=(const REveProjected &); // Not implemented
+   REveProjected(const REveProjected &) = delete;
+   REveProjected &operator=(const REveProjected &) = delete;
 
 protected:
    REveProjectionManager *fManager{nullptr}; // manager

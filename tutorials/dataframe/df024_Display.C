@@ -1,13 +1,13 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook
-/// This tutorial shows how to use the Display action
+/// Use the Display action to inspect entry values.
 ///
 /// \macro_code
 /// \macro_output
 ///
 /// \date August 2018
-/// \author Enrico Guiraud, Danilo Piparo, Enric Tejedor Saavedra CERN, Massimo Tumolo Politecnico di Torino
+/// \authors Enrico Guiraud, Danilo Piparo, Enric Tejedor Saavedra (CERN), Massimo Tumolo (Politecnico di Torino)
 
 void df024_Display()
 {
@@ -16,17 +16,17 @@ void df024_Display()
    int x = 1;
    double w = 1;
    double z = 1;
-   ROOT::RDataFrame tdf(10);
-   auto d = tdf.Define("y", [&y]() { return y *= 100; }) // A column with ulongs
-               .Define("x",
-                       [&x]() {
-                          return std::vector<int>({x++, x++, x++, x++});
-                       })                                // A column with four-elements collection
-               .Define("w", [&w]() { return w *= 1.8; }) // A column with doubles
-               .Define("z", [&z]() {
-                  z *= 1.1;
-                  return std::vector<std::vector<double>>({{z, ++z}, {z, ++z}, {z, ++z}});
-               }); // A column of matrices
+   ROOT::RDataFrame df(10);
+   auto d = df.Define("y", [&y]() { return y *= 100; }) // A column with ulongs
+              .Define("x",
+                      [&x]() {
+                         return std::vector<int>({x++, x++, x++, x++});
+                      })                                // A column with four-elements collection
+              .Define("w", [&w]() { return w *= 1.8; }) // A column with doubles
+              .Define("z", [&z]() {
+                 z *= 1.1;
+                 return std::vector<std::vector<double>>({{z, ++z}, {z, ++z}, {z, ++z}});
+              }); // A column of matrices
 
    // Preparing the RResultPtr<RDisplay> object with all columns and default number of entries
    auto d1 = d.Display("");

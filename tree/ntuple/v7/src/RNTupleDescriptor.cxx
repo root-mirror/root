@@ -13,6 +13,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
+#include <ROOT/RError.hxx>
+#include <ROOT/RField.hxx>
 #include <ROOT/RNTupleDescriptor.hxx>
 #include <ROOT/RNTupleModel.hxx>
 #include <ROOT/RNTupleUtil.hxx>
@@ -484,6 +486,22 @@ bool ROOT::Experimental::RFieldDescriptor::operator==(const RFieldDescriptor &ot
           fLinkIds == other.fLinkIds;
 }
 
+ROOT::Experimental::RFieldDescriptor
+ROOT::Experimental::RFieldDescriptor::Clone() const {
+   RFieldDescriptor clone;
+   clone.fFieldId = fFieldId;
+   clone.fFieldVersion = fFieldVersion;
+   clone.fTypeVersion = fTypeVersion;
+   clone.fFieldName = fFieldName;
+   clone.fFieldDescription = fFieldDescription;
+   clone.fTypeName = fTypeName;
+   clone.fNRepetitions = fNRepetitions;
+   clone.fStructure = fStructure;
+   clone.fParentId = fParentId;
+   clone.fLinkIds = fLinkIds;
+   return clone;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -605,7 +623,7 @@ std::uint32_t ROOT::Experimental::RNTupleDescriptor::SerializeFooter(void* buffe
    pos += SerializeUInt16(kFrameVersionCurrent, *where);
    pos += SerializeUInt16(kFrameVersionMin, *where);
    // Add the CRC32 bytes to the header and footer sizes
-   pos += SerializeUInt32(SerializeHeader(nullptr), *where);
+   pos += SerializeUInt32(GetHeaderSize(), *where);
    std::uint32_t size = pos - base + 4;
    pos += SerializeUInt32(size + 4, *where);
    size += SerializeCrc32(base, size, *where);
@@ -645,6 +663,7 @@ ROOT::Experimental::NTupleSize_t ROOT::Experimental::RNTupleDescriptor::GetNElem
    return result;
 }
 
+
 ROOT::Experimental::DescriptorId_t
 ROOT::Experimental::RNTupleDescriptor::FindFieldId(std::string_view fieldName, DescriptorId_t parentId) const
 {
@@ -663,10 +682,30 @@ ROOT::Experimental::RNTupleDescriptor::FindFieldId(std::string_view fieldName, D
 }
 
 
-ROOT::Experimental::DescriptorId_t ROOT::Experimental::RNTupleDescriptor::FindFieldId(std::string_view fieldName) const
+std::string ROOT::Experimental::RNTupleDescriptor::GetQualifiedFieldName(DescriptorId_t fieldId) const
 {
-   auto rootId = FindFieldId("", kInvalidDescriptorId);
-   return FindFieldId(fieldName, rootId);
+   if (fieldId == kInvalidDescriptorId)
+      return "";
+
+   const auto &fieldDescriptor = fFieldDescriptors.at(fieldId);
+   auto prefix = GetQualifiedFieldName(fieldDescriptor.GetParentId());
+   if (prefix.empty())
+      return fieldDescriptor.GetFieldName();
+   return prefix + "." + fieldDescriptor.GetFieldName();
+}
+
+
+ROOT::Experimental::DescriptorId_t
+ROOT::Experimental::RNTupleDescriptor::GetFieldZeroId() const
+{
+   return FindFieldId("", kInvalidDescriptorId);
+}
+
+
+ROOT::Experimental::DescriptorId_t
+ROOT::Experimental::RNTupleDescriptor::FindFieldId(std::string_view fieldName) const
+{
+   return FindFieldId(fieldName, GetFieldZeroId());
 }
 
 
@@ -694,15 +733,39 @@ ROOT::Experimental::RNTupleDescriptor::FindClusterId(DescriptorId_t columnId, NT
 }
 
 
+ROOT::Experimental::DescriptorId_t
+ROOT::Experimental::RNTupleDescriptor::FindNextClusterId(DescriptorId_t clusterId) const
+{
+   const auto &clusterDesc = GetClusterDescriptor(clusterId);
+   auto firstEntryInNextCluster = clusterDesc.GetFirstEntryIndex() + clusterDesc.GetNEntries();
+   // TODO(jblomer): binary search?
+   for (const auto &cd : fClusterDescriptors) {
+      if (cd.second.GetFirstEntryIndex() == firstEntryInNextCluster)
+         return cd.second.GetId();
+   }
+   return kInvalidDescriptorId;
+}
+
+
+ROOT::Experimental::DescriptorId_t
+ROOT::Experimental::RNTupleDescriptor::FindPrevClusterId(DescriptorId_t clusterId) const
+{
+   const auto &clusterDesc = GetClusterDescriptor(clusterId);
+   // TODO(jblomer): binary search?
+   for (const auto &cd : fClusterDescriptors) {
+      if (cd.second.GetFirstEntryIndex() + cd.second.GetNEntries() == clusterDesc.GetFirstEntryIndex())
+         return cd.second.GetId();
+   }
+   return kInvalidDescriptorId;
+}
+
+
 std::unique_ptr<ROOT::Experimental::RNTupleModel> ROOT::Experimental::RNTupleDescriptor::GenerateModel() const
 {
    auto model = std::make_unique<RNTupleModel>();
-   auto rootId = FindFieldId("", kInvalidDescriptorId);
-   const auto &rootDesc = GetFieldDescriptor(rootId);
-   for (const auto id : rootDesc.GetLinkIds()) {
-      const auto &topDesc = GetFieldDescriptor(id);
+   for (const auto &topDesc : GetTopLevelFields()) {
       auto field = Detail::RFieldBase::Create(topDesc.GetFieldName(), topDesc.GetTypeName());
-      model->AddField(std::unique_ptr<Detail::RFieldBase>(field));
+      model->AddField(field.Unwrap());
    }
    return model;
 }
@@ -710,6 +773,25 @@ std::unique_ptr<ROOT::Experimental::RNTupleModel> ROOT::Experimental::RNTupleDes
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
+ROOT::Experimental::RResult<void>
+ROOT::Experimental::RNTupleDescriptorBuilder::EnsureValidDescriptor() const {
+   // Reuse field name validity check
+   auto validName = Detail::RFieldBase::EnsureValidFieldName(fDescriptor.GetName());
+   if (!validName) {
+      return R__FORWARD_ERROR(validName);
+   }
+   // open-ended list of invariant checks
+   for (const auto& key_val: fDescriptor.fFieldDescriptors) {
+      const auto& id = key_val.first;
+      const auto& desc = key_val.second;
+      // parent not properly set
+      if (id != DescriptorId_t(0) && desc.GetParentId() == kInvalidDescriptorId) {
+         return R__FAIL("field with id '" + std::to_string(id) + "' has an invalid parent id");
+      }
+   }
+   return RResult<void>::Success();
+}
 
 ROOT::Experimental::RNTupleDescriptor ROOT::Experimental::RNTupleDescriptorBuilder::MoveDescriptor()
 {
@@ -858,26 +940,71 @@ void ROOT::Experimental::RNTupleDescriptorBuilder::SetNTuple(
    fDescriptor.fGroupUuid = uuid;
 }
 
-void ROOT::Experimental::RNTupleDescriptorBuilder::AddField(
-   DescriptorId_t fieldId, const RNTupleVersion &fieldVersion, const RNTupleVersion &typeVersion,
-   std::string_view fieldName, std::string_view typeName, std::uint64_t nRepetitions, ENTupleStructure structure)
+ROOT::Experimental::RDanglingFieldDescriptor::RDanglingFieldDescriptor(
+   const RFieldDescriptor& fieldDesc) : fField(fieldDesc.Clone())
 {
-   RFieldDescriptor f;
-   f.fFieldId = fieldId;
-   f.fFieldVersion = fieldVersion;
-   f.fTypeVersion = typeVersion;
-   f.fFieldName = std::string(fieldName);
-   f.fTypeName = std::string(typeName);
-   f.fNRepetitions = nRepetitions;
-   f.fStructure = structure;
-   fDescriptor.fFieldDescriptors.emplace(fieldId, std::move(f));
+   fField.fParentId = kInvalidDescriptorId;
+   fField.fLinkIds = {};
 }
 
-void ROOT::Experimental::RNTupleDescriptorBuilder::AddFieldLink(DescriptorId_t fieldId, DescriptorId_t linkId)
+ROOT::Experimental::RDanglingFieldDescriptor
+ROOT::Experimental::RDanglingFieldDescriptor::FromField(const Detail::RFieldBase& field) {
+   RDanglingFieldDescriptor fieldDesc;
+   fieldDesc.FieldVersion(field.GetFieldVersion())
+      .TypeVersion(field.GetTypeVersion())
+      .FieldName(field.GetName())
+      .TypeName(field.GetType())
+      .Structure(field.GetStructure())
+      .NRepetitions(field.GetNRepetitions());
+   return fieldDesc;
+}
+
+ROOT::Experimental::RResult<ROOT::Experimental::RFieldDescriptor>
+ROOT::Experimental::RDanglingFieldDescriptor::MakeDescriptor() const {
+   if (fField.GetId() == kInvalidDescriptorId) {
+      return R__FAIL("invalid field id");
+   }
+   if (fField.GetStructure() == ENTupleStructure::kInvalid) {
+      return R__FAIL("invalid field structure");
+   }
+   // FieldZero is usually named "" and would be a false positive here
+   if (fField.GetId() != DescriptorId_t(0)) {
+      auto validName = Detail::RFieldBase::EnsureValidFieldName(fField.GetFieldName());
+      if (!validName) {
+         return R__FORWARD_ERROR(validName);
+      }
+   }
+   return fField.Clone();
+}
+
+void ROOT::Experimental::RNTupleDescriptorBuilder::AddField(const RFieldDescriptor& fieldDesc) {
+   fDescriptor.fFieldDescriptors.emplace(fieldDesc.GetId(), fieldDesc.Clone());
+}
+
+ROOT::Experimental::RResult<void>
+ROOT::Experimental::RNTupleDescriptorBuilder::AddFieldLink(DescriptorId_t fieldId, DescriptorId_t linkId)
 {
-   R__ASSERT(fDescriptor.fFieldDescriptors[linkId].fParentId == kInvalidDescriptorId);
-   fDescriptor.fFieldDescriptors[linkId].fParentId = fieldId;
-   fDescriptor.fFieldDescriptors[fieldId].fLinkIds.push_back(linkId);
+   if (linkId == DescriptorId_t(0)) {
+      return R__FAIL("cannot make FieldZero a child field");
+   }
+   if (fDescriptor.fFieldDescriptors.count(fieldId) == 0) {
+      return R__FAIL("field with id '" + std::to_string(fieldId) + "' doesn't exist in NTuple");
+   }
+   if (fDescriptor.fFieldDescriptors.count(linkId) == 0) {
+      return R__FAIL("child field with id '" + std::to_string(linkId) + "' doesn't exist in NTuple");
+   }
+   // fail if field already has a valid parent
+   auto parentId = fDescriptor.fFieldDescriptors.at(linkId).GetParentId();
+   if (parentId != kInvalidDescriptorId) {
+      return R__FAIL("field '" + std::to_string(linkId) + "' already has a parent ('" +
+         std::to_string(parentId) + ")");
+   }
+   if (fieldId == linkId) {
+      return R__FAIL("cannot make field '" + std::to_string(fieldId) + "' a child of itself");
+   }
+   fDescriptor.fFieldDescriptors.at(linkId).fParentId = fieldId;
+   fDescriptor.fFieldDescriptors.at(fieldId).fLinkIds.push_back(linkId);
+   return RResult<void>::Success();
 }
 
 void ROOT::Experimental::RNTupleDescriptorBuilder::AddColumn(

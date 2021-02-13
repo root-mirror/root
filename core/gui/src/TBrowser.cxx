@@ -76,6 +76,26 @@ private:
 ClassImp(TBrowser);
 
 ////////////////////////////////////////////////////////////////////////////////
+// Make sure the application environment exists and the GUI libs are loaded
+
+Bool_t TBrowser::InitGraphics()
+{
+   // Make sure the application environment exists. It is need for graphics
+   // (colors are initialized in the TApplication ctor).
+   if (!gApplication)
+      TApplication::CreateApplication();
+   // make sure that the Gpad and GUI libs are loaded
+   TApplication::NeedGraphicsLibs();
+   if (gApplication)
+      gApplication->InitializeGraphics();
+   if (gROOT->IsBatch()) {
+      Warning("TBrowser", "The ROOT browser cannot run in batch mode");
+      return kFALSE;
+   }
+   return kTRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Create a new browser with a name, title. Width and height are by
 /// default set to 640x400 and (optionally) adjusted by the screen factor
 /// (depending on Rint.Canvas.UseScreenFactor to be true or false, default
@@ -86,9 +106,8 @@ TBrowser::TBrowser(const char *name, const char *title, TBrowserImp *extimp,
    : TNamed(name, title), fLastSelectedObject(0), fImp(extimp), fTimer(0),
      fContextMenu(0), fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    if (TClass::IsCallingNew() != TClass::kRealNew) {
       fImp = 0;
    } else {
@@ -108,9 +127,8 @@ TBrowser::TBrowser(const char *name, const char *title, UInt_t width,
    : TNamed(name, title), fLastSelectedObject(0), fImp(extimp), fTimer(0), fContextMenu(0),
      fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    if (!fImp) fImp = gGuiFactory->CreateBrowserImp(this, title, width, height, opt);
    Create();
 }
@@ -123,9 +141,8 @@ TBrowser::TBrowser(const char *name, const char *title, Int_t x, Int_t y,
    : TNamed(name, title), fLastSelectedObject(0), fImp(extimp), fTimer(0), fContextMenu(0),
      fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    fImp = gGuiFactory->CreateBrowserImp(this, title, x, y, width, height, opt);
    Create();
 }
@@ -137,9 +154,8 @@ TBrowser::TBrowser(const char *name, TObject *obj, const char *title, Option_t *
    : TNamed(name, title), fLastSelectedObject(0), fImp(0), fTimer(0), fContextMenu(0),
      fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    Float_t cx = gStyle->GetScreenFactor();
    UInt_t w = UInt_t(cx*800);
    UInt_t h = UInt_t(cx*500);
@@ -156,9 +172,8 @@ TBrowser::TBrowser(const char *name, TObject *obj, const char *title,
    : TNamed(name, title), fLastSelectedObject(0), fTimer(0), fContextMenu(0),
      fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    fImp = gGuiFactory->CreateBrowserImp(this, title, width, height, opt);
    Create(obj);
 }
@@ -172,9 +187,8 @@ TBrowser::TBrowser(const char *name, TObject *obj, const char *title,
    : TNamed(name, title), fLastSelectedObject(0), fTimer(0), fContextMenu(0),
      fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    fImp = gGuiFactory->CreateBrowserImp(this, title, x, y, width, height, opt);
    Create(obj);
 }
@@ -187,9 +201,8 @@ TBrowser::TBrowser(const char *name, void *obj, TClass *cl,
    : TNamed(name, title), fLastSelectedObject(0), fTimer(0), fContextMenu(0),
      fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    Float_t cx = gStyle->GetScreenFactor();
    UInt_t w = UInt_t(cx*800);
    UInt_t h = UInt_t(cx*500);
@@ -208,9 +221,8 @@ TBrowser::TBrowser(const char *name, void *obj, TClass *cl,
    : TNamed(name, title), fLastSelectedObject(0), fTimer(0), fContextMenu(0),
      fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    fImp = gGuiFactory->CreateBrowserImp(this, title, width, height, opt);
    Create(new TBrowserObject(obj,cl,objname));
 }
@@ -225,9 +237,8 @@ TBrowser::TBrowser(const char *name,void *obj,  TClass *cl,
    : TNamed(name, title), fLastSelectedObject(0), fTimer(0), fContextMenu(0),
      fNeedRefresh(kFALSE)
 {
-   // make sure that the Gpad and GUI libs are loaded
-   TApplication::NeedGraphicsLibs();
-   gApplication->InitializeGraphics();
+   if (!InitGraphics())
+      return;
    fImp = gGuiFactory->CreateBrowserImp(this, title, x, y, width, height, opt);
    Create(new TBrowserObject(obj,cl,objname));
 }

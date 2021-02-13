@@ -45,7 +45,10 @@ protected:
    friend void TFriendElement__SetTree(TTree *tree, TList *frlist);
 
 public:
-   enum EStatusBits { kFromChain = BIT(11) };
+   enum EStatusBits {
+      kFromChain = BIT(9),  // Indicates a TChain inserted this element in one of its content TTree
+      kUpdated   = BIT(10)  // Indicates that the chain 'fTree' went through a LoadTree
+   };
    TFriendElement();
    TFriendElement(TTree *tree, const char *treename, const char *filename);
    TFriendElement(TTree *tree, const char *treename, TFile *file);
@@ -58,6 +61,10 @@ public:
    virtual TTree      *GetTree();
    virtual const char *GetTreeName() const {return fTreeName.Data();}
    virtual void        ls(Option_t *option="") const;
+           void        Reset() { fTree = nullptr; fFile = nullptr; }
+           Bool_t      IsUpdated() const { return TestBit(kUpdated); }
+           void        ResetUpdated() { ResetBit(kUpdated); }
+           void        MarkUpdated() { SetBit(kUpdated); }
 
    ClassDef(TFriendElement,2)  //A friend element of another TTree
 };

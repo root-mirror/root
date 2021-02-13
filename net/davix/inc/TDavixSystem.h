@@ -29,14 +29,9 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TUrl.h"
 #include "TSystem.h"
-#include "TMutex.h"
-
 
 class TDavixFileInternal;
-struct Davix_fd;
-
 
 class TDavixSystem : public TSystem {
 private:

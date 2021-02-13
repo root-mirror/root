@@ -16,7 +16,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
 //__________________________________________________________________________
 /**
@@ -30,24 +30,21 @@ namespace ROOT {
 class CombinedMinimizer : public ModularFunctionMinimizer {
 
 public:
-
-   CombinedMinimizer() : fMinSeedGen(MnSeedGenerator()),
-                         fMinBuilder(CombinedMinimumBuilder()) {}
+   CombinedMinimizer() : fMinSeedGen(MnSeedGenerator()), fMinBuilder(CombinedMinimumBuilder()) {}
 
    ~CombinedMinimizer() {}
 
-   const MinimumSeedGenerator& SeedGenerator() const {return fMinSeedGen;}
-   const MinimumBuilder& Builder() const {return fMinBuilder;}
-   MinimumBuilder& Builder()  {return fMinBuilder;}
+   const MinimumSeedGenerator &SeedGenerator() const { return fMinSeedGen; }
+   const MinimumBuilder &Builder() const { return fMinBuilder; }
+   MinimumBuilder &Builder() { return fMinBuilder; }
 
 private:
-
    MnSeedGenerator fMinSeedGen;
    CombinedMinimumBuilder fMinBuilder;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_CombinedMinimizer
+#endif // ROOT_Minuit2_CombinedMinimizer

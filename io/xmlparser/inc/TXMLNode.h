@@ -14,16 +14,14 @@
 
 #include "TObject.h"
 
-#include "TString.h"
-
 class TList;
 struct _xmlNode;
 
 class TXMLNode : public TObject {
 
 private:
-   TXMLNode(const TXMLNode&);            // Not implemented
-   TXMLNode& operator=(const TXMLNode&); // Not implemented
+   TXMLNode(const TXMLNode&) = delete;
+   TXMLNode& operator=(const TXMLNode&) = delete;
 
    _xmlNode *fXMLNode;        ///< libxml node
 

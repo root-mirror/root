@@ -15,15 +15,6 @@
 #include "TEveGeoNode.h"
 #include "TGeoNode.h"
 
-#include "TVirtualPad.h"
-#include "TColor.h"
-
-#include "TGLabel.h"
-#include "TGButton.h"
-#include "TGNumberEntry.h"
-#include "TGColorSelect.h"
-#include "TGDoubleSlider.h"
-
 /** \class TEveGeoNodeEditor
 \ingroup TEve
 Editor for TEveGeoNode class.

@@ -41,7 +41,8 @@
 #include "TGMdi.h"
 #include "TGMdiMenu.h"
 #include "TList.h"
-#include "Riostream.h"
+
+#include <iostream>
 
 
 ClassImp(TGMdiMenuBar);

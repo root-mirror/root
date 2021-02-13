@@ -5,7 +5,9 @@
 ///
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -34,7 +36,7 @@ void rf207_comptools()
    RooRealVar sigma("sigma", "width of gaussians", 0.5);
    RooGaussian sig("sig", "Signal component 1", x, mean, sigma);
 
-   // Build Chebychev polynomial p.d.f.
+   // Build Chebychev polynomial pdf
    RooRealVar a0("a0", "a0", 0.5, 0., 1.);
    RooRealVar a1("a1", "a1", 0.2, 0., 1.);
    RooChebychev bkg1("bkg1", "Background 1", x, RooArgSet(a0, a1));
@@ -43,7 +45,7 @@ void rf207_comptools()
    RooRealVar alpha("alpha", "alpha", -1);
    RooExponential bkg2("bkg2", "Background 2", x, alpha);
 
-   // Sum the background components into a composite background p.d.f.
+   // Sum the background components into a composite background pdf
    RooRealVar bkg1frac("bkg1frac", "fraction of component 1 in background", 0.2, 0., 1.);
    RooAddPdf bkg("bkg", "Signal", RooArgList(bkg1, bkg2), bkg1frac);
 

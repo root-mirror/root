@@ -26,7 +26,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 
 enum EWidgetMessageTypes {

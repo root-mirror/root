@@ -195,7 +195,7 @@ struct BranchlessJittedForest : public ForestBase<T, std::function<void (const T
 /// \param[in] filename Filename of the ROOT file
 /// \param[in] output Load trees corresponding to the given output node of the forest
 /// \param[in] sortTrees Flag to indicate sorting the input trees by the cut value of the first node of each tree
-/// \param[out] Return jitted code as string
+/// \return Return jitted code as string
 template <typename T>
 inline std::string
 BranchlessJittedForest<T>::Load(const std::string &key, const std::string &filename, const int output, const bool sortTrees)

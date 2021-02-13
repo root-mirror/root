@@ -23,8 +23,6 @@
 #include "Math/DistFunc.h"
 
 #include "TBenchmark.h"
-#include "TSystem.h"
-#include "TF1.h"
 
 #include "gtest/gtest.h"
 
@@ -112,7 +110,7 @@ public:
    int GetRangeEnd() { return 4; }
 };
 
-TYPED_TEST_CASE_P(MathMoreStress);
+TYPED_TEST_SUITE_P(MathMoreStress);
 
 TYPED_TEST_P(MathMoreStress, kADAPTIVESINGULAR)
 {
@@ -147,9 +145,9 @@ TYPED_TEST_P(MathMoreStress, kGSLSTEFFENSON)
    this->RunRangedTest([](StatFunction dist) { dist.TestInverse2(RootFinder::kGSL_STEFFENSON); });
 }
 
-REGISTER_TYPED_TEST_CASE_P(MathMoreStress, kADAPTIVESINGULAR, kGAUSS, TestDerivative, kBRENT, kGSLBRENT,
+REGISTER_TYPED_TEST_SUITE_P(MathMoreStress, kADAPTIVESINGULAR, kGAUSS, TestDerivative, kBRENT, kGSLBRENT,
                            kGSLSTEFFENSON);
 
 typedef testing::Types<BetaTestFactory, GammaTestFactory> Factories_t;
 
-INSTANTIATE_TYPED_TEST_CASE_P(StressMathMore, MathMoreStress, Factories_t);
+INSTANTIATE_TYPED_TEST_SUITE_P(StressMathMore, MathMoreStress, Factories_t);

@@ -4,17 +4,15 @@
 #ifndef ROOT_TSchemaRule
 #define ROOT_TSchemaRule
 
-class TBuffer;
-class TVirtualObject;
-class TObjArray;
-
-#include "TObject.h"
 #include "TNamed.h"
-#include "Rtypes.h"
 #include "TString.h"
 
 #include <vector>
 #include <utility>
+
+class TBuffer;
+class TVirtualObject;
+class TObjArray;
 
 namespace ROOT {
 

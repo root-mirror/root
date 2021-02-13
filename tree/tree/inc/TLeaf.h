@@ -41,7 +41,15 @@
 //////////////////////////////////////////////////////////////////////////
 
 
+#include "TNamed.h"
+
+#include <vector>
+
+#ifdef R__LESS_INCLUDES
+class TBranch;
+#else
 #include "TBranch.h"
+#endif
 
 class TClonesArray;
 class TBrowser;
@@ -106,6 +114,7 @@ public:
    virtual Int_t   *GenerateOffsetArray(Int_t base, Int_t events) { return GenerateOffsetArrayBase(base, events); }
    TBranch         *GetBranch() const { return fBranch; }
    virtual DeserializeType GetDeserializeType() const { return DeserializeType::kDestructive; }
+   virtual TString  GetFullName() const;
    ///  If this leaf stores a variable-sized array or a multi-dimensional array whose last dimension has variable size,
    ///  return a pointer to the TLeaf that stores such size. Return a nullptr otherwise.
    virtual TLeaf   *GetLeafCount() const { return fLeafCount; }

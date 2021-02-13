@@ -24,6 +24,7 @@
 #include "TSystem.h"
 #include "TSysEvtHandler.h"
 #include "TTimer.h"
+#include <string>
 
 typedef void (*SigHandler_t)(ESignals);
 

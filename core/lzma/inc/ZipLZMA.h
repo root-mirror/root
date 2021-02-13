@@ -9,6 +9,9 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
+#ifndef ROOT_ZipLZMA
+#define ROOT_ZipLZMA
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,4 +22,6 @@ void R__unzipLZMA(int *srcsize, unsigned char *src, int *tgtsize, unsigned char 
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

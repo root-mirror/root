@@ -1,0 +1,72 @@
+diff --git a/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx b/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
+index 0a25948..a8d8bf6 100644
+--- a/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
++++ b/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
+@@ -24,8 +24,8 @@
+ #include <sstream>
+ #if __cplusplus > 201402L
+ #include <cstddef>
+-#include <string_view>
+ #endif
++#include "ROOT/RStringView.hxx"
+ #if PY_VERSION_HEX < 0x03000000
+ #include <codecvt>
+ #endif
+@@ -1639,7 +1639,6 @@ bool CPyCppyy::name##Converter::ToMemory(PyObject* value, void* address)     \
+ }
+ 
+ CPPYY_IMPL_STRING_AS_PRIMITIVE_CONVERTER(STLString, std::string, c_str, size)
+-#if __cplusplus > 201402L
+ CPPYY_IMPL_STRING_AS_PRIMITIVE_CONVERTER(STLStringViewBase, std::string_view, data, size)
+ bool CPyCppyy::STLStringViewConverter::SetArg(
+     PyObject* pyobject, Parameter& para, CallContext* ctxt)
+@@ -1665,7 +1664,6 @@ bool CPyCppyy::STLStringViewConverter::SetArg(
+ 
+     return false;
+ }
+-#endif
+ 
+ CPyCppyy::STLWStringConverter::STLWStringConverter(bool keepControl) :
+     InstancePtrConverter(Cppyy::GetScope("std::wstring"), keepControl) {}
+@@ -3035,14 +3033,13 @@ public:
+         gf["const string&"] =               gf["std::string"];
+         gf["string&&"] =                    (cf_t)+[](dims_t) { return new STLStringMoveConverter{}; };
+         gf["std::string&&"] =               gf["string&&"];
+-#if __cplusplus > 201402L
+         gf["std::string_view"] =            (cf_t)+[](dims_t) { return new STLStringViewConverter{}; };
+         gf["string_view"] =                 gf["std::string_view"];
+         gf[STRINGVIEW] =                    gf["std::string_view"];
++        gf["experimental::" STRINGVIEW] =   gf["std::string_view"];
+         gf["std::string_view&"] =           gf["std::string_view"];
+         gf["const string_view&"] =          gf["std::string_view"];
+         gf["const " STRINGVIEW "&"] =       gf["std::string_view"];
+-#endif
+         gf["std::wstring"] =                (cf_t)+[](dims_t) { return new STLWStringConverter{}; };
+         gf[WSTRING] =                       gf["std::wstring"];
+         gf["std::" WSTRING] =               gf["std::wstring"];
+diff --git a/bindings/pyroot/cppyy/CPyCppyy/src/DeclareConverters.h b/bindings/pyroot/cppyy/CPyCppyy/src/DeclareConverters.h
+index d6e6853..47d2a83 100644
+--- a/bindings/pyroot/cppyy/CPyCppyy/src/DeclareConverters.h
++++ b/bindings/pyroot/cppyy/CPyCppyy/src/DeclareConverters.h
+@@ -7,6 +7,7 @@
+ // Standard
+ #include <complex>
+ #include <string>
++#include "ROOT/RStringView.hxx"
+ 
+ 
+ namespace CPyCppyy {
+@@ -354,13 +355,11 @@ protected:                                                                   \
+ }
+ 
+ CPPYY_DECLARE_STRING_CONVERTER(STLString, std::string);
+-#if __cplusplus > 201402L
+ CPPYY_DECLARE_STRING_CONVERTER(STLStringViewBase, std::string_view);
+ class STLStringViewConverter : public STLStringViewBaseConverter {
+ public:
+     virtual bool SetArg(PyObject*, Parameter&, CallContext* = nullptr);
+ };
+-#endif
+ CPPYY_DECLARE_STRING_CONVERTER(STLWString, std::wstring);
+ 
+ class STLStringMoveConverter : public STLStringConverter {

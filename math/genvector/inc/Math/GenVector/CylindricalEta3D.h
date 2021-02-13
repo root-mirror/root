@@ -28,8 +28,6 @@
 #include <limits>
 #include <cmath>
 
-#include "Math/Math.h"
-
 
 namespace ROOT {
 

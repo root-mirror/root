@@ -15,43 +15,60 @@
 
 @ingroup Random
 
-This is the base class for the ROOT Random number generators. 
-This class defines the ROOT Random number interface and it should not be instantiated directly but used via its derived classes.
-The generator provided in TRandom itself is a LCG (Linear Congruential Generator), the <a href="https://www.gnu.org/software/gsl/manual/html_node/Unix-random-number-generators.html">BSD `rand`
-generator</a>, that it should not be used because its period is only 2**31, i.e. approximatly 2 billion events, that can be generated in just few seconds. 
+This is the base class for the ROOT Random number generators.
+This class defines the ROOT Random number interface and it should not be instantiated directly but used via its derived
+classes. The generator provided in TRandom itself is a LCG (Linear Congruential Generator), the <a
+href="https://www.gnu.org/software/gsl/manual/html_node/Unix-random-number-generators.html">BSD `rand` generator</a>,
+that it should not be used because its period is only 2**31, i.e. approximatly 2 billion events, that can be generated
+in just few seconds.
 
-To generate random numbers, one should use the derived class, which  are : 
-- TRandom3: it is based on the "Mersenne Twister generator", 
-it is fast and a very long period of about \f$10^{6000}\f$. However it fails some of the most stringent tests of the 
-<a href="http://simul.iro.umontreal.ca/testu01/tu01.html">TestU01 suite</a>. 
-In addition this generator provide only numbers with 32 random bits, which might be not sufficient for some application based on double or extended precision. 
-This generator is however used in ROOT used to instantiate the global pointer to the ROOT generator, *gRandom*. 
-- ::TRandomMixMax: Generator based on the family of the MIXMAX matrix generators (see the <a href="https://mixmax.hepforge.org">MIXMAX HEPFORGE Web page</a> and the 
-  the documentation of the class ROOT::Math::MixMaxEngine for more information), that are base on the Asanov dynamical C systems. 
-This generator has a state of N=240 64 bit integers, proof random properties, it provides 61 random bits and it has a very large period (\f$10^{4839}\f$). 
-Furthermore, it provides the capability to be seeded with the guarantee that, for each given different seed, a different sequence of random numbers will be generated. 
-The only drawback is that the seeding time is time consuming, of the order of 0.1 ms, while the time to generate a number is few ns (more than 10000 faster).  
-- ::TRandomMixMax17: Another MixMax generator, but with a smaller state, N=17, and this results in a smaller entropy than the generator with N=240. However, it has the same seeding capabilities, with a much faster seeding time (about 200 times less than TRandomMixMax240 and comparable to TRandom3). 
-- ::TRandomMixMax256 : A variant of the MIXMAX generators, based on a state of N=256, and described in the 
-        <a  href="http://arxiv.org/abs/1403.5355">2015 paper</a>. This implementation has been modified with respect to the paper, by skipping 2 internal interations,
- to provide improved random properties. 
-- TRandomMT64 :  Generator based on a the Mersenne-Twister generator with 64 bits, 
-  using the implementation provided by the standard library ( <a href="http://www.cplusplus.com/reference/random/mt19937_64/">std::mt19937_64</a> )
+To generate random numbers, one should use the derived class, which  are :
+- TRandom3: it is based on the "Mersenne Twister generator",
+it is fast and a very long period of about \f$10^{6000}\f$. However it fails some of the most stringent tests of the
+<a href="http://simul.iro.umontreal.ca/testu01/tu01.html">TestU01 suite</a>.
+In addition this generator provide only numbers with 32 random bits, which might be not sufficient for some application
+based on double or extended precision. This generator is however used in ROOT used to instantiate the global pointer to
+the ROOT generator, *gRandom*.
+- ::TRandomRanluxpp : New implementation of the Ranlux generator algorithm based on a fast modular multiplication of
+576 bits. This new implementation is built on the idea and the original code of Alexei Sibidanov, described in his
+<a href="https://arxiv.org/abs/1705.03123">paper </a>. It generates random numbers with 52 bit precision (double
+precision) and it has an higher luxury level than the original Ranlux generator (`p = 2048` instead of `p=794`).
+- ::TRandomMixMax: Generator based on the family of the MIXMAX matrix generators (see the
+<a href="https://mixmax.hepforge.org">MIXMAX HEPFORGE Web page</a> and the the documentation of the class
+ROOT::Math::MixMaxEngine for more information), that are base on the Asanov dynamical C systems. This generator has a
+state of N=240 64 bit integers, proof random properties, it provides 61 random bits and it has a very large period
+(\f$10^{4839}\f$). Furthermore, it provides the capability to be seeded with the guarantee that, for each given
+different seed, a different sequence of random numbers will be generated. The only drawback is that the seeding time is
+time consuming, of the order of 0.1 ms, while the time to generate a number is few ns (more than 10000 faster).
+- ::TRandomMixMax17: Another MixMax generator, but with a smaller state, N=17, and this results in a smaller entropy
+than the generator with N=240. However, it has the same seeding capabilities, with a much faster seeding time (about 200
+times less than TRandomMixMax240 and comparable to TRandom3).
+- ::TRandomMixMax256 : A variant of the MIXMAX generators, based on a state of N=256, and described in the
+        <a  href="http://arxiv.org/abs/1403.5355">2015 paper</a>. This implementation has been modified with respect to
+the paper, by skipping 2 internal interations, to provide improved random properties.
+- ::TRandomMT64 :  Generator based on a the Mersenne-Twister generator with 64 bits,
+  using the implementation provided by the standard library ( <a
+href="http://www.cplusplus.com/reference/random/mt19937_64/">std::mt19937_64</a> )
 - TRandom1  based on the RANLUX algorithm, has mathematically proven random proprieties
-  and a period of about \f$10{171}\f$. It is however much slower than the others and it has only 24 random bits. It can be constructed with different luxury levels.  
-- TRandomRanlux48 : Generator based on a the RanLux generator with 48 bits and highest luxury level
-  using the implementation provided by the standard library (<a href="http://www.cplusplus.com/reference/random/ranlux48/">std::ranlux48</a>). The drawback of this generator is its slow generation
-  time. 
+  and a period of about \f$10{171}\f$. It is however much slower than the others and it has only 24 random bits. It can
+be constructed with different luxury levels.
+- ::TRandomRanlux48 : Generator based on a the RanLux generator with 48 bits and highest luxury level
+  using the implementation provided by the standard library (<a
+href="http://www.cplusplus.com/reference/random/ranlux48/">std::ranlux48</a>). The drawback of this generator is its
+slow generation time.
 - TRandom2  is based on the Tausworthe generator of L'Ecuyer, and it has the advantage
-of being fast and using only 3 words (of 32 bits) for the state. The period however is not impressively long, it is 10**26. 
+of being fast and using only 3 words (of 32 bits) for the state. The period however is not impressively long, it is
+10**26.
 
-Using the template TRandomGen class (template on the contained Engine type), it is possible to add any generator based on the standard C++ random library
-(see the C++ <a href="http://www.cplusplus.com/reference/random/">random</a> documentation.) or different variants of the MIXMAX generator using the 
-ROOT::Math::MixMaxEngine. Some of the listed generator above (e.g. TRandomMixMax256 or TRandomMT64) are convenient typedef's of generator built using the
-template TRandomGen class. 
+Using the template TRandomGen class (template on the contained Engine type), it is possible to add any generator based
+on the standard C++ random library (see the C++ <a href="http://www.cplusplus.com/reference/random/">random</a>
+documentation.) or different variants of the MIXMAX generator using the ROOT::Math::MixMaxEngine. Some of the listed
+generator above (e.g. TRandomMixMax256 or TRandomMT64) are convenient typedef's of generator built using the template
+TRandomGen class.
 
-Please note also that this class (TRandom) implements also a very simple generator (linear congruential) with period = \f$10^9\f$, known to have defects (the lower random bits are correlated) and it
-is failing the majority of the random number generator tests. Therefore it should NOT be used in any statistical study.
+Please note also that this class (TRandom) implements also a very simple generator (linear congruential) with period =
+\f$10^9\f$, known to have defects (the lower random bits are correlated) and it is failing the majority of the random
+number generator tests. Therefore it should NOT be used in any statistical study.
 
 The following table shows some timings (in nanoseconds/call)
 for the random numbers obtained using a macbookpro 2.6 GHz Intel Core i7 CPU:
@@ -64,31 +81,25 @@ for the random numbers obtained using a macbookpro 2.6 GHz Intel Core i7 CPU:
 -   ::TRandomMixMax17    6   ns/call
 -   ::TRandomMT64        9   ns/call
 -   ::TRandomMixMax256  10   ns/call
+-   ::TRandomRanluxpp   14   ns/call
 -   ::TRandom1          80   ns/call
 -   ::TRandomRanlux48  250  ns/call
 
 The following methods are provided to generate random numbers disctributed according to some basic distributions:
 
-- `::Exp(tau)`
-- `::Integer(imax)`
-- `::Gaus(mean,sigma)`
-- `::Rndm()`
-- `::Uniform(x1)`
-- `::Landau(mpv,sigma)`
-- `::Poisson(mean)`
-- `::Binomial(ntot,prob)`
+- Exp(Double_t tau)
+- Integer(UInt_t imax)
+- Gaus(Double_t mean, Double_t sigma)
+- Rndm()
+- Uniform(Double_t)
+- Landau(Double_t mean, Double_t sigma)
+- Poisson(Double_t mean)
+- Binomial(Int_t ntot, Double_t prob)
 
-Random numbers distributed according to 1-d, 2-d or 3-d distributions contained in TF1, TF2 or TF3 objects can also be generated. 
-For example, to get a random number distributed following abs(sin(x)/x)*sqrt(x)
-you can do :
-\code{.cpp}
-  TF1 *f1 = new TF1("f1","abs(sin(x)/x)*sqrt(x)",0,10);
-  double r = f1->GetRandom();
-\endcode
-or you can use the UNURAN package. You need in this case to initialize UNURAN
-to the function you would like to generate.
-\code{.cpp}
-  TUnuran u;
+Random numbers distributed according to 1-d, 2-d or 3-d distributions contained in TF1, TF2 or TF3 objects can also be
+generated. For example, to get a random number distributed following abs(sin(x)/x)*sqrt(x) you can do : \code{.cpp} TF1
+*f1 = new TF1("f1","abs(sin(x)/x)*sqrt(x)",0,10); double r = f1->GetRandom(); \endcode or you can use the UNURAN
+package. You need in this case to initialize UNURAN to the function you would like to generate. \code{.cpp} TUnuran u;
   u.Init(TUnuranDistrCont(f1));
   double r = u.Sample();
 \endcode
@@ -344,7 +355,7 @@ Double_t TRandom::Gaus(Double_t mean, Double_t sigma)
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns a random integer uniformly distributed on the interval [ 0, imax-1 ].
-/// Note that the interfal contains the values of 0 and imax-1 but not imax. 
+/// Note that the interval contains the values of 0 and imax-1 but not imax.
 
 UInt_t TRandom::Integer(UInt_t imax)
 {
@@ -604,6 +615,32 @@ void TRandom::SetSeed(ULong_t seed)
    } else {
       fSeed = seed;
    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Get the random generator seed.
+/// Note that this function returns the given seed only when using
+/// as random generator engine TRandom itself, which is an LCG generator
+/// and it has as seed (state) only one 32 bit word.
+/// In case of the other generators GetSeed will return one of the state elements and not the
+/// given seed. See the documentation of the corresponding generator used
+/// (for example TRandom3::GetSeed() when using TRandom3 or gRandom.
+/// If one needs to save the generator seed in order to be used later for obtaining reproducible
+/// numbers, one should store the full generator, either in a file or in memory in a separate TRandom
+/// object. Here is an example on how to store reproducible states:
+/// ```
+/// // set a unique seed
+///  gRandom->SetSeed(0);
+///  // save generator state in a different TRandom instance
+///  TRandom* rngSaved = static_cast<TRandom*>(gRandom->Clone());
+///  // now both rngSaved and gRandom will produce the same sequence of numbers
+///  for (int i = 0; i < 10; ++i )
+///     std::cout << "genrated number from gRandom : " << gRandom->Rndm() << "  from saved generator " <<
+///     rngSaved->Rndm() << std::endl;
+/// ```
+UInt_t TRandom::GetSeed() const
+{
+   return fSeed;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

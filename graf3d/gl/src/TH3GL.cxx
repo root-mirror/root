@@ -10,9 +10,7 @@
  *************************************************************************/
 #include "TH3GL.h"
 #include "TH3.h"
-#include "TVirtualPad.h"
 #include "TAxis.h"
-#include "TMath.h"
 
 #include "TGLSurfacePainter.h"
 #include "TGLHistPainter.h"

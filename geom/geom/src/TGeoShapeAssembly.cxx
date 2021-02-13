@@ -9,9 +9,6 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-
-#include "Riostream.h"
-
 #include "TGeoManager.h"
 #include "TGeoVoxelFinder.h"
 #include "TGeoMatrix.h"

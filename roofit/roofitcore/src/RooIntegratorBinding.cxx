@@ -26,7 +26,6 @@ Function binding representing the output of a RooAbsIntegrator
 #include "RooFit.h"
 
 #include "RooIntegratorBinding.h"
-#include "RooIntegratorBinding.h"
 
 using namespace std;
 

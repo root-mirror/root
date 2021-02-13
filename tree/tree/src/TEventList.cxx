@@ -45,10 +45,13 @@ the TEventList object created in the above commands:
 */
 
 #include "TEventList.h"
+#include "TBuffer.h"
 #include "TCut.h"
-#include "TClass.h"
-#include "TFile.h"
+#include "TDirectory.h"
+#include "TList.h"
 #include "TMath.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 ClassImp(TEventList);
 

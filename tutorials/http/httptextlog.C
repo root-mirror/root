@@ -14,10 +14,6 @@
 ///  messages, which not yet been seen in the browser and display them as text
 ///  At maximum, 1000 elements are preserved in the browser.
 ///
-///  Macro should always be started in compiled mode, otherwise Select() method is not
-///  accessible via TClass instance. One also requires comments after ClassDef to
-///  correctly configure behavior of the JavaScript ROOT code
-///
 ///  After macro started, one could open in browser address
 /// ~~~
 ///    http://localhost:8080?item=log

@@ -15,7 +15,7 @@
 
 #include "delaunayTriangulation_bug.h"
 
-#include "TPad.h"
+#include "TVirtualPad.h"
 
 #include <iostream>
 
@@ -43,11 +43,11 @@ int delaunayTriangulation(bool old = false) {
 
 	TGraphDelaunay2D delaunay(graph);
 
-        if (old) 
+        if (old)
            graph->Draw("tri1 old");
-        else 
+        else
            graph->Draw("tri1");
-        
+
         if (gPad) gPad->Update(); // to force drawing
 
 	for (int i = 0; i < 100; i++) {
@@ -66,12 +66,12 @@ int delaunayTriangulation(bool old = false) {
         else {
            printf("ERROR - Expected: %i\t Gotten: %i\n", EXP, delaunay.GetNdt());
            if(VERBOSE) printDelaunay(delaunay);
-           
+
            return 4;
 	}
 
 }
 
 int main() {
-   return delaunayTriangulation(); 
+   return delaunayTriangulation();
 }

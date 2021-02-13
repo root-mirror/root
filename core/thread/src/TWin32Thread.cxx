@@ -18,6 +18,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TWin32Thread.h"
+
+#include "TThread.h"
+
 #include <process.h>
 #include <errno.h>
 

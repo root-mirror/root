@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <iostream>
-#include "TMVA/DNN/Architectures/TCudnn.h"
+#include "TMVA/DNN/Architectures/Cuda.h"
 
 #include "TestConvNet.h"
 
@@ -47,7 +47,7 @@ void test1()
    size_t batchHeight = imgDepthTest1;
    size_t batchWidth = imgHeightTest1 * imgWidthTest1;
 
-   testConvForwardPass<TCudnn<float>>(batchSizeTest1, imgDepthTest1, imgHeightTest1, imgWidthTest1, batchDepth,
+   testConvForwardPass<TCuda<float>>(batchSizeTest1, imgDepthTest1, imgHeightTest1, imgWidthTest1, batchDepth,
                                      batchHeight, batchWidth);
 }
 
@@ -62,13 +62,13 @@ void test2()
    size_t batchHeight = imgDepthTest2;
    size_t batchWidth = imgHeightTest2 * imgWidthTest2;
 
-   testConvForwardPass<TCudnn<float>>(batchSizeTest2, imgDepthTest2, imgHeightTest2, imgWidthTest2, batchDepth,
+   testConvForwardPass<TCuda<float>>(batchSizeTest2, imgDepthTest2, imgHeightTest2, imgWidthTest2, batchDepth,
                                      batchHeight, batchWidth);
 }
 
 int main()
 {
-   std::cout << "Testing CNN Forward Pass:" << std::endl;
+   std::cout << "Testing CNN Forward Pass using Cuda:" << std::endl;
 
    std::cout << "Test1" << std::endl;
    test1();

@@ -58,8 +58,10 @@
 
 #include "TGDoubleSlider.h"
 #include "TGPicture.h"
-#include "Riostream.h"
 #include "TSystem.h"
+#include "TVirtualX.h"
+
+#include <iostream>
 
 
 ClassImp(TGDoubleSlider);
@@ -103,11 +105,11 @@ TGDoubleSlider::TGDoubleSlider(const TGWindow *p, UInt_t w, UInt_t h, UInt_t typ
 ////////////////////////////////////////////////////////////////////////////////
 /// Avoid boundaries to be equal.
 
-void TGDoubleSlider::FixBounds(Float_t &min, Float_t &max)
+void TGDoubleSlider::FixBounds(Double_t &min, Double_t &max)
 {
    if (min > max) min = max;
 
-   Float_t eps = 1e-6;
+   Double_t eps = 1e-6;
    if (max - min < eps) {
       if (max == 0)
          max += eps;
@@ -368,7 +370,7 @@ Bool_t TGDoubleVSlider::HandleMotion(Event_t *event)
    was = now;
 
    int       diff;
-   Float_t   oldMin, oldMax;
+   Double_t  oldMin, oldMax;
 
    diff    = event->fY - fPressPoint;
    oldMin  = fSmin;
@@ -386,7 +388,7 @@ Bool_t TGDoubleVSlider::HandleMotion(Event_t *event)
       if (fSmax < fSmin) fSmax = fSmin;
    } else if (fMove == 3) {
       // change of min and of max value
-      Float_t logicalDiff;
+      Double_t logicalDiff;
       logicalDiff = diff * (fVmax - fVmin) / (fHeight-16);
       if (fPressSmax + logicalDiff > fVmax)
          logicalDiff = fVmax - fPressSmax;
@@ -559,7 +561,7 @@ Bool_t TGDoubleHSlider::HandleMotion(Event_t *event)
    was = now;
 
    int     diff;
-   Float_t oldMin, oldMax;
+   Double_t oldMin, oldMax;
 
    diff    = event->fX - fPressPoint;
    oldMin  = fSmin;
@@ -577,7 +579,7 @@ Bool_t TGDoubleHSlider::HandleMotion(Event_t *event)
       if (fSmax < fSmin) fSmax = fSmin;
    } else if (fMove == 3) {
       // change of min and of max value
-      Float_t logicalDiff;
+      Double_t logicalDiff;
       logicalDiff = diff * (fVmax - fVmin) / (fWidth-16);
       if (fPressSmax + logicalDiff > fVmax)
          logicalDiff = fVmax - fPressSmax;

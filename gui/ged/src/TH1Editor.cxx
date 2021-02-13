@@ -128,14 +128,11 @@
 #include "TGedEditor.h"
 #include "TGComboBox.h"
 #include "TGTextEntry.h"
-#include "TGToolTip.h"
 #include "TGLabel.h"
 #include "TVirtualPad.h"
-#include "TStyle.h"
 #include "TString.h"
 #include "TGButtonGroup.h"
 #include "TGNumberEntry.h"
-#include <stdlib.h>
 #include "TG3DLine.h"
 #include "TGDoubleSlider.h"
 #include "TGSlider.h"
@@ -146,6 +143,9 @@
 #include "TGMsgBox.h"
 #include "TGTab.h"
 #include "TROOT.h"
+#include "TVirtualX.h"
+
+#include <cstdlib>
 
 ClassImp(TH1Editor);
 

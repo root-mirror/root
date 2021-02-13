@@ -16,6 +16,7 @@
 
 #include <map>
 #include <iomanip>
+#include <string>
 
 namespace ROOT {
       namespace Math {

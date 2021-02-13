@@ -38,7 +38,6 @@ Singleton class for Global types used by TMVA
 #include "TString.h"
 
 #include <map>
-#include <iostream>
 #if __cplusplus > 199711L && !defined _MSC_VER
 #include <mutex>
 #endif

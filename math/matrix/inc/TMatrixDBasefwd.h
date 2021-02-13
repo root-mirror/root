@@ -20,7 +20,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 template<class Element> class TMatrixTBase;
 typedef TMatrixTBase<Double_t> TMatrixDBase;

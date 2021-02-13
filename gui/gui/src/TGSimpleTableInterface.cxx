@@ -8,10 +8,6 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "TClass.h"
-#include "Riostream.h"
-#include "TSystem.h"
-#include "TEnv.h"
 #include "TGSimpleTableInterface.h"
 #include "TGResourcePool.h"
 #include "TError.h"

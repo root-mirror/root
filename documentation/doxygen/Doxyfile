@@ -293,7 +293,8 @@ OPTIMIZE_OUTPUT_VHDL   = NO
 # the files are not read by doxygen.
 
 EXTENSION_MAPPING      = h=C++ \
-                         icc=C++
+                         icc=C++ \
+                         pyzdoc=C++
 
 # If the MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all comments
 # according to the Markdown format, which allows for more readable
@@ -793,7 +794,6 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = . \
-                         ../../bindings/pyroot/ \
                          ../../core/base/ \
                          ../../core/dictgen/ \
                          ../../core/cont/ \
@@ -802,7 +802,7 @@ INPUT                  = . \
                          ../../core/macosx/ \
                          ../../core/meta/ \
                          ../../core/metacling/ \
-                         ../../core/metautils/ \
+                         ../../core/clingutils/ \
                          ../../core/multiproc/ \
                          ../../core/rint/ \
                          ../../core/thread/ \
@@ -844,6 +844,7 @@ INPUT                  = . \
                          ../../io/sql/ \
                          ../../io/xml/ \
                          ../../io/xmlparser/ \
+                         ../../main/src/hadd.cxx \
                          ../../math/ \
                          ../../misc/memstat/ \
                          ../../montecarlo/ \
@@ -861,6 +862,8 @@ INPUT                  = . \
                          ../../tree/ \
                          ../../sql/ \
                          ../../tutorials/ \
+                         ../../bindings/tpython/ \
+                         ../../bindings/pyroot/ \
                          ../../bindings/r/
 #                         ../../core/clib/
 #                         ../../core/lzma/
@@ -934,7 +937,8 @@ FILE_PATTERNS          = *.c \
                          *.ucf \
                          *.qsf \
                          *.as \
-                         *.js
+                         *.js \
+                         *.pyzdoc
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
@@ -2221,7 +2225,8 @@ PREDEFINED             = "ClassDef(x,y)=//" \
                          templateClassImp(x)=// \
                          NamespaceImp(x)=// \
                          R__CLING_PTRCHECK \
-                         R__USE_IMT
+                         R__USE_IMT \
+                         R__SUGGEST_ALTERNATIVE(x)=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
@@ -2327,7 +2332,7 @@ DIA_PATH               =
 # and usage relations if the target is undocumented or is not a class.
 # The default value is: YES.
 
-HIDE_UNDOC_RELATIONS   = YES
+HIDE_UNDOC_RELATIONS   = NO
 
 # If you set the HAVE_DOT tag to YES then doxygen will assume the dot tool is
 # available from the path. This tool is part of Graphviz (see:

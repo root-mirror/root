@@ -15,6 +15,7 @@
 #include "RooListProxy.h"
 #include "RooSetProxy.h"
 #include "RooDataHist.h"
+#include <list>
 
 class RooParamHistFunc : public RooAbsReal {
 public:

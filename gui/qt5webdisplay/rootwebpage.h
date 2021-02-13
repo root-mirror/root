@@ -1,9 +1,6 @@
-/// \file rootwebpage.h
-/// \ingroup WebGui
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \date 2017-06-29
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Author: Sergey Linev <S.Linev@gsi.de>
+// Date: 2017-06-29
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
@@ -17,6 +14,14 @@
 #define ROOT_RootWebPage
 
 #include <QWebEnginePage>
+
+namespace ROOT {
+namespace Experimental {
+class RLogChannel;
+}
+}
+
+ROOT::Experimental::RLogChannel &QtWebDisplayLog();
 
 class RootWebPage : public QWebEnginePage {
    Q_OBJECT

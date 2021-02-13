@@ -38,6 +38,7 @@
 #include "TFileInfo.h"
 #include "THashList.h"
 #include "TKey.h"
+#include "TMap.h"
 #include "TObjString.h"
 #include "TProof.h"
 #include "TROOT.h"

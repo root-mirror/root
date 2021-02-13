@@ -28,8 +28,8 @@ namespace Experimental {
 class REveChunkManager
 {
 private:
-   REveChunkManager(const REveChunkManager&);            // Not implemented
-   REveChunkManager& operator=(const REveChunkManager&); // Not implemented
+   REveChunkManager(const REveChunkManager&) = delete;
+   REveChunkManager& operator=(const REveChunkManager&) = delete;
 
 protected:
    Int_t fS;        // Size of atom
@@ -122,8 +122,8 @@ template<class T>
 class REveChunkVector : public REveChunkManager
 {
 private:
-   REveChunkVector(const REveChunkVector&);            // Not implemented
-   REveChunkVector& operator=(const REveChunkVector&); // Not implemented
+   REveChunkVector(const REveChunkVector&) = delete;
+   REveChunkVector& operator=(const REveChunkVector&) = delete;
 
 public:
    REveChunkVector() = default;

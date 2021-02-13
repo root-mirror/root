@@ -12,6 +12,14 @@
 
 #include "TColor.h"
 
+/** \class TWebPainting
+\ingroup webgui6
+
+Object used to store paint operations and deliver them to JSROOT
+
+*/
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Constructor
 

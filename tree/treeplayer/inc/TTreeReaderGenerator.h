@@ -24,6 +24,7 @@
 #include "TTreeGeneratorBase.h"
 
 #include "TNamed.h"
+#include <vector>
 
 class TBranch;
 class TBranchElement;

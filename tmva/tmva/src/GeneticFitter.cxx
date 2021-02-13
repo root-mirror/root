@@ -42,8 +42,6 @@ Fitter using a Genetic Algorithm.
 #include "Rtypes.h"
 #include "TString.h"
 
-#include <iostream>
-
 ClassImp(TMVA::GeneticFitter);
 
 ////////////////////////////////////////////////////////////////////////////////

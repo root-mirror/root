@@ -1,13 +1,15 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook
+/// Implement a custom action that evaluates a Kahan sum.
+///
 /// This tutorial shows how to implement a Kahan summation custom action.
 ///
 /// \macro_code
 /// \macro_output
 ///
 /// \date July 2018
-/// \author Enrico Guiraud, Danilo Piparo, Massimo Tumolo
+/// \authors Enrico Guiraud, Danilo Piparo (CERN), Massimo Tumolo (Politecnico di Torino)
 
 template <typename T>
 class KahanSum final : public ROOT::Detail::RDF::RActionImpl<class KahanSum<T>>  {
@@ -37,7 +39,7 @@ public:
    {
       static_assert(std::is_floating_point<T>::value, "Kahan sum makes sense only on floating point numbers");
 
-      fNSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetImplicitMTPoolSize() : 1;
+      fNSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetThreadPoolSize() : 1;
       fPartialSums.resize(fNSlots, 0.);
       fCompensations.resize(fNSlots, 0.);
    }
@@ -52,7 +54,7 @@ public:
       KahanAlgorithm(x, fPartialSums[slot], fCompensations[slot]);
    }
 
-   template <typename V=T, typename std::enable_if<ROOT::TypeTraits::IsContainer<V>::value, int>::type = 0>
+   template <typename V=T, typename std::enable_if<ROOT::Internal::RDF::IsDataContainer<V>::value, int>::type = 0>
    void Exec(unsigned int slot, const T &vs)
    {
       for (auto &&v : vs) {

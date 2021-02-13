@@ -18,12 +18,21 @@
 #ifndef TMVA_DNN_ARCHITECTURES_CUDNN
 #define TMVA_DNN_ARCHITECTURES_CUDNN
 
+#include "RConfigure.h"   // for definition of R__HAS_CUDNN
+
+#ifndef R__HAS_CUDNN
+#error This file can be compiled only when cudnn is available in ROOT
+#else
+
 #include "TMVA/DNN/Functions.h"
 #include "TMVA/DNN/CNN/ContextHandles.h"
 //#include "TMVA/DNN/CNN/Descriptors.h"
 #include "TMVA/DNN/BatchNormLayer.h"
 #include "TMVA/DNN/CNN/ConvLayer.h"
 #include "TMVA/DNN/CNN/MaxPoolLayer.h"
+#include "TMVA/DNN/RNN/RNNLayer.h"
+#include "TMVA/DNN/RNN/LSTMLayer.h"
+#include "TMVA/DNN/RNN/GRULayer.h"
 
 #include "cudnn.h"
 #include "Cuda/CudaBuffers.h"
@@ -31,6 +40,7 @@
 #include "TMVA/DNN/TensorDataLoader.h"
 #include <utility>
 #include <vector>
+#include <string>
 
 #include "TMVA/DNN/Architectures/Cuda.h"
 
@@ -78,6 +88,7 @@ public:
    using AlgorithmDataType_t     = cudnnDataType_t;
    using ReduceTensorDescriptor_t = cudnnReduceTensorDescriptor_t;
    using TensorDescriptor_t       = cudnnTensorDescriptor_t;
+   using RecurrentDescriptor_t    = cudnnRNNDescriptor_t;
 
    using EmptyDescriptor_t       = TCudnnEmptyDescriptor;        // Used if a descriptor is not needed in a class
 
@@ -90,6 +101,18 @@ public:
    using PoolingLayer_t          = CNN::TMaxPoolLayer<TCudnn<AFloat>>;
    using PoolingDescriptors_t    = CNN::TCNNDescriptors<PoolingLayer_t>;
    using PoolingWorkspace_t      = CNN::TCNNWorkspace<PoolingLayer_t>;
+
+   using RNNLayer_t              = RNN::TBasicRNNLayer<TCudnn<AFloat>>;
+   using RNNDescriptors_t        = RNN::TRNNDescriptors<TCudnn<AFloat>>;
+   using RNNWorkspace_t          = RNN::TRNNWorkspace<TCudnn<AFloat>>;
+
+   using LSTMLayer_t             = RNN::TBasicLSTMLayer<TCudnn<AFloat>>;
+   // using LSTMDescriptors_t       = RNN::TRNNDescriptors<LSTMLayer_t>;
+   // using LSTMWorkspace_t         = RNN::TRNNWorkspace<LSTMLayer_t>;
+
+   using GRULayer_t              = RNN::TBasicGRULayer<TCudnn<AFloat>>;
+   // using GRUDescriptors_t        = RNN::TRNNDescriptors<GRULayer_t>;
+   // using GRUWorkspace_t          = RNN::TRNNWorkspace<GRULayer_t>;
 
    // template <typename AFloat>
    // using ConvDescriptors_t = CNN::TCNNDescriptors<CNN::TConvLayer<TCudnn<AFloat>>>;
@@ -116,6 +139,18 @@ public:
       return Tensor_t( buffer, {n,c,h,w}, GetTensorLayout(), 0, 0);
    }
 
+   static Tensor_t CreateTensor(size_t n, size_t c, size_t w)
+   {
+      return Tensor_t({n, c, w}, GetTensorLayout(), 0, 0);
+   }
+
+   static Tensor_t CreateTensor(DeviceBuffer_t buffer, size_t n, size_t c, size_t w)
+   {
+      return Tensor_t(buffer, {n, c, w}, GetTensorLayout(), 0, 0);
+   }
+
+   static bool IsCudnn() { return true; }
+
    // create a weight tensor/matrix vector   from another tensor/weight  vector using the given tensor shapes
    // this function is used by the optimizers to stgore intermidiate weights representations
    static void  CreateWeightTensors( std::vector<Matrix_t> & newWeights, const std::vector<Matrix_t> & weights) {
@@ -138,10 +173,26 @@ public:
    static void InitializePoolDescriptors(TDescriptors * & descriptors,
                                         PoolingLayer_t *L = nullptr);
 
+   static void InitializeRNNDescriptors(TDescriptors *&descriptors, RNNLayer_t *layer)
+   {
+      InitializeRecurrentDescriptors<RNNLayer_t>(descriptors, layer);
+   }
+   static void InitializeLSTMDescriptors(TDescriptors *&descriptors, LSTMLayer_t *layer) {
+      InitializeRecurrentDescriptors<LSTMLayer_t>(descriptors, layer);
+   }
+   static void InitializeGRUDescriptors(TDescriptors *&descriptors, GRULayer_t *layer) {
+      InitializeRecurrentDescriptors<GRULayer_t>(descriptors, layer);
+   }
+   template<typename RNNLayer>
+   static void InitializeRecurrentDescriptors(TDescriptors *&descriptors, RNNLayer *L);
+   // static void InitializeRNNDescriptors(TDescriptors *&descriptors, LSTMLayer_t *L = nullptr);
+   // static void InitializeRNNDescriptors(TDescriptors *&descriptors, GRULayer_t *L = nullptr);
+
    static void InitializeActivationDescriptor(ActivationDescriptor_t & descriptors, EActivationFunction activFunc, double coef = 0.0);
 
    static void ReleaseConvDescriptors(TDescriptors    * descriptors );
    static void ReleasePoolDescriptors(TDescriptors * descriptors );
+   static void ReleaseRNNDescriptors(TDescriptors *descriptors);
    static void ReleaseBNormDescriptors(TDescriptors * descriptors );
    static void ReleaseDescriptor(EmptyDescriptor_t       & emptyDescr) {}        // Does nothing
    static void ReleaseDescriptor(ActivationDescriptor_t  & activationDescr);
@@ -161,8 +212,33 @@ public:
                                        const DNN::CNN::TConvParams & params,
                                        PoolingLayer_t *L = nullptr);
 
-   static void FreeConvWorkspace(TWorkspace * workspace, ConvLayer_t *L = nullptr);
-   static void FreePoolDropoutWorkspace(TWorkspace * workspace, PoolingLayer_t *L = nullptr);
+   static void InitializeRNNWorkspace(TWorkspace *&workspace, TDescriptors *&descriptors, RNNLayer_t *layer)
+   {
+      InitializeRecurrentWorkspace<RNNLayer_t>(workspace, descriptors, layer);
+   }
+   static void InitializeLSTMWorkspace(TWorkspace *&workspace, TDescriptors *&descriptors, LSTMLayer_t *layer)
+   {
+      InitializeRecurrentWorkspace<LSTMLayer_t>(workspace, descriptors, layer);
+   }
+   static void InitializeGRUWorkspace(TWorkspace *&workspace, TDescriptors *&descriptors, GRULayer_t *layer)
+   {
+      InitializeRecurrentWorkspace<GRULayer_t>(workspace, descriptors, layer);
+   }
+   template<typename RNNLayer>
+   static void InitializeRecurrentWorkspace(TWorkspace *&workspace, TDescriptors *&descriptors,
+                                             RNNLayer *layer);
+
+   static void FreeConvWorkspace(TWorkspace * workspace);
+   static void FreePoolDropoutWorkspace(TWorkspace * workspace);
+   static void FreeRNNWorkspace(TWorkspace *workspace);
+
+   // tensor inizialization for recurrent networks
+   static void InitializeRNNTensors(RNNLayer_t *layer) { InitializeRecurrentTensors<RNNLayer_t>(layer); }
+   static void InitializeLSTMTensors(LSTMLayer_t *layer) { InitializeRecurrentTensors<LSTMLayer_t>(layer); }
+   static void InitializeGRUTensors(GRULayer_t *layer) { InitializeRecurrentTensors<GRULayer_t>(layer); }
+   template <typename RNNLayer>
+   static void InitializeRecurrentTensors(RNNLayer *layer);
+
    //____________________________________________________________________________
    //
    // Propagation
@@ -267,16 +343,24 @@ public:
    // No cudnn implementation for the following activation functions
    //
    //static void SymmetricRelu(Tensor_t & B);
-   static void SymmetricReluDerivative(Tensor_t & B,
-                                       const Tensor_t & A) {}
 
-   //static void SoftSign(Tensor_t & B);
-   static void SoftSignDerivative(Tensor_t & B,
-                                  const Tensor_t & A) {}
+   // implmentations not used by Cudnn
+   static void Relu(Tensor_t &) {}
+   static void Sigmoid(Tensor_t &) {}
+   static void Tanh(Tensor_t &) {}
+   static void FastTanh(Tensor_t &) {}
+   static void SymmetricRelu(Tensor_t &) {}
+   static void SoftSign(Tensor_t &) {}
+   static void Gauss(Tensor_t &) {}
 
-   //static void Gauss(Tensor_t & B);
-   static void GaussDerivative(Tensor_t & B,
-                               const Tensor_t & A) {}
+   static void IdentityDerivative(Tensor_t &, const Tensor_t &) {}
+   static void ReluDerivative(Tensor_t &, const Tensor_t &) {}
+   static void SigmoidDerivative(Tensor_t &, const Tensor_t &) {}
+   static void TanhDerivative(Tensor_t &, const Tensor_t &) {}
+   static void FastTanhDerivative(Tensor_t &, const Tensor_t &) {}
+   static void SymmetricReluDerivative(Tensor_t & , const Tensor_t & ) {}
+   static void SoftSignDerivative(Tensor_t & , const Tensor_t & ) {}
+   static void GaussDerivative(Tensor_t & ,  const Tensor_t & ) {}
    ///@}
 
    //____________________________________________________________________________
@@ -569,18 +653,69 @@ public:
    static void Deflatten(Tensor_t &A, const Tensor_t &B); // size_t index, size_t nRows,size_t nCols);
 
    /** Rearrage data accoring to time fill B x T x D out with T x B x D matrix in*/
-   static void Rearrange(Tensor_t &out, const Tensor_t &in) { TCuda<AFloat>::Rearrange(out, in); }
+   static void Rearrange(Tensor_t &out, const Tensor_t &in);
 
-   /** Backward pass for Recurrent Networks */
+   // RNN functions
+   static void RNNForward(const Tensor_t &x, const Tensor_t &hx, const Tensor_t &cx, const Tensor_t &weights,
+                           Tensor_t &y, Tensor_t &hy, Tensor_t &cy, const RNNDescriptors_t &descr,
+                           RNNWorkspace_t &workspace, bool isTraining);
+
+   static void RNNBackward(const Tensor_t &x, const Tensor_t &hx, const Tensor_t &cx, const Tensor_t &y, const Tensor_t &dy,
+                    const Tensor_t &dhy, const Tensor_t &dcy, const Tensor_t &weights, Tensor_t &dx, Tensor_t &dhx,
+                    Tensor_t &dcx, Tensor_t &dw, const RNNDescriptors_t &desc, RNNWorkspace_t &workspace);
+
+
+   // Backward pass for Recurrent Networks functions used by another architectures
+   //******************************************************************************************
    static Matrix_t &RecurrentLayerBackward(Matrix_t &state_gradients_backward, // BxH
-                                           Matrix_t & /* input_weight_gradients */, Matrix_t &/* state_weight_gradients */,
-                                           Matrix_t &/* bias_gradients */,
-                                           Matrix_t &/* df */,                  // DxH
-                                           const Matrix_t &/* state */,         // BxH
-                                           const Matrix_t &/* weights_input */, // HxD
-                                           const Matrix_t &/* weights_state */, // HxH
-                                           const Matrix_t &/* input */,         // BxD
-                                           Matrix_t &/* input_gradient */)
+                                           Matrix_t & /* input_weight_gradients */,
+                                           Matrix_t & /* state_weight_gradients */, Matrix_t & /* bias_gradients */,
+                                           Matrix_t & /* df */,                  // DxH
+                                           const Matrix_t & /* state */,         // BxH
+                                           const Matrix_t & /* weights_input */, // HxD
+                                           const Matrix_t & /* weights_state */, // HxH
+                                           const Matrix_t & /* input */,         // BxD
+                                           Matrix_t & /* input_gradient */)
+   {
+      return state_gradients_backward;
+   }
+   static Matrix_t &LSTMLayerBackward(
+      Matrix_t & state_gradients_backward , Matrix_t & /*cell_gradients_backward*/,
+      Matrix_t & /*input_weight_gradients*/, Matrix_t & /*forget_weight_gradients*/,
+      Matrix_t & /*candidate_weight_gradients*/, Matrix_t & /*output_weight_gradients*/,
+      Matrix_t & /*input_state_weight_gradients*/, Matrix_t & /*forget_state_weight_gradients*/,
+      Matrix_t & /*candidate_state_weight_gradients*/,
+      Matrix_t & /*output_state_weight_gradients*/, Matrix_t & /*input_bias_gradients*/,
+      Matrix_t & /*forget_bias_gradients*/, Matrix_t & /*candidate_bias_gradients*/,
+      Matrix_t & /*output_bias_gradients*/, Matrix_t & /*di*/, Matrix_t & /*df*/,
+      Matrix_t & /*dc*/, Matrix_t & /*dout*/,
+      const Matrix_t & /*precStateActivations*/, const Matrix_t & /*precCellActivations*/,
+      const Matrix_t & /*fInput*/, const Matrix_t & /*fForget*/,
+      const Matrix_t & /*fCandidate*/, const Matrix_t & /*fOutput*/,
+      const Matrix_t & /*weights_input*/, const Matrix_t & /*weights_forget*/,
+      const Matrix_t & /*weights_candidate*/, const Matrix_t & /*weights_output*/,
+      const Matrix_t & /*weights_input_state*/, const Matrix_t & /*weights_forget_state*/,
+      const Matrix_t & /*weights_candidate_state*/, const Matrix_t & /*weights_output_state*/,
+      const Matrix_t & /*input*/, Matrix_t & /*input_gradient*/,
+      Matrix_t & /*cell_gradient*/, Matrix_t & /*cell_tanh*/)
+   {
+      return state_gradients_backward;
+   }
+
+   /** Backward pass for GRU Network */
+   static Matrix_t &GRULayerBackward(
+      Matrix_t &  state_gradients_backward, Matrix_t & /*reset_weight_gradients*/,
+      Matrix_t & /*update_weight_gradients*/, Matrix_t & /*candidate_weight_gradients*/,
+      Matrix_t & /*reset_state_weight_gradients*/, Matrix_t & /*update_state_weight_gradients*/,
+      Matrix_t & /*candidate_state_weight_gradients*/, Matrix_t & /*reset_bias_gradients*/,
+      Matrix_t & /*update_bias_gradients*/, Matrix_t & /*candidate_bias_gradients*/,
+      Matrix_t & /*dr*/, Matrix_t & /*du*/, Matrix_t & /*dc*/,
+      const Matrix_t & /*precStateActivations*/, const Matrix_t & /*fReset*/,
+      const Matrix_t & /*fUpdate*/, const Matrix_t & /*fCandidate*/,
+      const Matrix_t & /*weights_reset*/, const Matrix_t & /*weights_update*/,
+      const Matrix_t & /*weights_candidate*/, const Matrix_t & /*weights_reset_state*/,
+      const Matrix_t & /*weights_update_state*/, const Matrix_t & /*weights_candidate_state*/,
+      const Matrix_t & /*input*/, Matrix_t & /*input_gradient*/, bool)
    {
       return state_gradients_backward;
    }
@@ -597,7 +732,7 @@ public:
     * Additional arithmetic on CUDA matrices  used to implement the low-level
     * interface.
     */
-   
+
    /** In-place Hadamard (element-wise) product of matrices \p A and \p B
     *  with the result being written into \p A.
     */
@@ -615,7 +750,7 @@ public:
    //    Hadamard( tA, Tensor_t(B));
    // }
 
-   
+
    /** Compute the sum of all elements in \p A */
    static Scalar_t Sum(const Matrix_t &A, Scalar_t alpha = 1.0, Scalar_t beta = 0.0);
 
@@ -684,18 +819,17 @@ public:
       // printing of tensor
    static void PrintTensor( const Tensor_t & A, const std::string name = "tensor", bool = false);
 
-
+   static void PrintTensor4dDescriptor(TensorDescriptor_t descriptor);
+   static void PrintTensorNdDescriptor(TensorDescriptor_t descriptor, int n = 10);
 
    ///////////////////////////////////////////////////////////////////////////////
    /// extra functions defined only for CPU architecture !!!
    //////////////////////////////////////////////////////////////////////////////
 
    /** Sum rows of (m x n) matrix \p A and write the results into the first
-   * m elements in \p B.
-   */
-   static void SumRows(Matrix_t & B, const Matrix_t & A);
-
-
+    * m elements in \p B.
+    */
+   static void SumRows(Matrix_t &B, const Matrix_t &A);
 };
 
 
@@ -709,15 +843,25 @@ void TCudnn<AFloat>::CopyDiffArch(TCudaTensor<AFloat> &B,
    // should add static assert that A has not to be same type as B
 
    // this copying tensors from different architectures
-   if (B.GetLayout() == GetTensorLayout() ) {
-      assert(B.GetShape().size() == 4);
-      for (size_t i = 0; i < A.GetFirstSize(); ++i) {
-         TMatrixT<AFloat> matIn = A.At(i).GetMatrix(); // this convert tensor (B,D,HW) in  (D,HW)i -> (D,HW)i
-         // TMAtrix has the correct layout (row-wise) no need to traspose in this case
-         TCudaTensor<AFloat> tmpOut = B.At(i); // matrix (D,HW)
-         // copy will copy the buffer
-         TCudaTensor<AFloat> tmpIn(matIn.GetMatrixArray(), tmpOut.GetShape(), tmpOut.GetLayout());
-         Copy(tmpOut, tmpIn);
+   if (B.GetLayout() == GetTensorLayout()) {
+      if ( B.GetShape().size() == 4) {
+         assert(B.GetShape().size() == 4);
+         size_t firstSize = (A.GetLayout() == GetTensorLayout()) ? A.GetShape()[0] : A.GetShape().back();
+         for (size_t i = 0; i < firstSize; ++i) {
+            TMatrixT<AFloat> matIn = A.At(i).GetMatrix(); // this convert tensor (B,D,HW) in  (D,HW)i -> (D,HW)i
+            // TMAtrix has the correct layout (row-wise) no need to traspose in this case
+            TCudaTensor<AFloat> tmpOut = B.At(i); // matrix (D,HW)
+            // copy will copy the buffer
+            TCudaTensor<AFloat> tmpIn(matIn.GetMatrixArray(), tmpOut.GetShape(), tmpOut.GetLayout());
+            Copy(tmpOut, tmpIn);
+         }
+      }
+      else {
+         // for RNN weights
+         TMatrixT<AFloat> tmp = A;
+         TCudaMatrix<AFloat> tmp2(tmp);
+         TCudaTensor<AFloat> tA(tmp2);
+         Copy(B, tA);
       }
    } else {
       // case of same layout (column major)
@@ -739,7 +883,7 @@ void TCudnn<AFloat>::CopyWeightsDiffArch(TCudaTensor<AFloat> &B, const  AMatrix 
    // we need to traspose for different layout
    if (B.GetLayout() == GetTensorLayout()  ) {
       // this is for CNN weights that are in row-major formats
-      assert(B.GetShape().size() == 4);  // weights shape should be 4
+      //assert(B.GetShape().size() == 4);  // weights shape should be 4
       tmp.T();
    }
    TCudaMatrix<AFloat> tmp2(tmp);
@@ -826,6 +970,34 @@ void TCudnn<AFloat>::PrintTensor(const typename TCudnn<AFloat>::Tensor_t & A, co
    }
 }
 
+template <typename AFloat>
+void TCudnn<AFloat>::PrintTensor4dDescriptor(TensorDescriptor_t descriptor) {
+   int n, c, h, w = 0;
+   int s1, s2, s3, s4 = 0;
+   cudnnDataType_t dataType;
+   cudnnGetTensor4dDescriptor(descriptor, &dataType, &n, &c, &h, &w, &s1, &s2, &s3, &s4);
+   std::cout << "Descriptor for 4d tensor of shape  { " << n << " , " << c << " , " << h << " , " << w << " }"
+             << " and strides { " << s1 << " , " << s2 << " , " << s3 << " , " << s4 << " }" << std::endl;
+}
+template <typename AFloat>
+void TCudnn<AFloat>::PrintTensorNdDescriptor(TensorDescriptor_t descriptor, int ndim)
+{
+   int n = 0;
+   std::vector<int> dims(ndim);
+   std::vector<int> strides(ndim);
+   cudnnDataType_t dataType;
+   cudnnGetTensorNdDescriptor(descriptor, ndim, &dataType, &n, dims.data(), strides.data());
+   dims.resize(n);
+   strides.resize(n);
+   std::cout << "Descriptor for Nd tensor of dim = " << n << " shape  { ";
+   for (auto d : dims)
+      std::cout << d << " , ";
+   std::cout << "} and strides { ";
+   for (auto s : strides)
+      std::cout << s << " , ";
+   std::cout << " }" << std::endl;
+}
+
 // initialize the CNN options
 // possible options for forward (from 0 to 7)
 //
@@ -850,4 +1022,5 @@ Long_t TCudnn<AFloat>::CNNOptions::ConvMaxWorkspaceSize = -1;  // -1 let use Cud
 } // namespace DNN
 } // namespace TMVA
 
+#endif
 #endif

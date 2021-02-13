@@ -17,15 +17,11 @@
 #include "TAttFill.h"
 #include "TAttText.h"
 #include "TAttMarker.h"
+#include <string>
 
 #include "TWebPainting.h"
 
 class TWebCanvas;
-
-/*
-TWebPadPainter tries to support old Paint methods of the ROOT classes.
-Main classes (like histograms or graphs) should be painted on JavaScript side
-*/
 
 class TWebPadPainter : public TVirtualPadPainter, public TAttLine, public TAttFill, public TAttText, public TAttMarker {
 

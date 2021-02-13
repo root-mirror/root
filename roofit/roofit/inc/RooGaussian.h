@@ -18,9 +18,8 @@
 
 #include "RooAbsPdf.h"
 #include "RooRealProxy.h"
-#include "RooTrace.h"
 
-class RooRealVar;
+class RooAbsReal;
 
 class RooGaussian : public RooAbsPdf {
 public:
@@ -46,7 +45,7 @@ protected:
   RooRealProxy sigma ;
 
   Double_t evaluate() const override;
-  RooSpan<double> evaluateBatch(std::size_t begin, std::size_t batchSize) const override;
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const override;
 
 private:
 

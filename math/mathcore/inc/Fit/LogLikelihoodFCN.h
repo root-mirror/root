@@ -13,15 +13,14 @@
 #ifndef ROOT_Fit_LogLikelihoodFCN
 #define ROOT_Fit_LogLikelihoodFCN
 
+#include "ROOT/EExecutionPolicy.hxx"
 #include "Fit/BasicFCN.h"
-
+#include "Fit/FitUtil.h"
+#include "Fit/UnBinData.h"
 #include "Math/IParamFunction.h"
 
-#include "Fit/UnBinData.h"
-
-#include "Fit/FitUtil.h"
-
 #include <memory>
+#include <vector>
 
 namespace ROOT {
 
@@ -55,7 +54,7 @@ public:
    /**
       Constructor from unbin data set and model function (pdf)
    */
-   LogLikelihoodFCN (const std::shared_ptr<UnBinData> & data, const std::shared_ptr<IModelFunction> & func, int weight = 0, bool extended = false, const ::ROOT::Fit::ExecutionPolicy &executionPolicy = ::ROOT::Fit::ExecutionPolicy::kSerial) :
+   LogLikelihoodFCN (const std::shared_ptr<UnBinData> & data, const std::shared_ptr<IModelFunction> & func, int weight = 0, bool extended = false, const ::ROOT::EExecutionPolicy &executionPolicy = ::ROOT::EExecutionPolicy::kSequential) :
       BaseFCN( data, func),
       fIsExtended(extended),
       fWeight(weight),
@@ -67,7 +66,7 @@ public:
       /**
       Constructor from unbin data set and model function (pdf) for object managed by users
    */
-   LogLikelihoodFCN (const UnBinData & data, const IModelFunction & func, int weight = 0, bool extended = false, const ::ROOT::Fit::ExecutionPolicy &executionPolicy = ::ROOT::Fit::ExecutionPolicy::kSerial) :
+   LogLikelihoodFCN (const UnBinData & data, const IModelFunction & func, int weight = 0, bool extended = false, const ::ROOT::EExecutionPolicy &executionPolicy = ::ROOT::EExecutionPolicy::kSequential) :
       BaseFCN(std::shared_ptr<UnBinData>(const_cast<UnBinData*>(&data), DummyDeleter<UnBinData>()), std::shared_ptr<IModelFunction>(dynamic_cast<IModelFunction*>(func.Clone() ) ) ),
       fIsExtended(extended),
       fWeight(weight),
@@ -174,7 +173,7 @@ private:
 
    mutable std::vector<double> fGrad; // for derivatives
 
-   ::ROOT::Fit::ExecutionPolicy fExecutionPolicy; // Execution policy
+   ::ROOT::EExecutionPolicy fExecutionPolicy; // Execution policy
 };
       // define useful typedef's
       // using LogLikelihoodFunction_v = LogLikelihoodFCN<ROOT::Math::IMultiGenFunction, ROOT::Math::IParametricFunctionMultiDimTempl<T>>;

@@ -58,6 +58,8 @@ intelligent fitting. See the RuleEnsemble class for more info.
 #include "TMVA/Tools.h"
 #include "TMVA/Types.h"
 
+#include <iomanip>
+
 ////////////////////////////////////////////////////////////////////////////////
 /// the main constructor for a Rule
 

@@ -32,9 +32,9 @@ TObjArray.
 */
 
 #include "TBranchRef.h"
-#include "TBuffer.h"
 #include "TTree.h"
 #include "TBasket.h"
+#include "TRefTable.h"
 #include "TFile.h"
 #include "TFriendElement.h"
 

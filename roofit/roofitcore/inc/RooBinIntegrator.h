@@ -19,6 +19,7 @@
 #include "RooAbsIntegrator.h"
 #include "RooNumIntConfig.h"
 #include <vector>
+#include <list>
 
 class RooBinIntegrator : public RooAbsIntegrator {
 public:

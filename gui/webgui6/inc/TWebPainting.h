@@ -11,7 +11,7 @@
 #ifndef ROOT_TWebPainting
 #define ROOT_TWebPainting
 
-#include "TList.h"
+#include "TObject.h"
 #include "TAttLine.h"
 #include "TAttFill.h"
 #include "TAttText.h"
@@ -22,7 +22,6 @@ class TColor;
 
 #include <string>
 
-/** Object used to store paint operations and deliver them to JSROOT */
 class TWebPainting : public TObject {
 
    protected:

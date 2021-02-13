@@ -26,6 +26,8 @@
 
 #include "RtypesCore.h"
 #include "TInterpreterValue.h"
+#include <string>
+#include <utility>
 
 namespace cling {
    class Value;

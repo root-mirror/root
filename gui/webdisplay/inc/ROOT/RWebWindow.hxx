@@ -1,9 +1,6 @@
-/// \file ROOT/RWebWindow.hxx
-/// \ingroup WebGui ROOT7
-/// \author Sergey Linev <s.linev@gsi.de>
-/// \date 2017-10-16
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Author: Sergey Linev <s.linev@gsi.de>
+// Date: 2017-10-16
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
@@ -127,6 +124,7 @@ private:
    ConnectionsList_t fConn;                         ///<! list of all accepted connections
    mutable std::mutex fConnMutex;                   ///<! mutex used to protect connection list
    unsigned fConnLimit{1};                          ///<! number of allowed active connections
+   std::string fConnToken;                          ///<! value of "token" URL parameter which should be provided for connecting window
    bool fNativeOnlyConn{false};                     ///<! only native connection are allowed, created by Show() method
    unsigned fMaxQueueLength{10};                    ///<! maximal number of queue entries
    WebWindowConnectCallback_t fConnCallback;        ///<! callback for connect event
@@ -189,6 +187,8 @@ private:
 
    void AssignCallbackThreadId();
 
+   std::string GetConnToken() const;
+
 public:
 
    RWebWindow();
@@ -222,15 +222,11 @@ public:
    /// returns configured window height (0 - default)
    unsigned GetHeight() const { return fHeight; }
 
-   /////////////////////////////////////////////////////////////////////////
-   /// Configure maximal number of allowed connections - 0 is unlimited
-   /// Will not affect already existing connections
-   /// Default is 1 - the only client is allowed
-   void SetConnLimit(unsigned lmt = 0) { fConnLimit = lmt; }
+   void SetConnLimit(unsigned lmt = 0);
 
-   /////////////////////////////////////////////////////////////////////////
-   /// returns configured connections limit (0 - default)
-   unsigned GetConnLimit() const { return fConnLimit; }
+   unsigned GetConnLimit() const;
+
+   void SetConnToken(const std::string &token = "");
 
    /////////////////////////////////////////////////////////////////////////
    /// configures maximal queue length of data which can be held by window

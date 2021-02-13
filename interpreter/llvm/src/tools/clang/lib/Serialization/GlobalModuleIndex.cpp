@@ -269,6 +269,13 @@ GlobalModuleIndex::getKnownModules(SmallVectorImpl<ModuleFile *> &ModuleFiles) {
   }
 }
 
+void GlobalModuleIndex::getKnownModuleFileNames(StringSet<> &ModuleFiles) {
+  ModuleFiles.clear();
+  for (unsigned I = 0, N = Modules.size(); I != N; ++I) {
+    ModuleFiles[Modules[I].FileName];
+  }
+}
+
 void GlobalModuleIndex::getModuleDependencies(
        ModuleFile *File,
        SmallVectorImpl<ModuleFile *> &Dependencies) {
@@ -300,13 +307,39 @@ bool GlobalModuleIndex::lookupIdentifier(StringRef Name, HitSet &Hits) {
     = *static_cast<IdentifierIndexTable *>(IdentifierIndex);
   IdentifierIndexTable::iterator Known = Table.find(Name);
   if (Known == Table.end()) {
-    return true;
+    return false;
   }
 
   SmallVector<unsigned, 2> ModuleIDs = *Known;
   for (unsigned I = 0, N = ModuleIDs.size(); I != N; ++I) {
     if (ModuleFile *MF = Modules[ModuleIDs[I]].File)
       Hits.insert(MF);
+  }
+
+  ++NumIdentifierLookupHits;
+  return true;
+}
+
+bool GlobalModuleIndex::lookupIdentifier(StringRef Name, FileNameHitSet &Hits) {
+  Hits.clear();
+
+  // If there's no identifier index, there is nothing we can do.
+  if (!IdentifierIndex)
+    return false;
+
+  // Look into the identifier index.
+  ++NumIdentifierLookups;
+  IdentifierIndexTable &Table =
+      *static_cast<IdentifierIndexTable *>(IdentifierIndex);
+  IdentifierIndexTable::iterator Known = Table.find(Name);
+  if (Known == Table.end()) {
+    return false;
+  }
+
+  SmallVector<unsigned, 2> ModuleIDs = *Known;
+  for (unsigned I = 0, N = ModuleIDs.size(); I != N; ++I) {
+    assert(!Modules[ModuleIDs[I]].FileName.empty());
+    Hits.insert(Modules[ModuleIDs[I]].FileName);
   }
 
   ++NumIdentifierLookupHits;
@@ -389,9 +422,6 @@ namespace {
 
   /// \brief Builder that generates the global module index file.
   class GlobalModuleIndexBuilder {
-    FileManager &FileMgr;
-    const PCHContainerReader &PCHContainerRdr;
-
     /// Mapping from files to module file information.
     typedef llvm::MapVector<const FileEntry *, ModuleFileInfo> ModuleFilesMap;
 
@@ -431,14 +461,20 @@ namespace {
     }
 
   public:
-    explicit GlobalModuleIndexBuilder(
-        FileManager &FileMgr, const PCHContainerReader &PCHContainerRdr)
-        : FileMgr(FileMgr), PCHContainerRdr(PCHContainerRdr) {}
+    explicit GlobalModuleIndexBuilder(GlobalModuleIndex::UserDefinedInterestingIDs* ExternalIDs) {
+      if (!ExternalIDs)
+        return;
+
+      for (const auto & I : *ExternalIDs)
+        for (const FileEntry * J : I.getValue())
+          InterestingIdentifiers[I.getKey()].push_back(getModuleFileInfo(J).ID);
+    }
 
     /// \brief Load the contents of the given module file into the builder.
     ///
     /// \returns true if an error occurred, false otherwise.
-    bool loadModuleFile(const FileEntry *File);
+    bool loadModuleFile(const FileEntry *File, FileManager &FileMgr,
+                        const PCHContainerReader &PCHContainerRdr);
 
     /// \brief Write the index to the given bitstream.
     /// \returns true if an error occurred, false otherwise.
@@ -509,7 +545,9 @@ namespace {
   };
 }
 
-bool GlobalModuleIndexBuilder::loadModuleFile(const FileEntry *File) {
+bool GlobalModuleIndexBuilder::loadModuleFile(const FileEntry *File,
+                                              FileManager &FileMgr,
+                                    const PCHContainerReader &PCHContainerRdr) {
   // Open the module file.
 
   auto Buffer = FileMgr.getBufferForFile(File, /*isVolatile=*/true);
@@ -730,7 +768,8 @@ bool GlobalModuleIndexBuilder::writeIndex(llvm::BitstreamWriter &Stream) {
         // Verify Signature.
         return true;
     } else if (Info.StoredSize != File->getSize() ||
-               Info.StoredModTime != File->getModificationTime())
+               (Info.StoredModTime &&
+                Info.StoredModTime != File->getModificationTime()))
       // Verify Size and ModTime.
       return true;
   }
@@ -816,7 +855,9 @@ bool GlobalModuleIndexBuilder::writeIndex(llvm::BitstreamWriter &Stream) {
 GlobalModuleIndex::ErrorCode
 GlobalModuleIndex::writeIndex(FileManager &FileMgr,
                               const PCHContainerReader &PCHContainerRdr,
-                              StringRef Path) {
+                              StringRef Path,
+                       UserDefinedInterestingIDs *ExternalIDs /* = nullptr */) {
+
   llvm::SmallString<128> IndexPath;
   IndexPath += Path;
   llvm::sys::path::append(IndexPath, IndexFileName);
@@ -839,32 +880,34 @@ GlobalModuleIndex::writeIndex(FileManager &FileMgr,
   }
 
   // The module index builder.
-  GlobalModuleIndexBuilder Builder(FileMgr, PCHContainerRdr);
+  GlobalModuleIndexBuilder Builder(ExternalIDs);
 
-  // Load each of the module files.
-  std::error_code EC;
-  for (llvm::sys::fs::directory_iterator D(Path, EC), DEnd;
-       D != DEnd && !EC;
-       D.increment(EC)) {
-    // If this isn't a module file, we don't care.
-    if (llvm::sys::path::extension(D->path()) != ".pcm") {
-      // ... unless it's a .pcm.lock file, which indicates that someone is
-      // in the process of rebuilding a module. They'll rebuild the index
-      // at the end of that translation unit, so we don't have to.
-      if (llvm::sys::path::extension(D->path()) == ".pcm.lock")
-        return EC_Building;
+  if (!ExternalIDs) {
+    // Load each of the module files.
+    std::error_code EC;
+    for (llvm::sys::fs::directory_iterator D(Path, EC), DEnd;
+         D != DEnd && !EC;
+         D.increment(EC)) {
+      // If this isn't a module file, we don't care.
+      if (llvm::sys::path::extension(D->path()) != ".pcm") {
+        // ... unless it's a .pcm.lock file, which indicates that someone is
+        // in the process of rebuilding a module. They'll rebuild the index
+        // at the end of that translation unit, so we don't have to.
+        if (llvm::sys::path::extension(D->path()) == ".pcm.lock")
+          return EC_Building;
 
-      continue;
+        continue;
+      }
+
+      // If we can't find the module file, skip it.
+      const FileEntry *ModuleFile = FileMgr.getFile(D->path());
+      if (!ModuleFile)
+        continue;
+
+      // Load this module file.
+      if (Builder.loadModuleFile(ModuleFile, FileMgr, PCHContainerRdr))
+        return EC_IOError;
     }
-
-    // If we can't find the module file, skip it.
-    const FileEntry *ModuleFile = FileMgr.getFile(D->path());
-    if (!ModuleFile)
-      continue;
-
-    // Load this module file.
-    if (Builder.loadModuleFile(ModuleFile))
-      return EC_IOError;
   }
 
   // The output buffer, into which the global index will be written.

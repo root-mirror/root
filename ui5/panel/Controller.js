@@ -17,8 +17,8 @@ sap.ui.define([
 
          if (data && data.handle) {
             this.websocket = data.handle;
-            this.websocket.SetReceiver(this); // redirect websocket handling on controller itself
-            this.websocket.Send("PANEL_READY"); // confirm panel creation, only then GUI can send commands
+            this.websocket.setReceiver(this); // redirect websocket handling on controller itself
+            this.websocket.send("PANEL_READY"); // confirm panel creation, only then GUI can send commands
          }
 
          // TODO: use more specific API between Canvas and Panel
@@ -30,18 +30,18 @@ sap.ui.define([
             this.onPanelInit();
       },
 
-      OnWebsocketOpened: function(handle) {
+      onWebsocketOpened: function(handle) {
          console.log('Connection established - should never happen');
       },
 
-      OnWebsocketMsg: function(handle, msg, offset) {
+      onWebsocketMsg: function(handle, msg, offset) {
          if (typeof this.onPanelReceive == 'function')
             this.onPanelReceive(msg, offset);
          else
             console.log('GuiPanel Get message ' + msg);
       },
 
-      OnWebsocketClosed: function(handle) {
+      onWebsocketClosed: function(handle) {
           console.log('GuiPanel closed');
           if (window) window.open('','_self').close(); // window.close();
           delete this.websocket; // remove reference on websocket
@@ -54,7 +54,7 @@ sap.ui.define([
 
       panelSend: function(msg) {
          if (this.websocket)
-            this.websocket.Send(msg);
+            this.websocket.send(msg);
          else
             console.error('No connection available to send message');
       },
@@ -63,7 +63,7 @@ sap.ui.define([
          if (typeof this.onPanelExit == 'function')
             this.onPanelExit();
          if (this.websocket) {
-            this.websocket.Close();
+            this.websocket.close();
             delete this.websocket;
          }
       },

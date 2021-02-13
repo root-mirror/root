@@ -10,6 +10,7 @@
 /// This macro was created for the evaluation of Computational Physics course in 2006.
 /// We thank to Prof. Inkyu Park for his special lecture on ROOT and to all of ROOT team
 ///
+/// \image html geom_robot.png width=500px
 /// \macro_code
 ///
 /// \author Jin Hui Hwang, Dept. of Physics, Univ. of Seoul

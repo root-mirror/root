@@ -39,10 +39,10 @@ def getParams():
    makePCHInput.py WWW XXX YYY ZZZ -- CXXFLAGS
    """
    argv = sys.argv
-   rootSrcDir, modules, expPyROOT = argv[1:4]
+   rootSrcDir, modules, legacyPyROOT = argv[1:4]
    clingetpchList = argv[4:]
 
-   return rootSrcDir, modules, expPyROOT == 'ON', clingetpchList
+   return rootSrcDir, modules, legacyPyROOT == 'ON', clingetpchList
 
 #-------------------------------------------------------------------------------
 def getGuardedStlInclude(headerName):
@@ -212,7 +212,7 @@ def isAnyPatternInString(patterns,theString):
    return False
 
 #-------------------------------------------------------------------------------
-def isDirForPCH(dirName, expPyROOT):
+def isDirForPCH(dirName, legacyPyROOT):
    """
    Check if the directory corresponds to a module whose headers must belong to
    the PCH
@@ -234,10 +234,10 @@ def isDirForPCH(dirName, expPyROOT):
                            "roofit/",
                            "tmva",
                            "main"]
-   if expPyROOT:
-      PCHPatternsWhitelist.append("bindings/tpython")
+   if legacyPyROOT:
+      PCHPatternsWhitelist.append("bindings/pyroot_legacy")
    else:
-      PCHPatternsWhitelist.append("bindings/pyroot")
+      PCHPatternsWhitelist.append("bindings/tpython")
 
    PCHPatternsBlacklist = ["gui/guihtml",
                            "gui/guibuilder",
@@ -441,7 +441,7 @@ def makePCHInput():
       * etc/dictpch/allHeaders.h
       * etc/dictpch/allCppflags.txt
    """
-   rootSrcDir, modules, expPyROOT, clingetpchList = getParams()
+   rootSrcDir, modules, legacyPyROOT, clingetpchList = getParams()
 
    outdir = os.path.join("etc","dictpch")
    allHeadersFilename = os.path.join(outdir,"allHeaders.h")
@@ -468,7 +468,7 @@ def makePCHInput():
    allIncPathsList = []
    for dictName in dictNames:
       dirName = getDirName(dictName)
-      if not isDirForPCH(dirName, expPyROOT): continue
+      if not isDirForPCH(dirName, legacyPyROOT): continue
 
       selModules.add(dirName)
 

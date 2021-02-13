@@ -9,17 +9,11 @@
  *************************************************************************/
 
 #include "TGCanvas.h"
-#include "TGFrame.h"
-#include "TClass.h"
 #include "TGWindow.h"
 #include "TGResourcePool.h"
-#include "Riostream.h"
-#include "TSystem.h"
-#include "TImage.h"
-#include "TEnv.h"
-#include "TGToolTip.h"
+#include <iostream>
+#include <iomanip>
 #include "TGWidget.h"
-#include "TGPicture.h"
 #include "TRandom3.h"
 #include "TVirtualTableInterface.h"
 #include "TGTable.h"
@@ -29,7 +23,6 @@
 #include "TGTableContainer.h"
 #include "TGScrollBar.h"
 #include "TGButton.h"
-#include "TGNumberEntry.h"
 #include "TGTextEntry.h"
 #include "TGLabel.h"
 #include "TColor.h"

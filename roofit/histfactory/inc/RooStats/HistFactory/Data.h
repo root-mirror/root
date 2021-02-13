@@ -30,23 +30,24 @@ public:
   /// constructor from name, file and path. Name of the histogram should not include the path
   Data( std::string HistoName, std::string InputFile, std::string HistoPath="" );
 
-  std::string GetName() { return fName; }
+  std::string GetName() const { return fName; }
   void SetName(const std::string& name) { fName=name; }
   
   void SetInputFile(const std::string& InputFile) { fInputFile = InputFile; }
-  std::string GetInputFile() { return fInputFile; }
+  std::string GetInputFile() const { return fInputFile; }
 
   void SetHistoName(const std::string& HistoName) { fHistoName = HistoName; }
-  std::string GetHistoName() { return fHistoName; }
+  std::string GetHistoName() const { return fHistoName; }
 
   void SetHistoPath(const std::string& HistoPath) { fHistoPath = HistoPath; }
-  std::string GetHistoPath() { return fHistoPath; }
+  std::string GetHistoPath() const { return fHistoPath; }
 
   void Print(std::ostream& = std::cout);
   void PrintXML( std::ostream& );
   void writeToFile( std::string FileName, std::string DirName );
 
   TH1* GetHisto();
+  const TH1* GetHisto() const;  
   void SetHisto(TH1* Hist) { fhData = Hist; fHistoName=Hist->GetName(); }
   
 protected:

@@ -33,14 +33,14 @@
 
 #include "TColor.h"
 #include "TGFrame.h"
-#include "TMessage.h"
 #include "TGWidget.h"
 #include "TGButton.h"
 #include "TGDockableFrame.h"
 #include "TGWindow.h"
 #include "TList.h"
 #include "TVirtualX.h"
-#include "Riostream.h"
+
+#include <iostream>
 
 
 ClassImp(TGDockButton);

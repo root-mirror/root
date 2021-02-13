@@ -13,9 +13,9 @@
 
 
 #include "TPaveText.h"
+#include "TVirtualPaveStats.h"
 
-
-class TPaveStats : public TPaveText {
+class TPaveStats : public TPaveText, public TVirtualPaveStats {
 
 protected:
    Int_t         fOptFit;            ///< option Fit
@@ -36,7 +36,7 @@ public:
    virtual const char  *GetStatFormat() const {return fStatFormat.Data();}
    Int_t            GetOptFit() const;
    Int_t            GetOptStat() const;
-   TObject         *GetParent() const {return fParent;}
+   virtual TObject *GetParent() const {return fParent;}
    virtual void     Paint(Option_t *option="");
    virtual void     InsertText(const char *) { }
    virtual void     InsertLine() { }
@@ -49,10 +49,10 @@ public:
    virtual void     SetStatFormat(const char *format="6.4g");   // *MENU*
    void             SetOptFit(Int_t fit=1);                     // *MENU*
    void             SetOptStat(Int_t stat=1);                   // *MENU*
-   void             SetParent(TObject*obj) {fParent = obj;}
+   virtual void     SetParent(TObject*obj) {fParent = obj;}
    virtual void     UseCurrentStyle();
 
-   ClassDef(TPaveStats,4)  //A special TPaveText to draw histogram statistics.
+   ClassDef(TPaveStats,5)  //A special TPaveText to draw histogram statistics.
 };
 
 #endif

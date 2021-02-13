@@ -39,6 +39,7 @@
 #include "TVectorD.h"
 #include "TMVA/DecisionTree.h"
 #include "TMVA/RuleFit.h"
+#include <vector>
 
 namespace TMVA {
 

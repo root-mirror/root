@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "TList.h"
 #include "TROOT.h"
 
 namespace {
@@ -48,6 +49,21 @@ const std::vector<std::shared_ptr<ROOT::Experimental::RCanvas>> ROOT::Experiment
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
+/// Release list of held canvases pointers
+/// If no other shared pointers exists on the canvas, object will be destroyed
+
+void ROOT::Experimental::RCanvas::ReleaseHeldCanvases()
+{
+   std::vector<std::shared_ptr<ROOT::Experimental::RCanvas>> vect;
+
+   {
+      std::lock_guard<std::mutex> grd(GetHeldCanvasesMutex());
+
+      std::swap(vect, GetHeldCanvases());
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
 /// Returns true is canvas was modified since last painting
 
 bool ROOT::Experimental::RCanvas::IsModified() const
@@ -64,6 +80,23 @@ void ROOT::Experimental::RCanvas::Update(bool async, CanvasCallback_t callback)
       fPainter->CanvasUpdated(fModified, async, callback);
 }
 
+class RCanvasCleanup : public TObject {
+public:
+
+   static RCanvasCleanup *gInstance;
+
+   RCanvasCleanup() : TObject() { gInstance = this; }
+
+   virtual ~RCanvasCleanup()
+   {
+      gInstance = nullptr;
+      ROOT::Experimental::RCanvas::ReleaseHeldCanvases();
+   }
+};
+
+RCanvasCleanup *RCanvasCleanup::gInstance = nullptr;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /// Create new canvas instance
 
@@ -75,6 +108,14 @@ std::shared_ptr<ROOT::Experimental::RCanvas> ROOT::Experimental::RCanvas::Create
       std::lock_guard<std::mutex> grd(GetHeldCanvasesMutex());
       GetHeldCanvases().emplace_back(pCanvas);
    }
+
+   if (!RCanvasCleanup::gInstance) {
+      auto cleanup = new RCanvasCleanup();
+      TDirectory *dummydir = new TDirectory("rcanvas_cleanup_dummydir","title");
+      dummydir->GetList()->Add(cleanup);
+      gROOT->GetListOfClosedObjects()->Add(dummydir);
+   }
+
    return pCanvas;
 }
 
@@ -148,33 +189,10 @@ bool ROOT::Experimental::RCanvas::SaveAs(const std::string &filename)
    if (!fPainter)
       return false;
 
-   if (fModified == 0)
-      fModified = 1;
-
-   // ensure that snapshot is created
-   fPainter->CanvasUpdated(fModified, false, nullptr);
-
    auto width = fSize[0].fVal;
    auto height = fSize[1].fVal;
 
    return fPainter->ProduceBatchOutput(filename, width > 1 ? (int) width : 800, height > 1 ? (int) height : 600);
-/*
-
-   if (fModified == 0)
-      fModified = 1;
-
-   // TODO: for the future one have to ensure only batch connection is updated
-   Update(); // ensure that snapshot is created
-
-   if (filename.find(".json") != std::string::npos) {
-      fPainter->DoWhenReady("JSON", filename, async, callback);
-   } else if (filename.find(".svg") != std::string::npos)
-      fPainter->DoWhenReady("SVG", filename, async, callback);
-   else if (filename.find(".png") != std::string::npos)
-      fPainter->DoWhenReady("PNG", filename, async, callback);
-   else if ((filename.find(".jpg") != std::string::npos) || (filename.find(".jpeg") != std::string::npos))
-      fPainter->DoWhenReady("JPEG", filename, async, callback);
-*/
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -259,11 +277,52 @@ void ROOT::Experimental::RCanvas::ResolveSharedPtrs()
       for (auto n2 = n+1; n2 < vect.size(); ++n2) {
          if (vect[n2]->GetIOPtr() == vect[n]->GetIOPtr()) {
             if (vect[n2]->HasShared())
-               R__ERROR_HERE("Gpadv7") << "FATAL Shared pointer for same IO ptr already exists";
+               R__LOG_ERROR(GPadLog()) << "FATAL Shared pointer for same IO ptr already exists";
             else
                vect[n2]->SetShared(shrd_ptr);
          }
       }
 
    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// Apply attributes changes to the drawable
+/// Return mask with actions which were really applied
+
+std::unique_ptr<ROOT::Experimental::RDrawableReply> ROOT::Experimental::RChangeAttrRequest::Process()
+{
+   // suppress all changes coming from non-main connection
+   if (!GetContext().IsMainConn())
+      return nullptr;
+
+   auto canv = const_cast<ROOT::Experimental::RCanvas *>(GetContext().GetCanvas());
+   if (!canv) return nullptr;
+
+   if ((ids.size() != names.size()) || (ids.size() != values.size())) {
+      R__LOG_ERROR(GPadLog()) << "Mismatch of arrays size in RChangeAttrRequest";
+      return nullptr;
+   }
+
+   Version_t vers = 0;
+
+   for(int indx = 0; indx < (int) ids.size(); indx++) {
+      if (ids[indx] == "canvas") {
+         if (canv->GetAttrMap().Change(names[indx], values[indx].get())) {
+            if (!vers) vers = canv->IncModified();
+            canv->SetDrawableVersion(vers);
+         }
+      } else {
+         auto drawable = canv->FindPrimitiveByDisplayId(ids[indx]);
+         if (drawable && drawable->GetAttrMap().Change(names[indx], values[indx].get())) {
+            if (!vers) vers = canv->IncModified();
+            drawable->SetDrawableVersion(vers);
+         }
+      }
+   }
+
+   fNeedUpdate = (vers > 0) && update;
+
+   return nullptr; // no need for any reply
 }

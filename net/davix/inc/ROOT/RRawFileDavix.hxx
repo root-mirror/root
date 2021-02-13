@@ -20,12 +20,9 @@
 #include <memory>
 
 namespace ROOT {
-namespace Experimental {
-namespace Detail {
-
 namespace Internal {
+
 struct RDavixFileDes;
-}
 
 /**
  * \class RRawFileDavix RRawFileDavix.hxx
@@ -51,8 +48,7 @@ public:
    int GetFeatures() const final { return kFeatureHasSize; }
 };
 
-} // namespace Detail
-} // namespace Experimental
+} // namespace Internal
 } // namespace ROOT
 
 #endif

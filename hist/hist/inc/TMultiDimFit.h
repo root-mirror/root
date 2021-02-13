@@ -7,10 +7,10 @@
 #include "TNamed.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
-#include "TList.h"
 #include "TVirtualFitter.h"
 
 class TBrowser;
+class TList;
 
 class TMultiDimFit : public TNamed {
 

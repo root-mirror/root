@@ -41,7 +41,7 @@ Description of bayesian classifiers.
 #include "TMVA/Tools.h"
 #include "TMVA/Types.h"
 
-#include "Riostream.h"
+#include <iostream>
 #include "TString.h"
 
 REGISTER_METHOD(BayesClassifier)

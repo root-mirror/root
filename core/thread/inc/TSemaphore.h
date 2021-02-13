@@ -34,8 +34,8 @@ private:
    Int_t                   fValue;   // semaphore value
    UInt_t                  fWakeups; // wakeups
 
-   TSemaphore(const TSemaphore &s) = delete;             // not implemented
-   TSemaphore& operator=(const TSemaphore &s) = delete;  // not implemented
+   TSemaphore(const TSemaphore &s) = delete;
+   TSemaphore& operator=(const TSemaphore &s) = delete;
 
 public:
    TSemaphore(Int_t initial = 1);

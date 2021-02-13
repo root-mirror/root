@@ -1,11 +1,12 @@
 \begin{optiontableAuto}
-BatchSize        & \mc{1}{c}{--} & 30        & \mc{1}{c}{--} & Batch size used for this training phase. \\
+  BatchSize        & \mc{1}{c}{--} & 30       & \mc{1}{c}{--} & Batch size used for this training phase. \\
 ConvergenceSteps & \mc{1}{c}{--} & 100       & \mc{1}{c}{--} & Convergence criterion: Number of training epochs without improvement in test error to be performed before ending the training phase \\
+  MaxEpochs     &  \mc{1}{c}{--} & 2000  & \mc{1}{c}{--} & Maximum number of training epochs to exit before convergence.  \\ 
+  TestRepetitions  & \mc{1}{c}{--} & 7         & \mc{1}{c}{--} & Interval for evaluation of the test set error in epochs. \\
+  Optimizer          &  \mc{1}{c}{--} & ADAM         & ADAM, SGD, ADAGRAD, RMSPROP, ADADELTA & Type of optimizer used for this training strategy \\
 DropConfig       & \mc{1}{c}{--} & 0.0       & \mc{1}{c}{--} & Dropout fractions for each layer separated by '+' signs or a single number if the same for all layers.\\
 LearningRate     & \mc{1}{c}{--} & $10^{-5}$ & \mc{1}{c}{--} & Learning rate $\alpha$ to use for the current training phase.\\
 Momentum         & \mc{1}{c}{--} & 0.0       & \mc{1}{c}{--} & The momentum $p$ to use for the training. See section \ref{sec:dnn:update}.\\
 Regularization   & \mc{1}{c}{--} & NONE      & NONE, L1 ,L2  & Type of regularization \\
-Multithreading   & \mc{1}{c}{--} & T         & T, F          & Whether to use multithreading with the standard backend or not. Does not affect CPU and GPU backend. \\
-TestRepetitions  & \mc{1}{c}{--} & 7         & \mc{1}{c}{--} & Interval for evaluation of the test set error in epochs. \\
 WeightDecay      & \mc{1}{c}{--} & 0.0       & \mc{1}{c}{--} & Scaling factor applied to the L1 or L2 norms of the weight matrices when using regularization.
 \end{optiontableAuto}

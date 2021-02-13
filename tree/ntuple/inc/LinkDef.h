@@ -14,17 +14,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ nestedtypedefs;
-#pragma link C++ nestedclasses;
-
-// Support for auto-loading in the RNTuple tutorials
-#pragma link C++ class ROOT::Experimental::Detail::RFieldBase-;
-#pragma link C++ class ROOT::Experimental::Detail::RFieldBase::RSchemaIterator-;
-#pragma link C++ class ROOT::Experimental::RFieldVector-;
-#pragma link C++ class ROOT::Experimental::RNTupleReader-;
-#pragma link C++ class ROOT::Experimental::RNTupleWriter-;
-#pragma link C++ class ROOT::Experimental::RNTupleModel-;
-
-#pragma link C++ class ROOT::Experimental::Internal::RNTupleBlob+;
+#pragma link C++ class ROOT::Experimental::RNTuple+;
 
 #endif

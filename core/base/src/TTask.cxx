@@ -78,14 +78,15 @@ the following script:
 \image html base_tasks.png
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include "TTask.h"
 #include "TBrowser.h"
+#include "TList.h"
 #include "TROOT.h"
 #include "TRegexp.h"
 
-TTask *TTask::fgBeginTask  = 0;
-TTask *TTask::fgBreakPoint = 0;
+TTask *TTask::fgBeginTask  = nullptr;
+TTask *TTask::fgBreakPoint = nullptr;
 
 ClassImp(TTask);
 
@@ -163,6 +164,16 @@ TTask::~TTask()
    fTasks->Delete();
    delete fTasks;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Add TTask to this.
+
+void  TTask::Add(TTask *task) 
+{
+   fTasks->Add(task);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Abort current tree of tasks.

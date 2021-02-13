@@ -17,7 +17,7 @@
 
 #include "RStipples.h"
 #include "TPoint.h"
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 class TGLPadPainter;//For friend declarations.
 

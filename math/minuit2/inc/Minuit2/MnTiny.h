@@ -12,28 +12,25 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MnTiny {
 
 public:
+   MnTiny() : fOne(1.) {}
 
-  MnTiny() : fOne(1.) {}
+   ~MnTiny() {}
 
-  ~MnTiny() {}
+   double One() const;
 
-  double One() const;
-
-  double operator()(volatile double epsp1) const;
+   double operator()(volatile double epsp1) const;
 
 private:
-
-  double fOne;
+   double fOne;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnTiny
+#endif // ROOT_Minuit2_MnTiny

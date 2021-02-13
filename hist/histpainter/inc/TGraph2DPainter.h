@@ -57,9 +57,9 @@ protected:
    Int_t      *fMTried;       //!Pointer to fDelaunay->fMTried
 
 
-   TGraphDelaunay   *fDelaunay; // Pointer to the TGraphDelaunay2D to be painted
-   TGraphDelaunay2D *fDelaunay2D; // Pointer to the TGraphDelaunay2D to be painted
-   TGraph2D *fGraph2D;        // Pointer to the TGraph2D in fDelaunay
+   TGraphDelaunay   *fDelaunay; //! Pointer to the TGraphDelaunay2D to be painted
+   TGraphDelaunay2D *fDelaunay2D; //! Pointer to the TGraphDelaunay2D to be painted
+   TGraph2D *fGraph2D;        //! Pointer to the TGraph2D in fDelaunay
 
    void     FindTriangles();
    void     PaintLevels(Int_t *v, Double_t *x, Double_t *y, Int_t nblev=0, Double_t *glev=0);
@@ -84,7 +84,7 @@ public:
    void   PaintPolyLine(Option_t *option);
    void   PaintTriangles(Option_t *option);
 
-   ClassDef(TGraph2DPainter,1)  // TGraph2D painter
+   ClassDef(TGraph2DPainter,0)  // TGraph2D painter
 };
 
 #endif

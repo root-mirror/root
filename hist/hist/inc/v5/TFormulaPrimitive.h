@@ -25,12 +25,13 @@
 
 #include "TNamed.h"
 #include "TBits.h"
-#include "TObjArray.h"
+
+class TObjArray;
 
 namespace ROOT {
 
    namespace v5 {
-      
+
 class TFormula;
 
 class TFormulaPrimitive : public TNamed
@@ -96,5 +97,5 @@ public:
 
 } // end namespace ROOT
 
-      
+
 #endif

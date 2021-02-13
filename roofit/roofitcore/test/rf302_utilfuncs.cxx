@@ -22,7 +22,6 @@
 #include "RooAddition.h"
 #include "RooProduct.h"
 #include "RooPolyVar.h"
-#include "TCanvas.h"
 #include "TH1.h"
 
 using namespace RooFit ;

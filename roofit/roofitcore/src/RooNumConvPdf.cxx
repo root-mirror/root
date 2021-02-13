@@ -61,7 +61,6 @@ convolution precision.
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include "TH2F.h"
 #include "RooNumConvPdf.h"
 #include "RooArgList.h"
@@ -78,7 +77,7 @@ convolution precision.
 using namespace std;
 
 ClassImp(RooNumConvPdf);
-;
+
 
 
 

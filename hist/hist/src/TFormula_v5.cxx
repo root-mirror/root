@@ -11,9 +11,9 @@
 
 #include <cmath>
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TClass.h"
+#include "TBuffer.h"
 #include "v5/TFormula.h"
 #include "TMath.h"
 #include "TRandom.h"
@@ -24,6 +24,8 @@
 #include "v5/TFormulaPrimitive.h"
 #include "TInterpreter.h"
 #include "TVirtualMutex.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 #ifdef WIN32
 #pragma optimize("",off)

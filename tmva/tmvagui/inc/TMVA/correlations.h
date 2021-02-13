@@ -3,7 +3,7 @@
 #include "tmvaglob.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "TPaletteAxis.h"
+
 namespace TMVA{
 
    // this macro plots the correlation matrix of the various input

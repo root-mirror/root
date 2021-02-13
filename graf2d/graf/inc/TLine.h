@@ -16,9 +16,8 @@
 #include "TObject.h"
 #include "TAttLine.h"
 #include "TAttBBox2D.h"
-#include "TPoint.h"
-#include "GuiTypes.h"
 
+class TPoint;
 
 class TLine : public TObject, public TAttLine, public TAttBBox2D {
 

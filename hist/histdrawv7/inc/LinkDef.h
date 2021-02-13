@@ -22,9 +22,31 @@
 #pragma link C++ class ROOT::Experimental::Internal::RIOShared<ROOT::Experimental::Detail::RHistImplPrecisionAgnosticBase<2>>+;
 #pragma link C++ class ROOT::Experimental::Internal::RIOShared<ROOT::Experimental::Detail::RHistImplPrecisionAgnosticBase<3>>+;
 
+#pragma link C++ class ROOT::Experimental::RHistDrawableBase+;
+#pragma link C++ class ROOT::Experimental::RHistDrawableBase::RRequest+;
+#pragma link C++ class ROOT::Experimental::RHistDrawableBase::RReply+;
 #pragma link C++ class ROOT::Experimental::RHistDrawable<1>+;
 #pragma link C++ class ROOT::Experimental::RHistDrawable<2>+;
 #pragma link C++ class ROOT::Experimental::RHistDrawable<3>+;
+#pragma link C++ class ROOT::Experimental::RHist1Drawable+;
+#pragma link C++ class ROOT::Experimental::RHist2Drawable+;
+#pragma link C++ class ROOT::Experimental::RHist3Drawable+;
 
+
+#pragma link C++ class ROOT::Experimental::RHistDisplayItem+;
+
+#pragma link C++ class ROOT::Experimental::RDisplayHistStat+;
+
+#pragma link C++ class ROOT::Experimental::RHistStatBoxBase+;
+#pragma link C++ class ROOT::Experimental::RHistStatBoxBase::RRequest+;
+#pragma link C++ class ROOT::Experimental::RHistStatBoxBase::RReply+;
+
+#pragma link C++ class ROOT::Experimental::RHistStatBox<1>+;
+#pragma link C++ class ROOT::Experimental::RHistStatBox<2>+;
+#pragma link C++ class ROOT::Experimental::RHistStatBox<3>+;
+
+#pragma link C++ class ROOT::Experimental::RHist1StatBox+;
+#pragma link C++ class ROOT::Experimental::RHist2StatBox+;
+#pragma link C++ class ROOT::Experimental::RHist3StatBox+;
 
 #endif

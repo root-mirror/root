@@ -495,7 +495,7 @@ the plugin class of which an object will be created
 contains many plugin definitions, or by calls to
 `gROOT->GetPluginManager()->AddHandler()`.
 
-#### Library Autoloading
+#### Library AutoLoading
 
 When using a class in Cling, e.g. in an interpreted source file, ROOT
 will automatically load the library that defines this class. On

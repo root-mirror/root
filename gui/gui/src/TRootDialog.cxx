@@ -29,6 +29,7 @@
 #include "TGButton.h"
 #include "TObjString.h"
 #include "KeySymbols.h"
+#include "TVirtualX.h"
 
 extern TGTextEntry *gBlinkingEntry;
 

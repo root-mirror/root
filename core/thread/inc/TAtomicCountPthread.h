@@ -12,6 +12,10 @@
 #ifndef ROOT_TAtomicCountPthread
 #define ROOT_TAtomicCountPthread
 
+#ifndef ROOT_TAtomicCount
+# error This should be #included only by TAtomicCount.h. Please #include TAtomicCount.h.
+#endif //ROOT_TAtomicCount
+
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // TAtomicCountPthread                                                  //
@@ -30,15 +34,13 @@
 
 #include <pthread.h>
 
-#include "RtypesCore.h"
-
 class TAtomicCount {
 private:
    Long_t                  fCnt;     // counter
    mutable pthread_mutex_t fMutex;   // mutex used to lock counter
 
-   TAtomicCount(const TAtomicCount &);             // not implemented
-   TAtomicCount &operator=(const TAtomicCount &);  // not implemented
+   TAtomicCount(const TAtomicCount &) = delete;
+   TAtomicCount &operator=(const TAtomicCount &) = delete;
 
    class LockGuard {
    private:

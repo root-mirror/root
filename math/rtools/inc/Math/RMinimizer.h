@@ -5,7 +5,6 @@
 #ifndef ROOT_Math_RMinimizer
 #define ROOT_Math_RMinimizer
 
-
 #include "Math/Functor.h"
 
 #include "Math/IParamFunctionfwd.h"
@@ -13,6 +12,9 @@
 #include "Math/BasicMinimizer.h"
 
 #include "TMatrixD.h"
+
+#include <vector>
+#include <string>
 
 namespace ROOT {
    namespace Math{	

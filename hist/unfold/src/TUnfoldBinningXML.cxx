@@ -472,7 +472,7 @@ void TUnfoldBinningXML::AddAxisXML(TXMLNode *node) {
 /// Export a binning scheme to a stream in XML format.
 ///
 /// \param[in] binning the binning scheme to export
-/// \param[out] stream to write to
+/// \param[in] out stream to write to
 /// \param[in] writeHeader set true when writing the first binning
 /// scheme to this stream
 /// \param[in] writeFooter  set true when writing the last binning

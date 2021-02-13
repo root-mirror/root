@@ -68,6 +68,17 @@ TCpuMatrix<AReal>::operator TMatrixT<AReal>() const
    return B;
 }
 
+//____________________________________________________________________________
+template <typename AReal>
+TCpuMatrix<AReal> & TCpuMatrix<AReal>::operator=(const TMatrixT<AReal> &B)
+{
+   for (size_t j = 0; j < fNCols; j++) {
+      for (size_t i = 0; i < fNRows; i++) {
+         (*this)(i, j) = B(i, j);
+      }
+   }
+   return *this;
+}
 
 //____________________________________________________________________________
 template<typename AReal>

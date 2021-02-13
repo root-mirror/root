@@ -88,7 +88,7 @@ This class provides a way to edit the palette via a GUI.
 #include "TAttImage.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
-#include "Riostream.h"
+#include <iostream>
 #include "TColor.h"
 #include "TMath.h"
 #include "TStyle.h"

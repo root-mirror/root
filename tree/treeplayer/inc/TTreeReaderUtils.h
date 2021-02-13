@@ -26,6 +26,8 @@
 #include "TBranchProxy.h"
 #include "TTreeReaderValue.h"
 
+#include <string>
+
 class TDictionary;
 class TTree;
 

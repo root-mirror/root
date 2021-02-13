@@ -48,6 +48,7 @@
 
 #include "TMVA/MethodBase.h"
 #include "TMVA/IFitterTarget.h"
+#include <vector>
 
 class TFormula;
 

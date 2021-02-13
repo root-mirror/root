@@ -2,6 +2,8 @@
 #define INCLUDE_HISTFACTORYNAVIGATION_H
 
 #include <map>
+#include <vector>
+#include <string>
 
 #include "TH1.h"
 #include "THStack.h"
@@ -13,11 +15,10 @@
 
 namespace RooStats {
   class ModelConfig;
-  namespace HistFactory { 
+  namespace HistFactory {
 
     class HistFactoryNavigation {
 
-  
     public:
 
       /// Initialze based on an already-created HistFactory Model

@@ -1,6 +1,4 @@
-#include "gtest/gtest.h"
-
-#include <ROOT/RColumnElement.hxx>
+#include "ntuple_test.hxx"
 
 TEST(Packing, Bitfield)
 {

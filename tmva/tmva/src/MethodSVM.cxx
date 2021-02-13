@@ -68,11 +68,11 @@ SMO Platt's SVM classifier with Keerthi & Shavade improvements
 #include "TMVA/ResultsClassification.h"
 #include "TMVA/VariableInfo.h"
 
-#include "Riostream.h"
 #include "TFile.h"
 #include "TVectorD.h"
 #include "TMath.h"
 
+#include <iostream>
 #include <string>
 
 using std::vector;

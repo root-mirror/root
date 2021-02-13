@@ -15,19 +15,15 @@
 Implement TTree for a SQL backend
 */
 
-#include <Riostream.h>
 #include <vector>
 #include <map>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "TString.h"
-#include "TROOT.h"
-#include "TSystem.h"
 #include "TError.h"
-#include "TFile.h"
-#include "TTree.h"
 #include "TLeaf.h"
 #include "TBranch.h"
+#include "TList.h"
 
 #include "TSQLRow.h"
 #include "TSQLResult.h"

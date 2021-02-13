@@ -3,12 +3,14 @@
 ## \notebook
 ## Basic functionality: numerical 1st, and 3rd order derivatives w.r.t. observables and parameters
 ##
+## ```
 ## pdf = gauss(x,m,s)
+## ```
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -21,7 +23,7 @@ x = ROOT.RooRealVar("x", "x", -10, 10)
 mean = ROOT.RooRealVar("mean", "mean of gaussian", 1, -10, 10)
 sigma = ROOT.RooRealVar("sigma", "width of gaussian", 1, 0.1, 10)
 
-# Build gaussian p.d.f in terms of x, and sigma
+# Build gaussian pdf in terms of x, and sigma
 gauss = ROOT.RooGaussian("gauss", "gaussian PDF", x, mean, sigma)
 
 # Create and plot derivatives w.r.t. x

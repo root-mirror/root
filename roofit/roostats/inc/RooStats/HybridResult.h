@@ -18,6 +18,8 @@
 
 #include "RooStats/HypoTestResult.h"
 
+#include <vector>
+
 namespace RooStats {
 
    class HybridPlot;

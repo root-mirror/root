@@ -670,7 +670,7 @@ bool RScanner::TreatRecordDeclOrTypedefNameDecl(clang::TypeDecl* typeDecl)
 
    const ClassSelectionRule *selectedFromTypedef = typedefNameDecl ? fSelectionRules.IsDeclSelected(typedefNameDecl) : 0;
 
-   const ClassSelectionRule *selectedFromRecDecl = fSelectionRules.IsDeclSelected(recordDecl);
+   const ClassSelectionRule *selectedFromRecDecl = fSelectionRules.IsDeclSelected(recordDecl, false /* exclude typedef rules*/);
 
    const ClassSelectionRule *selected = typedefNameDecl ? selectedFromTypedef : selectedFromRecDecl;
 
@@ -685,15 +685,17 @@ bool RScanner::TreatRecordDeclOrTypedefNameDecl(clang::TypeDecl* typeDecl)
       return true;
 
    // Save the typedef
-   if (selectedFromTypedef){
+   if (selectedFromTypedef) {
       if (!IsElementPresent(fSelectedTypedefs, typedefNameDecl))
          fSelectedTypedefs.push_back(typedefNameDecl);
-      // Early exit here if we are not in presence of XML
-      if (!fSelectionRules.IsSelectionXMLFile()) return true;
+      // Don't generate a dictionary for the class underlying a typedef found
+      // for a file name match (eg. "defined_in")
+      if (!selectedFromRecDecl && selectedFromTypedef->HasAttributeFileName())
+         return true;
    }
 
-   if (fSelectionRules.IsSelectionXMLFile() && selected->IsFromTypedef()) {
-      if (!IsElementPresent(fSelectedTypedefs, typedefNameDecl))
+   if (selected->IsFromTypedef()) {
+      if (typedefNameDecl && !IsElementPresent(fSelectedTypedefs, typedefNameDecl))
          fSelectedTypedefs.push_back(typedefNameDecl);
       return true;
    }

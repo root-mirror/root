@@ -18,7 +18,6 @@
 #include "EnterUserCodeRAII.h"
 #include "ExternalInterpreterSource.h"
 #include "ForwardDeclPrinter.h"
-#include "IncrementalCUDADeviceCompiler.h"
 #include "IncrementalExecutor.h"
 #include "IncrementalParser.h"
 #include "MultiplexInterpreterCallbacks.h"
@@ -32,6 +31,7 @@
 #include "cling/Interpreter/DynamicExprInfo.h"
 #include "cling/Interpreter/DynamicLibraryManager.h"
 #include "cling/Interpreter/Exception.h"
+#include "cling/Interpreter/IncrementalCUDADeviceCompiler.h"
 #include "cling/Interpreter/LookupHelper.h"
 #include "cling/Interpreter/Transaction.h"
 #include "cling/Interpreter/Value.h"
@@ -153,7 +153,7 @@ namespace cling {
   }
 
   clang::SourceLocation Interpreter::getNextAvailableLoc() const {
-    return m_IncrParser->getLastMemoryBufferEndLoc().getLocWithOffset(1);
+    return m_IncrParser->getNextAvailableUniqueSourceLoc();
   }
 
   bool Interpreter::isInSyntaxOnlyMode() const {
@@ -207,7 +207,7 @@ namespace cling {
     m_UniqueCounter(parentInterp ? parentInterp->m_UniqueCounter + 1 : 0),
     m_PrintDebug(false), m_DynamicLookupDeclared(false),
     m_DynamicLookupEnabled(false), m_RawInputEnabled(false),
-    m_RedefinitionAllowed(false),
+    m_RuntimeOptions{},
     m_OptLevel(parentInterp ? parentInterp->m_OptLevel : -1) {
 
     if (handleSimpleOptions(m_Opts))
@@ -264,10 +264,6 @@ namespace cling {
       if (!m_Executor)
         return;
     }
-
-    // Tell the diagnostic client that we are entering file parsing mode.
-    DiagnosticConsumer& DClient = getCI()->getDiagnosticClient();
-    DClient.BeginSourceFile(getCI()->getLangOpts(), &PP);
 
     bool usingCxxModules = getSema().getLangOpts().Modules;
     if (usingCxxModules) {
@@ -446,7 +442,8 @@ namespace cling {
         Strm << "#include \"cling/Interpreter/RuntimeUniverse.h\"\n";
         if (EmitDefinitions)
           Strm << "namespace cling { class Interpreter; namespace runtime { "
-                  "Interpreter* gCling=(Interpreter*)" << ThisP << ";}}\n";
+                  "Interpreter* gCling=(Interpreter*)" << ThisP << ";\n"
+                  "RuntimeOptions* gClingOpts=(RuntimeOptions*)" << &this->m_RuntimeOptions << ";}}\n";
       } else {
         Strm << "#include \"cling/Interpreter/CValuePrinter.h\"\n"
              << "void* gCling";
@@ -810,7 +807,7 @@ namespace cling {
       wrapPoint = utils::getWrapPoint(wrapReadySource, getCI()->getLangOpts());
 
     CompilationOptions CO = makeDefaultCompilationOpts();
-    CO.EnableShadowing = m_RedefinitionAllowed && !isRawInputEnabled();
+    CO.EnableShadowing = m_RuntimeOptions.AllowRedefinition && !isRawInputEnabled();
 
     if (isRawInputEnabled() || wrapPoint == std::string::npos) {
       CO.DeclarationExtraction = 0;
@@ -873,10 +870,29 @@ namespace cling {
     if (getSema().isModuleVisible(M))
       return true;
 
+    // We cannot use #pragma clang module import because the on-demand modules
+    // may load a module in the middle of a function body for example. In this
+    // case this triggers an error:
+    // fatal error: import of module '...' appears within function '...'
+    //
+    // if (declare("#pragma clang module import \"" + M->Name + "\"") ==
+    // kSuccess)
+    //   return true;
+
     // FIXME: What about importing submodules such as std.blah. This disables
     // this functionality.
-    if (declare("#pragma clang module import \"" + M->Name + "\"") == kSuccess)
-      return true;
+    Preprocessor& PP = getCI()->getPreprocessor();
+    IdentifierInfo* II = PP.getIdentifierInfo(M->Name);
+    SourceLocation ValidLoc = getNextAvailableLoc();
+    bool success =
+       !getSema().ActOnModuleImport(ValidLoc, ValidLoc,
+                                    std::make_pair(II, ValidLoc)).isInvalid();
+
+    if (success) {
+      // Also make the module visible in the preprocessor to export its macros.
+      PP.makeModuleVisible(M, ValidLoc);
+      return success;
+    }
 
     if (complain) {
       if (M->IsSystem)
@@ -1503,8 +1519,11 @@ namespace cling {
     assert((T.getState() != Transaction::kRolledBack ||
             T.getState() != Transaction::kRolledBackWithErrors) &&
            "Transaction already rolled back.");
-    if (getOptions().ErrorOut)
+    if (getOptions().ErrorOut) {
+      // Tag the transaction as "won't need to be committed" (ROOT-10798).
+      T.setState(Transaction::kRolledBack);
       return;
+    }
 
     if (InterpreterCallbacks* callbacks = getCallbacks())
       callbacks->TransactionRollback(T);
@@ -1723,7 +1742,7 @@ namespace cling {
     m_Executor->runAtExitFuncs();
   }
 
-  void Interpreter::GenerateAutoloadingMap(llvm::StringRef inFile,
+  void Interpreter::GenerateAutoLoadingMap(llvm::StringRef inFile,
                                            llvm::StringRef outFile,
                                            bool enableMacros,
                                            bool enableLogs) {

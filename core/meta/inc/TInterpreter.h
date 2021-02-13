@@ -25,11 +25,14 @@
 #include "TDataType.h"
 #include "TDictionary.h"
 #include "TInterpreterValue.h"
+#include "TNamed.h"
 #include "TVirtualRWMutex.h"
 
 #include <map>
 #include <typeinfo>
 #include <vector>
+#include <string>
+#include <utility>
 
 class TClass;
 class TEnv;
@@ -38,6 +41,7 @@ class TMethod;
 class TObjArray;
 class TEnum;
 class TListOfEnums;
+class TSeqCollection;
 
 R__EXTERN TVirtualMutex *gInterpreterMutex;
 
@@ -117,16 +121,16 @@ public:
    };
    virtual Bool_t IsAutoParsingSuspended() const = 0;
 
-   class SuspendAutoloadingRAII {
+   class SuspendAutoLoadingRAII {
       TInterpreter *fInterp = nullptr;
       bool fOldValue;
 
    public:
-      SuspendAutoloadingRAII(TInterpreter *interp) : fInterp(interp)
+      SuspendAutoLoadingRAII(TInterpreter *interp) : fInterp(interp)
       {
-         fOldValue = fInterp->SetClassAutoloading(false);
+         fOldValue = fInterp->SetClassAutoLoading(false);
       }
-      ~SuspendAutoloadingRAII() { fInterp->SetClassAutoloading(fOldValue); }
+      ~SuspendAutoLoadingRAII() { fInterp->SetClassAutoLoading(fOldValue); }
    };
 
    typedef int (*AutoLoadCallBack_t)(const char*);
@@ -145,7 +149,6 @@ public:
    virtual void     ClearFileBusy() = 0;
    virtual void     ClearStack() = 0; // Delete existing temporary values
    virtual Bool_t   Declare(const char* code) = 0;
-   virtual void     EnableAutoLoading() = 0;
    virtual void     EndOfLineAction() = 0;
    virtual TClass  *GetClass(const std::type_info& typeinfo, Bool_t load) const = 0;
    virtual Int_t    GetExitCode() const = 0;
@@ -189,6 +192,7 @@ public:
                                    const char** classesHeaders,
                                    Bool_t lateRegistration = false,
                                    Bool_t hasCxxModule = false) = 0;
+   virtual void     AddAvailableIndentifiers(TSeqCollection&) = 0;
    virtual void     RegisterTClassUpdate(TClass *oldcl,DictFuncPtr_t dict) = 0;
    virtual void     UnRegisterTClassUpdate(const TClass *oldcl) = 0;
    virtual Int_t    SetClassSharedLibs(const char *cls, const char *libs) = 0;
@@ -259,7 +263,8 @@ public:
    virtual const char *MapCppName(const char*) const {return 0;}
    virtual void   SetAlloclockfunc(void (*)()) const {;}
    virtual void   SetAllocunlockfunc(void (*)()) const {;}
-   virtual int    SetClassAutoloading(int) const {return 0;}
+   virtual int    SetClassAutoLoading(int) const {return 0;}
+           int    SetClassAutoloading(int a) const { return SetClassAutoLoading(a); }  // Deprecated
    virtual int    SetClassAutoparsing(int) {return 0;};
    virtual void   SetErrmsgcallback(void * /* p */) const {;}
    virtual void   SetTempLevel(int /* val */) const {;}
@@ -404,8 +409,8 @@ public:
    virtual Long_t   ClassInfo_GetBaseOffset(ClassInfo_t* /* fromDerived */,
                                             ClassInfo_t* /* toBase */, void* /* address */ = 0, bool /*isderived*/ = true) const {return 0;}
    virtual int    ClassInfo_GetMethodNArg(ClassInfo_t * /* info */, const char * /* method */,const char * /* proto */, Bool_t /* objectIsConst */ = false, ROOT::EFunctionMatchMode /* mode */ = ROOT::kConversionMatch) const {return 0;}
-   virtual Bool_t ClassInfo_HasDefaultConstructor(ClassInfo_t * /* info */) const {return 0;}
-   virtual Bool_t ClassInfo_HasMethod(ClassInfo_t * /* info */, const char * /* name */) const {return 0;}
+   virtual Bool_t ClassInfo_HasDefaultConstructor(ClassInfo_t * /* info */, Bool_t = kFALSE) const {return kFALSE;}
+   virtual Bool_t ClassInfo_HasMethod(ClassInfo_t * /* info */, const char * /* name */) const {return kFALSE;}
    virtual void   ClassInfo_Init(ClassInfo_t * /* info */, const char * /* funcname */) const {;}
    virtual void   ClassInfo_Init(ClassInfo_t * /* info */, int /* tagnum */) const {;}
    virtual Bool_t ClassInfo_IsBase(ClassInfo_t * /* info */, const char * /* name */) const {return 0;}
@@ -449,7 +454,7 @@ public:
    // DataMemberInfo interface
    virtual int    DataMemberInfo_ArrayDim(DataMemberInfo_t * /* dminfo */) const {return 0;}
    virtual void   DataMemberInfo_Delete(DataMemberInfo_t * /* dminfo */) const {;}
-   virtual DataMemberInfo_t  *DataMemberInfo_Factory(ClassInfo_t * /* clinfo */ = 0) const {return 0;}
+   virtual DataMemberInfo_t  *DataMemberInfo_Factory(ClassInfo_t * /* clinfo */, TDictionary::EMemberSelection /*selection*/) const {return 0;}
    virtual DataMemberInfo_t  *DataMemberInfo_Factory(DeclId_t declid, ClassInfo_t* clinfo) const = 0;
    virtual DataMemberInfo_t  *DataMemberInfo_FactoryCopy(DataMemberInfo_t * /* dminfo */) const {return 0;}
    virtual Bool_t DataMemberInfo_IsValid(DataMemberInfo_t * /* dminfo */) const {return 0;}

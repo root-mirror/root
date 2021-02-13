@@ -120,8 +120,8 @@ The corresponding numbers are printed on standard output.
 #include "TMath.h"
 #include "TMatrix.h"
 #include "TList.h"
-#include "Riostream.h"
 
+#include <iostream>
 #include <iomanip>
 #include <cassert>
 

@@ -41,11 +41,11 @@ TProcessID *fPID in TRef points to the unique object TProcessUUID.
 The TRef uniqueID is directly the UUIDNumber=slot number.
 */
 
-#include "TROOT.h"
 #include "TProcessUUID.h"
 #include "THashList.h"
 #include "TBits.h"
 #include "TObjString.h"
+#include "TObjArray.h"
 #include "TUUID.h"
 
 ClassImp(TProcessUUID);

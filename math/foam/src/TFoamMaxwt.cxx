@@ -11,7 +11,7 @@ User defines no. of bins nBin,  nBin=1000 is  recommended
 wmax defines weight range (1,wmax), it is adjusted "manually"
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include "TH1.h"
 #include "TFoamMaxwt.h"
 

@@ -33,6 +33,7 @@ At most one manager instance per server is allowed.
 #include "TSocket.h"
 #include "TROOT.h"
 #include "TMath.h"
+#include "TObjString.h"
 
 ClassImp(TProofMgr);
 
@@ -774,26 +775,29 @@ void TProofMgr::ReplaceSubdirs(const char *fn, TString &fdst, TList &dirph)
 /// Upload files provided via the list 'src' (as TFileInfo or TObjString)
 /// to 'mss'. The path under 'mss' is determined by 'dest'; the following
 /// place-holders can be used in 'dest':
-///      <d0>, <d1>, <d2>, ...         referring to the n-th sub-component
-///                                    of the src path
-///      <bn>                          basename in the source path
-///      <bs>                          basename sans extension
-///      <ex>                          Extension
-///      <sn>                          serial number of file in the list
-///      <s0>                          as <sn> but zero padded
-///      <fn>                          the full file path
-///      <us>, <gr>                    the local user and group names.
-///      <pg>                          the users PROOF group
-///      <pa>                          immediate parent directory
-///      <gp>                          next-to immediate parent directory
+///
+/// Place-holder                | Meaning          |
+/// ----------------------------|------------------------------------
+/// \<d0\>, \<d1\>, \<d2\>, ... | referring to the n-th sub-component of the src path
+/// \<bn\>                      | basename in the source path
+/// \<bs\>                      | basename sans extension
+/// \<ex\>                      | Extension
+/// \<sn\>                      | serial number of file in the list
+/// \<s0\>                      | as \<sn\> but zero padded
+/// \<fn\>                      | the full file path
+/// \<us\>, \<gr\>              | the local user and group names.
+/// \<pg\>                      | the users PROOF group
+/// \<pa\>                      | immediate parent directory
+/// \<gp\>                      | next-to immediate parent directory
+///
 /// So, for example, if the source filename for the 99-th file is
 ///               protosrc://host//d0/d1/d2/d3/d4/d5/myfile
-/// then with dest = '/pool/user/<d3>/<d4>/<d5>/<s>/<bn>' and
+/// then with dest = '/pool/user/\<d3\>/\<d4\>/\<d5\>/\<sn\>/\<bn\>' and
 ///           mss = 'protodst://hostdst//nm/
 /// the corresponding destination path is
 ///           protodst://hostdst//nm/pool/user/d3/d4/d5/99/myfile
 ///
-/// If 'dest' is empty, <fn> is used.
+/// If 'dest' is empty, \<fn\> is used.
 ///
 /// Returns a TFileCollection with the destination files created; this
 /// TFileCollection is, for example, ready to be registered as dataset.
@@ -819,7 +823,7 @@ TFileCollection *TProofMgr::UploadFiles(TList *src,
    if (dest && strlen(dest) > 0) {
       TString dst(dest), dt;
       Ssiz_t from = 0;
-      TRegexp re("<d+[0-9]>");
+      TRegexp re("<d[0-9]+>");
       while (dst.Tokenize(dt, from, "/")) {
          if (dt.Contains(re)) {
             TParameter<Int_t> *pi = new TParameter<Int_t>(dt, -1);
@@ -965,20 +969,23 @@ TFileCollection *TProofMgr::UploadFiles(TList *src,
 /// line, with line beginning by '#' ignored (i.e. considered comments).
 /// The path under 'mss' is defined by 'dest'; the following
 /// place-holders can be used in 'dest':
-///      <d0>, <d1>, <d2>, ...         referring to the n-th sub-component
-///                                    of the src path
-///      <bn>                          basename in the source path
-///      <sn>                          serial number of file in the list
-///      <fn>                          the full file path
-///      <us>, <gr>                    the local user and group names.
+///
+/// Place-holder                | Meaning          |
+/// ----------------------------|------------------------------------
+/// \<d0\>, \<d1\>, \<d2\>, ... | referring to the n-th sub-component of the src path
+/// \<bn\>                      | basename in the source path
+/// \<sn\>                      | serial number of file in the list
+/// \<fn\>                      | the full file path
+/// \<us\>, \<gr\>              | the local user and group names.
+///
 /// So, for example, if the source filename for the 99-th file is
 ///               protosrc://host//d0/d1/d2/d3/d4/d5/myfile
-/// then with dest = '/pool/user/<d3>/<d4>/<d5>/<s>/<bn>' and
+/// then with dest = '/pool/user/\<d3\>/\<d4\>/\<d5\>/\<sn\>/\<bn\>' and
 ///           mss = 'protodst://hostdst//nm/
 /// the corresponding destination path is
 ///           protodst://hostdst//nm/pool/user/d3/d4/d5/99/myfile
 ///
-/// If 'dest' is empty, <fn> is used.
+/// If 'dest' is empty, \<fn\> is used.
 ///
 /// Returns a TFileCollection with the destination files created; this
 /// TFileCollection is, for example, ready to be registered as dataset.

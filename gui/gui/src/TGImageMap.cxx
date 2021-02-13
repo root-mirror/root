@@ -24,6 +24,7 @@
 #include "TGToolTip.h"
 #include "TList.h"
 #include "TArrayS.h"
+#include "TVirtualX.h"
 
 
 ClassImp(TGRegion);

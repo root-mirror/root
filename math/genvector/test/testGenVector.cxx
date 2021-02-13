@@ -16,7 +16,6 @@
 #include "Math/RotationZ.h"
 #include "Math/Quaternion.h"
 #include "Math/AxisAngle.h"
-#include "Math/EulerAngles.h"
 #include "Math/RotationZYX.h"
 
 #include "Math/LorentzRotation.h"

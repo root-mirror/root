@@ -25,13 +25,13 @@
 
 // Routines for doing layout of HTML tables
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <cmath>
 
 #include "TGHtml.h"
-
+#include "snprintf.h"
 
 // Default values for various table style parameters
 

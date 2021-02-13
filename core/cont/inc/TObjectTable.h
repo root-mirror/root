@@ -45,8 +45,8 @@ private:
    void       FixCollisions(Int_t index);
 
 private:
-   TObjectTable(const TObjectTable&);             // not implemented
-   TObjectTable& operator=(const TObjectTable&);  // not implemented
+   TObjectTable(const TObjectTable&) = delete;
+   TObjectTable& operator=(const TObjectTable&) = delete;
 
 public:
    TObjectTable(Int_t tableSize = 100);

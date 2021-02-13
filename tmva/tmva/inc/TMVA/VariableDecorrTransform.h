@@ -42,6 +42,8 @@
 
 #include "TMVA/VariableTransformBase.h"
 
+#include <vector>
+
 namespace TMVA {
 
    class VariableDecorrTransform : public VariableTransformBase {

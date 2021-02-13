@@ -59,6 +59,8 @@ protected:
    Double_t      fCpuTime;       //Cpu time
    Double_t      fDiskTime;      //Time spent in pure raw disk IO
    Double_t      fUnzipTime;     //Time spent uncompressing the data.
+   Long64_t      fUnzipInputSize;//Compressed bytes seen by the decompressor.
+   Long64_t      fUnzipObjSize;  //Uncompressed bytes produced by the decompressor.
    Double_t      fCompress;      //Tree compression factor
    TString       fName;          //name of this TTreePerfStats
    TString       fHostInfo;      //name of the host system, ROOT version and date
@@ -76,6 +78,10 @@ protected:
 
    BasketInfo &GetBasketInfo(TBranch *b, size_t basketNumber);
    BasketInfo &GetBasketInfo(size_t bi, size_t basketNumber);
+
+   virtual void SetFile(TFile *newfile) {
+      fFile = newfile;
+   }
 
 public:
    TTreePerfStats();
@@ -148,7 +154,7 @@ public:
 
    BasketList_t     GetDuplicateBasketCache() const;
 
-   ClassDef(TTreePerfStats, 7) // TTree I/O performance measurement
+   ClassDef(TTreePerfStats, 8) // TTree I/O performance measurement
 };
 
 #endif

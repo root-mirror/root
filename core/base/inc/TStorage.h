@@ -21,7 +21,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "RConfigure.h"
+// #include "RConfigure.h" // included via Rtypes.h
 #include "Rtypes.h"
 
 typedef void (*FreeHookFun_t)(void*, void *addr, size_t);

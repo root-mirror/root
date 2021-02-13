@@ -1,11 +1,10 @@
 #include <iostream>
-#include <fstream>
 #include <vector>
 
 #include <cmath>
 
 #include <TMath.h>
-#include <Math/SpecFunc.h>
+#include <Math/SpecFuncMathCore.h>
 
 #include <TApplication.h>
 

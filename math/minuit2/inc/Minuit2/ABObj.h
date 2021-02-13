@@ -14,143 +14,141 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-template<class mtype, class M, class T>
+template <class mtype, class M, class T>
 class ABObj {
 
 public:
-
-  typedef mtype Type;
+   typedef mtype Type;
 
 private:
+   ABObj() : fObject(M()), fFactor(T(0.)) {}
 
-  ABObj() : fObject(M()), fFactor(T(0.)) {}
+   ABObj &operator=(const ABObj &) { return *this; }
 
-  ABObj& operator=(const ABObj&) {return *this;}
+   template <class a, class b, class c>
+   ABObj(const ABObj<a, b, c> &) : fObject(M()), fFactor(T(0.))
+   {
+   }
 
-  template<class a, class b, class c>
-  ABObj(const ABObj<a,b,c>&) : fObject(M()), fFactor(T(0.)) {}
-
-  template<class a, class b, class c>
-  ABObj& operator=(const ABObj<a,b,c>&) {return *this;}
+   template <class a, class b, class c>
+   ABObj &operator=(const ABObj<a, b, c> &)
+   {
+      return *this;
+   }
 
 public:
+   ABObj(const M &obj) : fObject(obj), fFactor(T(1.)) {}
 
-  ABObj(const M& obj) : fObject(obj), fFactor(T(1.)) {}
+   ABObj(const M &obj, T factor) : fObject(obj), fFactor(factor) {}
 
-  ABObj(const M& obj, T factor) : fObject(obj), fFactor(factor) {}
+   ~ABObj() {}
 
-  ~ABObj() {}
+   ABObj(const ABObj &obj) : fObject(obj.fObject), fFactor(obj.fFactor) {}
 
-  ABObj(const ABObj& obj) :
-    fObject(obj.fObject), fFactor(obj.fFactor) {}
+   template <class b, class c>
+   ABObj(const ABObj<mtype, b, c> &obj) : fObject(M(obj.Obj())), fFactor(T(obj.f()))
+   {
+   }
 
-  template<class b, class c>
-  ABObj(const ABObj<mtype,b,c>& obj) :
-     fObject(M(obj.Obj() )), fFactor(T(obj.f() )) {}
+   const M &Obj() const { return fObject; }
 
-  const M& Obj() const {return fObject;}
-
-  T f() const {return fFactor;}
+   T f() const { return fFactor; }
 
 private:
-
-  M fObject;
-  T fFactor;
+   M fObject;
+   T fFactor;
 };
 
 class LAVector;
-template <> class ABObj<vec, LAVector, double> {
+template <>
+class ABObj<vec, LAVector, double> {
 
 public:
-
-  typedef vec Type;
+   typedef vec Type;
 
 private:
-
-  ABObj& operator=(const ABObj&) = delete;
+   ABObj &operator=(const ABObj &) = delete;
 
 public:
+   ABObj(const LAVector &obj) : fObject(obj), fFactor(double(1.)) {}
 
-  ABObj(const LAVector& obj) : fObject(obj), fFactor(double(1.)) {}
+   ABObj(const LAVector &obj, double factor) : fObject(obj), fFactor(factor) {}
 
-  ABObj(const LAVector& obj, double factor) : fObject(obj), fFactor(factor) {}
+   ~ABObj() {}
 
-  ~ABObj() {}
+   // remove copy constructure to Fix a problem in AIX
+   // should be able to use the compiler generated one
+   //   ABObj(const ABObj& obj) :
+   //     fObject(obj.fObject), fFactor(obj.fFactor) {}
 
-  // remove copy constructure to Fix a problem in AIX
-  // should be able to use the compiler generated one
-//   ABObj(const ABObj& obj) :
-//     fObject(obj.fObject), fFactor(obj.fFactor) {}
+   template <class c>
+   ABObj(const ABObj<vec, LAVector, c> &obj) : fObject(obj.fObject), fFactor(double(obj.fFactor))
+   {
+   }
 
-  template<class c>
-  ABObj(const ABObj<vec,LAVector,c>& obj) :
-    fObject(obj.fObject), fFactor(double(obj.fFactor)) {}
+   const LAVector &Obj() const { return fObject; }
 
-  const LAVector& Obj() const {return fObject;}
-
-  double f() const {return fFactor;}
+   double f() const { return fFactor; }
 
 private:
-
-  const LAVector& fObject;
-  double fFactor;
+   const LAVector &fObject;
+   double fFactor;
 };
 
 class LASymMatrix;
-template <> class ABObj<sym, LASymMatrix, double> {
+template <>
+class ABObj<sym, LASymMatrix, double> {
 
 public:
-
-  typedef sym Type;
+   typedef sym Type;
 
 private:
-
-  ABObj& operator=(const ABObj&) {return *this;}
+   ABObj &operator=(const ABObj &) { return *this; }
 
 public:
+   ABObj(const LASymMatrix &obj) : fObject(obj), fFactor(double(1.)) {}
 
-  ABObj(const LASymMatrix& obj) : fObject(obj), fFactor(double(1.)) {}
+   ABObj(const LASymMatrix &obj, double factor) : fObject(obj), fFactor(factor) {}
 
-  ABObj(const LASymMatrix& obj, double factor) : fObject(obj), fFactor(factor) {}
+   ~ABObj() {}
 
-  ~ABObj() {}
+   ABObj(const ABObj &obj) : fObject(obj.fObject), fFactor(obj.fFactor) {}
 
-  ABObj(const ABObj& obj) :
-    fObject(obj.fObject), fFactor(obj.fFactor) {}
+   template <class c>
+   ABObj(const ABObj<vec, LASymMatrix, c> &obj) : fObject(obj.fObject), fFactor(double(obj.fFactor))
+   {
+   }
 
-  template<class c>
-  ABObj(const ABObj<vec,LASymMatrix,c>& obj) :
-    fObject(obj.fObject), fFactor(double(obj.fFactor)) {}
+   const LASymMatrix &Obj() const { return fObject; }
 
-  const LASymMatrix& Obj() const {return fObject;}
-
-  double f() const {return fFactor;}
+   double f() const { return fFactor; }
 
 private:
-
-  const LASymMatrix& fObject;
-  double fFactor;
+   const LASymMatrix &fObject;
+   double fFactor;
 };
 
 // templated scaling operator *
-template<class mt, class M, class T>
-inline ABObj<mt, M, T> operator*(T f, const M& obj) {
-  return ABObj<mt, M, T>(obj, f);
+template <class mt, class M, class T>
+inline ABObj<mt, M, T> operator*(T f, const M &obj)
+{
+   return ABObj<mt, M, T>(obj, f);
 }
 
 // templated operator /
-template<class mt, class M, class T>
-inline ABObj<mt, M, T> operator/(const M& obj, T f) {
-  return ABObj<mt, M, T>(obj, T(1.)/f);
+template <class mt, class M, class T>
+inline ABObj<mt, M, T> operator/(const M &obj, T f)
+{
+   return ABObj<mt, M, T>(obj, T(1.) / f);
 }
 
 // templated unary operator -
-template<class mt, class M, class T>
-inline ABObj<mt,M,T> operator-(const M& obj) {
-  return ABObj<mt,M,T>(obj, T(-1.));
+template <class mt, class M, class T>
+inline ABObj<mt, M, T> operator-(const M &obj)
+{
+   return ABObj<mt, M, T>(obj, T(-1.));
 }
 
 /*
@@ -169,8 +167,8 @@ inline ABObj<vec,LAVector,double> operator-(const LAVector& obj) {
 }
 */
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_ABObj
+#endif // ROOT_Minuit2_ABObj

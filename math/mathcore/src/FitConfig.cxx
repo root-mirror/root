@@ -30,7 +30,6 @@
 //#define DEBUG
 #ifdef DEBUG
 #endif
-#include <iostream>
 
 namespace ROOT {
 

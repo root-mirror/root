@@ -1,63 +1,57 @@
 sap.ui.define([
-   'jquery.sap.global',
    'sap/ui/core/mvc/Controller',
    'sap/ui/core/Component',
    'sap/ui/model/json/JSONModel',
    'sap/ui/core/mvc/XMLView',
-   'sap/ui/core/Fragment',
    'sap/m/MessageToast',
    'sap/m/Dialog',
    'sap/m/List',
    'sap/m/InputListItem',
    'sap/m/Input',
    'sap/m/Button',
-   'sap/m/Label',
    'sap/ui/layout/Splitter',
-   'sap/ui/layout/SplitterLayoutData',
-   'sap/ui/unified/Menu',
-   'sap/ui/unified/MenuItem'
-], function (jQuery, Controller, Component, JSONModel, XMLView, Fragment, MessageToast, Dialog, List, InputListItem, Input, Button, Label, Splitter, SplitterLayoutData, Menu, MenuItem) {
+   'sap/ui/layout/SplitterLayoutData'
+], function (Controller, Component, JSONModel, XMLView, MessageToast, Dialog, List, InputListItem, Input, Button, Splitter, SplitterLayoutData) {
    "use strict";
 
-   var CController = Controller.extend("rootui5.canv.controller.Canvas", {
+   let CController = Controller.extend("rootui5.canv.controller.Canvas", {
       onInit : function() {
          this._Page = this.getView().byId("CanvasMainPage");
 
-         var id = this.getView().getId();
+         let id = this.getView().getId();
          console.log("Initialization CANVAS id = " + id);
 
          this.bottomVisible = false;
 
-         var model = new JSONModel({ GedIcon: "", StatusIcon: "", ToolbarIcon: "", TooltipIcon: "sap-icon://accept",
+         let model = new JSONModel({ GedIcon: "", StatusIcon: "", ToolbarIcon: "", TooltipIcon: "sap-icon://accept",
                                      StatusLbl1:"", StatusLbl2:"", StatusLbl3:"", StatusLbl4:"" });
          this.getView().setModel(model);
-         
-         var vd = this.getView().getViewData();
-         var cp = vd ? vd.canvas_painter : null;
+
+         let vd = this.getView().getViewData();
+         let cp = vd ? vd.canvas_painter : null;
 
          if (!cp) cp = Component.getOwnerComponentFor(this.getView()).getComponentData().canvas_painter;
 
          if (cp) {
-
             this.getView().byId("MainPanel").getController().setPainter(cp);
 
             cp.executeObjectMethod = this.executeObjectMethod.bind(this);
 
             // overwriting method of canvas with standalone handling of GED
-            cp.ActivateGed = this.openuiActivateGed.bind(this);
-            cp.RemoveGed = this.cleanupIfGed.bind(this);
-            cp.HasGed = this.isGedEditor.bind(this);
+            cp.activateGed = this.openuiActivateGed.bind(this);
+            cp.removeGed = this.cleanupIfGed.bind(this);
+            cp.hasGed = this.isGedEditor.bind(this);
 
-            cp.HasEventStatus = this.isStatusShown.bind(this);
-            cp.ActivateStatusBar = this.toggleShowStatus.bind(this);
-            cp.ShowCanvasStatus = this.showCanvasStatus.bind(this); // used only for UI5, otherwise global func
-            cp.ShowMessage = this.showMessage.bind(this);
-            cp.ShowSection = this.showSection.bind(this);
+            cp.hasEventStatus = this.isStatusShown.bind(this);
+            cp.activateStatusBar = this.toggleShowStatus.bind(this);
+            cp.showCanvasStatus = this.showCanvasStatus.bind(this); // used only for UI5, otherwise global func
+            cp.showMessage = this.showMessage.bind(this);
+            cp.showSection = this.showSection.bind(this);
 
-            cp.ShowUI5ProjectionArea = this.showProjectionArea.bind(this);
-            cp.DrawInUI5ProjectionArea = this.drawInProjectionArea.bind(this);
+            cp.showUI5ProjectionArea = this.showProjectionArea.bind(this);
+            cp.drawInUI5ProjectionArea = this.drawInProjectionArea.bind(this);
 
-            cp.ShowUI5Panel = this.showPanelInLeftArea.bind(this);
+            cp.showUI5Panel = this.showPanelInLeftArea.bind(this);
          }
 
          // this.toggleGedEditor();
@@ -71,7 +65,7 @@ sap.ui.define([
          }
 
          if (method.fName == "Inspect") {
-            painter.ShowInspector();
+            painter.showInspector();
             return true;
          }
 
@@ -89,44 +83,46 @@ sap.ui.define([
 
       },
 
+      /** @summary function used to activate GED in full canvas */
       openuiActivateGed: function(painter, kind, mode) {
-         // function used to activate GED in full canvas
 
-         this.showGeEditor(true);
+         let canvp = this.getCanvasPainter();
 
-         var canvp = this.getCanvasPainter();
+         return this.showGeEditor(true).then(() => {
+            canvp.selectObjectPainter(painter);
 
-         canvp.SelectObjectPainter(painter);
+            if (typeof canvp.processChanges == 'function')
+               canvp.processChanges("sbits", canvp);
 
-         if (typeof canvp.ProcessChanges == 'function')
-            canvp.ProcessChanges("sbits", canvp);
+            return true;
+         });
       },
 
       getCanvasPainter : function(also_without_websocket) {
-         var elem = this.getView().byId("MainPanel");
+         let elem = this.getView().byId("MainPanel");
 
-         var p = elem ? elem.getController().getPainter() : null;
+         let p = elem ? elem.getController().getPainter() : null;
 
          return (p && (p._websocket || also_without_websocket)) ? p : null;
       },
 
       closeMethodDialog : function(painter, method, menu_obj_id) {
 
-         var args = "";
+         let args = "";
 
          if (method) {
-            var cont = this.methodDialog.getContent();
+            let cont = this.methodDialog.getContent();
 
-            var items = cont[0].getItems();
+            let items = cont[0].getItems();
 
             if (method.fArgs.length !== items.length)
                alert('Mismatch between method description' + method.fArgs.length + ' and args list in dialog ' + items.length);
 
             // console.log('ITEMS', method.fArgs.length, items.length);
 
-            for (var k=0;k<method.fArgs.length;++k) {
-               var arg = method.fArgs[k];
-               var value = items[k].getContent()[0].getValue();
+            for (let k=0;k<method.fArgs.length;++k) {
+               let arg = method.fArgs[k];
+               let value = items[k].getContent()[0].getValue();
 
                if (value==="") value = arg.fDefault;
 
@@ -147,32 +143,32 @@ sap.ui.define([
 
          if (painter && method && args) {
 
-            if (painter.ExecuteMenuCommand(method, args)) return;
-            var exec = method.fExec;
+            if (painter.executeMenuCommand(method, args)) return;
+            let exec = method.fExec;
             if (args) exec = exec.substr(0,exec.length-1) + args + ')';
             // invoked only when user press Ok button
             console.log('execute method for object ' + menu_obj_id + ' exec= ' + exec);
 
-            var canvp = this.getCanvasPainter();
+            let canvp = this.getCanvasPainter();
 
             if (canvp)
-               canvp.SendWebsocket('OBJEXEC:' + menu_obj_id + ":" + exec);
+               canvp.sendWebsocket('OBJEXEC:' + menu_obj_id + ":" + exec);
          }
       },
 
       showMethodsDialog : function(painter, method, menu_obj_id) {
 
          // TODO: deliver class name together with menu items
-         method.fClassName = painter.GetClassName();
+         method.fClassName = painter.getClassName();
          if ((menu_obj_id.indexOf("#x")>0) || (menu_obj_id.indexOf("#y")>0) || (menu_obj_id.indexOf("#z")>0)) method.fClassName = "TAxis";
 
-         var items = [];
+         let items = [];
 
-         for (var n=0;n<method.fArgs.length;++n) {
-            var arg = method.fArgs[n];
+         for (let n=0;n<method.fArgs.length;++n) {
+            let arg = method.fArgs[n];
             arg.fValue = arg.fDefault;
             if (arg.fValue == '\"\"') arg.fValue = "";
-            var item = new InputListItem({
+            let item = new InputListItem({
                label: arg.fName + " (" +arg.fTitle + ")",
                content: new Input({ placeholder: arg.fName, value: arg.fValue })
             });
@@ -204,7 +200,7 @@ sap.ui.define([
       },
 
       onFileMenuAction : function (oEvent) {
-         //var oItem = oEvent.getParameter("item"),
+         //let oItem = oEvent.getParameter("item"),
          //    sItemPath = "";
          //while (oItem instanceof sap.m.MenuItem) {
          //   sItemPath = oItem.getText() + " > " + sItemPath;
@@ -212,25 +208,25 @@ sap.ui.define([
          //}
          //sItemPath = sItemPath.substr(0, sItemPath.lastIndexOf(" > "));
 
-         var p = this.getCanvasPainter();
+         let p = this.getCanvasPainter();
          if (!p) return;
 
-         var name = oEvent.getParameter("item").getText();
+         let name = oEvent.getParameter("item").getText();
 
          switch (name) {
-            case "Close canvas": p.OnWebsocketClosed(); p.CloseWebsocket(true); break;
-            case "Interrupt": p.SendWebsocket("INTERRUPT"); break;
-            case "Quit ROOT": p.SendWebsocket("QUIT"); break;
+            case "Close canvas": p.onWebsocketClosed(); p.closeWebsocket(true); break;
+            case "Interrupt": p.sendWebsocket("INTERRUPT"); break;
+            case "Quit ROOT": p.sendWebsocket("QUIT"); break;
             case "Canvas.png":
             case "Canvas.jpeg":
             case "Canvas.svg":
-               p.SaveCanvasAsFile(name);
+               p.saveCanvasAsFile(name);
                break;
             case "Canvas.root":
             case "Canvas.pdf":
             case "Canvas.ps":
             case "Canvas.C":
-               p.SendSaveCommand(name);
+               p.sendSaveCommand(name);
                break;
          }
 
@@ -238,26 +234,26 @@ sap.ui.define([
       },
 
       onCloseCanvasPress : function() {
-         var p = this.getCanvasPainter();
+         let p = this.getCanvasPainter();
          if (p) {
-            p.OnWebsocketClosed();
-            p.CloseWebsocket(true);
+            p.onWebsocketClosed();
+            p.closeWebsocket(true);
          }
       },
 
       onInterruptPress : function() {
-         var p = this.getCanvasPainter();
-         if (p) p.SendWebsocket("INTERRUPT");
+         let p = this.getCanvasPainter();
+         if (p) p.sendWebsocket("INTERRUPT");
       },
 
       onQuitRootPress : function() {
-         var p = this.getCanvasPainter();
-         if (p) p.SendWebsocket("QUIT");
+         let p = this.getCanvasPainter();
+         if (p) p.sendWebsocket("QUIT");
       },
 
       onReloadPress : function() {
-         var p = this.getCanvasPainter();
-         if (p) p.SendWebsocket("RELOAD");
+         let p = this.getCanvasPainter();
+         if (p) p.sendWebsocket("RELOAD");
       },
 
       isGedEditor : function() {
@@ -265,20 +261,20 @@ sap.ui.define([
       },
 
       showGeEditor : function(new_state) {
-         this.showLeftArea(new_state ? "Ged" : "");
+         return this.showLeftArea(new_state ? "Ged" : "");
       },
 
       cleanupIfGed: function() {
-         var ged = this.getLeftController("Ged"),
+         let ged = this.getLeftController("Ged"),
              p = this.getCanvasPainter();
-         if (p) p.RegisterForPadEvents(null);
+         if (p) p.registerForPadEvents(null);
          if (ged) ged.cleanupGed();
-         if (p && p.ProcessChanges) p.ProcessChanges("sbits", p);
+         if (p && p.processChanges) p.processChanges("sbits", p);
       },
 
       getLeftController: function(name) {
          if (this.getView().getModel().getProperty("/LeftArea") != name) return null;
-         var split = this.getView().byId("MainAreaSplitter");
+         let split = this.getView().byId("MainAreaSplitter");
          return split ? split.getContentAreas()[0].getController() : null;
       },
 
@@ -286,14 +282,16 @@ sap.ui.define([
          this.showGeEditor(!this.isGedEditor());
       },
 
-      showPanelInLeftArea: function(panel_name, panel_handle, call_back) {
+      showPanelInLeftArea: function(panel_name, panel_handle) {
 
-         var split = this.getView().byId("MainAreaSplitter");
-         var curr = this.getView().getModel().getProperty("/LeftArea");
-         if (!split || (curr === panel_name)) return JSROOT.CallBack(call_back, false);
+         let split = this.getView().byId("MainAreaSplitter");
+         let curr = this.getView().getModel().getProperty("/LeftArea");
+         if (!split || (curr === panel_name))
+            return Promise.resolve(false);
 
          // first need to remove existing
          if (curr) {
+            console.log('REMOVE CURRENT AREA', curr);
             this.cleanupIfGed();
             split.removeContentArea(split.getContentAreas()[0]);
          }
@@ -301,34 +299,39 @@ sap.ui.define([
          this.getView().getModel().setProperty("/LeftArea", panel_name);
          this.getView().getModel().setProperty("/GedIcon", (panel_name=="Ged") ? "sap-icon://accept" : "");
 
-         if (!panel_handle || !panel_name) return JSROOT.CallBack(call_back, false);
+         if (!panel_handle || !panel_name)
+            return Promise.resolve(false);
 
-         var oLd = new SplitterLayoutData({
+         let oLd = new SplitterLayoutData({
             resizable : true,
             size      : "250px"
          });
 
-         var viewName = panel_name;
+         let viewName = panel_name;
          if (viewName.indexOf(".") < 0) viewName = "rootui5.canv.view." + panel_name;
 
-         XMLView.create({
+         let can_elem = this.getView().byId("MainPanel");
+
+         return XMLView.create({
             viewName: viewName,
             viewData: { handle: panel_handle, masterPanel: this },
             layoutData: oLd,
             height: (panel_name == "Panel") ? "100%" : undefined
-         }).then(function(oView) {
+         }).then(oView => {
+            // workaround, while CanvasPanel.onBeforeRendering called too late
+            can_elem.getController().preserveCanvasContent();
             split.insertContentArea(oView, 0);
-            JSROOT.CallBack(call_back, true);
+            return true;
          });
 
       },
 
       // TODO: sync with showPanelInLeftArea, it is more or less same
-      showLeftArea: function(panel_name, call_back) {
-         var split = this.getView().byId("MainAreaSplitter");
-         var curr = this.getView().getModel().getProperty("/LeftArea");
+      showLeftArea: function(panel_name) {
+         let split = this.getView().byId("MainAreaSplitter");
+         let curr = this.getView().getModel().getProperty("/LeftArea");
          if (!split || (curr === panel_name))
-            return JSROOT.CallBack(call_back, null);
+            return Promise.resolve(null);
 
          // first need to remove existing
          if (curr) {
@@ -339,126 +342,129 @@ sap.ui.define([
          this.getView().getModel().setProperty("/LeftArea", panel_name);
          this.getView().getModel().setProperty("/GedIcon", (panel_name=="Ged") ? "sap-icon://accept" : "");
 
-         if (!panel_name) return JSROOT.CallBack(call_back, null);
+         if (!panel_name) return Promise.resolve(null);
 
-         var oLd = new SplitterLayoutData({
+         let oLd = new SplitterLayoutData({
             resizable: true,
             size: "250px"
          });
 
-         var canvp = this.getCanvasPainter();
+         let canvp = this.getCanvasPainter();
 
-         var viewName = "rootui5.canv.view." + panel_name;
+         let viewName = "rootui5.canv.view." + panel_name;
          if (panel_name == "FitPanel") viewName = "rootui5.fitpanel.view.FitPanel";
 
-         XMLView.create({
+         let can_elem = this.getView().byId("MainPanel");
+
+         return XMLView.create({
             viewName: viewName,
             viewData: { masterPanel: this },
             layoutData: oLd,
             height: (panel_name == "Panel") ? "100%" : undefined
-         }).then(function(oView) {
+         }).then(oView => {
+
+            // workaround, while CanvasPanel.onBeforeRendering called too late
+            can_elem.getController().preserveCanvasContent();
 
             split.insertContentArea(oView, 0);
 
             if (panel_name === "Ged") {
-               var ged = oView.getController();
-               if (canvp && ged && (typeof canvp.RegisterForPadEvents == "function")) {
-                  canvp.RegisterForPadEvents(ged.padEventsReceiver.bind(ged));
-                  canvp.SelectObjectPainter(canvp);
+               let ged = oView.getController();
+               if (canvp && ged && (typeof canvp.registerForPadEvents == "function")) {
+                  canvp.registerForPadEvents(ged.padEventsReceiver.bind(ged));
+                  canvp.selectObjectPainter(canvp);
                }
             }
 
-            JSROOT.CallBack(call_back, oView.getController());
+            return oView.getController();
          });
       },
 
-      getBottomController : function(can, call_back) {
+      getBottomController : function() {
          if (!this.bottomVisible) return null;
-         var split = this.getView().byId("MainAreaSplitter");
-         var cont = split.getContentAreas();
-         var vsplit = cont[cont.length-1];
-         var vcont = vsplit.getContentAreas();
-         var bottom = vcont[vcont.length-1];
+         let split = this.getView().byId("MainAreaSplitter"),
+             cont = split.getContentAreas(),
+             vsplit = cont[cont.length-1],
+             vcont = vsplit.getContentAreas(),
+             bottom = vcont[vcont.length-1];
          return bottom ? bottom.getController() : null;
       },
 
-      drawInProjectionArea : function(can, opt, call_back) {
-         var ctrl = this.getBottomController();
+      drawInProjectionArea : function(can, opt) {
+         let ctrl = this.getBottomController();
          if (!ctrl) ctrl = this.getLeftController("Panel");
 
          if (ctrl && ctrl.drawObject)
-            ctrl.drawObject(can, opt, call_back);
-         else
-            JSROOT.CallBack(call_back, null);
+            return ctrl.drawObject(can, opt);
+
+         return Promise.resolve(null);
       },
 
-      showProjectionArea : function(kind, call_back) {
-         this.showBottomArea((kind == "X"), function(bottom) {
-            this.showLeftArea(kind == "Y" ? "Panel" : "", function(left) {
+      showProjectionArea : function(kind) {
+         let bottom = null;
+         return this.showBottomArea(kind == "X")
+             .then(area => { bottom = area; return this.showLeftArea(kind == "Y" ? "Panel" : ""); })
+             .then(left => {
 
-               var ctrl = bottom || left;
+               let ctrl = bottom || left;
 
                if (!ctrl || ctrl.getView().getDomRef())
-                  return JSROOT.CallBack(call_back, !!ctrl);
+                  return Promise.resolve(!!ctrl);
 
-               if (ctrl.rendering_perfromed) console.log('Rendering already done');
-
-               // FIXME: one should have much easier way to get callback when rendering done
-               ctrl.after_render_callback = call_back;
+               return ctrl.getRenderPromise();
             });
-         }.bind(this));
       },
 
-      showBottomArea : function(is_on, call_back) {
+      showBottomArea : function(is_on) {
 
          if (this.bottomVisible == is_on)
-            return JSROOT.CallBack(call_back, this.getBottomController());
+            return Promise.resolve(this.getBottomController());
 
-         var split = this.getView().byId("MainAreaSplitter");
+         let split = this.getView().byId("MainAreaSplitter");
+         if (!split) return Promise.resolve(null);
 
-         if (!split) return JSROOT.CallBack(call_back, null);
-
-         var cont = split.getContentAreas();
+         let cont = split.getContentAreas();
 
          this.bottomVisible = !this.bottomVisible;
 
-         if (this.bottomVisible == false) {
+         if (!this.bottomVisible) {
             // vertical splitter exists - toggle it
 
-            var vsplit = cont[cont.length-1];
-            var main = vsplit.removeContentArea(0);
+            let vsplit = cont[cont.length-1],
+                main = vsplit.removeContentArea(0);
+
             vsplit.destroyContentAreas();
             split.removeContentArea(vsplit);
             split.addContentArea(main);
-            return JSROOT.CallBack(call_back, null);
+            return Promise.resolve(null);
          }
 
          // remove panel with normal drawing
          split.removeContentArea(cont[cont.length-1]);
-         var vsplit = new Splitter({orientation: "Vertical"});
+         let vsplit = new Splitter({orientation: "Vertical"});
 
          split.addContentArea(vsplit);
 
          vsplit.addContentArea(cont[cont.length-1]);
 
-         var oLd = new SplitterLayoutData({
+         let oLd = new SplitterLayoutData({
             resizable : true,
             size      : "200px"
          });
 
-         XMLView.create({
+         return XMLView.create({
             viewName : "rootui5.canv.view.Panel",
             layoutData: oLd,
             height: "100%"
-         }).then(function(oView) {
+         }).then(oView => {
             vsplit.addContentArea(oView);
-            JSROOT.CallBack(call_back, oView.getController());
+            return oView.getController();
          });
 
       },
 
       showCanvasStatus : function (text1,text2,text3,text4) {
-         var model = this.getView().getModel();
+         let model = this.getView().getModel();
          model.setProperty("/StatusLbl1", text1);
          model.setProperty("/StatusLbl2", text2);
          model.setProperty("/StatusLbl3", text3);
@@ -475,8 +481,8 @@ sap.ui.define([
          this._Page.setShowFooter(new_state);
          this.getView().getModel().setProperty("/StatusIcon", new_state ? "sap-icon://accept" : "");
 
-         var canvp = this.getCanvasPainter();
-         if (canvp) canvp.ProcessChanges("sbits", canvp);
+         let canvp = this.getCanvasPainter();
+         if (canvp) canvp.processChanges("sbits", canvp);
       },
 
       toggleToolBar : function(new_state) {
@@ -492,8 +498,8 @@ sap.ui.define([
 
          this.getView().getModel().setProperty("/TooltipIcon", new_state ? "sap-icon://accept" : "");
 
-         var p = this.getCanvasPainter(true);
-         if (p) p.SetTooltipAllowed(new_state);
+         let p = this.getCanvasPainter(true);
+         if (p) p.setTooltipAllowed(new_state);
       },
 
       setShowMenu: function(new_state) {
@@ -502,7 +508,7 @@ sap.ui.define([
 
       onViewMenuAction: function (oEvent) {
 
-         var item = oEvent.getParameter("item");
+         let item = oEvent.getParameter("item");
 
          switch (item.getText()) {
             case "Editor": this.toggleGedEditor(); break;
@@ -513,12 +519,12 @@ sap.ui.define([
       },
 
       onToolsMenuAction : function(oEvent) {
-         var item = oEvent.getParameter("item"),
+         let item = oEvent.getParameter("item"),
              name = item.getText();
 
          if (name != "Fit panel") return;
 
-         var curr = this.getView().getModel().getProperty("/LeftArea");
+         let curr = this.getView().getModel().getProperty("/LeftArea");
 
          this.showLeftArea(curr == "FitPanel" ? "" : "FitPanel");
       },
@@ -532,10 +538,11 @@ sap.ui.define([
          switch(that) {
             case "Menu": this.setShowMenu(on); break;
             case "StatusBar": this.toggleShowStatus(on); break;
-            case "Editor": this.showGeEditor(on); break;
+            case "Editor": return this.showGeEditor(on);
             case "ToolBar": this.toggleToolBar(on); break;
             case "ToolTips": this.toggleToolTip(on); break;
          }
+         return Promise.resolve(true);
       }
    });
 

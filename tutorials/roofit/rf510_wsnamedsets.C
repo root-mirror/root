@@ -1,12 +1,15 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Organization and simultaneous fits: working with named parameter sets and parameter snapshots in workspaces
+/// Organization and simultaneous fits: working with named parameter sets and parameter
+/// snapshots in workspaces
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author  04/2009 - Wouter Verkerke
+///
+/// \date April 2009
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -37,7 +40,7 @@ void rf510_wsnamedsets()
    // to use workspace contents w/o need for introspected
    RooAbsPdf *model = w->pdf("model");
 
-   // Generate data from p.d.f. in given observables
+   // Generate data from pdf in given observables
    RooDataSet *data = model->generate(*w->set("observables"), 1000);
 
    // Fit model to data
@@ -83,12 +86,12 @@ void fillWorkspace(RooWorkspace &w)
    RooGaussian sig1("sig1", "Signal component 1", x, mean, sigma1);
    RooGaussian sig2("sig2", "Signal component 2", x, mean, sigma2);
 
-   // Build Chebychev polynomial p.d.f.
+   // Build Chebychev polynomial pdf
    RooRealVar a0("a0", "a0", 0.5, 0., 1.);
    RooRealVar a1("a1", "a1", 0.2, 0., 1.);
    RooChebychev bkg("bkg", "Background", x, RooArgSet(a0, a1));
 
-   // Sum the signal components into a composite signal p.d.f.
+   // Sum the signal components into a composite signal pdf
    RooRealVar sig1frac("sig1frac", "fraction of component 1 in signal", 0.8, 0., 1.);
    RooAddPdf sig("sig", "Signal", RooArgList(sig1, sig2), sig1frac);
 
@@ -96,7 +99,7 @@ void fillWorkspace(RooWorkspace &w)
    RooRealVar bkgfrac("bkgfrac", "fraction of background", 0.5, 0., 1.);
    RooAddPdf model("model", "g1+g2+a", RooArgList(bkg, sig), bkgfrac);
 
-   // Import model into p.d.f.
+   // Import model into pdf
    w.import(model);
 
    // E n c o d e   d e f i n i t i o n   o f   p a r a m e t e r s   i n   w o r k s p a c e
@@ -116,7 +119,7 @@ void fillWorkspace(RooWorkspace &w)
    // E n c o d e   r e f e r e n c e   v a l u e   f o r   p a r a m e t e r s   i n   w o r k s p a c e
    // ---------------------------------------------------------------------------------------------------
 
-   // Define a parameter 'snapshot' in the p.d.f.
+   // Define a parameter 'snapshot' in the pdf
    // Unlike a named set, a parameter snapshot stores an independent set of values for
    // a given set of variables in the workspace. The values can be stored and reloaded
    // into the workspace variable objects using the loadSnapshot() and saveSnapshot()

@@ -36,6 +36,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 namespace TMVA {
 namespace DNN {
@@ -181,6 +182,19 @@ public:
    const Matrix_t &GetReshapedData() const { return fReshapedData; }
    Matrix_t &GetReshapedData() { return fReshapedData; }
 
+   std::vector<Matrix_t> GetExtraLayerParameters() const {
+      std::vector<Matrix_t> params(2);
+      params[0] = this->GetMuVector();
+      params[1] = this->GetVarVector();
+      return params;
+   }
+
+   void SetExtraLayerParameters(const std::vector<Matrix_t> & params)
+   {
+      this->GetMuVector() = params[0];
+      this->GetVarVector() = params[1];
+   }
+
 protected:
    static size_t CalculateNormDim(int axis, size_t c, size_t h, size_t w)
    {
@@ -256,7 +270,7 @@ auto TBatchNormLayer<Architecture_t>::Initialize() -> void
 {
    Matrix_t &gamma = this->GetWeightsAt(0);
    Matrix_t &beta = this->GetWeightsAt(1);
-   size_t bndim = gamma.GetNcols(); 
+   size_t bndim = gamma.GetNcols();
 
    initialize<Architecture_t>(beta, EInitialization::kZero);
    for (size_t i = 0; i < bndim; ++i) {
@@ -304,6 +318,12 @@ auto TBatchNormLayer<Architecture_t>::Forward(Tensor_t &x, bool inTraining) -> v
    }
 
    else {
+      // if (fTrainedBatches > 0) {
+      //    Architecture_t::PrintTensor(Tensor_t(this->GetWeightsAt(0)), "bnorm gamma");
+      //    Architecture_t::PrintTensor(Tensor_t(this->GetWeightsAt(1)), "bnorm beta");
+      //    Architecture_t::PrintTensor(Tensor_t(this->GetMuVector()), "bnorm mu");
+      //    Architecture_t::PrintTensor(Tensor_t(this->GetVarVector()), "bnorm var");
+      // }
       Architecture_t::BatchNormLayerForwardInference(fNormAxis, x2, this->GetWeightsAt(0), this->GetWeightsAt(1),
                                                      y2, this->GetMuVector(), this->GetVarVector(),
                                                      this->GetEpsilon(), descr->HelperDescriptor);
@@ -378,8 +398,8 @@ void TBatchNormLayer<Architecture_t>::AddWeightsXMLTo(void *parent)
    // write stored mean and variances
    //using Scalar_t = typename Architecture_t::Scalar_t;
 
-   this->WriteMatrixToXML(layerxml, "Training-mu", fMu_Training);
-   this->WriteMatrixToXML(layerxml, "Training-variance", fVar_Training);
+   this->WriteMatrixToXML(layerxml, "Training-mu", this->GetMuVector());
+   this->WriteMatrixToXML(layerxml, "Training-variance", this->GetVarVector());
 
    // write weights (gamma and beta)
    this->WriteMatrixToXML(layerxml, "Gamma", this->GetWeightsAt(0));
@@ -396,8 +416,8 @@ void TBatchNormLayer<Architecture_t>::ReadWeightsFromXML(void *parent)
    gTools().ReadAttr(parent, "Epsilon", fEpsilon);
    // Read layer weights and biases from XML
 
-   this->ReadMatrixXML(parent, "Training-mu", fMu_Training);
-   this->ReadMatrixXML(parent, "Training-variance", fVar_Training);
+   this->ReadMatrixXML(parent, "Training-mu", this->GetMuVector());
+   this->ReadMatrixXML(parent, "Training-variance", this->GetVarVector());
 
    this->ReadMatrixXML(parent, "Gamma", this->GetWeightsAt(0));
    this->ReadMatrixXML(parent, "Beta", this->GetWeightsAt(1));

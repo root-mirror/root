@@ -9,14 +9,17 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <cstring>
+#include <cstdio>
+#include <cctype>
 #include <cmath>
+#include <iostream>
+#include <fstream>
 
-#include "Riostream.h"
+#include "strlcpy.h"
 #include "TApplication.h"
 #include "TColor.h"
+#include "TDatime.h"
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TSystem.h"
@@ -154,6 +157,7 @@ TStyle::TStyle() :TNamed()
 ///   - `Pub`
 ///   - `Modern`
 ///   - `ATLAS`: style used by the ATLAS experiment
+///   - `BELLE2`: style used by the BELLE II experiment
 ///     (see the definition of these styles below).
 ///
 /// Note a side-effect of calling gStyle->SetFillColor(0). This is nearly
@@ -379,13 +383,91 @@ TStyle::TStyle(const char *name, const char *title)
       SetMarkerSize(1.2);
       SetHistLineWidth(2.);
       SetLineStyleString(2,"[12 12]");
-      SetErrorX(0.0001);   // get rid of X error bars (as recommended in ATLAS figure guidelines)
       SetEndErrorSize(0.); // get rid of error bar caps
       SetOptTitle(0);
       SetOptStat(0);
       SetOptFit(0);
       SetPadTickX(1);
       SetPadTickY(1);
+   }
+   if (strcmp(style_name,"BELLE2") == 0) {
+      // use plain black on white colors
+      Int_t icol=0; // WHITE
+      SetFrameBorderMode(icol);
+      SetFrameFillColor(icol);
+      SetCanvasBorderMode(icol);
+      SetCanvasColor(icol);
+      SetPadBorderMode(icol);
+      SetPadColor(icol);
+      SetStatColor(icol);
+      //SetFillColor(icol); // don't use: white fill color for *all* objects
+
+      // set the paper & margin sizes
+      SetPaperSize(20,26);
+
+      // set margin sizes
+      SetPadTopMargin(0.05);
+      SetPadRightMargin(0.05);
+      SetPadBottomMargin(0.16);
+      SetPadLeftMargin(0.16);
+
+      // set title offsets (for axis label)
+      SetTitleXOffset(1.0);
+      SetTitleYOffset(1.0);
+
+      // use large fonts
+      //Int_t font=72; // Helvetica italics
+      Int_t font=42; // Helvetica
+      Double_t tsize=0.05;
+      SetTextFont(font);
+      SetTextSize(tsize);
+
+      SetLabelFont(font,"x");
+      SetTitleFont(font,"x");
+      SetLabelFont(font,"y");
+      SetTitleFont(font,"y");
+      SetLabelFont(font,"z");
+      SetTitleFont(font,"z");
+
+      SetLabelSize(tsize,"x");
+      SetTitleSize(.065,"x");
+      SetLabelSize(tsize,"y");
+      SetTitleSize(.065,"y");
+      SetLabelSize(tsize,"z");
+      SetTitleSize(.065,"z");
+
+      SetTitleOffset(1.1,"x");
+      SetTitleOffset(1.1,"y");
+      SetTitleOffset(1.1,"z");
+
+      SetLabelOffset(0.015,"x");
+      SetLabelOffset(0.015,"y");
+      SetLabelOffset(0.015,"z");
+
+      SetTickLength(0.03,"x");
+      SetTickLength(0.02,"y");  // This way we slighty achive equal length ticks for x and y
+
+      // use bold lines and markers
+      SetMarkerStyle(20);
+      SetMarkerSize(0.9);
+      SetHistLineWidth(2);
+      SetLineStyleString(2,"[12 12]"); // postscript dashes
+
+      // get rid of X error bars
+      SetErrorX(0.001);
+      // get rid of error bar caps
+      SetEndErrorSize(0.);
+
+      // do not display any of the standard histogram decorations
+      SetOptTitle(0);
+      SetOptStat(0);
+      SetOptFit(0);
+
+      // put tick marks on top and RHS of plots
+      SetPadTickX(0);
+      SetPadTickY(0);
+
+      SetFrameLineWidth(2);
    }
 }
 
@@ -435,6 +517,7 @@ void TStyle::BuildStyles()
    new TStyle("Default","Equivalent to Classic");
    new TStyle("Modern", "Modern Style");
    new TStyle("ATLAS",  "ATLAS Style");
+   new TStyle("BELLE2", "Belle II Style");
    delete col;
 }
 
@@ -561,6 +644,7 @@ void TStyle::Copy(TObject &obj) const
    ((TStyle&)obj).fTitlePS        = fTitlePS;
    ((TStyle&)obj).fLineScalePS    = fLineScalePS;
    ((TStyle&)obj).fJoinLinePS     = fJoinLinePS;
+   ((TStyle&)obj).fCapLinePS      = fCapLinePS;
    ((TStyle&)obj).fColorModelPS   = fColorModelPS;
    ((TStyle&)obj).fTimeOffset     = fTimeOffset;
    ((TStyle&)obj).fImageScaling   = fImageScaling;
@@ -691,6 +775,7 @@ void TStyle::Reset(Option_t *opt)
    fAttDate.SetTextAlign(11);
    SetLineScalePS();
    SetJoinLinePS();
+   SetCapLinePS();
    SetColorModelPS();
    SetLineStyleString(1," ");
    SetLineStyleString(2,"12 12");
@@ -878,7 +963,6 @@ void TStyle::Reset(Option_t *opt)
       SetMarkerSize(1.2);
       SetHistLineWidth(2.);
       SetLineStyleString(2,"[12 12]");
-      SetErrorX(0.0001);
       SetEndErrorSize(0.);
       SetOptTitle(0);
       SetOptStat(0);
@@ -886,6 +970,59 @@ void TStyle::Reset(Option_t *opt)
       SetPadTickX(1);
       SetPadTickY(1);
       return;
+   }
+   if (strcmp(style_name,"BELLE2") == 0) {
+      Int_t icol=0;
+      SetFrameBorderMode(icol);
+      SetFrameFillColor(icol);
+      SetCanvasBorderMode(icol);
+      SetCanvasColor(icol);
+      SetPadBorderMode(icol);
+      SetPadColor(icol);
+      SetStatColor(icol);
+      SetPaperSize(20,26);
+      SetPadTopMargin(0.05);
+      SetPadRightMargin(0.05);
+      SetPadBottomMargin(0.16);
+      SetPadLeftMargin(0.16);
+      SetTitleXOffset(1.0);
+      SetTitleYOffset(1.0);
+      Int_t font=42;
+      Double_t tsize=0.05;
+      SetTextFont(font);
+      SetTextSize(tsize);
+      SetLabelFont(font,"x");
+      SetTitleFont(font,"x");
+      SetLabelFont(font,"y");
+      SetTitleFont(font,"y");
+      SetLabelFont(font,"z");
+      SetTitleFont(font,"z");
+      SetLabelSize(tsize,"x");
+      SetTitleSize(.065,"x");
+      SetLabelSize(tsize,"y");
+      SetTitleSize(.065,"y");
+      SetLabelSize(tsize,"z");
+      SetTitleSize(.065,"z");
+      SetTitleOffset(1.1,"x");
+      SetTitleOffset(1.1,"y");
+      SetTitleOffset(1.1,"z");
+      SetLabelOffset(0.015,"x");
+      SetLabelOffset(0.015,"y");
+      SetLabelOffset(0.015,"z");
+      SetTickLength(0.03,"x");
+      SetTickLength(0.02,"y");
+      SetMarkerStyle(20);
+      SetMarkerSize(0.9);
+      SetHistLineWidth(2);
+      SetLineStyleString(2,"[12 12]");
+      SetErrorX(0.001);
+      SetEndErrorSize(0.);
+      SetOptTitle(0);
+      SetOptStat(0);
+      SetOptFit(0);
+      SetPadTickX(0);
+      SetPadTickY(0);
+      SetFrameLineWidth(2);
    }
 }
 
@@ -1058,12 +1195,11 @@ Float_t TStyle::GetTitleSize( Option_t *axis) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Show the options from the current style
+/// Copy this style to gStyle.
 
-void TStyle::Paint(Option_t *option)
+void TStyle::Paint(Option_t *)
 {
-   gROOT->ProcessLine(Form("TStyleManager::PaintStyle((TStyle*)0x%lx,\"%s\")",
-                           (ULong_t)this,option));
+   Copy(*gStyle);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1390,6 +1526,9 @@ void TStyle::SetOptDate(Int_t optdate)
 ///  -  When "v"=2 all parameters are shown.
 ///
 ///  #### Notes:
+///
+///  - never call `SetOptFit(000111);` but `SetOptFit(111)`, 000111 will
+///    be taken as an octal number !!
 ///  - `gStyle->SetOptFit(1)` is a shortcut allowing to set the most common
 ///    case and is equivalent to `gStyle->SetOptFit(111)`
 ///  - At ROOT startup the option fit is set to `0`. So, to see the fit parameters
@@ -1438,7 +1577,7 @@ void TStyle::SetOptFit(Int_t mode)
 ///
 ///  #### Notes:
 ///
-///  - never call `SetOptStat(000111);` but `SetOptStat(1111)`, 0001111 will
+///  - never call `SetOptStat(000111);` but `SetOptStat(111)`, 000111 will
 ///    be taken as an octal number !!
 ///  - `SetOptStat(1)` is s shortcut allowing to set the most common case, and is
 ///    taken as `SetOptStat(1111)` (for backward compatibility with older versions.
@@ -1925,6 +2064,7 @@ void TStyle::SavePrimitive(std::ostream &out, Option_t * /*= ""*/)
                                             <<quote                  <<");"<<std::endl;
    out<<"   "<<"tmpStyle->SetLineScalePS("    <<GetLineScalePS()       <<");"<<std::endl;
    out<<"   "<<"tmpStyle->SetJoinLinePS("    <<GetJoinLinePS()       <<");"<<std::endl;
+   out<<"   "<<"tmpStyle->SetCapLinePS("     <<GetCapLinePS()        <<");"<<std::endl;
    out<<"   "<<"tmpStyle->SetColorModelPS("   <<GetColorModelPS()      <<");"<<std::endl;
    out<<"   "<<Form("tmpStyle->SetTimeOffset(%9.0f);", GetTimeOffset()) <<std::endl;
    out<<std::endl;

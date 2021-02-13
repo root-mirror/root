@@ -15,11 +15,8 @@
 #include <ROOT/REveTrans.hxx>
 #include <ROOT/REveRenderData.hxx>
 
-#include "json.hpp"
-
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveTrackProjected
 \ingroup REve
@@ -169,13 +166,13 @@ void REveTrackProjected::MakeTrack(Bool_t recurse)
       REveVector vR = fOrigPnts[bR + 1];
       projection->BisectBreakPoint(vL, vR, kTRUE, fDepth);
       vvec.push_back(vL);
-      fBreakPoints.push_back((Int_t)vvec.size());
+      fBreakPoints.push_back((UInt_t)vvec.size());
       vvec.push_back(vR);
 
       bL = bR + 1;
       bR = GetBreakPointIdx(bL);
    }
-   fBreakPoints.push_back((Int_t)vvec.size()); // Mark the track-end for drawing.
+   fBreakPoints.push_back((UInt_t)vvec.size()); // Mark the track-end for drawing.
 
    // Decide if points need to be fixed.
    // This (and the fixing itself) should really be done in REveProjection but

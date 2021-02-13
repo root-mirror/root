@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include <TMath.h>
-#include <Math/SpecFunc.h>
+#include <Math/SpecFuncMathCore.h>
 
 // #include "SpecFuncCephes.h"
 

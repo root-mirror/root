@@ -8,8 +8,6 @@
 # CMakeLists.txt file for building ROOT gui/gui package
 ############################################################################
 
-include_directories(${CMAKE_SOURCE_DIR}/gui/ged/inc)
-
 ROOT_STANDARD_LIBRARY_PACKAGE(Gui
   HEADERS
     HelpText.h
@@ -207,3 +205,5 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Gui
     Graf
     MathCore
 )
+
+target_include_directories(Gui PRIVATE ${CMAKE_SOURCE_DIR}/gui/ged/inc)

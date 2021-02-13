@@ -26,21 +26,16 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TClingClassInfo.h"
-
 #include "TClingDeclInfo.h"
-
-#include "cling/Interpreter/Interpreter.h"
-
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/Frontend/CompilerInstance.h"
+#include "TClingMemberIter.h"
+#include "TDictionary.h"
 
 #include <vector>
 #include <string>
 
 namespace clang {
    class Decl;
+   class Type;
    class ValueDecl;
 }
 
@@ -52,20 +47,38 @@ namespace ROOT {
 
 class TClingClassInfo;
 
+/// Iterate over VarDecl, FieldDecl, EnumConstantDecl, IndirectFieldDecl, and 
+/// UsingShadowDecls thereof, within a scope, recursing through "transparent"
+/// scopes (see DCIter::HandleInlineDeclContext()).
+class TClingDataMemberIter final: public TClingMemberIter {
+   TDictionary::EMemberSelection fSelection = TDictionary::EMemberSelection::kNoUsingDecls;
+
+protected:
+   // TODO:
+   //const clang::Decl *
+   //InstantiateTemplateWithDefaults(const clang::RedeclarableTemplateDecl *TD) const final;
+
+   bool ShouldSkip(const clang::Decl* FD) const final;
+   bool ShouldSkip(const clang::UsingShadowDecl* USD) const final;
+
+public:
+   TClingDataMemberIter() = default;
+   TClingDataMemberIter(cling::Interpreter *interp, clang::DeclContext *DC, TDictionary::EMemberSelection selection)
+      : TClingMemberIter(interp, DC), fSelection(selection)
+   {
+   }
+};
+
 class TClingDataMemberInfo final : public TClingDeclInfo {
 
 private:
 
    cling::Interpreter    *fInterp;    // Cling interpreter, we do *not* own.
-   TClingClassInfo       *fClassInfo; // Class we are iterating over, we own.
-   bool                   fFirstTime; // We need to skip the first increment to support the cint Next() semantics.
-   clang::DeclContext::decl_iterator fIter; // Current decl.
-   std::vector<clang::DeclContext::decl_iterator> fIterStack; // Recursion stack for traversing nested transparent scopes.
+   TClingClassInfo       *fClassInfo = nullptr; // ClassInfo for the decl context, for X<Float16_t> vs X<float>.
+   TClingDataMemberIter   fIter; // Current decl.
    std::string            fTitle; // The meta info for the member.
+   bool                   fFirstTime = true; // We need to skip the first increment to support the cint Next() semantics.
 
-   llvm::SmallVector<clang::DeclContext *, 2>   fContexts; // Set of DeclContext that we will iterate over.
-
-   unsigned int                                 fContextIdx; // Index in fContexts of DeclContext we are iterating over.
    mutable std::string fIoType;
    mutable std::string fIoName;
    union {
@@ -75,72 +88,48 @@ private:
    } fConstInitVal; // Result of VarDecl::evaluateValue()
    inline void CheckForIoTypeAndName () const;
 
-public:
-
-   ~TClingDataMemberInfo() { delete fClassInfo; }
-
-   explicit TClingDataMemberInfo(cling::Interpreter *interp)
-   : TClingDeclInfo(nullptr), fInterp(interp), fClassInfo(0), fFirstTime(true), fContextIdx(0U)
-   {
-      fClassInfo = new TClingClassInfo(fInterp);
-      fIter = fInterp->getCI()->getASTContext().getTranslationUnitDecl()->decls_begin();
-      // Move to first global variable.
-      InternalNext();
+   // Invalidate the name caches.
+   void ClearNames() {
+      fNameCache.clear();
+      fIoType.clear();
+      fIoName.clear();
    }
 
-   TClingDataMemberInfo(cling::Interpreter *, TClingClassInfo *);
+public:
+
+   explicit TClingDataMemberInfo(cling::Interpreter *interp)
+      : TClingDeclInfo(nullptr), fInterp(interp) {}
+
+   TClingDataMemberInfo(cling::Interpreter *interp, TClingClassInfo *ci, TDictionary::EMemberSelection selection);
 
    // Takes concrete decl and disables the iterator.
    // ValueDecl is the common base between enum constant, var decl and field decl
-   TClingDataMemberInfo(cling::Interpreter *, const clang::ValueDecl *, TClingClassInfo *);
-
-   TClingDataMemberInfo(const TClingDataMemberInfo &rhs):
-   TClingDeclInfo(rhs), fContextIdx(0)
-   {
-      fInterp = rhs.fInterp;
-      fClassInfo = new TClingClassInfo(*rhs.fClassInfo);
-      fFirstTime = rhs.fFirstTime;
-      fIter = rhs.fIter;
-      fIterStack = rhs.fIterStack;
-      fContexts = rhs.fContexts;
-      fContextIdx = rhs.fContextIdx;
-   }
-
-   TClingDataMemberInfo &operator=(const TClingDataMemberInfo &rhs)
-   {
-      if (this != &rhs) {
-         fInterp = rhs.fInterp;
-         delete fClassInfo;
-         fClassInfo = new TClingClassInfo(*rhs.fClassInfo);
-         fFirstTime = rhs.fFirstTime;
-         fIter = rhs.fIter;
-         fIterStack = rhs.fIterStack;
-         fContexts = rhs.fContexts;
-         fContextIdx = rhs.fContextIdx;
-      }
-      return *this;
-   }
+   TClingDataMemberInfo(cling::Interpreter *interp, const clang::ValueDecl *, TClingClassInfo *);
 
    typedef TDictionary::DeclId_t DeclId_t;
 
    int                ArrayDim() const;
-   TClingClassInfo   *GetClassInfo() const { return fClassInfo; }
    const clang::Decl *GetDecl() const override {
      if (const clang::Decl* SingleDecl = TClingDeclInfo::GetDecl())
        return SingleDecl;
      return *fIter;
    }
+   const clang::ValueDecl       *GetAsValueDecl() const;
+   const clang::UsingShadowDecl *GetAsUsingShadowDecl() const;
+
+   /// Get the ValueDecl, or if this represents a UsingShadowDecl, the underlying target ValueDecl.
+   const clang::ValueDecl       *GetTargetValueDecl() const;
    DeclId_t           GetDeclId() const;
+   const clang::Type *GetClassAsType() const;
    int                MaxIndex(int dim) const;
-   int                InternalNext();
-   bool               Next() { return InternalNext(); }
+   int                Next();
    long               Offset();
    long               Property() const;
    long               TypeProperty() const;
    int                TypeSize() const;
    const char        *TypeName() const;
    const char        *TypeTrueName(const ROOT::TMetaUtils::TNormalizedCtxt &normCtxt) const;
-   const char        *Name() override;
+   const char        *Name() const override;
    const char        *Title();
    llvm::StringRef    ValidArrayIndex() const;
 

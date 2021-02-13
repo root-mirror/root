@@ -15,11 +15,13 @@
 
 #ifndef ROOFIT_ROOFITCORE_INC_ROOSTLREFCOUNTLIST_H_
 #define ROOFIT_ROOFITCORE_INC_ROOSTLREFCOUNTLIST_H_
+
 #include "Rtypes.h"
 
 #include <vector>
+#include <string>
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 
 
 /**
@@ -81,6 +83,11 @@ class RooSTLRefCountList {
     ///End of contained objects.
     typename Container_t::const_iterator end() const {
       return _storage.end();
+    }
+
+    /// Retrieve an element from the list.
+    typename Container_t::value_type operator[](std::size_t index) const {
+      return _storage[index];
     }
 
 

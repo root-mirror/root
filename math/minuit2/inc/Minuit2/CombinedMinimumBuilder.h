@@ -16,48 +16,47 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class CombinedMinimumBuilder : public MinimumBuilder {
 
 public:
-
-   CombinedMinimumBuilder() : fVMMinimizer(VariableMetricMinimizer()),
-      fSimplexMinimizer(SimplexMinimizer()) {}
+   CombinedMinimumBuilder() : fVMMinimizer(VariableMetricMinimizer()), fSimplexMinimizer(SimplexMinimizer()) {}
 
    ~CombinedMinimumBuilder() {}
 
-   virtual FunctionMinimum Minimum(const MnFcn&, const GradientCalculator&, const MinimumSeed&, const MnStrategy&, unsigned int, double) const;
+   virtual FunctionMinimum Minimum(const MnFcn &, const GradientCalculator &, const MinimumSeed &, const MnStrategy &,
+                                   unsigned int, double) const;
 
-   //re-implement setter of base class. Need also to store in the base class for consistency
-   virtual void SetPrintLevel(int level) {
+   // re-implement setter of base class. Need also to store in the base class for consistency
+   virtual void SetPrintLevel(int level)
+   {
       MinimumBuilder::SetPrintLevel(level);
       fVMMinimizer.Builder().SetPrintLevel(level);
       fSimplexMinimizer.Builder().SetPrintLevel(level);
    }
-   virtual void SetStorageLevel(int level) {
+   virtual void SetStorageLevel(int level)
+   {
       MinimumBuilder::SetStorageLevel(level);
       fVMMinimizer.Builder().SetStorageLevel(level);
       fSimplexMinimizer.Builder().SetStorageLevel(level);
    }
 
    // set trace object (user manages it)
-   virtual void SetTraceObject(MnTraceObject & obj) {
+   virtual void SetTraceObject(MnTraceObject &obj)
+   {
       MinimumBuilder::SetTraceObject(obj);
       fVMMinimizer.Builder().SetTraceObject(obj);
       fSimplexMinimizer.Builder().SetTraceObject(obj);
    }
 
-
 private:
-
-  VariableMetricMinimizer fVMMinimizer;
-  SimplexMinimizer fSimplexMinimizer;
+   VariableMetricMinimizer fVMMinimizer;
+   SimplexMinimizer fSimplexMinimizer;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_CombinedMinimumBuilder
+#endif // ROOT_Minuit2_CombinedMinimumBuilder

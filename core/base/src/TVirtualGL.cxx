@@ -14,7 +14,6 @@ use the classes using OpenGL.
 */
 
 #include "TVirtualGL.h"
-#include "TROOT.h"
 #include "TGlobal.h"
 
 

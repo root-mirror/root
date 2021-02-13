@@ -38,7 +38,6 @@ int main(int argc, char **argv)
    config.fAddStreamerInfoToROOTFile = &AddStreamerInfoToROOTFile;
    config.fAddTypedefToROOTFile = &AddTypedefToROOTFile;
    config.fAddEnumToROOTFile = &AddEnumToROOTFile;
-   config.fAddAncestorPCMROOTFile = &AddAncestorPCMROOTFile;
    config.fCloseStreamerInfoROOTFile = &CloseStreamerInfoROOTFile;
 
    return ROOT_rootcling_Driver(argc, argv, config);

@@ -10,7 +10,8 @@
 
 #include "TROOT.h"
 #include "TClass.h"
-#include "TMath.h"
+#include "TObjString.h"
+#include "TObjArray.h"
 #include "TF1NormSum.h"
 #include "Math/WrappedFunction.h"
 #include "Math/WrappedTF1.h"

@@ -3,11 +3,11 @@
  * $Log$
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <Riostream.h>
+#include <iostream>
 #include <TSystem.h>
 #include <TGTab.h>
 #include <TGFrame.h>
@@ -15,6 +15,9 @@
 #include <TGWindow.h>
 #include <TGButton.h>
 #include <TGMsgBox.h>
+#include <TVirtualX.h>
+#include <strlcpy.h>
+#include <snprintf.h>
 
 #include "XSVarious.h"
 #include "XSElementDlg.h"

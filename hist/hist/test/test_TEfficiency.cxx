@@ -2,7 +2,7 @@
 #include "TGraphAsymmErrors.h"
 #include "TRandom.h"
 #include "TH1.h"
-#include "Math/QuantFunc.h"
+#include "Math/QuantFuncMathCore.h"
 
 #include <iostream>
 

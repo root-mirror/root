@@ -11,10 +11,10 @@
 #ifndef ROOT_TF1NormSum__
 #define ROOT_TF1NormSum__
 
-#include <iostream>
-#include "TF1.h"
-#include <memory>
 #include "TF1AbsComposition.h"
+#include <vector>
+#include <memory>
+#include "TF1.h"
 
 class TF1NormSum : public TF1AbsComposition {
 

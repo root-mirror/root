@@ -35,13 +35,16 @@
 #include "TRegexp.h"
 #include "TList.h"
 #include "TSystem.h"
+#include "TVirtualX.h"
 #include "TGDNDManager.h"
-#include "Riostream.h"
 #include "TRemoteObject.h"
+#include "TBufferFile.h"
 #include "TImage.h"
+#include "snprintf.h"
 
-#include <time.h>
-#include <stdlib.h>
+#include <ctime>
+#include <cstdlib>
+#include <iostream>
 
 ClassImp(TGFileItem);
 ClassImp(TGFileContainer);
@@ -431,6 +434,43 @@ void TGFileItem::DoRedraw()
 
    fLcurrent->Draw(fId, fNormGC, ix, iy);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/// Handle drag and drop enter
+
+Atom_t TGFileItem::HandleDNDEnter(Atom_t *)
+{
+   if (!IsDNDTarget()) return kNone;
+   return gVirtualX->InternAtom("application/root", kFALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set drag and drop data
+
+void TGFileItem::SetDNDData(TDNDData *data)
+{
+   if (fDNDData.fDataLength > 0)
+      free(fDNDData.fData);
+   fDNDData.fData = calloc(sizeof(unsigned char), data->fDataLength);
+   if (fDNDData.fData)
+      memcpy(fDNDData.fData, data->fData, data->fDataLength);
+   fDNDData.fDataLength = data->fDataLength;
+   fDNDData.fDataType = data->fDataType;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set drag and drop object
+
+void TGFileItem::SetDNDObject(TObject *obj)
+{
+   if (fDNDData.fDataLength)
+      free(fDNDData.fData);
+   fBuf->WriteObject(obj);
+   fDNDData.fData = fBuf->Buffer();
+   fDNDData.fDataLength = fBuf->Length();
+   fDNDData.fDataType = gVirtualX->InternAtom("application/root", kFALSE);
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

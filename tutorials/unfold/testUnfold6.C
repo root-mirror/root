@@ -62,23 +62,28 @@ void testUnfold6()
   } else {
      cout<<"Binning scheme:\n =================================\n";
      binning->PrintStream(cout);
-     Int_t *binMap=binning->CreateEmptyBinMap();
+     Int_t *binMap = binning->CreateEmptyBinMap();
      PrintBinMap(binning,"CreateEmptyBinMap",binMap);
 
-     TUnfoldBinning const *branch1=binning->FindNode("branch1");
+     TUnfoldBinning const *branch1 = binning->FindNode("branch1");
      branch1->FillBinMap1D(binMap,"y[C]",2);
      PrintBinMap(binning,"branch1->FillBinMap1D(...,\"y[C]\",...,2)",binMap);
 
-     delete binMap; binMap=binning->CreateEmptyBinMap();
+     delete [] binMap;
+     binMap = binning->CreateEmptyBinMap();
      TUnfoldBinning const *branch2=binning->FindNode("branch2");
      branch2->FillBinMap1D(binMap,"x[C]",7);
      PrintBinMap(binning,"branch2->FillBinMap1D(...,\"x[C]\",...,7)",binMap);
 
-     delete binMap; binMap=binning->CreateEmptyBinMap();
+     delete [] binMap;
+     binMap = binning->CreateEmptyBinMap();
      binning->FillBinMap1D(binMap,"y[C]",1);
      PrintBinMap(binning,"binning->FillBinMap1D(...,\"y[C]\",...,1)",binMap);
 
      binning->ExportXML("testUnfold6.out.xml");
+
+     delete [] binMap;
+
   }
 }
 

@@ -20,9 +20,10 @@
 
 #include <type_traits>
 #include <cmath>
-#include "Rtypes.h"
+#include "RtypesCore.h"
 #include "TMath.h"
 #include <cassert>
+#include <vector>
 
 #include "TRandomEngine.h"
 

@@ -26,14 +26,14 @@ class TVirtualGeoTrack : public TObject,
                          public TAttMarker
 {
 protected:
-   Int_t             fPDG;        // track pdg code
-   Int_t             fId;         // track id
-   TVirtualGeoTrack *fParent;     // id of parent
-   TObject          *fParticle;   // particle for this track
-   TObjArray        *fTracks;     // daughter tracks
+   Int_t             fPDG{0};              // track pdg code
+   Int_t             fId{-1};              // track id
+   TVirtualGeoTrack *fParent{nullptr};     // id of parent
+   TObject          *fParticle{nullptr};   // particle for this track
+   TObjArray        *fTracks{nullptr};     // daughter tracks
 
-   TVirtualGeoTrack(const TVirtualGeoTrack&);
-   TVirtualGeoTrack& operator=(const TVirtualGeoTrack&);
+   TVirtualGeoTrack(const TVirtualGeoTrack&) = delete;
+   TVirtualGeoTrack& operator=(const TVirtualGeoTrack&) = delete;
 
 public:
    TVirtualGeoTrack();

@@ -45,16 +45,10 @@ is due to different locations/angles.
 #include "TMVA/MethodCategory.h"
 
 #include <algorithm>
-#include <iomanip>
 #include <vector>
-#include <iostream>
 
-#include "Riostream.h"
 #include "TRandom3.h"
-#include "TMath.h"
-#include "TObjString.h"
 #include "TH1F.h"
-#include "TGraph.h"
 #include "TSpline.h"
 #include "TDirectory.h"
 #include "TTreeFormula.h"
@@ -633,7 +627,47 @@ Double_t TMVA::MethodCategory::GetMvaValue( Double_t* err, Double_t* errUpper )
    return mvaValue;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// returns the mva values of the multi-class right sub-classifier
+///
+const std::vector<Float_t> &TMVA::MethodCategory::GetMulticlassValues()
+{
+   if (fMethods.empty())
+      return MethodBase::GetMulticlassValues();
 
+   UInt_t methodToUse = 0;
+   const Event *ev = GetEvent();
+
+   // determine which sub-classifier to use for this event
+   Int_t suitableCutsN = 0;
+
+   for (UInt_t i = 0; i < fMethods.size(); ++i) {
+      if (PassesCut(ev, i)) {
+         ++suitableCutsN;
+         methodToUse = i;
+      }
+   }
+
+   if (suitableCutsN == 0) {
+      Log() << kWARNING << "Event does not lie within the cut of any sub-classifier." << Endl;
+      return MethodBase::GetMulticlassValues();
+   }
+
+   if (suitableCutsN > 1) {
+      Log() << kFATAL << "The defined categories are not disjoint." << Endl;
+      return MethodBase::GetMulticlassValues();
+   }
+   MethodBase *meth = dynamic_cast<MethodBase *>(fMethods[methodToUse]);
+   if (!meth) {
+      Log() << kFATAL << "method not found in Category Regression method" << Endl;
+      return MethodBase::GetMulticlassValues();
+   }
+   // get mva value from the suitable sub-classifier
+   ev->SetVariableArrangement(&fVarMaps[methodToUse]);
+   auto & result =  meth->GetMulticlassValues();
+   ev->SetVariableArrangement(nullptr);
+   return result;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// returns the mva value of the right sub-classifier
@@ -670,6 +704,7 @@ const std::vector<Float_t> &TMVA::MethodCategory::GetRegressionValues()
       return MethodBase::GetRegressionValues();
    }
    // get mva value from the suitable sub-classifier
-   return meth->GetRegressionValues(ev);
+   ev->SetVariableArrangement(&fVarMaps[methodToUse]);
+   auto & result =  meth->GetRegressionValues(ev);
+   return result;
 }
-

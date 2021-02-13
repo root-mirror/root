@@ -1,9 +1,82 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 6.0.0
+
+1. Major release with:
+   - incompatible changes in API
+   - heavy use of Promise class
+   - upgrade all used packages
+2. Use generic naming convention - all class names always starts from
+   capital letter like "ObjectPainter", all function names starts from small
+   letter like "painter.getObjectHint()"
+3. Rename JSRootCore.js -> JSRoot.core.js, eliminate all URL parameters.
+   Loading of extra JSROOT functionality should be done via JSROOT.require() method
+   All other scripts uses similar naming convention.
+4. JSROOT.draw()/JSROOT.redraw() functions returns Promise, deprecate callback parameter
+5. Introduce JSROOT.httpRequest() function which returns Promise instance, deprecate
+   JSROOT.NewHttpRequest() function
+6. JSROOT.openFile() returns Promise with file instance, deprecate callback parameter
+7. Provide new code loader via JSROOT.require()
+   - introduces clean dependencies in JSROOT code
+   - by default uses plain script loading emulating require.js behavior
+   - can use require.js when available
+   - uses require() method when running inside node.js
+   - supports openui5 sap.ui.require loader if available before JSRoot.core.js
+   - deprecates old JSROOT.AssertPrerequisites() function
+8. Upgrade d3.js to v6.1.1, skip support of older versions
+9. Upgrade three.js to r121:
+   - SoftwareRenderer deprecated and removed
+   - let use WebGL for browser, batch and node.js (via headless-gl)
+   - support r3d_gl, r3d_img, r3d_svg rendering options for TGeo and histograms
+   - keep support of SVGRendered as backup solution
+10. Upgrade MathJax.js to version 3.1.1
+   - reliably works in browser and node.js!
+   - all latex/mathjax related methods moved to special JSRoot.latex.js script, loaded on demand
+11. Update jquery to 3.5.1, openui5 to 1.82.2
+12. Use JS classes only in few places - performance is not good enough compared to Object.prototype
+13. Deprecate IE support
+14. Deprecate bower package manager
+15. Add support of ZSTD compression - works only on https://root.cern/js/ website
+16. Add support of log2 scale for axes drawing, v7 can have arbitrary log base
+17. Improve TH2 col drawings for large number of bins - up to factor 5 faster
+18. Allow to move axis title to opposite position
+19. Fix zooming in color palette
+20. Implement monitoring of object inspector
+
+
+## Changes in 5.9.1
+
+1. Fix zooming in color palette
+2. Fix interactive update of TGraph painting on time scale
+3. Fix I/O error in reading std::map (#204)
+4. Fix functionality of "open all" / "close all" GUI buttons
+
+
+## Changes in 5.9.0
 1. Support RX and RY drawing option together with COL of TH2
 2. Add support of #overline, #underline, #strike into TLatex parsing (#196)
 3. Add support of TGeoTessellated shape
+4. Major changes in v7 drawing: RFrame, RPalette, RColor, RStatBox, ...
+5. Fix in reading std::map member-wise
+6. Better handling of context menu position
+7. Support TASImage class - both PNG and binary content, including palette
+8. Let change TH2 values range via context menu
+9. Fix problem with TH2 col drawing when bins size too small
+
+
+## Changes in 5.8.2
+1. Fix - tooltip handling for TH2 Error draw
+2. Fix - use proper "fixed" position for enlarged drawing
+3. Fix - correctly extract TF1 parameter names
+4. Fix - keep stat box when update histogram drawing
+5. Fix - context menu for axes in 3D drawings
+
+
+## Changes in 5.8.1
+1. Fix - use Math.floor when search for bin label
+2. Fix - renable correct highlight of TGraphErrors
+3. Fix - adjust TH1/TH2/TAxis values to let stream them in ROOT
+4. Fix - adjust TH[1,2,3].Fill() method to update entries count
 
 
 ## Changes in 5.8.0
@@ -781,7 +854,7 @@
 3. Prompt for input of command arguments
 4. After command execution one could automatically reload hierarchy (_hreload property) or
    update view of displayed object (_update_item property)
-5. Use HiearchyPainter for implementing draw.htm. This let us handle
+5. Use HierarchyPainter for implementing draw.htm. This let us handle
    all different kinds of extra attributes in central place
 6. Fix problem in tabs layout - new tab should be add to direct child
 7. When drawing several tabs, activate frame before drawing - only then
@@ -875,7 +948,7 @@
 
 ## Changes in 3.1
 1. Correctly show tooltips in case of overlapped objects
-2. Implement JSROOT.Create() method to create supported
+2. Implement JSROOT.create() method to create supported
    in JavaScript ROOT classes like TH1 or TGraph
 3. Fix problem with JSROOT.draw in HTML element with zero width (display:none)
 4. Provide possibility to load user scripts with JSROOT.BuildSimpleGUI

@@ -96,7 +96,7 @@ public:
       // We refuse to do anything since we assume the memory is already initialised
       if (EAllocType::kAdopting == fAllocType)
          return;
-      fStdAllocator.construct(p, args...);
+      fStdAllocator.construct(p, std::forward<Args>(args)...);
    }
 
    /// \brief Allocate some memory

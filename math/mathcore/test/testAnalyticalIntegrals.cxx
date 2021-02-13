@@ -6,16 +6,11 @@
 //
 //
 
-#include <TStyle.h>
-#include <TPaveText.h>
 #include <TCanvas.h>
 #include <iostream>//for cout
 #include <TROOT.h>
-#include <TFile.h>
 #include "TMath.h"
 #include <TF1.h>
-#include <TLegend.h>
-#include <TStopwatch.h>
 #include <TApplication.h>
 #include <Math/PdfFuncMathCore.h>//for pdf
 #include <Math/ProbFuncMathCore.h>//for cdf

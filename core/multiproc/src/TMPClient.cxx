@@ -192,20 +192,25 @@ bool TMPClient::Fork(TMPWorker &server)
          }
       }
       close(0);
-      if (fMon.GetListOfActives()) {
-         while (fMon.GetListOfActives()->GetSize() > 0) {
-            TSocket *s = (TSocket *) fMon.GetListOfActives()->First();
-            fMon.Remove(s);
-            delete s;
-         }
+
+      std::unique_ptr<TList> lofact(fMon.GetListOfActives());
+      while (lofact && (lofact->GetSize() > 0)) {
+         TSocket *s = (TSocket *) lofact->First();
+         lofact.reset(nullptr); // delete list before object is destroyed
+         fMon.Remove(s);
+         delete s;
+         lofact.reset(fMon.GetListOfActives());
       }
-      if (fMon.GetListOfDeActives()) {
-         while (fMon.GetListOfDeActives()->GetSize() > 0) {
-            TSocket *s = (TSocket *) fMon.GetListOfDeActives()->First();
-            fMon.Remove(s);
-            delete s;
-         }
+
+      std::unique_ptr<TList> lofdeact(fMon.GetListOfDeActives());
+      while (lofdeact && (lofdeact->GetSize() > 0)) {
+         TSocket *s = (TSocket *) lofdeact->First();
+         lofdeact.reset(nullptr); // delete list before object is destroyed
+         fMon.Remove(s);
+         delete s;
+         lofdeact.reset(fMon.GetListOfDeActives());
       }
+
       //disable graphics
       //these instructions were copied from TApplication::MakeBatch
       gROOT->SetBatch();
@@ -335,7 +340,7 @@ void TMPClient::HandleMPCode(MPCodeBufPair &msg, TSocket *s)
    if (code == MPCode::kMessage) {
       Error("TMPClient::HandleMPCode", "[I][C] message received: %s\n", str);
    } else if (code == MPCode::kError) {
-      Error("TMPClient::HandleMPCode", "[E][C] error message received: %s\n", str);   
+      Error("TMPClient::HandleMPCode", "[E][C] error message received: %s\n", str);
    } else if (code == MPCode::kShutdownNotice || code == MPCode::kFatalError) {
       if (gDebug > 0) //generally users don't want to know this
          Error("TMPClient::HandleMPCode", "[I][C] shutdown notice received from %s\n", str);

@@ -99,8 +99,6 @@ When most solids or volumes are added to the geometry they
 #include "TGeoXtru.h"
 #include "TGeoScaledShape.h"
 #include "TGeoTessellated.h"
-#include "TGeoVolume.h"
-#include "TROOT.h"
 #include "TMath.h"
 #include "TMap.h"
 #include "TObjString.h"
@@ -114,8 +112,9 @@ When most solids or volumes are added to the geometry they
 #include "TGeoRegion.h"
 #include "TGeoOpticalSurface.h"
 #include "TGeoSystemOfUnits.h"
+#include "TGeant4SystemOfUnits.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include <locale>
@@ -135,7 +134,7 @@ TGDMLParse::TGDMLParse()
       fFileEngine[i] = 0;
    fStartFile = 0;
    fCurrentFile = 0;
-   auto def_units = TGeoManager::GetDefaultUnits();
+   auto def_units = gGeoManager->GetDefaultUnits();
    switch (def_units) {
    case TGeoManager::kG4Units:
       fDefault_lunit = "mm";
@@ -483,37 +482,39 @@ XMLNodePointer_t TGDMLParse::ConProcess(TXMLEngine *gdml, XMLNodePointer_t node,
 /// Define constant expressions used.
 void TGDMLParse::DefineConstants()
 {
+   auto def_units = gGeoManager->GetDefaultUnits();
+
    // Units used in TGeo. Note that they are based on cm/degree/GeV and they are different from Geant4
-   fconsts["mm"] = TGeoUnit::mm;
-   fconsts["millimeter"] = TGeoUnit::mm;
-   fconsts["cm"] = TGeoUnit::cm;
-   fconsts["centimeter"] = TGeoUnit::cm;
-   fconsts["m"] = TGeoUnit::m;
-   fconsts["meter"] = TGeoUnit::m;
-   fconsts["km"] = TGeoUnit::km;
-   fconsts["kilometer"] = TGeoUnit::km;
-   fconsts["rad"] = TGeoUnit::rad;
-   fconsts["radian"] = TGeoUnit::rad;
-   fconsts["deg"] = TGeoUnit::deg;
-   fconsts["degree"] = TGeoUnit::deg;
-   fconsts["pi"] = TGeoUnit::pi;
-   fconsts["twopi"] = TGeoUnit::twopi;
-   fconsts["avogadro"] = TMath::Na();
-   fconsts["gev"] = TGeoUnit::GeV;
-   fconsts["GeV"] = TGeoUnit::GeV;
-   fconsts["mev"] = TGeoUnit::MeV;
-   fconsts["MeV"] = TGeoUnit::MeV;
-   fconsts["kev"] = TGeoUnit::keV;
-   fconsts["keV"] = TGeoUnit::keV;
-   fconsts["ev"] = TGeoUnit::eV;
-   fconsts["eV"] = TGeoUnit::eV;
-   fconsts["s"] = TGeoUnit::s;
-   fconsts["ms"] = TGeoUnit::ms;
-   fconsts["ns"] = TGeoUnit::ns;
-   fconsts["us"] = TGeoUnit::us;
-   fconsts["kg"] = TGeoUnit::kg;
-   fconsts["g"] = TGeoUnit::g;
-   fconsts["mg"] = TGeoUnit::mg;
+   fconsts["mm"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::mm : TGeant4Unit::mm;
+   fconsts["millimeter"] = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::mm : TGeant4Unit::mm;
+   fconsts["cm"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::cm : TGeant4Unit::cm;
+   fconsts["centimeter"] = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::cm : TGeant4Unit::cm;
+   fconsts["m"]          = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::m  : TGeant4Unit::m;
+   fconsts["meter"]      = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::m  : TGeant4Unit::m;
+   fconsts["km"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::km : TGeant4Unit::km;
+   fconsts["kilometer"]  = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::km : TGeant4Unit::km;
+   fconsts["rad"]        = TGeoUnit::rad;
+   fconsts["radian"]     = TGeoUnit::rad;
+   fconsts["deg"]        = TGeoUnit::deg;
+   fconsts["degree"]     = TGeoUnit::deg;
+   fconsts["pi"]         = TGeoUnit::pi;
+   fconsts["twopi"]      = TGeoUnit::twopi;
+   fconsts["avogadro"]   = TMath::Na();
+   fconsts["gev"]        = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::GeV : TGeant4Unit::GeV;
+   fconsts["GeV"]        = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::GeV : TGeant4Unit::GeV;
+   fconsts["mev"]        = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::MeV : TGeant4Unit::MeV;
+   fconsts["MeV"]        = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::MeV : TGeant4Unit::MeV;
+   fconsts["kev"]        = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::keV : TGeant4Unit::keV;
+   fconsts["keV"]        = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::keV : TGeant4Unit::keV;
+   fconsts["ev"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::eV  : TGeant4Unit::eV;
+   fconsts["eV"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::eV  : TGeant4Unit::eV;
+   fconsts["s"]          = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::s   : TGeant4Unit::s;
+   fconsts["ms"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::ms  : TGeant4Unit::ms;
+   fconsts["ns"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::ns  : TGeant4Unit::ns;
+   fconsts["us"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::us  : TGeant4Unit::us;
+   fconsts["kg"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::kg  : TGeant4Unit::kg;
+   fconsts["g"]          = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::g   : TGeant4Unit::g;
+   fconsts["mg"]         = (def_units == TGeoManager::kRootUnits) ? TGeoUnit::mg  : TGeant4Unit::mg;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -712,37 +713,38 @@ TString TGDMLParse::GetScale(const char *unit)
 
 Double_t TGDMLParse::GetScaleVal(const char *sunit)
 {
+   auto def_units = gGeoManager->GetDefaultUnits();
    Double_t retunit = 0.;
    TString unit(sunit);
    unit.ToLower();
 
    if ((unit == "mm") || (unit == "milimeter")) {
-      retunit = 0.1;
+     retunit = (def_units == TGeoManager::kRootUnits) ? 0.1 : 1.0;
    } else if ((unit == "cm") || (unit == "centimeter")) {
-      retunit = 1.0;
+     retunit = (def_units == TGeoManager::kRootUnits) ? 1.0 : 10.0;
    } else if ((unit == "m") || (unit == "meter")) {
-      retunit = 100.0;
+     retunit = (def_units == TGeoManager::kRootUnits) ? 100.0 : 1e3;
    } else if ((unit == "km") || (unit == "kilometer")) {
-      retunit = 100000.0;
+     retunit = (def_units == TGeoManager::kRootUnits) ? 100000.0 : 1e6;
    } else if ((unit == "rad") || (unit == "radian")) {
-      retunit = TMath::RadToDeg();
+     retunit = TMath::RadToDeg();
    } else if ((unit == "deg") || (unit == "degree")) {
-      retunit = 1.0;
+     retunit = 1.0;
    } else if ((unit == "ev") || (unit == "electronvolt")) {
-      retunit = 0.000000001;
+     retunit = (def_units == TGeoManager::kRootUnits) ? 0.000000001 : 1e-6;
    } else if ((unit == "kev") || (unit == "kiloelectronvolt")) {
-      retunit = 0.000001;
+     retunit = (def_units == TGeoManager::kRootUnits) ? 0.000001 : 1e-3;
    } else if ((unit == "mev") || (unit == "megaelectronvolt")) {
-      retunit = 0.001;
+     retunit = (def_units == TGeoManager::kRootUnits) ? 0.001 : 1.0;
    } else if ((unit == "gev") || (unit == "gigaelectronvolt")) {
-      retunit = 1;
+     retunit = (def_units == TGeoManager::kRootUnits) ? 1.0 : 1000.0;
    } else if (unit == "pi") {
-      retunit = TMath::Pi();
+     retunit = TMath::Pi();
    } else if (unit == "avogadro") {
-      retunit = TMath::Na();
+     retunit = TMath::Na();
    } else {
-      Fatal("GetScaleVal", "Unit <%s> not known", sunit);
-      retunit = 0;
+     Fatal("GetScaleVal", "Unit <%s> not known", sunit);
+     retunit = 0;
    }
    return retunit;
 }
@@ -4162,7 +4164,6 @@ XMLNodePointer_t TGDMLParse::Xtru(TXMLEngine *gdml, XMLNodePointer_t node, XMLAt
 
 XMLNodePointer_t TGDMLParse::Tessellated(TXMLEngine *gdml, XMLNodePointer_t node, XMLAttrPointer_t attr)
 {
-   TString lunit = fDefault_lunit.c_str();
    TString name, vname, type;
    TString tempattr;
 
@@ -4214,6 +4215,7 @@ XMLNodePointer_t TGDMLParse::Tessellated(TXMLEngine *gdml, XMLNodePointer_t node
       tempattr.ToLower();
       if (tempattr == "triangular") {
          attr = gdml->GetFirstAttr(child);
+         bool relative = false;
 
          while (attr != nullptr) {
             tempattr = gdml->GetAttrName(attr);
@@ -4248,17 +4250,17 @@ XMLNodePointer_t TGDMLParse::Tessellated(TXMLEngine *gdml, XMLNodePointer_t node
             else if (tempattr == "type") {
                type = gdml->GetAttrValue(attr);
                type.ToLower();
-               bool relative = (type == "relative") ? true : false;
-               AddTriangularFacet(relative);
+               relative = (type == "relative") ? true : false;
             }
 
             attr = gdml->GetNextAttr(attr);
          }
-
+         AddTriangularFacet(relative);
       }
 
       else if (tempattr == "quadrangular") {
          attr = gdml->GetFirstAttr(child);
+         bool relative = false;
 
          while (attr != nullptr) {
             tempattr = gdml->GetAttrName(attr);
@@ -4302,12 +4304,12 @@ XMLNodePointer_t TGDMLParse::Tessellated(TXMLEngine *gdml, XMLNodePointer_t node
             else if (tempattr == "type") {
                type = gdml->GetAttrValue(attr);
                type.ToLower();
-               bool relative = (type == "relative") ? true : false;
-               AddQuadrangularFacet(relative);
+               relative = (type == "relative") ? true : false;
             }
 
             attr = gdml->GetNextAttr(attr);
          }
+         AddQuadrangularFacet(relative);
       }
       child = gdml->GetNext(child);
    }

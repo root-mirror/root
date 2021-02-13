@@ -28,7 +28,6 @@ using namespace TClassEdit;
 #include "clang/Sema/Sema.h"
 #include "clang/Sema/Template.h"
 #include "clang/Frontend/CompilerInstance.h"
-#include "clang/AST/DeclTemplate.h"
 
 #include "Varargs.h"
 

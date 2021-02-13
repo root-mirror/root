@@ -66,8 +66,9 @@ TMVA::ResultsClassification::~ResultsClassification()
 ////////////////////////////////////////////////////////////////////////////////
 /// set MVA response
 
-void TMVA::ResultsClassification::SetValue( Float_t value, Int_t ievt )
+void TMVA::ResultsClassification::SetValue( Float_t value, Int_t ievt, Bool_t type )
 {
-   if (ievt >= (Int_t)fMvaValues.size()) fMvaValues.resize( ievt+1 );
+   assert(ievt < (int) fMvaValues.size() && ievt < (int) fMvaValuesTypes.size());
    fMvaValues[ievt] = value;
+   fMvaValuesTypes[ievt] = type;
 }

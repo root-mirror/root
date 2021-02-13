@@ -99,7 +99,7 @@ function argument.
 
 #include "TFumili.h"
 
-#include "Riostream.h"
+#include <iostream>
 #include "TGraphAsymmErrors.h"
 #include "TF1.h"
 #include "TF2.h"
@@ -107,6 +107,7 @@ function argument.
 #include "TH1.h"
 #include "TMath.h"
 #include "TROOT.h"
+#include "TList.h"
 #include "TVirtualFitter.h"
 
 

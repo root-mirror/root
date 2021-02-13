@@ -111,6 +111,8 @@ private:
    TPerfStats(TList *input, TList *output);
    void WriteQueryLog();
 
+   void SetFile(TFile *) {}
+
 public:
    virtual ~TPerfStats();
 

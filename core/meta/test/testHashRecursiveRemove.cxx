@@ -1,3 +1,5 @@
+#include "ROOTUnitTestSupport.h"
+
 #include "TClass.h"
 #include "TClassTable.h"
 #include "TInterpreter.h"
@@ -144,15 +146,16 @@ public:
    ClassDefInline(InlineCompiledOnly, 2);
 };
 
-const char *gErrorOutput =
-   R"OUTPUT(Error in <ROOT::Internal::TCheckHashRecursiveRemoveConsistency::CheckRecursiveRemove>: The class FirstOverload overrides TObject::Hash but does not call TROOT::RecursiveRemove in its destructor (seen while checking FirstOverload).
-Error in <ROOT::Internal::TCheckHashRecursiveRemoveConsistency::CheckRecursiveRemove>: The class SecondOverload overrides TObject::Hash but does not call TROOT::RecursiveRemove in its destructor (seen while checking SecondOverload).
-Error in <ROOT::Internal::TCheckHashRecursiveRemoveConsistency::CheckRecursiveRemove>: The class FirstOverload overrides TObject::Hash but does not call TROOT::RecursiveRemove in its destructor (seen while checking SecondNoHash).
-Error in <ROOT::Internal::TCheckHashRecursiveRemoveConsistency::CheckRecursiveRemove>: The class FirstOverload overrides TObject::Hash but does not call TROOT::RecursiveRemove in its destructor (seen while checking SecondAbstract).
-Error in <ROOT::Internal::TCheckHashRecursiveRemoveConsistency::CheckRecursiveRemove>: The class FirstOverload overrides TObject::Hash but does not call TROOT::RecursiveRemove in its destructor (seen while checking Third).
-Error in <ROOT::Internal::TCheckHashRecursiveRemoveConsistency::CheckRecursiveRemove>: The class SecondInCorrectAbstract overrides TObject::Hash but does not call TROOT::RecursiveRemove in its destructor (seen while checking ThirdInCorrect).
-Error in <ROOT::Internal::TCheckHashRecursiveRemoveConsistency::CheckRecursiveRemove>: The class WrongSetup overrides TObject::Hash but does not call TROOT::RecursiveRemove in its destructor (seen while checking WrongSetup).
-)OUTPUT";
+std::string errormessage(const std::string &baseclass, const std::string &seenclass)
+{
+   std::string message =
+      "The class " + baseclass +
+      " overrides TObject::Hash but does not call TROOT::RecursiveRemove in its destructor (seen while checking " +
+      seenclass + ").";
+   return message;
+}
+
+const char *errorlocation = "ROOT::Internal::TCheckHashRecursiveRemoveConsistency::CheckRecursiveRemove";
 
 void DeclareFailingClasses()
 {
@@ -216,26 +219,27 @@ TEST(HashRecursiveRemove, RootClasses)
 
 TEST(HashRecursiveRemove, FailingClasses)
 {
-   testing::internal::CaptureStderr();
-
    EXPECT_NE(nullptr, TClass::GetClass("FirstOverload"));
-   EXPECT_FALSE(TClass::GetClass("FirstOverload")->HasConsistentHashMember());
-   EXPECT_FALSE(TClass::GetClass("SecondOverload")->HasConsistentHashMember());
-   EXPECT_FALSE(TClass::GetClass("SecondNoHash")->HasConsistentHashMember());
-
-   EXPECT_FALSE(TClass::GetClass("SecondAbstract")->HasConsistentHashMember());
-   EXPECT_FALSE(TClass::GetClass("Third")->HasConsistentHashMember());
    EXPECT_TRUE(TClass::GetClass("FirstOverloadCorrect")->HasConsistentHashMember());
-
    EXPECT_TRUE(TClass::GetClass("SecondCorrectAbstract")->HasConsistentHashMember());
    EXPECT_FALSE(TClass::GetClass("SecondCorrectAbstractHash")->HasConsistentHashMember());
    EXPECT_TRUE(TClass::GetClass("ThirdCorrect")->HasConsistentHashMember());
    EXPECT_FALSE(TClass::GetClass("SecondInCorrectAbstract")->HasConsistentHashMember());
-   EXPECT_FALSE(TClass::GetClass("ThirdInCorrect")->HasConsistentHashMember());
-   EXPECT_FALSE(WrongSetup::Class()->HasConsistentHashMember());
 
-   std::string output = testing::internal::GetCapturedStderr();
-   EXPECT_EQ(gErrorOutput, output);
+   ROOT_EXPECT_ERROR(EXPECT_FALSE(TClass::GetClass("FirstOverload")->HasConsistentHashMember()), errorlocation,
+                     errormessage("FirstOverload", "FirstOverload"));
+   ROOT_EXPECT_ERROR(EXPECT_FALSE(TClass::GetClass("SecondOverload")->HasConsistentHashMember()), errorlocation,
+                     errormessage("SecondOverload", "SecondOverload"));
+   ROOT_EXPECT_ERROR(EXPECT_FALSE(TClass::GetClass("SecondNoHash")->HasConsistentHashMember()), errorlocation,
+                     errormessage("FirstOverload", "SecondNoHash"));
+   ROOT_EXPECT_ERROR(EXPECT_FALSE(TClass::GetClass("SecondAbstract")->HasConsistentHashMember()), errorlocation,
+                     errormessage("FirstOverload", "SecondAbstract"));
+   ROOT_EXPECT_ERROR(EXPECT_FALSE(TClass::GetClass("Third")->HasConsistentHashMember()), errorlocation,
+                     errormessage("FirstOverload", "Third"));
+   ROOT_EXPECT_ERROR(EXPECT_FALSE(TClass::GetClass("ThirdInCorrect")->HasConsistentHashMember()), errorlocation,
+                     errormessage("SecondInCorrectAbstract", "ThirdInCorrect"));
+   ROOT_EXPECT_ERROR(EXPECT_FALSE(WrongSetup::Class()->HasConsistentHashMember()), errorlocation,
+                     errormessage("WrongSetup", "WrongSetup"));
 }
 
 bool CallCheckedHash(const char *clname)

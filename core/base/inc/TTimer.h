@@ -61,8 +61,8 @@ protected:
    TString   fCommand;     // interpreter command to be executed
 
 private:
-   TTimer(const TTimer&);            // not implemented
-   TTimer& operator=(const TTimer&); // not implemented
+   TTimer(const TTimer&) = delete;
+   TTimer& operator=(const TTimer&) = delete;
 
 public:
    TTimer(Long_t milliSec = 0, Bool_t mode = kTRUE);

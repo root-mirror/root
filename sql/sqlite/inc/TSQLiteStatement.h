@@ -14,13 +14,13 @@
 
 #include "TSQLStatement.h"
 
-#include <sqlite3.h>
+class sqlite3;
+class sqlite3_stmt;
 
 struct SQLite3_Stmt_t {
    sqlite3      *fConn;
    sqlite3_stmt *fRes;
 };
-
 
 class TSQLiteStatement : public TSQLStatement {
 

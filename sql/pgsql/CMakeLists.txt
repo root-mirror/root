@@ -23,6 +23,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(PgSQL
     Core
     Net
     RIO
+    MathCore
 )
 
 target_include_directories(PgSQL PUBLIC ${PostgreSQL_INCLUDE_DIRS})

@@ -31,6 +31,7 @@
 #include "TVirtualIndex.h"
 
 #include <vector>
+#include <utility>
 
 class TTreeFormula;
 class TTreeIndex;
@@ -71,6 +72,9 @@ protected:
    void ReleaseSubTreeIndex(TVirtualIndex* index, Int_t treeNo) const;
    void DeleteIndices();
 
+   TTreeFormula  *GetMajorFormulaParent(const TTree *parent);
+   TTreeFormula  *GetMinorFormulaParent(const TTree *parent);
+
 public:
    TChainIndex();
    TChainIndex(const TTree *T, const char *majorname, const char *minorname);
@@ -82,8 +86,7 @@ public:
    const char            *GetMajorName()    const {return fMajorName.Data();}
    const char            *GetMinorName()    const {return fMinorName.Data();}
    virtual Long64_t       GetN()            const {return fEntries.size();}
-   virtual TTreeFormula  *GetMajorFormulaParent(const TTree *parent);
-   virtual TTreeFormula  *GetMinorFormulaParent(const TTree *parent);
+   virtual Bool_t         IsValidFor(const TTree *parent);
    virtual void           UpdateFormulaLeaves(const TTree *parent);
    virtual void           SetTree(const TTree *T);
 

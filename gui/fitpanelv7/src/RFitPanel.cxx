@@ -1,10 +1,6 @@
-/// \file RFitPanel.cxx
-/// \ingroup WebGui ROOT7
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \author Iliana Betsou <Iliana.Betsou@cern.ch>
-/// \date 2019-04-11
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Authors: Sergey Linev <S.Linev@gsi.de> Iliana Betsou <Iliana.Betsou@cern.ch>
+// Date: 2019-04-11
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
@@ -21,7 +17,6 @@
 
 #include "Fit/BinData.h"
 #include "Fit/Fitter.h"
-// #include "TBackCompFitter.h"
 
 #include "TString.h"
 #include "TGraph.h"
@@ -38,11 +33,10 @@
 #include "TF3.h"
 #include "TFitResult.h"
 #include "TList.h"
+#include "TVirtualPad.h"
 #include "TCanvas.h"
-#include "TPad.h"
 #include "TDirectory.h"
 #include "TBufferJSON.h"
-#include "TMath.h"
 #include "Math/Minimizer.h"
 #include "HFitInterface.h"
 #include "TColor.h"
@@ -53,7 +47,13 @@
 
 using namespace std::string_literals;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+/** \class ROOT::Experimental::RFitPanel
+\ingroup webdisplay
+
+web-based FitPanel prototype.
+*/
+
+////////////////////////////////////////////////////////////////////////////////
 /// Constructor
 
 ROOT::Experimental::RFitPanel::FitRes::FitRes(const std::string &_objid, std::unique_ptr<TF1> &_func, TFitResultPtr &_res)
@@ -62,7 +62,7 @@ ROOT::Experimental::RFitPanel::FitRes::FitRes(const std::string &_objid, std::un
    std::swap(func, _func);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Destructor
 
 ROOT::Experimental::RFitPanel::FitRes::~FitRes()
@@ -70,15 +70,7 @@ ROOT::Experimental::RFitPanel::FitRes::~FitRes()
    // to avoid dependency from TF1
 }
 
-/** \class ROOT::Experimental::RFitPanel
-\ingroup webdisplay
-
-web-based FitPanel prototype.
-*/
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Constructor
 
 ROOT::Experimental::RFitPanel::RFitPanel(const std::string &title)
@@ -88,7 +80,7 @@ ROOT::Experimental::RFitPanel::RFitPanel(const std::string &title)
    GetFunctionsFromSystem();
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Destructor
 
 ROOT::Experimental::RFitPanel::~RFitPanel()
@@ -96,8 +88,7 @@ ROOT::Experimental::RFitPanel::~RFitPanel()
    // to avoid dependency from TF1
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Returns RWebWindow instance, used to display FitPanel
 
 std::shared_ptr<ROOT::Experimental::RWebWindow> ROOT::Experimental::RFitPanel::GetWindow()
@@ -125,7 +116,7 @@ std::shared_ptr<ROOT::Experimental::RWebWindow> ROOT::Experimental::RFitPanel::G
    return fWindow;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Update list of available data
 
 void ROOT::Experimental::RFitPanel::UpdateDataSet()
@@ -147,7 +138,7 @@ void ROOT::Experimental::RFitPanel::UpdateDataSet()
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Select object for fitting
 
 void ROOT::Experimental::RFitPanel::SelectObject(const std::string &objid)
@@ -225,7 +216,7 @@ void ROOT::Experimental::RFitPanel::SelectObject(const std::string &objid)
    SelectFunction(selfunc);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Returns object based on it string id
 /// Searches either in gDirectory or in internal panel list
 
@@ -245,7 +236,7 @@ TObject *ROOT::Experimental::RFitPanel::GetSelectedObject(const std::string &obj
    return nullptr;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Returns kind of object
 
 ROOT::Experimental::RFitPanelModel::EFitObjectType ROOT::Experimental::RFitPanel::GetFitObjectType(TObject *obj)
@@ -271,7 +262,7 @@ ROOT::Experimental::RFitPanelModel::EFitObjectType ROOT::Experimental::RFitPanel
    return RFitPanelModel::kObjectNotSupported;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Update list of available functions
 
 void ROOT::Experimental::RFitPanel::UpdateFunctionsList()
@@ -298,7 +289,7 @@ void ROOT::Experimental::RFitPanel::UpdateFunctionsList()
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Select fit function
 
 void ROOT::Experimental::RFitPanel::SelectFunction(const std::string &funcid)
@@ -308,7 +299,7 @@ void ROOT::Experimental::RFitPanel::SelectFunction(const std::string &funcid)
    model().UpdateAdvanced(FindFitResult(funcid));
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Assign histogram to use with fit panel - without ownership
 
 void ROOT::Experimental::RFitPanel::AssignHistogram(TH1 *hist)
@@ -326,7 +317,7 @@ void ROOT::Experimental::RFitPanel::AssignHistogram(const std::string &hname)
    SendModel();
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// assign canvas to use for drawing results of fitting or showing fitpanel itself
 
 void ROOT::Experimental::RFitPanel::AssignCanvas(std::shared_ptr<RCanvas> &canv)
@@ -334,11 +325,11 @@ void ROOT::Experimental::RFitPanel::AssignCanvas(std::shared_ptr<RCanvas> &canv)
    if (!fCanvas) {
       fCanvas = canv;
    } else {
-      R__ERROR_HERE("webgui") << "FitPanel already bound to the canvas - change is not yet supported";
+      R__LOG_ERROR(FitPanelLog()) << "FitPanel already bound to the canvas - change is not yet supported";
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// assign histogram for fitting
 
 void ROOT::Experimental::RFitPanel::AssignHistogram(std::shared_ptr<RH1D> &hist)
@@ -346,7 +337,7 @@ void ROOT::Experimental::RFitPanel::AssignHistogram(std::shared_ptr<RH1D> &hist)
    fFitHist = hist;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Show FitPanel
 
 void ROOT::Experimental::RFitPanel::Show(const std::string &where)
@@ -354,7 +345,7 @@ void ROOT::Experimental::RFitPanel::Show(const std::string &where)
    GetWindow()->Show(where);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Hide FitPanel
 
 void ROOT::Experimental::RFitPanel::Hide()
@@ -363,7 +354,7 @@ void ROOT::Experimental::RFitPanel::Hide()
       fWindow->CloseConnections();
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Return reference on model object
 /// Model created if was not exists before
 
@@ -378,8 +369,7 @@ ROOT::Experimental::RFitPanelModel &ROOT::Experimental::RFitPanel::model()
    return *fModel.get();
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Send model object to the client
 
 void ROOT::Experimental::RFitPanel::SendModel()
@@ -390,7 +380,7 @@ void ROOT::Experimental::RFitPanel::SendModel()
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Process data from FitPanel
 /// OpenUI5-based FitPanel sends commands or status changes
 
@@ -437,7 +427,7 @@ void ROOT::Experimental::RFitPanel::ProcessData(unsigned, const std::string &arg
    }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Search for existing functions, ownership still belongs to FitPanel or global lists
 
 TF1 *ROOT::Experimental::RFitPanel::FindFunction(const std::string &id)
@@ -461,8 +451,7 @@ TF1 *ROOT::Experimental::RFitPanel::FindFunction(const std::string &id)
    return nullptr;
 }
 
-
-//////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Creates new instance to make fitting
 
 TFitResult *ROOT::Experimental::RFitPanel::FindFitResult(const std::string &id)
@@ -478,8 +467,7 @@ TFitResult *ROOT::Experimental::RFitPanel::FindFitResult(const std::string &id)
    return nullptr;
 }
 
-
-//////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Creates new instance to make fitting
 
 std::unique_ptr<TF1> ROOT::Experimental::RFitPanel::GetFitFunction(const std::string &funcname)
@@ -513,8 +501,7 @@ std::unique_ptr<TF1> ROOT::Experimental::RFitPanel::GetFitFunction(const std::st
    return res;
 }
 
-
-////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Update fit model
 /// returns -1 if JSON fails
 /// return 0 if nothing large changed
@@ -525,7 +512,7 @@ int ROOT::Experimental::RFitPanel::UpdateModel(const std::string &json)
    auto m = TBufferJSON::FromJSON<RFitPanelModel>(json);
 
    if (!m) {
-      R__ERROR_HERE("webgui") << "Fail to parse JSON for RFitPanelModel";
+      R__LOG_ERROR(FitPanelLog()) << "Fail to parse JSON for RFitPanelModel";
       return -1;
    }
 
@@ -552,11 +539,10 @@ int ROOT::Experimental::RFitPanel::UpdateModel(const std::string &json)
    return res;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-///Copies f into a new TF1 to be stored in the fitpanel with it's
-///own ownership. This is taken from Fit::StoreAndDrawFitFunction in
-///HFitImpl.cxx
+/// Copies f into a new TF1 to be stored in the fitpanel with it's
+/// own ownership. This is taken from Fit::StoreAndDrawFitFunction in
+/// HFitImpl.cxx
 
 TF1* ROOT::Experimental::RFitPanel::copyTF1(TF1* f)
 {
@@ -595,10 +581,9 @@ TF1* ROOT::Experimental::RFitPanel::copyTF1(TF1* f)
    return fnew;
 }
 
-
-/////////////////////////////////////////////////////////////
-// Looks for all the functions registered in the current ROOT
-// session.
+////////////////////////////////////////////////////////////////////////////////
+/// Looks for all the functions registered in the current ROOT
+/// session.
 
 void ROOT::Experimental::RFitPanel::GetFunctionsFromSystem()
 {
@@ -633,7 +618,7 @@ void ROOT::Experimental::RFitPanel::GetFunctionsFromSystem()
    }
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Returns pad where histogram is drawn
 /// If canvas not exists, create new one
 
@@ -694,7 +679,7 @@ TPad *ROOT::Experimental::RFitPanel::GetDrawPad(TObject *obj, bool force)
    return canv;
 }
 
-///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Perform fitting using current model settings
 /// Returns true if any action was done
 
@@ -798,17 +783,16 @@ bool ROOT::Experimental::RFitPanel::DoFit()
    return true; // provide client with latest changes
 }
 
-
-///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Extract color from string
 /// Should be coded as #ff00ff string
+
 Color_t ROOT::Experimental::RFitPanel::GetColor(const std::string &colorid)
 {
    if ((colorid.length() != 7) || (colorid.compare(0,1,"#") != 0)) return 0;
 
    return TColor::GetColor(colorid.c_str());
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Create confidence levels drawing
@@ -825,13 +809,13 @@ TObject *ROOT::Experimental::RFitPanel::MakeConfidenceLevels(TFitResult *result)
 
    const auto *function = result->FittedFunction();
    if (!function) {
-      R__ERROR_HERE("webgui") << "Fit Function does not exist!";
+      R__LOG_ERROR(FitPanelLog()) << "Fit Function does not exist!";
       return nullptr;
    }
 
    const auto *data = result->FittedBinData();
    if (!data) {
-      R__ERROR_HERE("webgui") << "Unbinned data set cannot draw confidence levels.";
+      R__LOG_ERROR(FitPanelLog()) << "Unbinned data set cannot draw confidence levels.";
       return nullptr;
    }
 
@@ -880,7 +864,7 @@ TObject *ROOT::Experimental::RFitPanel::MakeConfidenceLevels(TFitResult *result)
    return nullptr;
 }
 
-///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /// Perform drawing using current model settings
 /// Returns true if any action was done
 

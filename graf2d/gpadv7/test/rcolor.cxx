@@ -18,8 +18,8 @@ using namespace ROOT::Experimental;
 // Test usage of empty color
 TEST(RColor, Empty) {
    RColor col;
-   EXPECT_EQ(col.GetHex(), "");
-   EXPECT_DOUBLE_EQ(col.GetAlpha(), 1.);
+   EXPECT_EQ(col.AsHex(), "");
+   EXPECT_FLOAT_EQ(col.GetAlphaFloat(), 1.);
    EXPECT_EQ(col.GetName(), "");
 }
 
@@ -27,19 +27,19 @@ TEST(RColor, Empty) {
 TEST(RColor, AsHex) {
    RColor col;
    col.SetRGB(0,0,0);
-   EXPECT_EQ(col.GetHex(), "000000");
+   EXPECT_EQ(col.AsHex(), "000000");
    col.SetRGB(1,7,15);
-   EXPECT_EQ(col.GetHex(), "01070F");
+   EXPECT_EQ(col.AsHex(), "01070F");
    col.SetRGB(127,127,127);
-   EXPECT_EQ(col.GetHex(), "7F7F7F");
+   EXPECT_EQ(col.AsHex(), "7F7F7F");
    col.SetRGB(255,255,255);
-   EXPECT_EQ(col.GetHex(), "FFFFFF");
+   EXPECT_EQ(col.AsHex(), "FFFFFF");
 }
 
-// Test usage of empty color
+// Test usage of color components
 TEST(RColor, Components) {
    RColor col;
-   col.SetHex("012345");
+   col.SetRGB(0x01, 0x23, 0x45);
    EXPECT_EQ(col.GetRed(), 0x01);
    EXPECT_EQ(col.GetGreen(), 0x23);
    EXPECT_EQ(col.GetBlue(), 0x45);
@@ -50,34 +50,35 @@ TEST(RColor, Alpha) {
    static constexpr double delta = 0.01; // approx precision of alpha storage
 
    RColor col;
-   col.SetAlpha(0);
-   EXPECT_DOUBLE_EQ(col.GetAlpha(), 0.);
+   col.SetAlphaFloat(0.);
+   EXPECT_DOUBLE_EQ(col.GetAlphaFloat(), 0.);
 
-   col.SetAlpha(1);
-   EXPECT_DOUBLE_EQ(col.GetAlpha(), 1.);
+   col.SetAlphaFloat(1.);
+   EXPECT_DOUBLE_EQ(col.GetAlphaFloat(), 1.);
 
-   col.SetAlpha(0.1);
-   EXPECT_NEAR(0.1,col.GetAlpha(), delta);
+   col.SetAlphaFloat(0.1);
+   EXPECT_NEAR(0.1,col.GetAlphaFloat(), delta);
 
-   col.SetAlpha(0.5);
-   EXPECT_NEAR(0.5,col.GetAlpha(), delta);
+   col.SetAlphaFloat(0.5);
+   EXPECT_NEAR(0.5,col.GetAlphaFloat(), delta);
 
-   col.SetAlpha(0.8);
-   EXPECT_NEAR(0.8,col.GetAlpha(), delta);
+   col.SetAlphaFloat(0.8);
+   EXPECT_NEAR(0.8,col.GetAlphaFloat(), delta);
 }
 
 
 TEST(RColor, Predef) {
    {
       RColor col{RColor::kRed};
-      EXPECT_EQ(col.GetHex(), "FF0000");
+      EXPECT_EQ(col.AsHex(), "FF0000");
       EXPECT_EQ(col.HasAlpha(), false);
    }
 
    {
       RColor col{RColor::kBlue};
       col.SetAlpha(RColor::kTransparent);
-      EXPECT_EQ(col.GetHex(), "0000FF");
-      EXPECT_FLOAT_EQ(col.GetAlpha(), 0.);
+      EXPECT_EQ(col.AsHex(), "0000FF");
+      EXPECT_EQ(col.HasAlpha(), true);
+      EXPECT_FLOAT_EQ(col.GetAlphaFloat(), 0.);
    }
 }

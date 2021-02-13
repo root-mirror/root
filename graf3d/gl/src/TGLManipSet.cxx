@@ -22,7 +22,6 @@
 #include "TGLIncludes.h"
 
 #include <KeySymbols.h>
-#include <TVirtualX.h>
 
 /** \class TGLManipSet
 \ingroup opengl

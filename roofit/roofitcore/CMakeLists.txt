@@ -53,7 +53,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooArgList.h
     RooArgProxy.h
     RooArgSet.h
-    RooBanner.h
     RooBinIntegrator.h
     RooBinnedGenContext.h
     RooBinningCategory.h
@@ -64,8 +63,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooCacheManager.h
     RooCategory.h
     RooCategoryProxy.h
-    RooCategorySharedProperties.h
-    RooCatType.h
     RooChangeTracker.h
     RooChi2Var.h
     RooClassFactory.h
@@ -133,7 +130,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooLinTransBinning.h
     RooList.h
     RooListProxy.h
-    RooMapCatEntry.h
     RooMappedCategory.h
     RooMath.h
     RooMCIntegrator.h
@@ -145,7 +141,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooMPSentinel.h
     RooMsgService.h
     RooMultiCategory.h
-    RooMultiCatIter.h
     RooMultiGenFunction.h
     RooMultiVarGaussian.h
     RooNameReg.h
@@ -184,8 +179,8 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooRealConstant.h
     RooRealIntegral.h
     RooRealMPFE.h
-    RooRealProxy.h
     RooTemplateProxy.h
+    RooRealProxy.h
     RooRealSumFunc.h
     RooRealSumPdf.h
     RooRealVar.h
@@ -202,7 +197,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooSetPair.h
     RooSetProxy.h
     RooSharedProperties.h
-    RooSharedPropertiesList.h
     RooSimGenContext.h
     RooSimPdfBuilder.h
     RooSimSplitGenContext.h
@@ -218,7 +212,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooThresholdCategory.h
     RooTObjWrap.h
     RooTrace.h
-    RooTreeData.h
     RooTreeDataStore.h
     RooTruthModel.h
     RooUniformBinning.h
@@ -228,11 +221,12 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooWorkspaceHandle.h
     RooXYChi2Var.h
     RooHelpers.h
-    RooSpan.h
-    BatchData.h
-    BatchHelpers.h
-    RooVDTHeaders.h
     RooWrapperPdf.h
+    RooNaNPacker.h
+    RooBinSamplingPdf.h
+    RooFitLegacy/RooCatTypeLegacy.h
+    RooFitLegacy/RooCategorySharedProperties.h
+    RooFitLegacy/RooTreeData.h
   SOURCES
     src/BidirMMapPipe.cxx
     src/BidirMMapPipe.h
@@ -265,7 +259,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooAbsRootFinder.cxx
     src/RooAbsSelfCachedPdf.cxx
     src/RooAbsSelfCachedReal.cxx
-    src/RooAbsString.cxx
     src/RooAbsStudy.cxx
     src/RooAbsTestStatistic.cxx
     src/RooAcceptReject.cxx
@@ -278,7 +271,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooArgList.cxx
     src/RooArgProxy.cxx
     src/RooArgSet.cxx
-    src/RooBanner.cxx
+    src/Initialisation.cxx
     src/RooBinIntegrator.cxx
     src/RooBinnedGenContext.cxx
     src/RooBinningCategory.cxx
@@ -288,9 +281,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooCachedReal.cxx
     src/RooCacheManager.cxx
     src/RooCategory.cxx
-    src/RooCategoryProxy.cxx
-    src/RooCategorySharedProperties.cxx
-    src/RooCatType.cxx
     src/RooChangeTracker.cxx
     src/RooChi2Var.cxx
     src/RooClassFactory.cxx
@@ -355,7 +345,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooLinTransBinning.cxx
     src/RooList.cxx
     src/RooListProxy.cxx
-    src/RooMapCatEntry.cxx
     src/RooMappedCategory.cxx
     src/RooMath.cxx
     src/RooMCIntegrator.cxx
@@ -367,7 +356,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooMPSentinel.cxx
     src/RooMsgService.cxx
     src/RooMultiCategory.cxx
-    src/RooMultiCatIter.cxx
     src/RooMultiGenFunction.cxx
     src/RooMultiVarGaussian.cxx
     src/RooNameReg.cxx
@@ -422,7 +410,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooSetPair.cxx
     src/RooSetProxy.cxx
     src/RooSharedProperties.cxx
-    src/RooSharedPropertiesList.cxx
     src/RooSimGenContext.cxx
     src/RooSimPdfBuilder.cxx
     src/RooSimSplitGenContext.cxx
@@ -438,7 +425,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooThresholdCategory.cxx
     src/RooTObjWrap.cxx
     src/RooTrace.cxx
-    src/RooTreeData.cxx
     src/RooTreeDataStore.cxx
     src/RooTruthModel.cxx
     src/RooUniformBinning.cxx
@@ -447,11 +433,15 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooWorkspace.cxx
     src/RooXYChi2Var.cxx
     src/RooHelpers.cxx
-    src/BatchData.cxx
-    src/BatchHelpers.cxx
     src/RooWrapperPdf.cxx
-    DICTIONARY_OPTIONS
+    src/RooBinSamplingPdf.cxx
+    src/RooFitLegacy/RooCatTypeLegacy.cxx
+    src/RooFitLegacy/RooCategorySharedProperties.cxx
+    src/RooFitLegacy/RooMultiCatIter.cxx
+  DICTIONARY_OPTIONS
     "-writeEmptyRootPCM"
+  LIBRARIES
+    RooBatchCompute
   DEPENDENCIES
     Core
     Hist
@@ -462,10 +452,13 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RIO
     MathCore
     Foam
+    Smatrix
+  LINKDEF
+    inc/LinkDef.h
 )
 
-if(vdt AND NOT builtin_vdt)
-  target_include_directories(RooFitCore PRIVATE ${VDT_INCLUDE_DIR})
-endif()
+# For recent clang, this can facilitate auto-vectorisation.
+# In RooFit, the errno side effect is not needed, anyway:
+target_compile_options(RooFitCore PUBLIC -fno-math-errno)
 
 ROOT_ADD_TEST_SUBDIRECTORY(test)

@@ -30,7 +30,7 @@
 
 #include <vector>
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 namespace TMVA {
 

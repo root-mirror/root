@@ -70,7 +70,6 @@
 #include "TMathBase.h"
 #include "TMatrixFBasefwd.h"
 #include "TMatrixDBasefwd.h"
-#include "TString.h"
 #include "TVectorFfwd.h"
 #include "TVectorDfwd.h"
 

@@ -1528,6 +1528,8 @@ For a more detailed explanation, see "Input/Output".
 
 -   **`TH1`**`::GetMean(int axis)` - returns the mean value along axis.
 
+-   **`TH1`**`::GetStdDev(int axis)` - returns the sigma distribution along axis.
+
 -   **`TH1`**`::GetRMS(int axis)` - returns the Root Mean Square
     along axis.
 
@@ -1563,6 +1565,72 @@ For a more detailed explanation, see "Input/Output".
 
 -   **`TH1`**`::Reset()` - resets the bin contents and errors of a
     histogram
+
+## Important note on returned statistics (`GetMean`, `GetStdDev`, etc.)
+
+
+By default, histogram statistics are computed at fill time using the
+unbinned data used to update the bin content. **This means the values
+returned by `GetMean`, `GetStdDev`, etc., are those of the dataset used
+to fill the histogram**, not those of the binned content of the histogram
+itself, **unless one of the axes has been zoomed**. (See the documentation
+on `TH1::GetStats()`.) This is useful if you want to keep track of the
+mean and standard deviation of the dataset you are visualizing with the histogram,
+but it can lead to some unintuitive results.
+
+For example, suppose you have a histogram
+with one bin between 0 and 100, then you fill it with a
+Gaussian dataset with mean 20 and standard deviation 2:
+``` {.cpp}
+TH1F * h = new TH1F("h", "h", 1, 0, 100);
+for(int i=0; i<10000; i++) h->Fill(gRandom->Gaus(20, 2));
+```
+Right now, `h->GetMean()` will return 20 and `h->GetStdDev()` will return 2;
+ROOT calculated these values as we filled `h`.
+Next, zoom in on the Gaussian:
+``` {.cpp}
+h->GetXaxis()->SetRangeUser(10, 30);
+```
+Now, `h->GetMean()` will return 50 and `h->GetStdDev()` will return 0.
+What happened? Well, `GetMean` and `GetStdDev` (and many other `TH1` functions)
+return the statistics for *bins in range*; this is because the histogram only
+stores the contents of its bins, not the coordinates of the values used to fill it.
+So even though `h` has only one bin and it's still included in the range, ROOT returns the
+binned statistics because `SetRangeUser` set the bit `TAxis::kAxisRange` to 1.
+*This remains true even if you zoom out:*
+``` {.cpp}
+h->GetXaxis()->SetRangeUser(0, 100);
+```
+still results in `GetMean` and `GetStdDev` returning 50 and 0, respectively,
+because, even though this is the original range of the histogram, *the X axis has
+still been assigned a range*. To mark the X axis as having no range, you can call
+``` {.cpp}
+h->GetXaxis()->SetRange();
+```
+without arguments or with arguments `(0, 0)`. This sets the bit `TAxis::kAxisRange` to 0,
+and ROOT again uses the statistics calculated at fill time: `GetMean` and `GetStdDev`
+now return 20 and 2, respectively.
+
+If you want ROOT to consistently return the statistics of the binned dataset stored
+in the histogram and not those of the dataset used to fill it, you can call
+`TH1::ResetStats`. This will delete the statistics originally calculated at fill
+time and replace them with those calculated from the bins; note that you cannot later
+retrieve the original statistics--they are lost. Continuing the example above,
+``` {.cpp}
+h->ResetStats();
+h->GetXaxis()->SetRange();
+```
+results in `GetMean` and `GetStdDev` returning 50 and 0, respectively.
+If you fill the histogram again, the statistics will be a mix of binned and
+unbinned:
+``` {.cpp}
+h->ResetStats();
+h->GetXaxis()->SetRange();
+for(int i=0; i<10000; i++) h->Fill(85);
+```
+results in `GetMean` and `GetStdDev` returning 67.5 and 17.5, respectively;
+you must call `TH1::ResetStats` again to get consistent binned statistics.
+
 
 ## Alphanumeric Bin Labels
 

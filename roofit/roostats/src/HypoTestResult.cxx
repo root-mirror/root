@@ -81,7 +81,7 @@ HypoTestResult::HypoTestResult(const char* name) :
    fTestStatisticData(NaN),
    fAllTestStatisticsData(NULL),
    fNullDistr(NULL), fAltDistr(NULL),
-   fNullDetailedOutput(NULL), fAltDetailedOutput(NULL), fFitInfo(NULL),
+   fNullDetailedOutput(NULL), fAltDetailedOutput(NULL),
    fPValueIsRightTail(kTRUE),
    fBackgroundIsAlt(kFALSE)
 {
@@ -97,7 +97,7 @@ HypoTestResult::HypoTestResult(const char* name, Double_t nullp, Double_t altp) 
    fTestStatisticData(NaN),
    fAllTestStatisticsData(NULL),
    fNullDistr(NULL), fAltDistr(NULL),
-   fNullDetailedOutput(NULL), fAltDetailedOutput(NULL), fFitInfo(NULL),
+   fNullDetailedOutput(NULL), fAltDetailedOutput(NULL),
    fPValueIsRightTail(kTRUE),
    fBackgroundIsAlt(kFALSE)
 {
@@ -113,7 +113,7 @@ HypoTestResult::HypoTestResult(const HypoTestResult& other) :
    fTestStatisticData(NaN),
    fAllTestStatisticsData(NULL),
    fNullDistr(NULL), fAltDistr(NULL),
-   fNullDetailedOutput(NULL), fAltDetailedOutput(NULL), fFitInfo(NULL),
+   fNullDetailedOutput(NULL), fAltDetailedOutput(NULL),
    fPValueIsRightTail( other.GetPValueIsRightTail() ),
    fBackgroundIsAlt( other.GetBackGroundIsAlt() )
 {
@@ -153,7 +153,7 @@ HypoTestResult & HypoTestResult::operator=(const HypoTestResult& other) {
    if( fAltDistr ) { delete fAltDistr; fAltDistr = NULL; }
    if( fNullDetailedOutput ) { delete fNullDetailedOutput; fNullDetailedOutput = NULL; }
    if( fAltDetailedOutput ) { delete fAltDetailedOutput;  fAltDetailedOutput = NULL; }
-   if (fFitInfo) { delete fFitInfo; fFitInfo = NULL; }
+   fFitInfo = nullptr;
 
    fPValueIsRightTail =  other.GetPValueIsRightTail();
    fBackgroundIsAlt = other.GetBackGroundIsAlt();
@@ -195,7 +195,7 @@ void HypoTestResult::Append(const HypoTestResult* other) {
    if( fFitInfo ) {
       if( other->GetFitInfo() ) fFitInfo->append( *other->GetFitInfo() );
    }else{
-      if( other->GetFitInfo() ) fFitInfo = new RooDataSet( *other->GetFitInfo() );
+      if( other->GetFitInfo() ) fFitInfo.reset(new RooDataSet( *other->GetFitInfo() ));
    }
 
    // if no data is present use the other HypoTestResult's data

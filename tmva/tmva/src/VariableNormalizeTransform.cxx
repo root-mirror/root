@@ -44,7 +44,6 @@ Linear interpolation class
 
 #include "TMatrixD.h"
 #include "TMatrixDBase.h"
-#include "TVectorD.h"
 #include "TVectorF.h"
 
 #include <iostream>

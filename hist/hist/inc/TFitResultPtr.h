@@ -24,9 +24,10 @@
 
 #include "Rtypes.h"
 
-class TFitResult;
-
 #include <memory>
+#include <string>
+
+class TFitResult;
 
 class TFitResultPtr {
 public:
@@ -45,7 +46,7 @@ public:
 
    TFitResult* operator->() const;
 
-   TFitResult* Get() const; 
+   TFitResult* Get() const;
 
    TFitResultPtr& operator= (const TFitResultPtr& rhs);
 

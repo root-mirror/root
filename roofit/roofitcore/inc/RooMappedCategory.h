@@ -16,20 +16,19 @@
 #ifndef ROO_MAPPED_CATEGORY
 #define ROO_MAPPED_CATEGORY
 
-#include "TObjArray.h"
 #include "RooAbsCategory.h"
 #include "RooCategoryProxy.h"
-#include "RooCatType.h"
-#include "TRegexp.h"
 #include <map>
 #include <string>
 
+class TRegexp;
 class RooMappedCategoryCache;
 
 class RooMappedCategory : public RooAbsCategory {
 public:
+  static constexpr value_type NoCatIdx = std::numeric_limits<value_type>::min();
   // Constructors etc.
-  enum CatIdx { NoCatIdx=-99999 } ;
+
   inline RooMappedCategory() : _defCat(0), _mapcache(0) { }
   RooMappedCategory(const char *name, const char *title, RooAbsCategory& inputCat, const char* defCatName="NotMapped", Int_t defCatIdx=NoCatIdx);
   RooMappedCategory(const RooMappedCategory& other, const char *name=0) ;
@@ -50,39 +49,43 @@ public:
 
   class Entry {
   public:
-    inline Entry() : _regexp(0), _cat() {} 
-    virtual ~Entry() { delete _regexp ; } ;
-    Entry(const char* exp, const RooCatType* cat) : _expr(exp), _regexp(new TRegexp(mangle(exp),kTRUE)), _cat(*cat) {} 
-    Entry(const Entry& other) : _expr(other._expr), _regexp(new TRegexp(mangle(other._expr.Data()),kTRUE)), _cat(other._cat) {} 
-    inline Bool_t ok() { return (_regexp->Status()==TRegexp::kOK) ; }
-    Bool_t match(const char* testPattern) const { return (TString(testPattern).Index(*_regexp)>=0) ; }
-    inline const RooCatType& outCat() const { return _cat ; }
+    inline Entry() : _regexp(nullptr), _catIdx() {}
+    virtual ~Entry();
+    Entry(const char* exp, RooAbsCategory::value_type cat);
+    Entry(const Entry& other);
+    bool ok();
+    Bool_t match(const char* testPattern) const;
     Entry& operator=(const Entry& other);
+    RooAbsCategory::value_type outCat() const { return _catIdx; }
+    const TRegexp* regexp() const;
     
   protected:
   
     TString mangle(const char* exp) const ;  
 
     TString _expr ;
-    TRegexp* _regexp ; //!
-    RooCatType _cat ;
+    mutable TRegexp* _regexp{nullptr}; //!
+    RooAbsCategory::value_type _catIdx;
 
-    ClassDef(Entry,1) // Map cat entry definition
+    ClassDef(Entry, 2) // Map cat entry definition
   };
 
 protected:
     
-  RooCatType* _defCat ;         // Default (unmapped) output type
+  value_type _defCat{NoCatIdx}; // Default (unmapped) output type
   RooCategoryProxy _inputCat ;  // Input category
   std::map<std::string,RooMappedCategory::Entry> _mapArray ;  // List of mapping rules
   mutable RooMappedCategoryCache* _mapcache; //! transient member: cache the mapping
 
-  virtual RooCatType evaluate() const ; 
+  virtual value_type evaluate() const ;
   const RooMappedCategoryCache* getOrCreateCache() const;
+
+  /// When the input category changes states, the cached state mappings are invalidated
+  void recomputeShape();
 
   friend class RooMappedCategoryCache;
 
-  ClassDef(RooMappedCategory,1) // Index variable, derived from another index using pattern-matching based mapping
+  ClassDef(RooMappedCategory, 2) // Index variable, derived from another index using pattern-matching based mapping
 };
 
 #endif

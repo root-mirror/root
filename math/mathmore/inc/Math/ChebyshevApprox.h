@@ -46,7 +46,7 @@
 
 #include "Math/GSLFunctionAdapter.h"
 
-#include <memory>
+#include <utility>
 #include <cstddef>
 
 

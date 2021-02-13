@@ -12,7 +12,7 @@ TEST(DrawTest, OneD)
    auto h = std::make_shared<RH1D>(xaxis);
    RCanvas canv;
    canv.Draw(h);
-   EXPECT_EQ(canv.NumPrimitives(), 1u);
+   EXPECT_EQ(canv.NumPrimitives(), 2u);
 }
 
 TEST(DrawTest, TwoD)
@@ -27,7 +27,7 @@ TEST(DrawTest, TwoD)
    // No RHist copt c'tor:
    // canv.Draw(RH2F(xaxis, yaxis));
    // canv.Draw(std::make_unique<RH2C>(xaxis, yaxis));
-   EXPECT_EQ(canv.NumPrimitives(), 2u);
+   EXPECT_EQ(canv.NumPrimitives(), 3u);
 }
 
 TEST(DrawTest, ThreeD)
@@ -38,7 +38,7 @@ TEST(DrawTest, ThreeD)
    auto h = std::make_shared<RH3F>(xaxis, yaxis, zaxis);
    RCanvas canv;
    canv.Draw(h);
-   EXPECT_EQ(canv.NumPrimitives(), 1u);
+   EXPECT_EQ(canv.NumPrimitives(), 2u);
 }
 
 // Drawing options:

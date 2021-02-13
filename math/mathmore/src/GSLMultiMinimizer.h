@@ -37,6 +37,7 @@
 #include "Math/IFunction.h"
 
 #include <cassert>
+#include <string>
 
 namespace ROOT {
 

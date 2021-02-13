@@ -16,9 +16,8 @@
 #include "TAttText.h"
 #include "TNamed.h"
 #include "TAttBBox2D.h"
-#include "TPoint.h"
-#include "GuiTypes.h"
 
+class TPoint;
 
 class TText : public TNamed, public TAttText, public TAttBBox2D {
 

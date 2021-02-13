@@ -22,10 +22,12 @@
 #include "TODBCStatement.h"
 #include "TODBCServer.h"
 #include "TDataType.h"
-#include "Riostream.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 #include <sqlext.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
 
 #define kSqlTime      123781
 #define kSqlDate      123782

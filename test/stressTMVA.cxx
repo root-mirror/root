@@ -2505,6 +2505,7 @@ void RegressionUnitTestWithDeviation::run()
    outputFile->Close();
    delete dataloader; 
    delete factory;
+   delete input;
 
    // reader tests
 
@@ -3051,12 +3052,12 @@ void addClassificationTests( UnitTestSuite& TMVA_test, bool full=true)
 
 #ifdef R__HAS_TMVACPU
    TMVA_test.addTest(new MethodUnitTestWithROCLimits(
-                         TMVA::Types::kDNN, "DNN CPU", configCpu, 0.85, 0.98)
+                         TMVA::Types::kDL, "DNN CPU", configCpu, 0.85, 0.98)
                      );
 #endif
 #ifdef R__HAS_TMVAGPU
    TMVA_test.addTest(new MethodUnitTestWithROCLimits(
-                         TMVA::Types::kDNN, "DNN GPU", configGpu, 0.85, 0.98)
+                         TMVA::Types::kDL, "DNN GPU", configGpu, 0.85, 0.98)
                      );
 #endif
 }

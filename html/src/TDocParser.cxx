@@ -19,7 +19,6 @@
 #include "TDataType.h"
 #include "TDatime.h"
 #include "TDocDirective.h"
-#include "TEnv.h"
 #include "TGlobal.h"
 #include "THtml.h"
 #include "TInterpreter.h"
@@ -28,6 +27,7 @@
 #include "TPRegexp.h"
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TObjString.h"
 #include "TVirtualMutex.h"
 #include <string>
 

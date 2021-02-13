@@ -28,6 +28,7 @@
 #include "TGWindow.h"
 #include "TGClient.h"
 #include "TGCocoa.h"
+#include "TError.h"
 
 namespace ROOT {
 namespace MacOSX {
@@ -304,18 +305,9 @@ void DrawLineXor::Execute()const
 }
 
 //______________________________________________________________________________
-void DrawLineXor::Execute(CGContextRef ctx)const
+void DrawLineXor::Execute(CGContextRef)const
 {
-   //
-   assert(ctx != 0 && "Execute, ctx parameter is null");
-
-   CGContextSetRGBStrokeColor(ctx, 0., 0., 0., 1.);
-   CGContextSetLineWidth(ctx, 1.);
-
-   CGContextBeginPath(ctx);
-   CGContextMoveToPoint(ctx, fP1.fX, fP1.fY);
-   CGContextAddLineToPoint(ctx, fP2.fX, fP2.fY);
-   CGContextStrokePath(ctx);
+   //Noop.
 }
 
 //______________________________________________________________________________
@@ -600,54 +592,62 @@ void CommandBuffer::Flush(Details::CocoaPrivate *impl)
 //______________________________________________________________________________
 void CommandBuffer::FlushXOROps(Details::CocoaPrivate *impl)
 {
+   // The only XOR operations we ever had to support was drawing
+   // lines of a crosshair in a TCanvas. We were using a deprecated
+   // (since 10.14) trick with locking a focus on a view, drawing,
+   // flushing CGContext and then unlocking. This is not working
+   // starting from 10.15. So now the only thing we do - we draw
+   // a crosshair into the special transparent window which is
+   // attached on top of the canvas.
    assert(impl != 0 && "FlushXOROps, impl parameter is null");
 
-   if (!fXorOps.size())
-      return;
+   if (fXorOps.size() < 2) {
+       ClearXOROperations();
+       return;
+   }
 
-   //I assume here, that all XOR ops in one iteration (one Update call) must
-   //be for the same window (if not, there is no normal way to implement this at all).
-
-   NSObject<X11Drawable> *drawable = impl->GetDrawable(fXorOps[0]->fID);
-
+   NSObject<X11Drawable> * const drawable = impl->GetDrawable(fXorOps.back()->fID);
    assert([drawable isKindOfClass : [QuartzView class]] &&
           "FlushXOROps, drawable must be of type QuartzView");
-
-   QuartzView *view = (QuartzView *)drawable;
-
-   if ([view lockFocusIfCanDraw]) {
-      NSGraphicsContext *nsContext = [NSGraphicsContext currentContext];
-      assert(nsContext != nil && "FlushXOROps, currentContext is nil");
-      CGContextRef currContext = (CGContextRef)[nsContext graphicsPort];
-      assert(currContext != 0 && "FlushXOROps, graphicsPort is null");//remove this assert?
-
-      const Quartz::CGStateGuard ctxGuard(currContext);//ctx guard.
-
-      CGContextSetAllowsAntialiasing(currContext, false);
-
-      view.fContext = currContext;
-
-      if (view.fBackBuffer) {//back buffer has canvas' contents.
-         //Very "special" window.
-         const Rectangle copyArea(0, 0, view.fBackBuffer.fWidth, view.fBackBuffer.fHeight);
-         [view copy : view.fBackBuffer area : copyArea
-          withMask : nil clipOrigin : Point() toPoint : Point()];
-      }
-
-      //Now, do "XOR" drawings.
-      for (size_type i = 0, e = fXorOps.size(); i < e; ++i) {
-         if (fXorOps[i]) {
-            fXorOps[i]->Execute(currContext);
-         }
-      }
-
-      [view unlockFocus];
-      view.fContext = 0;
-
-      CGContextFlush(currContext);
-
-      CGContextSetAllowsAntialiasing(currContext, true);
+   QuartzView * const view = (QuartzView *)drawable;
+   QuartzWindow * const window = view.fQuartzWindow;
+   auto crosshairWindow = [window findCrosshairWindow];
+   if (!crosshairWindow) {
+      ::Warning("FlushXOROps", "No CrosshairWindow found to draw into");
+       ClearXOROperations();
+       return;
    }
+
+   for (auto *candidateOp : fXorOps) {
+       if (!dynamic_cast<DrawLineXor *>(candidateOp)) {
+           NSLog(@"XOR mode supports DrawLine only, unexpected operation was found");
+           ClearXOROperations();
+           return;
+       }
+   }
+
+   // If size is > 2, we take the last two operations.
+   DrawLineXor *line1 = static_cast<DrawLineXor *>(*(fXorOps.end() - 2));
+   DrawLineXor *line2 = static_cast<DrawLineXor *>(fXorOps.back());
+
+   auto rootToNs = [](Point rp) {
+      return NSPoint{CGFloat(rp.fX), CGFloat(rp.fY)};
+   };
+
+   NSPoint cross[] = {rootToNs(line1->start()), rootToNs(line1->end()),
+                      rootToNs(line2->start()), rootToNs(line2->end())};
+
+   for (auto &point : cross) {
+      // From the view's coordinates to window's:
+      point = [view convertPoint : point toView : nil];
+   }
+
+   CrosshairView *cv = (CrosshairView *)crosshairWindow.contentView;
+   cv.start1 = cross[0];
+   cv.end1 = cross[1];
+   cv.start2 = cross[2];
+   cv.end2 = cross[3];
+   [cv setNeedsDisplay : YES];
 
    ClearXOROperations();
 }

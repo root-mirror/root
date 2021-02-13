@@ -11,7 +11,7 @@
 #ifndef ROOT_RFILTERBASE
 #define ROOT_RFILTERBASE
 
-#include "ROOT/RDF/RBookedCustomColumns.hxx"
+#include "ROOT/RDF/RBookedDefines.hxx"
 #include "ROOT/RDF/RNodeBase.hxx"
 #include "RtypesCore.h"
 #include "TError.h" // R_ASSERT
@@ -42,11 +42,11 @@ protected:
    const std::string fName;
    const unsigned int fNSlots; ///< Number of thread slots used by this node, inherited from parent node.
 
-   RDFInternal::RBookedCustomColumns fCustomColumns;
+   RDFInternal::RBookedDefines fDefines;
 
 public:
    RFilterBase(RLoopManager *df, std::string_view name, const unsigned int nSlots,
-               const RDFInternal::RBookedCustomColumns &customColumns);
+               const RDFInternal::RBookedDefines &defines);
    RFilterBase &operator=(const RFilterBase &) = delete;
 
    virtual ~RFilterBase();
@@ -63,8 +63,8 @@ public:
       std::fill(fAccepted.begin(), fAccepted.end(), 0);
       std::fill(fRejected.begin(), fRejected.end(), 0);
    }
-   virtual void ClearValueReaders(unsigned int slot) = 0;
-   virtual void ClearTask(unsigned int slot) = 0;
+   /// Clean-up operations to be performed at the end of a task.
+   virtual void FinaliseSlot(unsigned int slot) = 0;
    virtual void InitNode();
    virtual void AddFilterName(std::vector<std::string> &filters) = 0;
 };

@@ -37,6 +37,7 @@ The picture below shows a canvas with a pop-up menu and a dialog box.
 
 #include "TROOT.h"
 #include "TContextMenu.h"
+#include "TContextMenuImp.h"
 #include "TVirtualPad.h"
 #include "TGuiFactory.h"
 #include "TMethod.h"
@@ -302,6 +303,16 @@ const char *TContextMenu::CreatePopupTitle(TObject *object)
 
    return popupTitle.Data();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/// Display popup.
+
+void TContextMenu::DisplayPopUp(Int_t x, Int_t y)
+{
+   if (fContextMenuImp)
+      fContextMenuImp->DisplayPopup(x, y);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Execute method with specified arguments for specified object.

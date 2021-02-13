@@ -8,6 +8,7 @@
  *************************************************************************/
 
 #include <TSystem.h>
+#include <TVirtualX.h>
 #include <TROOT.h>
 #include <TRootHelpDialog.h>
 

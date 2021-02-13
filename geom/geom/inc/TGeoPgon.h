@@ -12,9 +12,10 @@
 #ifndef ROOT_TGeoPgon
 #define ROOT_TGeoPgon
 
-#include <mutex>
-
 #include "TGeoPcon.h"
+
+#include <mutex>
+#include <vector>
 
 class TGeoPgon : public TGeoPcon
 {
@@ -48,6 +49,7 @@ protected:
    Bool_t                SliceCrossingIn(const Double_t *point, const Double_t *dir, Int_t ipl, Int_t nphi, Int_t *iphi, Double_t *sphi, Double_t &snext, Double_t stepmax) const;
    Bool_t                SliceCrossingZ(const Double_t *point, const Double_t *dir, Int_t nphi, Int_t *iphi, Double_t *sphi, Double_t &snext, Double_t stepmax) const;
    Bool_t                SliceCrossingInZ(const Double_t *point, const Double_t *dir, Int_t nphi, Int_t *iphi, Double_t *sphi, Double_t &snext, Double_t stepmax) const;
+   void                  SetSegsAndPolsNoInside(TBuffer3D &buff) const;
 
 public:
    // constructors

@@ -89,7 +89,6 @@
 #include "TVirtualDragManager.h"
 #include "TPluginManager.h"
 #include "TROOT.h"
-#include "TApplication.h"
 
 ClassImp(TGuiBuilder);
 ClassImp(TGuiBldAction);

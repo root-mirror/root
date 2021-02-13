@@ -16,41 +16,44 @@
 #ifndef ROO_MULTI_CATEGORY
 #define ROO_MULTI_CATEGORY
 
-class TObject ;
+class TObject;
 #include "RooAbsCategoryLValue.h"
-#include "RooCatType.h"
 #include "RooArgSet.h"
 #include "RooSetProxy.h"
- 
+#include <string>
+
+class RooSuperCategory;
+
 
 class RooMultiCategory : public RooAbsCategory {
 public:
   // Constructors etc.
-  inline RooMultiCategory() { }
+  inline RooMultiCategory() { setShapeDirty(); }
   RooMultiCategory(const char *name, const char *title, const RooArgSet& inputCatList);
   RooMultiCategory(const RooMultiCategory& other, const char *name=0) ;
-  virtual TObject* clone(const char* newname) const { return new RooMultiCategory(*this,newname); }
+  virtual TObject* clone(const char* newname) const override { return new RooMultiCategory(*this,newname); }
   virtual ~RooMultiCategory();
 
   // Printing interface (human readable)
-  virtual void printMultiline(std::ostream& os, Int_t content, Bool_t verbose=kFALSE, TString indent="") const ;
+  virtual void printMultiline(std::ostream& os, Int_t content, Bool_t verbose=kFALSE, TString indent="") const override;
 
-  // I/O streaming interface (machine readable)
-  virtual Bool_t readFromStream(std::istream& is, Bool_t compact, Bool_t verbose=kFALSE) ;
-  virtual void writeToStream(std::ostream& os, Bool_t compact) const ;
+  /// Multi categories cannot be read from streams.
+  virtual Bool_t readFromStream(std::istream& /*is*/, Bool_t /*compact*/, Bool_t /*verbose=kFALSE*/) override { return true; }
+  virtual void writeToStream(std::ostream& os, Bool_t compact) const override;
 
   const RooArgSet& inputCatList() const { return _catSet ; }
+  const char* getCurrentLabel() const override;
 
 protected:
 
-  void updateIndexList() ;
-  TString currentLabel() const ;
+  std::string createLabel() const;
+  value_type evaluate() const override;
+  void recomputeShape() override;
 
   RooSetProxy _catSet ; // Set of input category
   
-  virtual RooCatType evaluate() const ; 
-
-  ClassDef(RooMultiCategory,1) // Product operator for categories
+  friend class RooSuperCategory;
+  ClassDefOverride(RooMultiCategory,1) // Product operator for categories
 };
 
 #endif

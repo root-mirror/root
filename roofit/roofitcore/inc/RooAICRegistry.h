@@ -17,9 +17,9 @@
 #define ROO_AIC_REGISTRY
 
 #include <vector>
-#include <assert.h>
 #include "Rtypes.h"
-class RooArgSet ;
+
+class RooArgSet;
 
 typedef RooArgSet* pRooArgSet ;
 

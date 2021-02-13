@@ -43,7 +43,6 @@ Examples:
 ~~~
 */
 
-#include "Riostream.h"
 #include "TEnv.h"
 #include "TInterpreter.h"
 #include "TList.h"
@@ -52,6 +51,9 @@ Examples:
 #include "TObjString.h"
 #include "TROOT.h"
 #include "TSystem.h"
+#include "strlcpy.h"
+#include <iostream>
+#include <fstream>
 #include <sstream>
 
 ClassImp(TMacro);

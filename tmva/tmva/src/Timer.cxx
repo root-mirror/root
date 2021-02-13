@@ -32,6 +32,8 @@ Timing information for training and evaluation of MVA methods
 Usage:
 
 ~~~ {.cpp}
+   TMVA::gConfig().SetDrawProgressBar(true);
+
    TMVA::Timer timer( Nloops, "MyClassName" );
    for (Int_t i=0; i<Nloops; i++) {
      ... // some code
@@ -49,6 +51,11 @@ Usage:
 
 Remark: in batch mode, the progress bar is quite ugly; you may
         want to use the text output then
+
+Note that by default in TMVA::Config the drawing of the
+progress bar is switched off. To have the progress bar visible you need 
+to enable it by calling TMVA::gConfig().SetDrawProgressBar(true)
+
 */
 
 #include "TMVA/Timer.h"
@@ -59,7 +66,6 @@ Remark: in batch mode, the progress bar is quite ugly; you may
 
 #include "TStopwatch.h"
 
-#include <iomanip>
 #ifdef _MSC_VER
 #include <io.h>
 #define isatty _isatty

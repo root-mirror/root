@@ -32,7 +32,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TGText.h"
-#include <ctype.h>
+#include "strlcpy.h"
+#include <cctype>
 
 const Int_t kMaxLen = 8000;
 
@@ -1247,7 +1248,9 @@ TString TGText::AsString()
          fColCount = travel->fLength;
          fLongestLine = line_count;
       }
-      ret += travel->GetText();
+      char *txt = travel->GetText();
+      ret += txt;
+      delete [] txt;
       travel = travel->fNext;
       if (travel) ret += '\n';
       line_count++;

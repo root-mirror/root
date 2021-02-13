@@ -2,7 +2,7 @@
  "language": "c++",
  "display_name": "ROOT C++",
  "argv": [
-  "python@PYTHON_VERSION_MAJOR@.@PYTHON_VERSION_MINOR@",
+  "python@PYTHON_VERSION_MAJOR_Development_Main@.@PYTHON_VERSION_MINOR_Development_Main@",
   "-m",
   "JupyROOT.kernel.rootkernel",
   "-f",

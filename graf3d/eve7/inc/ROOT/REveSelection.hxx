@@ -68,8 +68,8 @@ public:
    typedef SelMap_t::iterator              SelMap_i;
 
 private:
-   REveSelection(const REveSelection &);            // Not implemented
-   REveSelection &operator=(const REveSelection &); // Not implemented
+   REveSelection(const REveSelection &) = delete;
+   REveSelection &operator=(const REveSelection &) = delete;
 
 protected:
    Color_t          fVisibleEdgeColor; ///<!

@@ -27,8 +27,10 @@
 #ifndef TMVA_DNN_GENERALLAYER
 #define TMVA_DNN_GENERALLAYER
 
-#include <iostream>
+#include <sstream>
 #include <limits>
+#include <vector>
+#include <string>
 
 // for xml
 #include "TMVA/Tools.h"
@@ -51,6 +53,7 @@ class VGeneralLayer {
    using Tensor_t = typename Architecture_t::Tensor_t;
    using Matrix_t = typename Architecture_t::Matrix_t;
    using Scalar_t = typename Architecture_t::Scalar_t;
+
 
 protected:
    size_t fBatchSize; ///< Batch size used for training and evaluation
@@ -138,6 +141,12 @@ public:
    /*! Copies the biases provided as an input. */
    void CopyBiases(const std::vector<Matrix_t> &otherBiases);
 
+   /*! Copy all trainable weight and biases from another equivalent layer but with different architecture
+       The function can copy also extra parameters in addition to weights and biases if they are return
+       by the function GetExtraLayerParameters */
+   template <typename Arch>
+   void CopyParameters(const VGeneralLayer<Arch> &layer);
+
    /*! Prints the info about the layer. */
    virtual void Print() const = 0;
 
@@ -196,6 +205,11 @@ public:
    Matrix_t GetActivationGradientsAt(size_t i) { return fActivationGradients.At(i).GetMatrix(); }
    const Matrix_t &GetActivationGradientsAt(size_t i) const { return fActivationGradients.At(i).GetMatrix(); }
 
+   // function to retrieve additional layer parameters which are learned during training but they are not weights
+   // an example are the mean and std of batch normalization layer
+   virtual std::vector<Matrix_t> GetExtraLayerParameters() const { return std::vector<Matrix_t>(); }
+   // same thing but to set these extra parameters
+   virtual void  SetExtraLayerParameters(const std::vector<Matrix_t> & ) {}
 
    EInitialization GetInitialization() const { return fInit; }
 
@@ -458,6 +472,24 @@ auto VGeneralLayer<Architecture_t>::CopyBiases(const std::vector<Matrix_t> &othe
    }
 }
 
+//_________________________________________________________________________________________________
+template <typename Architecture_t>
+template <typename Arch>
+void VGeneralLayer<Architecture_t>::CopyParameters(const VGeneralLayer<Arch> &layer)
+{
+   //assert(!std::is_same<Arch, Architecture_t>::value);
+   // copy weights from a different arhcitecture- default generic implementation
+   Architecture_t::CopyDiffArch(this->GetWeights(), layer.GetWeights());
+   Architecture_t::CopyDiffArch(this->GetBiases(), layer.GetBiases());
+
+   // copy also the additional layer parameters
+   auto params = layer.GetExtraLayerParameters();
+   if (params.size() > 0) {
+      auto paramsToCopy = GetExtraLayerParameters();
+      Architecture_t::CopyDiffArch(paramsToCopy, params );
+      SetExtraLayerParameters(paramsToCopy);
+   }
+}
 
 //_________________________________________________________________________________________________
 template <typename Architecture_t>
@@ -475,8 +507,9 @@ auto VGeneralLayer<Architecture_t>::WriteTensorToXML(void * node, const char * n
       auto & mat = tensor[i];
       for (Int_t row = 0; row < mat.GetNrows(); row++) {
          for (Int_t col = 0; col < mat.GetNcols(); col++) {
-            TString tmp = TString::Format( "%5.15e ", (mat)(row,col) );
-            s << tmp.Data();
+            // TString tmp = TString::Format( "%5.15e ", (mat)(row,col) );
+            // s << tmp.Data();
+            s << std::scientific << mat(row, col) << " ";
          }
       }
    }
@@ -518,6 +551,8 @@ auto VGeneralLayer<Architecture_t>::ReadMatrixXML(void * node, const char * name
    R__ASSERT((size_t) matrix.GetNrows() == rows);
    R__ASSERT((size_t) matrix.GetNcols() == cols);
 
+   TMatrixT<Scalar_t> tmatrix(rows, cols);
+
    const char * matrixString = gTools().xmlengine().GetNodeContent(matrixXML);
    std::stringstream matrixStringStream(matrixString);
 
@@ -526,15 +561,20 @@ auto VGeneralLayer<Architecture_t>::ReadMatrixXML(void * node, const char * name
       for (size_t j = 0; j < cols; j++)
       {
 #ifndef R__HAS_TMVAGPU
-         matrixStringStream >> matrix(i,j);
+         matrixStringStream >> tmatrix(i,j);
 #else
          Scalar_t value;
          matrixStringStream >> value;
-         matrix(i,j) = value;
+         tmatrix(i,j) = value;
 #endif
 
       }
    }
+
+   // copy from tmatrix to matrix
+   Matrix_t tmp( tmatrix);
+   Architecture_t::Copy(matrix, tmp);
+
 }
 
 

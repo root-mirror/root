@@ -27,7 +27,6 @@ Selector to verify dataset in parallel on workers
 #include "TNamed.h"
 #include "TSystem.h"
 #include "TROOT.h"
-#include "TEnv.h"
 #include "TFileStager.h"
 #include "TProofDebug.h"
 #include "TProofServ.h"

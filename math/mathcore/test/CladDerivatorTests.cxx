@@ -1,4 +1,4 @@
-/// \file CladDerivator.h
+/// \file CladDerivatorTests.cxx
 ///
 /// \brief The file contain unit tests which test the CladDerivator facility.
 ///

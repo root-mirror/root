@@ -49,7 +49,6 @@
 #include "Riostream.h"
 
 #include "RooFormulaVar.h"
-#include "RooFormulaVar.h"
 #include "RooStreamParser.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
@@ -67,7 +66,7 @@ ClassImp(RooFormulaVar);
 /// Constructor with formula expression and list of input variables.
 /// \param[in] name Name of the formula.
 /// \param[in] title Title of the formula.
-/// \param[in] formula Expression to be evaluated.
+/// \param[in] inFormula Expression to be evaluated.
 /// \param[in] dependents Variables that should be passed to the formula.
 /// \param[in] checkVariables Check that all variables from `dependents` are used in the expression.
 RooFormulaVar::RooFormulaVar(const char *name, const char *title, const char* inFormula, const RooArgList& dependents,
@@ -121,7 +120,7 @@ RooFormulaVar::RooFormulaVar(const RooFormulaVar& other, const char* name) :
   _formExpr(other._formExpr)
 {
   if (other._formula && other._formula->ok()) {
-    _formula.reset(new RooFormula(GetName(), _formExpr, _actualVars));
+    _formula.reset(new RooFormula(GetName(), _formExpr, _actualVars, /*checkVariables=*/false));
     _formExpr = _formula->formulaString().c_str();
   }
 }
@@ -129,7 +128,8 @@ RooFormulaVar::RooFormulaVar(const RooFormulaVar& other, const char* name) :
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Return reference to internal RooFormula object.
-RooFormula& RooFormulaVar::formula() const
+/// If it doesn't exist, create it on the fly.
+RooFormula& RooFormulaVar::getFormula() const
 {
   if (!_formula) {
     // After being read from file, the formula object might not exist, yet:
@@ -148,7 +148,25 @@ RooFormula& RooFormulaVar::formula() const
 
 Double_t RooFormulaVar::evaluate() const
 {
-  return formula().eval(_lastNSet);
+  return getFormula().eval(_lastNSet);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Evaluate the formula for all entries of our servers found in `inputData`.
+RooSpan<double> RooFormulaVar::evaluateSpan(RooBatchCompute::RunContext& inputData, const RooArgSet* normSet) const {
+  if (normSet != _lastNSet) {
+    // TODO: Remove dependence on _lastNSet
+    // See also comment in RooAbsReal::getValBatch().
+    std::cerr << "Formula " << GetName() << " " << GetTitle() << "\n\tBeing evaluated with normSet " << normSet << "\n";
+    normSet->Print("V");
+    std::cerr << "\tHowever, _lastNSet = " << _lastNSet << "\n";
+    if (_lastNSet) _lastNSet->Print("V");
+
+    throw std::logic_error("Got conflicting norm sets. This shouldn't happen.");
+  }
+
+  return formula().evaluateSpan(this, inputData, normSet);
 }
 
 
@@ -157,9 +175,9 @@ Double_t RooFormulaVar::evaluate() const
 
 Bool_t RooFormulaVar::redirectServersHook(const RooAbsCollection& newServerList, Bool_t mustReplaceAll, Bool_t nameChange, Bool_t /*isRecursive*/)
 {
-  bool success = formula().changeDependents(newServerList,mustReplaceAll,nameChange);
+  bool success = getFormula().changeDependents(newServerList,mustReplaceAll,nameChange);
 
-  _formExpr = formula().GetTitle();
+  _formExpr = getFormula().GetTitle();
   return success;
 }
 
@@ -174,7 +192,7 @@ void RooFormulaVar::printMultiline(ostream& os, Int_t contents, Bool_t verbose, 
   if(verbose) {
     indent.Append("  ");
     os << indent;
-    formula().printMultiline(os,contents,verbose,indent);
+    getFormula().printMultiline(os,contents,verbose,indent);
   }
 }
 

@@ -2,7 +2,7 @@
 // Author: Fons Rademakers   27/02/98
 
 /*************************************************************************
- * Copyright (C) 1995-2000, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2021, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -66,6 +66,8 @@
 #include "TBufferFile.h"
 #include "TFolder.h"
 #include "Getline.h"
+#include "snprintf.h"
+#include "TVirtualX.h"
 
 #include "HelpText.h"
 

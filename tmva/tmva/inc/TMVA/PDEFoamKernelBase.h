@@ -32,6 +32,8 @@
 
 #include "TMVA/PDEFoam.h"
 
+#include <vector>
+
 namespace TMVA
 {
 

@@ -30,6 +30,7 @@
 #endif
 
 #include <memory>
+#include <string>
 
 namespace ROOT {
 namespace Math {
@@ -59,7 +60,7 @@ public:
        @param type   integration type (adaptive, MC methods, etc..)
        @param absTol desired absolute Error
        @param relTol desired relative Error
-       @param size maximum number of sub-intervals
+       @param ncall  number of function calls (apply only to MC integratioon methods)
 
        In case no parameter  values are passed the default ones used in IntegratorMultiDimOptions are used
     */

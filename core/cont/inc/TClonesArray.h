@@ -22,12 +22,9 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
-
 #include "TObjArray.h"
 
 class TClass;
-
 
 class TClonesArray : public TObjArray {
 

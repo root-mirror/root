@@ -77,7 +77,7 @@ END_HTML
 */
 //
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 
 namespace RooStats{

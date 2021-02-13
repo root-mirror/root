@@ -16,7 +16,7 @@
 #include "TStopwatch.h"
 #include "TKDTree.h"
 #include "TApplication.h"
-#include "TCanvas.h"
+#include "TVirtualPad.h"
 #include <iostream>
 
 

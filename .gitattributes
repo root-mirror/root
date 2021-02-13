@@ -11,6 +11,7 @@
 *.vsct  eol=crlf
 *.resx  eol=crlf
 *.vsixmanifest  eol=crlf
+tree/dataframe/test/RCsvDS_test_win.csv  eol=crlf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary

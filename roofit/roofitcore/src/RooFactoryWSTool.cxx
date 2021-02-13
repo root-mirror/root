@@ -19,11 +19,13 @@
 \class RooFactoryWSTool
 \ingroup Roofitcore
 
-RooFactoryWSTool is a clase like TTree::MakeClass() that generates
+RooFactoryWSTool is a class similar to TTree::MakeClass() that generates
 skeleton code for RooAbsPdf and RooAbsReal functions given
 a list of input parameter names. The factory can also compile
-the generated code on the fly, and on request also immediate
-instantiate objects.
+the generated code on the fly, and on request also
+instantiate the objects.
+
+It interprets all expressions for RooWorkspace::factory(const char*).
 **/
 
 #include "RooFit.h"
@@ -39,8 +41,9 @@ instantiate objects.
 #include "TInterpreter.h"
 #include "TEnum.h"
 #include "RooAbsPdf.h"
-#include "RooGaussian.h"
 #include <fstream>
+#include "strtok.h"
+#include "strlcpy.h"
 #include "RooGlobalFunc.h"
 #include "RooDataSet.h"
 #include "RooDataHist.h"
@@ -71,9 +74,11 @@ ClassImp(RooFactoryWSTool);
 RooFactoryWSTool* RooFactoryWSTool::_of = 0 ;
 map<string,RooFactoryWSTool::IFace*>* RooFactoryWSTool::_hooks=0 ;
 
+namespace {
+
 static Int_t init();
 
-static Int_t dummy = init() ;
+Int_t dummy = init() ;
 
 static Int_t init()
 {
@@ -114,6 +119,7 @@ static Int_t init()
   return 0 ;
 }
 
+}
 
 #ifndef _WIN32
 #include <strings.h>
@@ -761,109 +767,89 @@ RooProduct* RooFactoryWSTool::prodfunc(const char *objName, const char* pdfList)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Process high-level object creation syntax
-/// Accepted forms of syntax are
+/// Create a RooFit object from the given expression.
 ///
-///
-/// Creating variables
-///
-/// x[-10,10]             -  Create variable x with given range and put it in workspace
-/// x[3,-10,10]           -  Create variable x with given range and initial value and put it in workspace
-/// x[3]                  -  Create variable x with given constant value
-///
-/// <numeric literal>     - Numeric literal expressions (0.5, -3 etc..) are converted to a RooConst(<numeric literal>) 
-///                         where ever a RooAbsReal or RooAbsArg argument is expected
-///
-/// Creating categories
-///
-/// c[lep,kao,nt1,nt2]    -  Create category c with given state names
-/// tag[B0=1,B0bar=-1]    -  Create category tag with given state names and index assignments
-///
-///
-/// Creating functions and p.d.f.s
-///
-/// MyPdf::g(x,m,s)       - Create p.d.f or function of type MyPdf with name g with argument x,m,s
+/// <table>
+/// <tr><th> Creating variables <th>
+/// <tr><td> `x[-10,10]`             <td>  Create variable x with given range and put it in workspace
+/// <tr><td> `x[3,-10,10]`           <td>  Create variable x with given range and initial value and put it in workspace
+/// <tr><td> `x[3]`                  <td>  Create variable x with given constant value
+/// <tr><td> `<numeric literal>`     <td> Numeric literal expressions (0.5, -3 etc..) are converted to a RooConst(<numeric literal>)
+///                                       wherever a RooAbsReal or RooAbsArg argument is expected
+/// <tr><th> Creating categories <th>
+/// <tr><td> `c[lep,kao,nt1,nt2]`    <td>  Create category c with given state names
+/// <tr><td> `tag[B0=1,B0bar=-1]`    <td>  Create category tag with given state names and index assignments
+/// <tr><th> Creating functions and p.d.f.s <th>
+/// <tr><td> `MyPdf::g(x,m,s)`       <td> Create p.d.f or function of type MyPdf with name g with argument x,m,s
 ///                         Interpretation and number of arguments are mapped to the constructor arguments of the class 
 ///                         (after the name and title).
-///
-/// MyPdf(x,m,s)          - As above, but with an implicitly defined (unique) object name
-/// 
-///
-/// Creating sets and lists (to be used as inputs above)
-///
-/// {a,b,c}               - Create RooArgSet or RooArgList (as determined by context) from given contents
-///
+/// <tr><td> `MyPdf(x,m,s)`          <td> As above, but with an implicitly defined (unique) object name
+/// <tr><th> Creating sets and lists (to be used as inputs above) <th>
+/// <tr><td> `{a,b,c}`               <td> Create RooArgSet or RooArgList (as determined by context) from given contents
+/// </table>
 ///
 ///
 /// Objects that are not created, are assumed to exist in the workspace
 /// Object creation expressions as shown above can be nested, e.g. one can do
-///
+/// ```
 ///   RooGaussian::g(x[-10,10],m[0],3) 
-///
+/// ```
 /// to create a p.d.f and its variables in one go. This nesting can be applied recursively e.g.
-///
+/// ```
 ///   SUM::model( f[0.5,0,1] * RooGaussian::g( x[-10,10], m[0], 3] ),
 ///                            RooChebychev::c( x, {a0[0.1],a1[0.2],a2[-0.3]} ))
-///
-/// creates the sum of a Gaussian and a Chebychev and all its variables
+/// ```
+/// creates the sum of a Gaussian and a Chebychev and all its variables.
 ///
 ///
 /// A seperate series of operator meta-type exists to simplify the construction of composite expressions
 /// meta-types in all capitals (SUM) create p.d.f.s, meta types in lower case (sum) create
 /// functions.
 ///
+/// <table>
+/// <tr><th> Expression <th> Effect
+/// <tr><td> `SUM::name(f1*pdf1,f2*pdf2,pdf3]`  <td> Create sum p.d.f name with value f1*pdf1+f2*pdf2+(1-f1-f2)*pdf3
+/// <tr><td> `RSUM::name(f1*pdf1,f2*pdf2,pdf3]` <td> Create recursive sum p.d.f. name with value f1*pdf1 + (1-f1)(f2*pdf2 + (1-f2)pdf3)
+/// <tr><td> `ASUM::name(f1*amp1,f2*amp2,amp3]` <td> Create sum p.d.f. name with value f1*amp1+f2*amp2+(1-f1-f2)*amp3 where amplX are amplitudes of type RooAbsReal
+/// <tr><td> `sum::name(a1,a2,a3]`              <td> Create sum function with value a1+a2+a3
+/// <tr><td> `sum::name(a1*b1,a2*b2,a3*b 3]`    <td> Create sum function with value a1*b1+a2*b2+a3*b3
+/// <tr><td> `PROD::name(pdf1,pdf2]`            <td> Create product of p.d.f with 'name' with given input p.d.fs
+/// <tr><td> `PROD::name(pdf1|x,pdf2]`          <td> Create product of conditional p.d.f. pdf1 given x and pdf2
+/// <tr><td> `prod::name(a,b,c]`                <td> Create production function with value a*b*c
+/// <tr><td> `SIMUL::name(cat,a=pdf1,b=pdf2]`   <td> Create simultaneous p.d.f index category cat. Make pdf1 to state a, pdf2 to state b
+/// <tr><td> `EXPR::name(<expr>,var,...]`       <td> Create a generic p.d.f that interprets the given expression
+/// <tr><td> `expr::name(<expr>,var,...] `       <td> Create a generic function that interprets the given expression
+/// </table>
 ///
-/// SUM::name(f1*pdf1,f2*pdf2,pdf3]  -- Create sum p.d.f name with value f1*pdf1+f2*pdf2+(1-f1-f2)*pdf3
-/// RSUM::name(f1*pdf1,f2*pdf2,pdf3] -- Create recursive sum p.d.f. name with value f1*pdf1 + (1-f1)(f2*pdf2 + (1-f2)pdf3)
-/// ASUM::name(f1*amp1,f2*amp2,amp3] -- Create sum p.d.f. name with value f1*amp1+f2*amp2+(1-f1-f2)*amp3 where amplX are amplitudes of type RooAbsReal
-/// sum::name(a1,a2,a3]              -- Create sum function with value a1+a2+a3
-/// sum::name(a1*b1,a2*b2,a3*b 3]    -- Create sum function with value a1*b1+a2*b2+a3*b3
+/// The functionality of high-level object creation tools like RooSimWSTool, RooCustomizer and RooClassFactory
+/// is also interfaced through meta-types in the factory.
+/// <table>
+/// <tr><th> Interface to %RooSimWSTool <th>
+/// <tr><td> `SIMCLONE::name( modelPdf, $ParamSplit(...), $ParamSplitConstrained(...), $Restrict(...) ]`
+///             <td> Clone-and-customize modelPdf according to ParamSplit and ParamSplitConstrained()
+///                  specifications and return a RooSimultaneous p.d.f. of all built clones
 ///
-/// PROD::name(pdf1,pdf2]            -- Create product of p.d.f with 'name' with given input p.d.fs
-/// PROD::name(pdf1|x,pdf2]          -- Create product of conditional p.d.f. pdf1 given x and pdf2
-/// prod::name(a,b,c]                -- Create production function with value a*b*c
-///
-/// SIMUL::name(cat,a=pdf1,b=pdf2]   -- Create simultaneous p.d.f index category cat. Make pdf1 to state a, pdf2 to state b
-///
-/// EXPR::name('expr',var,...]       -- Create an generic p.d.f that interprets the given expression 
-/// expr::name('expr',var,...]       -- Create an generic function that interprets the given expression 
-///
-///
-/// The functionality of high level object creation tools like RooSimWSTool, RooCustomizer and RooClassFactory
-/// is also interfaced through meta-types in the factory
-///
-///
-/// Interface to RooSimWSTool
-///
-/// SIMCLONE::name( modelPdf, $ParamSplit(...), 
-///                 $ParamSplitConstrained(...), $Restrict(...) ]            -- Clone-and-customize modelPdf according to ParamSplit and ParamSplitConstrained()
-///                                                                             specifications and return a RooSimultaneous p.d.f. of all built clones
-///
-/// MSIMCLONE::name( masterIndex, 
-///                  $AddPdf(mstate1, modelPdf1, $ParamSplit(...)), 
-///                  $AddPdf(mstate2,modelPdf2),...) ]                       -- Clone-and-customize multiple models (modelPdf1,modelPdf2) according to ParamSplit and 
+/// <tr><td> `MSIMCLONE::name( masterIndex, $AddPdf(mstate1, modelPdf1, $ParamSplit(...)), $AddPdf(mstate2,modelPdf2),...) ]`
+///                        <td> Clone-and-customize multiple models (modelPdf1,modelPdf2) according to ParamSplit and
 ///                                                                             ParamSplitConstrained() specifications and return a RooSimultaneous p.d.f. of all built clones,
 ///                                                                             using the specified master index to map prototype p.d.f.s to master states
-/// Interface to RooCustomizer
-///
-/// EDIT::name( orig, substNode=origNode), ... ]                             -- Create a clone of input object orig, with the specified replacements operations executed
-/// EDIT::name( orig, origNode=$REMOVE(), ... ]                              -- Create clone of input removing term origNode from all PROD() terms that contained it
-/// EDIT::name( orig, origNode=$REMOVE(prodname,...), ... ]                  -- As above, but restrict removal of origNode to PROD term(s) prodname,...
-///
-///
-/// Interface to RooClassFactory
-///
-/// CEXPR::name('expr',var,...]       -- Create an custom compiled p.d.f that evaluates the given expression 
-/// cexpr::name('expr',var,...]       -- Create an custom compiled function that evaluates the given expression 
+/// <tr><th> Interface to %RooCustomizer <th>
+/// <tr><td> `EDIT::name( orig, substNode=origNode), ... ]`                             <td> Create a clone of input object orig, with the specified replacements operations executed
+/// <tr><td> `EDIT::name( orig, origNode=$REMOVE(), ... ]`                              <td> Create clone of input removing term origNode from all PROD() terms that contained it
+/// <tr><td> `EDIT::name( orig, origNode=$REMOVE(prodname,...), ... ]`                  <td> As above, but restrict removal of origNode to PROD term(s) prodname,...
 ///
 ///
-/// $MetaType(...)        - Meta argument that does not result in construction of an object but is used logically organize 
+/// <tr><th> Interface to %RooClassFactory <th>
+/// <tr><td> `CEXPR::name(<expr>,var,...]`       <td> Create a custom compiled p.d.f that evaluates the given expression
+/// <tr><td> `cexpr::name(<expr>,var,...]`       <td> Create a custom compiled function that evaluates the given expression
+///
+///
+/// <tr><td> `$MetaType(...)`        <td> Meta argument that does not result in construction of an object but is used logically organize
 ///                         input arguments in certain operator p.d.f. constructions. The defined meta arguments are context dependent.
-///
-///                         The only meta argument that is defined globally is $Alias(typeName,aliasName) to  
+///                         The only meta argument that is defined globally is `$Alias(typeName,aliasName)` to
 ///                         define aliases for type names. For the definition of meta arguments in operator p.d.f.s
-///                         see the definitions below
-
+///                         see the definitions below.
+/// </table>
 RooAbsArg* RooFactoryWSTool::process(const char* expr) 
 {
 

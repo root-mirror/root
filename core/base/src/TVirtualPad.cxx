@@ -11,7 +11,6 @@
 
 #include "TVirtualPad.h"
 #include "TBuffer.h"
-#include "TClass.h"
 #include "TThreadSlots.h"
 
 /** \class TVirtualPad

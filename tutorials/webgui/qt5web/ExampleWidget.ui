@@ -1,0 +1,210 @@
+<ui version="4.0" stdsetdef="1" >
+  <author>Sergey Linev</author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>ExampleWidget</class>
+  <widget class="QWidget" name="ExampleWidget" >
+    <property name="geometry" >
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>682</width>
+        <height>559</height>
+      </rect>
+    </property>
+    <property name="windowTitle" >
+      <string>Qt5Web ROOT example</string>
+    </property>
+    <layout class="QGridLayout" >
+      <item row="0" column="0" >
+        <widget class="QLabel" name="textLabel1" >
+          <property name="text" >
+            <string>This is an example of using ROO5 qt5web components. &lt;br>It shows some default Qt5 widgets plus RCanvas and TCanvas with graphics inside</string>
+          </property>
+          <property name="wordWrap" >
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="1" column="0" >
+        <widget class="QTabWidget" name="fxTabWidget" >
+          <widget class="QWidget" name="DefaultTab" >
+            <attribute name="title" >
+              <string>Default</string>
+            </attribute>
+            <layout class="QGridLayout" >
+              <item row="0" column="0" >
+                <widget class="QLabel" name="InfoLabel1" >
+                  <property name="text" >
+                    <string>This is just example of using standard Qt5 components</string>
+                  </property>
+                  <property name="alignment" >
+                    <set>Qt::AlignVCenter</set>
+                  </property>
+                  <property name="wordWrap" >
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item row="1" column="0" >
+                <layout class="QHBoxLayout" >
+                  <item>
+                    <widget class="QPushButton" name="InfoBtn" >
+                      <property name="text" >
+                        <string>Info</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="CmsBtn" >
+                      <property name="text" >
+                        <string>CMS geometry</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="ExitBtn" >
+                      <property name="text" >
+                        <string>Exit</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="RCanvasTab">
+            <attribute name="title" >
+              <string>RCanvas</string>
+            </attribute>
+            <layout class="QGridLayout" name="rcanvasGridLayout">
+              <property name="margin" >
+                <number>2</number>
+              </property>
+              <property name="spacing" >
+                <number>2</number>
+              </property>
+              <item row="0" column="0" >
+                <widget class="RCanvasWidget" name="fxRCanvasWidget" >
+                  <property name="sizePolicy" >
+                    <sizepolicy>
+                      <hsizetype>7</hsizetype>
+                      <vsizetype>7</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>1</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                    <size>
+                      <width>100</width>
+                      <height>100</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="TCanvasTab">
+            <attribute name="title" >
+              <string>TCanvas</string>
+            </attribute>
+            <layout class="QGridLayout" name="tcanvasGridLayout">
+              <property name="margin" >
+                <number>2</number>
+              </property>
+              <property name="spacing" >
+                <number>2</number>
+              </property>
+              <item row="0" column="0" >
+                <widget class="TCanvasWidget" name="fxTCanvasWidget" >
+                  <property name="sizePolicy" >
+                    <sizepolicy>
+                      <hsizetype>7</hsizetype>
+                      <vsizetype>7</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>1</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                    <size>
+                      <width>100</width>
+                      <height>100</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="RGeomViewerTab">
+            <attribute name="title" >
+              <string>RGeomViewer</string>
+            </attribute>
+            <layout class="QGridLayout" name="geomviewerGridLayout">
+              <property name="margin" >
+                <number>2</number>
+              </property>
+              <property name="spacing" >
+                <number>2</number>
+              </property>
+              <item row="0" column="0" >
+                <widget class="RGeomViewerWidget" name="fxGeomViewerWidget" >
+                  <property name="sizePolicy" >
+                    <sizepolicy>
+                      <hsizetype>7</hsizetype>
+                      <vsizetype>7</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>1</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="minimumSize" >
+                    <size>
+                      <width>100</width>
+                      <height>100</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="3" margin="3" />
+  <includes>
+    <include location="local">RCanvasWidget.h</include>
+    <include location="local">TCanvasWidget.h</include>
+    <include location="local">RGeomViewerWidget.h</include>
+  </includes>
+  <connections>
+    <connection>
+      <sender>InfoBtn</sender>
+      <signal>clicked()</signal>
+      <receiver>ExampleWidget</receiver>
+      <slot>InfoButton_clicked()</slot>
+    </connection>
+    <connection>
+      <sender>CmsBtn</sender>
+      <signal>clicked()</signal>
+      <receiver>ExampleWidget</receiver>
+      <slot>CmsButton_clicked()</slot>
+    </connection>
+    <connection>
+      <sender>ExitBtn</sender>
+      <signal>clicked()</signal>
+      <receiver>ExampleWidget</receiver>
+      <slot>ExitButton_clicked()</slot>
+    </connection>
+  </connections>
+  <customwidgets>
+    <customwidget>
+      <class>RCanvasWidget</class>
+    </customwidget>
+    <customwidget>
+      <class>TCanvasWidget</class>
+    </customwidget>
+    <customwidget>
+      <class>RGeomViewerWidget</class>
+    </customwidget>
+  </customwidgets>
+</ui>

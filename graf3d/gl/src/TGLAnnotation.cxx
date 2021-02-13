@@ -20,7 +20,6 @@
 #include "TGLSelectRecord.h"
 #include "TGLViewerBase.h"
 #include "TObjString.h"
-#include "TGFrame.h"
 #include "TGTextEdit.h"
 #include "TGButton.h"
 #include "TGLViewer.h"

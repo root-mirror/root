@@ -14,7 +14,7 @@
 #define ROOT_Math_TDataPoint
 
 //ROOT include(s)
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 
 namespace ROOT

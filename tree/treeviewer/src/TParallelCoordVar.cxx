@@ -13,11 +13,12 @@
 #include "TParallelCoord.h"
 #include "TParallelCoordRange.h"
 
-#include "Riostream.h"
-#include "TROOT.h"
+#include <iostream>
+
 #include "TLatex.h"
 #include "TLine.h"
 #include "TVirtualPad.h"
+#include "TVirtualX.h"
 #include "TMath.h"
 #include "TH1.h"
 #include "TStyle.h"
@@ -27,6 +28,7 @@
 #include "TFrame.h"
 #include "TCanvas.h"
 #include "TMarker.h"
+#include "snprintf.h"
 
 ClassImp(TParallelCoordVar);
 

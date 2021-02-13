@@ -7,8 +7,6 @@
 #include "Math/VavilovAccurate.h"
 #include "Math/VavilovFast.h"
 #include "VavilovTest.cxx"
-#include "TFile.h"
-#include "TH2F.h"
 
 int testVavilov() {
 

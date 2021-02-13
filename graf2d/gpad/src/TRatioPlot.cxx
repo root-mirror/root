@@ -25,8 +25,6 @@
 #include "TFitResult.h"
 #include "THStack.h"
 
-#include <iostream>
-
 /** \class TRatioPlot
     \ingroup gpad
 Class for displaying ratios, differences and fit residuals.
@@ -113,27 +111,26 @@ TRatioPlot::~TRatioPlot()
 
    gROOT->GetListOfCleanups()->Remove(this);
 
-   if (fRatioGraph != 0) delete fRatioGraph;
-   if (fConfidenceInterval1 != 0) delete fConfidenceInterval1;
-   if (fConfidenceInterval2 != 0) delete fConfidenceInterval2;
+   if (fRatioGraph && fRatioGraph->TestBit(kNotDeleted)) delete fRatioGraph;
+   if (fConfidenceInterval1 && fConfidenceInterval1->TestBit(kNotDeleted)) delete fConfidenceInterval1;
+   if (fConfidenceInterval2 && fConfidenceInterval2->TestBit(kNotDeleted)) delete fConfidenceInterval2;
 
    for (unsigned int i=0;i<fGridlines.size();++i) {
       delete (fGridlines[i]);
    }
 
-   if (fSharedXAxis != 0) delete fSharedXAxis;
-   if (fUpperGXaxis != 0) delete fUpperGXaxis;
-   if (fLowerGXaxis != 0) delete fLowerGXaxis;
-   if (fUpperGYaxis != 0) delete fUpperGYaxis;
-   if (fLowerGYaxis != 0) delete fLowerGYaxis;
-   if (fUpperGXaxisMirror != 0) delete fUpperGXaxisMirror;
-   if (fLowerGXaxisMirror != 0) delete fLowerGXaxisMirror;
-   if (fUpperGYaxisMirror != 0) delete fUpperGYaxisMirror;
-   if (fLowerGYaxisMirror != 0) delete fLowerGYaxisMirror;
+   if (fSharedXAxis && fSharedXAxis->TestBit(kNotDeleted)) delete fSharedXAxis;
+   if (fUpperGXaxis && fUpperGXaxis->TestBit(kNotDeleted)) delete fUpperGXaxis;
+   if (fLowerGXaxis && fLowerGXaxis->TestBit(kNotDeleted)) delete fLowerGXaxis;
+   if (fUpperGYaxis && fUpperGYaxis->TestBit(kNotDeleted)) delete fUpperGYaxis;
+   if (fLowerGYaxis && fLowerGYaxis->TestBit(kNotDeleted)) delete fLowerGYaxis;
+   if (fUpperGXaxisMirror && fUpperGXaxisMirror->TestBit(kNotDeleted)) delete fUpperGXaxisMirror;
+   if (fLowerGXaxisMirror && fLowerGXaxisMirror->TestBit(kNotDeleted)) delete fLowerGXaxisMirror;
+   if (fUpperGYaxisMirror && fUpperGYaxisMirror->TestBit(kNotDeleted)) delete fUpperGYaxisMirror;
+   if (fLowerGYaxisMirror && fLowerGYaxisMirror->TestBit(kNotDeleted)) delete fLowerGYaxisMirror;
 
-   if (fUpYaxis != 0) delete fUpYaxis;
-   if (fLowYaxis != 0) delete fLowYaxis;
-
+   if (fUpYaxis && fUpYaxis->TestBit(kNotDeleted)) delete fUpYaxis;
+   if (fLowYaxis && fLowYaxis->TestBit(kNotDeleted)) delete fLowYaxis;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

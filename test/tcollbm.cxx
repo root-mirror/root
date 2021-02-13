@@ -1,9 +1,9 @@
 // @(#)root/test:$Id$
 // Author: Nikolay Root   05/07/98
 
-#include <stdlib.h>
-
-#include "Riostream.h"
+#include <cstdlib>
+#include <iostream>
+#include "snprintf.h"
 #include "TCollection.h"
 #include "TSortedList.h"
 #include "TObjArray.h"

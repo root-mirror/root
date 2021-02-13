@@ -16,16 +16,11 @@
 #include <ROOT/REveTrans.hxx>
 #include <ROOT/REveRenderData.hxx>
 
-#include "TColor.h"
 #include "TArrayI.h"
 #include "TClass.h"
 
 
-#include "json.hpp"
-
-
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REvePointSet
 \ingroup REve

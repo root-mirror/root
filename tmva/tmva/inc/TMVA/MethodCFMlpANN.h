@@ -84,6 +84,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <iosfwd>
+#include <vector>
 
 #include "TMVA/MethodBase.h"
 #include "TMVA/MethodCFMlpANN_Utils.h"

@@ -29,8 +29,7 @@ RooArgusBG is a RooAbsPdf implementation describing the ARGUS background shape.
 #include "RooRealVar.h"
 #include "RooRealConstant.h"
 #include "RooMath.h"
-#include "BatchHelpers.h"
-#include "RooVDTHeaders.h"
+#include "RooBatchCompute.h"
 
 #include "TMath.h"
 
@@ -89,51 +88,9 @@ Double_t RooArgusBG::evaluate() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-namespace {
-//Author: Emmanouil Michalainas, CERN 19 AUGUST 2019  
-
-template<class Tm, class Tm0, class Tc, class Tp>
-void compute(  size_t batchSize,
-               double * __restrict output,
-               Tm M, Tm0 M0, Tc C, Tp P)
-{
-  for (size_t i=0; i<batchSize; i++) {
-    const double t = M[i]/M0[i];
-    const double u = 1 - t*t;
-    output[i] = C[i]*u + P[i]*_rf_fast_log(u);
-  }
-  for (size_t i=0; i<batchSize; i++) {
-    if (M[i] >= M0[i]) output[i] = 0.0;
-    else output[i] = M[i]*_rf_fast_exp(output[i]);
-  }
-}
-};
-
-RooSpan<double> RooArgusBG::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  using namespace BatchHelpers;
-
-  EvaluateInfo info = getInfo( {&m, &m0, &c, &p}, begin, batchSize );
-  if (info.nBatches == 0) {
-    return {};
-  }
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-  auto mData = m.getValBatch(begin, info.size);
-
-  if (info.nBatches==1 && !mData.empty()) {
-    compute(info.size, output.data(), mData.data(),
-    BracketAdapter<double> (m0),
-    BracketAdapter<double> (c),
-    BracketAdapter<double> (p));
-  }
-  else {
-    compute(info.size, output.data(),
-    BracketAdapterWithMask (m,m.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (m0,m0.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (c,c.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (p,p.getValBatch(begin,info.size)));
-  }
-  return output;
+/// Compute multiple values of Argus distribution.  
+RooSpan<double> RooArgusBG::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  return RooBatchCompute::dispatch->computeArgusBG(this, evalData, m->getValues(evalData, normSet), m0->getValues(evalData, normSet), c->getValues(evalData, normSet), p->getValues(evalData, normSet));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

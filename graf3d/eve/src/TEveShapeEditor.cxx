@@ -14,12 +14,10 @@
 
 #include "TColor.h"
 
-// Cleanup these includes:
 #include "TGLabel.h"
 #include "TGButton.h"
 #include "TGNumberEntry.h"
 #include "TGColorSelect.h"
-#include "TGColorDialog.h"
 
 
 /** \class TEveShapeEditor

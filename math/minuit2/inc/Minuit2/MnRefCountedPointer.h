@@ -14,87 +14,100 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-template<class T> class MnRefCountedPointer {
+template <class T>
+class MnRefCountedPointer {
 
 public:
+   // Default constructor needed for use inside array, vector, etc.
+   MnRefCountedPointer() : fPtr(0), fCounter(0) {}
 
-  // Default constructor needed for use inside array, vector, etc.
-  MnRefCountedPointer() : fPtr(0), fCounter(0) {}
+   MnRefCountedPointer(T *pt) : fPtr(pt), fCounter(new MnReferenceCounter()) { AddReference(); }
 
-  MnRefCountedPointer(T* pt) :
-    fPtr(pt), fCounter(new MnReferenceCounter()) {AddReference();}
-
-  MnRefCountedPointer(const MnRefCountedPointer<T>& other) :
-    fPtr(other.fPtr), fCounter(other.fCounter) {AddReference();}
-
-  ~MnRefCountedPointer() {
-    /*
-    if(References() == 0) {
-      if(fPtr) delete fPtr;
-      if(fCounter) delete fCounter;
-    }
-    else RemoveReference();
-    */
-    if(References() != 0) RemoveReference();
-  }
-
-  bool IsValid() const {return fPtr != 0;}
-
-  MnRefCountedPointer& operator=(const MnRefCountedPointer<T>& other) {
-    if(this != &other && fPtr != other.fPtr) {
-      RemoveReference();
-      fPtr = other.fPtr;
-      fCounter = other.fCounter;
+   MnRefCountedPointer(const MnRefCountedPointer<T> &other) : fPtr(other.fPtr), fCounter(other.fCounter)
+   {
       AddReference();
-    }
-    return *this;
-  }
+   }
 
-  MnRefCountedPointer& operator=(T* ptr) {
-    if(fPtr != ptr) {
-      fPtr = ptr;
-      fCounter = new MnReferenceCounter();
-    }
-    return *this;
-  }
+   ~MnRefCountedPointer()
+   {
+      /*
+      if(References() == 0) {
+        if(fPtr) delete fPtr;
+        if(fCounter) delete fCounter;
+      }
+      else RemoveReference();
+      */
+      if (References() != 0)
+         RemoveReference();
+   }
 
-  T* Get() const {return fPtr;}
+   bool IsValid() const { return fPtr != 0; }
 
-  T* operator->() const {DoCheck(); return fPtr;}
+   MnRefCountedPointer &operator=(const MnRefCountedPointer<T> &other)
+   {
+      if (this != &other && fPtr != other.fPtr) {
+         RemoveReference();
+         fPtr = other.fPtr;
+         fCounter = other.fCounter;
+         AddReference();
+      }
+      return *this;
+   }
 
-  T& operator*() const {DoCheck(); return *fPtr;}
+   MnRefCountedPointer &operator=(T *ptr)
+   {
+      if (fPtr != ptr) {
+         fPtr = ptr;
+         fCounter = new MnReferenceCounter();
+      }
+      return *this;
+   }
 
-  bool operator==(const  T* otherP) const {return fPtr == otherP;}
+   T *Get() const { return fPtr; }
 
-  bool operator<(const  T* otherP) const {return fPtr < otherP;}
+   T *operator->() const
+   {
+      DoCheck();
+      return fPtr;
+   }
 
-  unsigned int References() const {return fCounter->References();}
+   T &operator*() const
+   {
+      DoCheck();
+      return *fPtr;
+   }
 
-  void AddReference() const {fCounter->AddReference();}
+   bool operator==(const T *otherP) const { return fPtr == otherP; }
 
-  void RemoveReference() {
-    fCounter->RemoveReference();
-    if(References() == 0) {
-      delete fPtr; fPtr=0;
-      delete fCounter; fCounter=0;
-    }
-  }
+   bool operator<(const T *otherP) const { return fPtr < otherP; }
+
+   unsigned int References() const { return fCounter->References(); }
+
+   void AddReference() const { fCounter->AddReference(); }
+
+   void RemoveReference()
+   {
+      fCounter->RemoveReference();
+      if (References() == 0) {
+         delete fPtr;
+         fPtr = 0;
+         delete fCounter;
+         fCounter = 0;
+      }
+   }
 
 private:
-
-  T*  fPtr;
-  MnReferenceCounter* fCounter;
+   T *fPtr;
+   MnReferenceCounter *fCounter;
 
 private:
-
-  void DoCheck() const {assert(IsValid());}
+   void DoCheck() const { assert(IsValid()); }
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnRefCountedPointer
+#endif // ROOT_Minuit2_MnRefCountedPointer

@@ -16,9 +16,7 @@
 #include "TString.h"
 #include "TROOT.h"
 #include "TMath.h"
-#include "TClass.h"
 #include "TColor.h"
-#include "TStyle.h"
 #include "TH3.h"
 #include "TVirtualMutex.h"
 
@@ -412,11 +410,19 @@ void TGLBoxPainter::DrawPlot()const
    if(!maxContent)//bad, find better way to check zero.
       maxContent = 1.;
 
+   Double_t wmin = TMath::Max(fHist->GetMinimum(),0.);
+   Double_t wmax = TMath::Max(TMath::Abs(fHist->GetMaximum()),
+                              TMath::Abs(fHist->GetMinimum()));
+   Double_t binContent;
+
    for(Int_t ir = irInit, i = iInit; addI > 0 ? i < nX : i >= 0; ir += addI, i += addI) {
       for(Int_t jr = jrInit, j = jInit; addJ > 0 ? j < nY : j >= 0; jr += addJ, j += addJ) {
          for(Int_t kr = krInit, k = kInit; addK > 0 ? k < nZ : k >= 0; kr += addK, k += addK) {
-            const Double_t binContent = fHist->GetBinContent(ir, jr, kr);
-            const Double_t w = TMath::Power(TMath::Abs(binContent) / maxContent,1./3.);
+            binContent = fHist->GetBinContent(ir, jr, kr);
+            if (binContent < wmin) continue;
+            if (binContent > wmax) binContent = wmax;
+
+            const Double_t w = TMath::Power(TMath::Abs(binContent-wmin) / (wmax-wmin),1./3.);
             if (!w)
                continue;
 
@@ -469,8 +475,10 @@ void TGLBoxPainter::DrawPlot()const
       for(Int_t ir = irInit, i = iInit; addI > 0 ? i < nX : i >= 0; ir += addI, i += addI) {
          for(Int_t jr = jrInit, j = jInit; addJ > 0 ? j < nY : j >= 0; jr += addJ, j += addJ) {
             for(Int_t kr = krInit, k = kInit; addK > 0 ? k < nZ : k >= 0; kr += addK, k += addK) {
-               const Double_t w = TMath::Power(TMath::Abs(fHist->GetBinContent(ir, jr, kr)) / maxContent,1./3.);
-
+               binContent = fHist->GetBinContent(ir, jr, kr);
+               if (binContent < wmin) continue;
+               if (binContent > wmax) binContent = wmax;
+               const Double_t w = TMath::Power(TMath::Abs(binContent-wmin) / (wmax-wmin),1./3.);
                if (!w)
                   continue;
 

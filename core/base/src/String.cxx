@@ -16,10 +16,11 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <ROOT/RConfig.hxx>
-#include <string>
 #include "TBuffer.h"
 
-namespace std {} using namespace std;
+#include <string>
+
+using namespace std;
 
 void std_string_streamer(TBuffer &b, void *objadd)
 {

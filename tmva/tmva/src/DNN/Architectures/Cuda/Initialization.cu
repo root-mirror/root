@@ -31,13 +31,13 @@ template<typename AFloat>
 void TCuda<AFloat>::SetRandomSeed(size_t seed)
 {
    if (!fgRandomGen) fgRandomGen = new TRandom3();
-   fgRandomGen->SetSeed(seed); 
+   fgRandomGen->SetSeed(seed);
 }
 template<typename AFloat>
 TRandom & TCuda<AFloat>::GetRandomGenerator()
 {
    if (!fgRandomGen) fgRandomGen = new TRandom3(0);
-   return *fgRandomGen; 
+   return *fgRandomGen;
 }
 //______________________________________________________________________________
 template<typename AFloat>
@@ -84,7 +84,7 @@ void TCuda<AFloat>::InitializeUniform(TCudaMatrix<AFloat> & A)
 //______________________________________________________________________________
 ///  Truncated normal initialization (Glorot, called also Xavier normal)
 ///  The values are sample with a normal distribution with stddev = sqrt(2/N_input + N_output) and
-///   values larger than 2 * stddev are discarded 
+///   values larger than 2 * stddev are discarded
 ///  See Glorot & Bengio, AISTATS 2010 - http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf
 template<typename AFloat>
 void TCuda<AFloat>::InitializeGlorotNormal(TCudaMatrix<AFloat> & A)
@@ -100,15 +100,14 @@ void TCuda<AFloat>::InitializeGlorotNormal(TCudaMatrix<AFloat> & A)
 
    for (size_t i = 0; i < m; i++) {
       for (size_t j = 0; j < n; j++) {
-         AFloat value = 0; 
-         do { 
+         AFloat value = 0;
+         do {
             value = rand.Gaus(0.0, sigma);
          } while ( std::abs(value) > 2*sigma);
-         R__ASSERT( std::abs(value) < 2*sigma); 
          B(i,j) = value;
       }
    }
-   A = B; 
+   A = B;
 }
 
 //______________________________________________________________________________
@@ -134,8 +133,8 @@ void TCuda<AFloat>::InitializeGlorotUniform(TCudaMatrix<AFloat> & A)
       }
    }
    printf("initialize glorotuniform \n");
-   B.Print(); 
-   A = B; 
+   B.Print();
+   A = B;
 }
 
 //______________________________________________________________________________
@@ -165,6 +164,13 @@ void TCuda<AFloat>::InitializeZero(TCudaMatrix<AFloat> & A)
 {
    // use fast zero initialization on the device
    A.Zero();
+}
+//______________________________________________________________________________
+template <typename AFloat>
+void TCuda<AFloat>::InitializeZero(TCudaTensor<AFloat> &T)
+{
+   // use fast zero initialization on the device
+   T.Zero();
 }
 
 } // namespace DNN

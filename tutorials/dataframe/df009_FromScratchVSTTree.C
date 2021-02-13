@@ -1,6 +1,8 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -nodraw
+/// Compare creation of a ROOT dataset with RDataFrame and TTree.
+///
 /// This tutorial illustrates how simpler it can be to use a
 /// RDataFrame to create a dataset with respect to the usage
 /// of the TTree interfaces.
@@ -8,7 +10,7 @@
 /// \macro_code
 ///
 /// \date August 2017
-/// \author Danilo Piparo
+/// \author Danilo Piparo (CERN)
 
 // ##This is the classic way of creating a ROOT dataset
 // The steps are:
@@ -52,11 +54,11 @@ void classicWay()
 // write a new dataset becomes very easy to do.
 void RDFWay()
 {
-   ROOT::RDataFrame tdf(10);
+   ROOT::RDataFrame df(10);
    auto b = 0.;
-   tdf.Define("b1", [&b]() { return b++; })
-      .Define("b2", "(int) b1 * b1") // This can even be a string
-      .Snapshot("treeName", "df009_FromScratchVSTTree_tdf.root");
+   df.Define("b1", [&b]() { return b++; })
+     .Define("b2", "(int) b1 * b1") // This can even be a string
+     .Snapshot("treeName", "df009_FromScratchVSTTree_df.root");
 }
 
 void df009_FromScratchVSTTree()

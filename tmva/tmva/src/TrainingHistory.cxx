@@ -28,6 +28,8 @@ Tracking data from training. Eg, From deep learning record loss for each Epoch
 
 #include "TMVA/TrainingHistory.h"
 
+#include "TH1D.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 /// constructor
 

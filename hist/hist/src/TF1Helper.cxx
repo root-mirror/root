@@ -20,6 +20,7 @@
 #include "TBackCompFitter.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
+#include "TROOT.h"
 
 #include "Math/IntegratorOptions.h"
 
@@ -63,6 +64,12 @@ namespace ROOT {
 
    TMatrixDSym covMatrix(npar);
    if (covmat == 0) {
+      // with ROOT implicit MT there is no global TVirtualFitter
+      if (ROOT::IsImplicitMTEnabled()) {
+         Error("TF1Helper::IntegralError", "ROOT has enabled implicit MT. There is no existing lobal fitter, as shown in the documentation a pointer to the covariance matrix"
+         "from the TFitResult must be passed to TF1::IntegralError");
+         return 0;
+      }
       // use matrix from last fit (needs to be a TBackCompFitter)
       TVirtualFitter * vfitter = TVirtualFitter::GetFitter();
       TBackCompFitter * fitter = dynamic_cast<TBackCompFitter*> (vfitter);

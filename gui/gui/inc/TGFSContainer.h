@@ -23,7 +23,6 @@
 
 #include "TGListView.h"
 #include "TGDNDManager.h"
-#include "TBufferFile.h"
 
 //----- file sort mode
 enum EFSSortMode {
@@ -44,6 +43,7 @@ class TGFileIcon;
 class TGFileItem;
 class TTimer;
 class TString;
+class TBufferFile;
 struct FileStat_t;
 
 
@@ -97,10 +97,7 @@ public:
       return &fDNDData;
    }
 
-   virtual Atom_t HandleDNDEnter(Atom_t *) {
-      if (!IsDNDTarget()) return kNone;
-      return gVirtualX->InternAtom("application/root", kFALSE);
-   }
+   virtual Atom_t HandleDNDEnter(Atom_t *);
 
    virtual Bool_t HandleDNDLeave() {
       return kTRUE;
@@ -115,24 +112,9 @@ public:
       return ((TGFrame *)(const_cast<TGWindow*>(GetParent())))->HandleDNDFinished();
    }
 
-   void SetDNDData(TDNDData *data) {
-      if (fDNDData.fDataLength > 0)
-         free(fDNDData.fData);
-      fDNDData.fData = calloc(sizeof(unsigned char), data->fDataLength);
-      if (fDNDData.fData)
-         memcpy(fDNDData.fData, data->fData, data->fDataLength);
-      fDNDData.fDataLength = data->fDataLength;
-      fDNDData.fDataType = data->fDataType;
-   }
+   void SetDNDData(TDNDData *data);
 
-   void SetDNDObject(TObject *obj) {
-      if (fDNDData.fDataLength)
-         free(fDNDData.fData);
-      fBuf->WriteObject(obj);
-      fDNDData.fData = fBuf->Buffer();
-      fDNDData.fDataLength = fBuf->Length();
-      fDNDData.fDataType = gVirtualX->InternAtom("application/root", kFALSE);
-   }
+   void SetDNDObject(TObject *obj);
 
    ClassDef(TGFileItem,0)   // Class representing file system object
 };

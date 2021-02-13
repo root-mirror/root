@@ -8,6 +8,10 @@
 #  CheckCompiler.cmake
 #---------------------------------------------------------------------------------------------------
 
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "(Apple|)Clang|GNU|Intel|MSVC")
+  message(WARNING "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}.")
+endif()
+
 if(NOT GENERATOR_IS_MULTI_CONFIG AND NOT CMAKE_BUILD_TYPE)
   if(NOT CMAKE_C_FLAGS AND NOT CMAKE_CXX_FLAGS AND NOT CMAKE_Fortran_FLAGS)
     set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -49,8 +53,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   exec_program(${CMAKE_CXX_COMPILER} ARGS "--version 2>&1 | grep version" OUTPUT_VARIABLE _clang_version_info)
   string(REGEX REPLACE "^.*[ ]version[ ]([0-9]+)\\.[0-9]+.*" "\\1" CLANG_MAJOR "${_clang_version_info}")
   string(REGEX REPLACE "^.*[ ]version[ ][0-9]+\\.([0-9]+).*" "\\1" CLANG_MINOR "${_clang_version_info}")
-  message(STATUS "Found Clang. Major version ${CLANG_MAJOR}, minor version ${CLANG_MINOR}")
-  set(COMPILER_VERSION clang${CLANG_MAJOR}${CLANG_MINOR})
+
   if(CMAKE_GENERATOR STREQUAL "Ninja")
     # LLVM/Clang are automatically checking if we are in interactive terminal mode.
     # We use color output only for Ninja, because Ninja by default is buffering the output,
@@ -87,7 +90,14 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     set(GCC_MAJOR "")
   endif()
   message(STATUS "Found GCC. Major version ${GCC_MAJOR}, minor version ${GCC_MINOR}")
-  set(COMPILER_VERSION gcc${GCC_MAJOR}${GCC_MINOR}${GCC_PATCH})
+  if("${GCC_MAJOR}.${GCC_MINOR}" VERSION_GREATER_EQUAL 4.9
+      AND CMAKE_GENERATOR STREQUAL "Ninja")
+    # GCC checks automatically if we are in interactive terminal mode.
+    # We use color output only for Ninja, because Ninja by default is buffering the output,
+    # so Clang disables colors as it is sure whether the output goes to a file or to a terminal.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fdiagnostics-color=always")
+  endif()
 else()
   set(GCC_MAJOR 0)
   set(GCC_MINOR 0)
@@ -98,7 +108,35 @@ include(CheckCCompilerFlag)
 
 #---C++ standard----------------------------------------------------------------------
 
-set(CMAKE_CXX_STANDARD 11 CACHE STRING "")
+# We want to set the default value of CMAKE_CXX_STANDARD to the compiler default,
+# so we check the value of __cplusplus.
+# This default value can be overridden by specifying one at the prompt.
+if (MSVC)
+   set(CXX_STANDARD_STRING 2011)
+else()
+   execute_process(COMMAND echo __cplusplus
+                   COMMAND ${CMAKE_CXX_COMPILER} -E -x c++ -
+                   COMMAND tail -n1
+                   OUTPUT_VARIABLE CXX_STANDARD_STRING
+                   OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+# Lexicographically compare the value of __cplusplus (e.g. "201703L" for C++17) to figure out
+# what standard CMAKE_CXX_COMPILER uses by default.
+# The standard values that __cplusplus takes are listed e.g. at
+# https://en.cppreference.com/w/cpp/preprocessor/replace#Predefined_macros
+# but note that compilers might denote partial implementations of new standards (e.g. c++1z)
+# with other non-standard values.
+if (${CXX_STANDARD_STRING} STRGREATER "201703L")
+   set(CXX_STANDARD_STRING 20 CACHE STRING "")
+elseif(${CXX_STANDARD_STRING} STRGREATER "201402L")
+   set(CXX_STANDARD_STRING 17 CACHE STRING "")
+elseif(${CXX_STANDARD_STRING} STRGREATER "201103L")
+   set(CXX_STANDARD_STRING 14 CACHE STRING "")
+else()
+   # We stick to C++11 as a minimum value
+   set(CXX_STANDARD_STRING 11 CACHE STRING "")
+endif()
+set(CMAKE_CXX_STANDARD ${CXX_STANDARD_STRING} CACHE STRING "")
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL "")
 
@@ -162,7 +200,7 @@ if(CMAKE_SYSTEM_NAME MATCHES Linux)
 elseif(APPLE)
   include(SetUpMacOS)
 elseif(WIN32)
-  include(SetupWindows)
+  include(SetUpWindows)
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_FLAG}")
@@ -196,8 +234,10 @@ int main() {}
 " GLIBCXX_USE_CXX11_ABI)
 
 #---Print the final compiler flags--------------------------------------------------------------------
+string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
 message(STATUS "ROOT Platform: ${ROOT_PLATFORM}")
+message(STATUS "ROOT Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "ROOT Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "ROOT Architecture: ${ROOT_ARCHITECTURE}")
-string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
-message(STATUS "Build Type: ${CMAKE_BUILD_TYPE} (flags = '${CMAKE_CXX_FLAGS_${uppercase_CMAKE_BUILD_TYPE}}')")
-message(STATUS "Compiler Flags: ${CMAKE_CXX_FLAGS_${uppercase_CMAKE_BUILD_TYPE}} ${CMAKE_CXX_FLAGS}")
+message(STATUS "Build Type: '${CMAKE_BUILD_TYPE}' (flags = '${CMAKE_CXX_FLAGS_${BUILD_TYPE}}')")
+message(STATUS "Compiler Flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE}}")

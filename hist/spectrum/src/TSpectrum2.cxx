@@ -602,6 +602,8 @@ const char* TSpectrum2::SmoothMarkov(Double_t **source, Int_t ssizex, Int_t ssiz
       }
    }
    if(maxch == 0) {
+      for (i = 0; i < ssizex; i++)
+         delete[]working_space[i];
       delete [] working_space;
       return 0;
    }
@@ -866,6 +868,8 @@ const char *TSpectrum2::Deconvolution(Double_t **source, Double_t **resp,
       }
    }
    if (lhx == -1 || lhy == -1) {
+      for (i = 0; i < ssizex; i++)
+         delete[]working_space[i];
       delete [] working_space;
       return ("Zero response data");
    }
@@ -1269,6 +1273,10 @@ Int_t TSpectrum2::SearchHighRes(Double_t **source, Double_t **dest, Int_t ssizex
          }
       }
       if(maxch == 0) {
+         i = (Int_t)(4 * sigma + 0.5);
+         i = 4 * i;
+         for (j = 0; j < ssizex + i; j++)
+            delete[]working_space[j];
          delete [] working_space;
          return 0;
       }

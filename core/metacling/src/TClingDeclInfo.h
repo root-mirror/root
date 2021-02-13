@@ -17,6 +17,8 @@
 #ifndef ROOT_TClingDeclInfo
 #define ROOT_TClingDeclInfo
 
+#include <clang/AST/Type.h>
+
 #include <string>
 
 namespace clang {
@@ -26,7 +28,8 @@ namespace clang {
 class TClingDeclInfo {
 protected:
    const clang::Decl* fDecl = nullptr;
-   std::string fNameCache;
+   mutable std::string fNameCache;
+   long Property(long property, clang::QualType &qt) const;
 public:
    TClingDeclInfo(const clang::Decl* D) : fDecl(D) {}
    virtual ~TClingDeclInfo();
@@ -36,7 +39,7 @@ public:
       return const_cast<clang::Decl*>(const_cast<const TClingDeclInfo*>(this)->GetDecl());
    }
    virtual bool IsValid() const { return GetDecl(); }
-   virtual const char* Name();
+   virtual const char* Name() const;
 };
 
 #endif // ROOT_TClingDeclInfo

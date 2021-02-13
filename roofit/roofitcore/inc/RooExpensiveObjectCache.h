@@ -16,10 +16,9 @@
 #ifndef ROO_EXPENSIVE_OBJECT_CACHE
 #define ROO_EXPENSIVE_OBJECT_CACHE
 
-#include "Rtypes.h"
+#include "TObject.h"
 #include "RooArgSet.h"
 #include "TString.h"
-#include <list>
 #include <map>
 
 class RooExpensiveObjectCache : public TObject {

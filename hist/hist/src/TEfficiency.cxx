@@ -667,11 +667,10 @@ fWeight(kDefWeight)
 {
    //check consistency of histograms
    if(CheckConsistency(passed,total)) {
-      Bool_t bStatus = TH1::AddDirectoryStatus();
-      TH1::AddDirectory(kFALSE);
+      // do not add cloned histograms to gDirectory
+      TDirectory::TContext ctx(nullptr);
       fTotalHistogram = (TH1*)total.Clone();
       fPassedHistogram = (TH1*)passed.Clone();
-      TH1::AddDirectory(bStatus);
 
       TString newName = total.GetName();
       newName += TString("_clone");
@@ -688,11 +687,10 @@ fWeight(kDefWeight)
       Error("TEfficiency(const TH1&,const TH1&)","histograms are not consistent -> results are useless");
       Warning("TEfficiency(const TH1&,const TH1&)","using two empty TH1D('h1','h1',10,0,10)");
 
-      Bool_t bStatus = TH1::AddDirectoryStatus();
-      TH1::AddDirectory(kFALSE);
+      // do not add new created histograms to gDirectory
+      TDirectory::TContext ctx(nullptr);
       fTotalHistogram = new TH1D("h1_total","h1 (total)",10,0,10);
       fPassedHistogram = new TH1D("h1_passed","h1 (passed)",10,0,10);
-      TH1::AddDirectory(bStatus);
    }
 
    SetBit(kPosteriorMode,false);
@@ -732,11 +730,10 @@ fPaintGraph(0),
 fPaintHisto(0),
 fWeight(kDefWeight)
 {
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   // do not add new created histograms to gDirectory
+   TDirectory::TContext ctx(nullptr);
    fTotalHistogram = new TH1D("total","total",nbins,xbins);
    fPassedHistogram = new TH1D("passed","passed",nbins,xbins);
-   TH1::AddDirectory(bStatus);
 
    Build(name,title);
 }
@@ -771,11 +768,10 @@ fPaintGraph(0),
 fPaintHisto(0),
 fWeight(kDefWeight)
 {
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   // do not add new created histograms to gDirectory
+   TDirectory::TContext ctx(nullptr);
    fTotalHistogram = new TH1D("total","total",nbinsx,xlow,xup);
    fPassedHistogram = new TH1D("passed","passed",nbinsx,xlow,xup);
-   TH1::AddDirectory(bStatus);
 
    Build(name,title);
 }
@@ -814,11 +810,10 @@ fPaintGraph(0),
 fPaintHisto(0),
 fWeight(kDefWeight)
 {
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   // do not add new created histograms to gDirectory
+   TDirectory::TContext ctx(nullptr);
    fTotalHistogram = new TH2D("total","total",nbinsx,xlow,xup,nbinsy,ylow,yup);
    fPassedHistogram = new TH2D("passed","passed",nbinsx,xlow,xup,nbinsy,ylow,yup);
-   TH1::AddDirectory(bStatus);
 
    Build(name,title);
 }
@@ -857,11 +852,10 @@ fPaintGraph(0),
 fPaintHisto(0),
 fWeight(kDefWeight)
 {
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   // do not add new created histograms to gDirectory
+   TDirectory::TContext ctx(nullptr);
    fTotalHistogram = new TH2D("total","total",nbinsx,xbins,nbinsy,ybins);
    fPassedHistogram = new TH2D("passed","passed",nbinsx,xbins,nbinsy,ybins);
-   TH1::AddDirectory(bStatus);
 
    Build(name,title);
 }
@@ -904,11 +898,10 @@ fPaintGraph(0),
 fPaintHisto(0),
 fWeight(kDefWeight)
 {
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   // do not add new created histograms to gDirectory
+   TDirectory::TContext ctx(nullptr);
    fTotalHistogram = new TH3D("total","total",nbinsx,xlow,xup,nbinsy,ylow,yup,nbinsz,zlow,zup);
    fPassedHistogram = new TH3D("passed","passed",nbinsx,xlow,xup,nbinsy,ylow,yup,nbinsz,zlow,zup);
-   TH1::AddDirectory(bStatus);
 
    Build(name,title);
 }
@@ -951,11 +944,10 @@ fPaintGraph(0),
 fPaintHisto(0),
 fWeight(kDefWeight)
 {
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   // do not add new created histograms to gDirectory
+   TDirectory::TContext ctx(nullptr);
    fTotalHistogram = new TH3D("total","total",nbinsx,xbins,nbinsy,ybins,nbinsz,zbins);
    fPassedHistogram = new TH3D("passed","passed",nbinsx,xbins,nbinsy,ybins,nbinsz,zbins);
-   TH1::AddDirectory(bStatus);
 
    Build(name,title);
 }
@@ -995,11 +987,12 @@ fWeight(rEff.fWeight)
    // copy TObject bits
    ((TObject&)rEff).Copy(*this);
 
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
-   fTotalHistogram = (TH1*)((rEff.fTotalHistogram)->Clone());
-   fPassedHistogram = (TH1*)((rEff.fPassedHistogram)->Clone());
-   TH1::AddDirectory(bStatus);
+   // do not add cloned histograms to gDirectory
+   {
+      TDirectory::TContext ctx(nullptr);
+      fTotalHistogram = (TH1*)((rEff.fTotalHistogram)->Clone());
+      fPassedHistogram = (TH1*)((rEff.fPassedHistogram)->Clone());
+   }
 
    TString name = rEff.GetName();
    name += "_copy";
@@ -2415,10 +2408,9 @@ TFitResultPtr TEfficiency::Fit(TF1* f1,Option_t* opt)
 
 TH1* TEfficiency::GetCopyPassedHisto() const
 {
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   // do not add cloned histogram to gDirectory
+   TDirectory::TContext ctx(nullptr);
    TH1* tmp = (TH1*)(fPassedHistogram->Clone());
-   TH1::AddDirectory(bStatus);
 
    return tmp;
 }
@@ -2446,10 +2438,9 @@ TH1* TEfficiency::GetCopyPassedHisto() const
 
 TH1* TEfficiency::GetCopyTotalHisto() const
 {
-   Bool_t bStatus = TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   // do not add cloned histogram to gDirectory
+   TDirectory::TContext ctx(nullptr);
    TH1* tmp = (TH1*)(fTotalHistogram->Clone());
-   TH1::AddDirectory(bStatus);
 
    return tmp;
 }
@@ -2838,12 +2829,12 @@ TEfficiency& TEfficiency::operator=(const TEfficiency& rhs)
       delete fTotalHistogram;
       delete fPassedHistogram;
 
-      Bool_t bStatus = TH1::AddDirectoryStatus();
-      TH1::AddDirectory(kFALSE);
-      fTotalHistogram = (TH1*)(rhs.fTotalHistogram->Clone());
-      fPassedHistogram = (TH1*)(rhs.fPassedHistogram->Clone());
-      TH1::AddDirectory(bStatus);
-
+      // do not add cloned histogram to gDirectory
+      {
+         TDirectory::TContext ctx(nullptr);
+         fTotalHistogram = (TH1*)(rhs.fTotalHistogram->Clone());
+         fPassedHistogram = (TH1*)(rhs.fPassedHistogram->Clone());
+      }
       //delete temporary paint objects
       delete fPaintHisto;
       delete fPaintGraph;
@@ -3388,11 +3379,12 @@ Bool_t TEfficiency::SetPassedHistogram(const TH1& rPassed,Option_t* opt)
 
    if(bReplace) {
       delete fPassedHistogram;
-      Bool_t bStatus = TH1::AddDirectoryStatus();
-      TH1::AddDirectory(kFALSE);
-      fPassedHistogram = (TH1*)(rPassed.Clone());
-      fPassedHistogram->SetNormFactor(0);
-      TH1::AddDirectory(bStatus);
+      // do not add cloned histogram to gDirectory
+      {
+         TDirectory::TContext ctx(nullptr);
+         fPassedHistogram = (TH1*)(rPassed.Clone());
+         fPassedHistogram->SetNormFactor(0);
+      }
 
       if(fFunctions)
          fFunctions->Delete();
@@ -3581,11 +3573,12 @@ Bool_t TEfficiency::SetTotalHistogram(const TH1& rTotal,Option_t* opt)
 
    if(bReplace) {
       delete fTotalHistogram;
-      Bool_t bStatus = TH1::AddDirectoryStatus();
-      TH1::AddDirectory(kFALSE);
-      fTotalHistogram = (TH1*)(rTotal.Clone());
+      // do not add cloned histogram to gDirectory
+      {
+         TDirectory::TContext ctx(nullptr);
+         fTotalHistogram = (TH1*)(rTotal.Clone());
+      }
       fTotalHistogram->SetNormFactor(0);
-      TH1::AddDirectory(bStatus);
 
       if(fFunctions)
          fFunctions->Delete();

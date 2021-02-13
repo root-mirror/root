@@ -15,7 +15,6 @@ const UInt_t poolSize = 4U;
 
 Int_t mtbb201_parallelHistoFill()
 {
-   ROOT::EnableThreadSafety();
    TH1::AddDirectory(false);
    ROOT::TThreadExecutor pool(poolSize);
    auto fillRandomHisto = [](int seed = 0) {

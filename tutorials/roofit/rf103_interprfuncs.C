@@ -1,12 +1,14 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Basic functionality: interpreted functions and p.d.f.s
+/// Basic functionality: interpreted functions and PDFs.
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -32,7 +34,7 @@ void rf103_interprfuncs()
    // C o n s t r u c t   g e n e r i c   p d f   f r o m   i n t e r p r e t e d   e x p r e s s i o n
    // -------------------------------------------------------------------------------------------------
 
-   // To construct a proper p.d.f, the formula expression is explicitly normalized internally by dividing
+   // To construct a proper pdf, the formula expression is explicitly normalized internally by dividing
    // it by a numeric integral of the expression over x in the range [-20,20]
    //
    RooRealVar alpha("alpha", "alpha", 5, 0.1, 10);
@@ -41,13 +43,13 @@ void rf103_interprfuncs()
    // S a m p l e ,   f i t   a n d   p l o t   g e n e r i c   p d f
    // ---------------------------------------------------------------
 
-   // Generate a toy dataset from the interpreted p.d.f
+   // Generate a toy dataset from the interpreted pdf
    RooDataSet *data = genpdf.generate(x, 10000);
 
-   // Fit the interpreted p.d.f to the generated data
+   // Fit the interpreted pdf to the generated data
    genpdf.fitTo(*data);
 
-   // Make a plot of the data and the p.d.f overlaid
+   // Make a plot of the data and the pdf overlaid
    RooPlot *xframe = x.frame(Title("Interpreted expression pdf"));
    data->plotOn(xframe);
    genpdf.plotOn(xframe);

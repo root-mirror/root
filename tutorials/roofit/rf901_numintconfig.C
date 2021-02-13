@@ -5,7 +5,9 @@
 ///
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -33,8 +35,8 @@ void rf901_numintconfig()
    //
    // The relative epsilon (change as fraction of current best integral estimate) and
    // absolute epsilon (absolute change w.r.t last best integral estimate) can be specified
-   // separately. For most p.d.f integrals the relative change criterium is the most important,
-   // however for certain non-p.d.f functions that integrate out to zero a separate absolute
+   // separately. For most pdf integrals the relative change criterium is the most important,
+   // however for certain non-pdf functions that integrate out to zero a separate absolute
    // change criterium is necessary to declare convergence of the integral
    //
    // NB: This change is for illustration only. In general the precision should be at least 1e-7
@@ -46,7 +48,7 @@ void rf901_numintconfig()
    // N u m e r i c   i n t e g r a t i o n   o f   l a n d a u   p d f
    // ------------------------------------------------------------------
 
-   // Construct p.d.f without support for analytical integrator for demonstration purposes
+   // Construct pdf without support for analytical integrator for demonstration purposes
    RooRealVar x("x", "x", -10, 10);
    RooLandau landau("landau", "landau", x, RooConst(0), RooConst(0.1));
 
@@ -64,7 +66,11 @@ void rf901_numintconfig()
    // Construct a custom configuration which uses the adaptive Gauss-Kronrod technique
    // for closed 1D integrals
    RooNumIntConfig customConfig(*RooAbsReal::defaultIntegratorConfig());
+#ifdef R__HAS_MATHMORE
    customConfig.method1D().setLabel("RooAdaptiveGaussKronrodIntegrator1D");
+#else
+   Warning("rf901_numintconfig","ROOT is built without Mathmore (GSL) support. Cannot use RooAdaptiveGaussKronrodIntegrator1D");
+#endif
 
    // Calculate integral over landau with custom integral specification
    RooAbsReal *intLandau2 = landau.createIntegral(x, NumIntConfig(customConfig));
@@ -83,6 +89,7 @@ void rf901_numintconfig()
    cout << " [3] int_dx landau(x) = " << val3 << endl;
 
    // Another possibility: Change global default for 1D numeric integration strategy on finite domains
+#ifdef R__HAS_MATHMORE
    RooAbsReal::defaultIntegratorConfig()->method1D().setLabel("RooAdaptiveGaussKronrodIntegrator1D");
 
    // A d j u s t i n g   p a r a m e t e r s   o f   a   s p e c i f i c   t e c h n i q u e
@@ -99,4 +106,6 @@ void rf901_numintconfig()
 
    // Example of how to print set of possible values for "method" category
    customConfig.getConfigSection("RooAdaptiveGaussKronrodIntegrator1D").find("method")->Print("v");
+#endif
+
 }

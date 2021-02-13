@@ -5,6 +5,14 @@
 #  Author: Enric Tejedor <enric.tejedor.saavedra@cern.ch> CERN
 #-----------------------------------------------------------------------------
 
+################################################################################
+# Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.                      #
+# All rights reserved.                                                         #
+#                                                                              #
+# For the licensing terms see $ROOTSYS/LICENSE.                                #
+# For the list of contributors see $ROOTSYS/README/CREDITS.                    #
+################################################################################
+
 from JupyROOT.helpers import utils
 import ROOT
 
@@ -44,23 +52,11 @@ class CppCompleter(object):
 
     >>> comp = CppCompleter()
     >>> comp.activate()
-    >>> for suggestion in comp._completeImpl("TH1"):
+    >>> for suggestion in comp._completeImpl("TTreeF"):
     ...     print(suggestion)
-    TH1
-    TH1C
-    TH1D
-    TH1Editor
-    TH1F
-    TH1I
-    TH1K
-    TH1S
-    >>> for suggestion in comp._completeImpl("TProfile"):
-    ...     print(suggestion)
-    TProfile
-    TProfile2D
-    TProfile2Poly
-    TProfile2PolyBin
-    TProfile3D
+    TTreeFormula
+    TTreeFormulaManager
+    TTreeFriendLeafIter
     >>> garbage = ROOT.gInterpreter.ProcessLine("TH1F* h")
     >>> for suggestion in comp._completeImpl("h->GetA"):
     ...     print(suggestion)
@@ -133,7 +129,7 @@ class CppCompleter(object):
 
     def _completeImpl(self, line):
         line=line.split()[-1]
-        suggestions = self._getSuggestions(line)
+        suggestions = [ str(s) for s in self._getSuggestions(line) ]
         suggestions = filter(lambda s: len(s.strip()) != 0, suggestions)
         suggestions = sorted(suggestions)
         if not suggestions: return []

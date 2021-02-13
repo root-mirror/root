@@ -1,20 +1,22 @@
 ## \file
 ## \ingroup tutorial_dataframe
 ## \notebook -nodraw
+## Use Range to limit the amount of data processed.
+##
 ## This tutorial shows how to express the concept of ranges when working with the RDataFrame.
 ##
 ## \macro_code
 ## \macro_output
 ##
 ## \date March 2017
-## \author Danilo Piparo
+## \author Danilo Piparo (CERN)
 
 import ROOT
 
 def fill_tree(treeName, fileName):
-    tdf = ROOT.ROOT.RDataFrame(100)
-    tdf.Define("b1", "(int) tdfentry_")\
-       .Define("b2", "(float) tdfentry_ * tdfentry_").Snapshot(treeName, fileName)
+    df = ROOT.RDataFrame(100)
+    df.Define("b1", "(int) rdfentry_")\
+      .Define("b2", "(float) rdfentry_ * rdfentry_").Snapshot(treeName, fileName)
 
 
 # We prepare an input tree to run on
@@ -24,8 +26,7 @@ treeName = "myTree"
 fill_tree(treeName, fileName)
 
 # We read the tree from the file and create a RDataFrame.
-RDF = ROOT.ROOT.RDataFrame
-d = RDF(treeName, fileName)
+d = ROOT.RDataFrame(treeName, fileName)
 
 # ## Usage of ranges
 # Now we'll count some entries using ranges

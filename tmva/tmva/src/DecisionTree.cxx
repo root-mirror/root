@@ -61,14 +61,11 @@ more signal respective background events from the training sample.
 #include <algorithm>
 #include <vector>
 #include <limits>
-#include <fstream>
-#include <algorithm>
 #include <cassert>
 
 #include "TRandom3.h"
 #include "TMath.h"
 #include "TMatrix.h"
-#include "TStopwatch.h"
 
 #include "TMVA/MsgLogger.h"
 #include "TMVA/DecisionTree.h"

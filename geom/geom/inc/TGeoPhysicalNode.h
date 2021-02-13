@@ -14,8 +14,6 @@
 
 #include "TNamed.h"
 
-#include "TObjArray.h"
-
 #include "TAttLine.h"
 
 // forward declarations
@@ -25,6 +23,7 @@ class TGeoVolume;
 class TGeoNode;
 class TGeoShape;
 class TGeoNavigator;
+class TObjArray;
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -42,8 +41,8 @@ protected:
    TObjArray        *fNodes;          // branch of nodes
    TGeoHMatrix      *fMatrixOrig;     // original local matrix of the last node in the path
 
-   TGeoPhysicalNode(const TGeoPhysicalNode&);
-   TGeoPhysicalNode& operator=(const TGeoPhysicalNode&);
+   TGeoPhysicalNode(const TGeoPhysicalNode&) = delete;
+   TGeoPhysicalNode& operator=(const TGeoPhysicalNode&) = delete;
 
    void              SetAligned(Bool_t flag=kTRUE) {TObject::SetBit(kGeoPNodeAligned,flag);}
    Bool_t            SetPath(const char *path);

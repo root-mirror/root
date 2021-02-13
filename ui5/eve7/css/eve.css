@@ -1,5 +1,51 @@
+/* custom attributes for items in Summary view*/
+.eveSummaryItem {
+	padding-top: 0;
+	padding-bottom: 0;
+	font-size: 0.75rem;
+}
 
- .eveTreeItem {
+
+/* adjustment for checkbox inside Summury view items */
+.eveSummaryItem .sapMCb {
+	height: 1.2rem;
+	line-height: 1.2rem;
+	padding-left: 1rem;
+}
+
+.eveSummaryItem .sapMCbBg {
+	left: 0.3rem;
+	top: 0.1rem;
+	width: 0.6rem;
+	height: 0.6rem;
+}
+
+.eveSummaryItem .sapMLIBSelectM {
+	margin-right: 0;
+	width: 1.6rem;
+}
+
+/* adjustment for button inside Summury view items */
+
+.eveSummaryItem .sapMBtn {
+	height: 1.2rem;
+	padding: 0;
+}
+
+.eveSummaryItem .sapMBtnInner {
+	height: 1.2rem;
+	min-width: 1.6rem;
+}
+
+.eveSummaryItem .sapMBtnIcon {
+	line-height: 1.2rem;
+	max-height: 1.2rem;
+}
+
+
+
+/* Holder of GED editor */
+ .eveGedHolder {
         font-size: 0.775rem;
         border_top: 0px !important;
         border_bottom: 1px !important;
@@ -7,7 +53,14 @@
         padding_top: 0px !important;
         padding_bottom: 1px !important;
         font-family: "72",Arial,Helvetica,sans-serif;
-        font-size: 0.775rem; 
+        font-size: 0.775rem;
+}
+.eveTableCellFiltered {
+   color: black;
+}
+
+.eveTableCellUnfiltered {
+   color: lightgray;
 }
 
 .eve_tooltip {
@@ -23,4 +76,9 @@
   box-shadow:    2px 2px 3px rgba(0, 0, 0, 0.5);
   border-radius: 3px;
   white-space:   pre;
+}
+
+
+.eveNoSelectionCheckBox .sapMLIBSelectM {
+   display: none;
 }

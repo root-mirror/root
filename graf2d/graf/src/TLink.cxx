@@ -9,11 +9,12 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "TVirtualPad.h"
 #include "TClass.h"
 #include "TLink.h"
+#include "snprintf.h"
 
 ClassImp(TLink);
 

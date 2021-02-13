@@ -9,13 +9,13 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TButton.h"
 #include "TCanvas.h"
 #include "TLatex.h"
 
-#include <string.h>
+#include <cstring>
+#include <iostream>
 
 ClassImp(TButton);
 

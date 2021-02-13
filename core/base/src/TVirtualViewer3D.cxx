@@ -269,7 +269,6 @@ object if suitable.
 #include "TVirtualPad.h"
 #include "TPluginManager.h"
 #include "TError.h"
-#include "TClass.h"
 
 ClassImp(TVirtualViewer3D);
 

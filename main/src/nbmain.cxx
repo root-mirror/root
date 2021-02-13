@@ -28,6 +28,7 @@
 
 #include <fstream>
 #include <string>
+#include <memory>
 
 #define JUPYTER_CMD        "jupyter"
 #define NB_OPT             "notebook"
@@ -93,10 +94,11 @@ static bool InstallNbFiles(string source, string dest)
 
    // Copy files in source to dest
    TSystemDirectory dir(source.c_str(), source.c_str());
-   TList *files = dir.GetListOfFiles();
+   std::unique_ptr<TList> files;
+   files.reset(dir.GetListOfFiles());
    if (files) {
       TSystemFile *file;
-      TListIter it(files);
+      TListIter it(files.get());
       while ((file = (TSystemFile*)it())) {
          TString s = file->GetName();
          string fname(s.Data());

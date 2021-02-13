@@ -11,7 +11,6 @@
 
 #include "TEveProjectionAxes.h"
 #include "TEveProjectionManager.h"
-#include "TMath.h"
 
 
 /** \class TEveProjectionAxes

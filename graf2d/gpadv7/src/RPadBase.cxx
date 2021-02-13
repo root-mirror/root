@@ -80,6 +80,29 @@ std::shared_ptr<ROOT::Experimental::RDrawable> ROOT::Experimental::RPadBase::Fin
 }
 
 ///////////////////////////////////////////////////////////////////////////
+/// Find subpad which contains primitive with given display id
+
+const ROOT::Experimental::RPadBase *ROOT::Experimental::RPadBase::FindPadForPrimitiveWithDisplayId(const std::string &id) const
+{
+   auto p = id.find("_");
+   if (p == std::string::npos)
+      return nullptr;
+
+   auto prim = GetPrimitive(std::stoul(id.substr(0,p)));
+   if (!prim)
+      return nullptr;
+
+   auto subid = id.substr(p+1);
+
+   if (RDisplayItem::ObjectIDFromPtr(prim.get()) == subid)
+      return this;
+
+   auto subpad = std::dynamic_pointer_cast<RPadBase>(prim);
+
+   return subpad ? subpad->FindPadForPrimitiveWithDisplayId(subid) : nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////
 /// Method collect existing colors and assign new values if required
 
 void ROOT::Experimental::RPadBase::AssignAutoColors()
@@ -99,7 +122,7 @@ void ROOT::Experimental::RPadBase::AssignAutoColors()
               case 1: col = RColor::kGreen; break;
               case 2: col = RColor::kBlue; break;
             }
-            drawable->fAttr.AddString(attr.first.substr(0,pos) + "_color_rgb", col.GetHex());
+            drawable->fAttr.AddString(attr.first.substr(0,pos) + "_color_rgb", col.AsHex());
          }
       }
    }
@@ -108,25 +131,28 @@ void ROOT::Experimental::RPadBase::AssignAutoColors()
 ///////////////////////////////////////////////////////////////////////////
 /// Create display items for all primitives in the pad
 /// Each display item gets its special id, which used later for client-server communication
+/// Second parameter is version id which already delivered to the client
 
-void ROOT::Experimental::RPadBase::DisplayPrimitives(RPadBaseDisplayItem &paditem) const
+void ROOT::Experimental::RPadBase::DisplayPrimitives(RPadBaseDisplayItem &paditem, RDisplayContext &ctxt)
 {
    paditem.SetAttributes(&GetAttrMap());
-   paditem.SetFrame(GetFrame());
-
    paditem.SetPadStyle(fStyle.lock());
 
    unsigned indx = 0;
 
    for (auto &drawable : fPrimitives) {
-      auto item = drawable->Display();
-      if (item) {
-         item->SetObjectIDAsPtr(drawable.get());
-         item->SetIndex(indx);
-         // add object with the style
-         paditem.Add(std::move(item), drawable->fStyle.lock());
-      }
-      ++indx;
+
+      ctxt.SetDrawable(drawable.get(), indx++);
+
+      auto item = drawable->Display(ctxt);
+
+      if (!item)
+         item = std::make_unique<RDisplayItem>(true);
+
+      item->SetObjectIDAsPtr(drawable.get());
+      item->SetIndex(ctxt.GetIndex());
+      // add object with the style
+      paditem.Add(std::move(item), drawable->fStyle.lock());
    }
 }
 
@@ -139,9 +165,9 @@ ROOT::Experimental::RPadBase::Divide(int nHoriz, int nVert, const RPadExtent &pa
 {
    std::vector<std::vector<std::shared_ptr<RPad>>> ret;
    if (!nHoriz)
-      R__ERROR_HERE("Gpad") << "Cannot divide into 0 horizontal sub-pads!";
+      R__LOG_ERROR(GPadLog()) << "Cannot divide into 0 horizontal sub-pads!";
    if (!nVert)
-      R__ERROR_HERE("Gpad") << "Cannot divide into 0 vertical sub-pads!";
+      R__LOG_ERROR(GPadLog()) << "Cannot divide into 0 vertical sub-pads!";
    if (!nHoriz || !nVert)
       return ret;
 
@@ -167,18 +193,49 @@ ROOT::Experimental::RPadBase::Divide(int nHoriz, int nVert, const RPadExtent &pa
    return ret;
 }
 
-ROOT::Experimental::RFrame *ROOT::Experimental::RPadBase::GetOrCreateFrame()
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// Get a frame object for the pad.
+/// If frame not exists - creates and add to the end of primitives list
+
+
+std::shared_ptr<ROOT::Experimental::RFrame> ROOT::Experimental::RPadBase::GetOrCreateFrame()
 {
-   CreateFrameIfNeeded();
-   return fFrame.get();
+   auto frame = GetFrame();
+   if (!frame) {
+      frame.reset(new RFrame());
+      fPrimitives.emplace_back(frame);
+   }
+
+   return frame;
 }
 
-void ROOT::Experimental::RPadBase::CreateFrameIfNeeded()
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// Get a frame object if exists
+
+const std::shared_ptr<ROOT::Experimental::RFrame> ROOT::Experimental::RPadBase::GetFrame() const
 {
-   if (!fFrame)
-      fFrame = std::make_unique<ROOT::Experimental::RFrame>();
+   for (auto &drawable : fPrimitives) {
+      if (drawable->GetCssType() == "frame") {
+         const std::shared_ptr<RFrame> frame = std::dynamic_pointer_cast<RFrame>(drawable.get_shared());
+         if (frame) return frame;
+      }
+   }
+   return nullptr;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// Get a frame object if exists
+
+std::shared_ptr<ROOT::Experimental::RFrame> ROOT::Experimental::RPadBase::GetFrame()
+{
+   for (auto &drawable : fPrimitives) {
+      if (drawable->GetCssType() == "frame") {
+         std::shared_ptr<RFrame> frame = std::dynamic_pointer_cast<RFrame>(drawable.get_shared());
+         if (frame) return frame;
+      }
+   }
+   return nullptr;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /// Get a pad axis from the RFrame.
@@ -186,8 +243,10 @@ void ROOT::Experimental::RPadBase::CreateFrameIfNeeded()
 
 ROOT::Experimental::RPadUserAxisBase* ROOT::Experimental::RPadBase::GetAxis(size_t dimension) const
 {
-   if (fFrame && dimension < fFrame->GetNDimensions())
-      return &fFrame->GetUserAxis(dimension);
+   auto frame = GetFrame();
+
+   if (frame && dimension < frame->GetNDimensions())
+      return &frame->GetUserAxis(dimension);
    return nullptr;
 }
 
@@ -197,8 +256,9 @@ ROOT::Experimental::RPadUserAxisBase* ROOT::Experimental::RPadBase::GetAxis(size
 
 ROOT::Experimental::RPadUserAxisBase* ROOT::Experimental::RPadBase::GetOrCreateAxis(size_t dimension)
 {
-   GetOrCreateFrame()->GrowToDimensions(dimension);
-   return &fFrame->GetUserAxis(dimension);
+   auto frame = GetOrCreateFrame();
+   frame->GrowToDimensions(dimension);
+   return &frame->GetUserAxis(dimension);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -233,16 +293,18 @@ void ROOT::Experimental::RPadBase::SetAxisAutoBounds(int dimension)
 
 void ROOT::Experimental::RPadBase::SetAllAxisBounds(const std::vector<std::array<double, 2>> &vecBeginAndEnd)
 {
-   GetOrCreateFrame()->GrowToDimensions(vecBeginAndEnd.size());
-   if (vecBeginAndEnd.size() != fFrame->GetNDimensions()) {
-      R__ERROR_HERE("Gpadv7")
+   auto frame = GetOrCreateFrame();
+
+   frame->GrowToDimensions(vecBeginAndEnd.size());
+   if (vecBeginAndEnd.size() != frame->GetNDimensions()) {
+      R__LOG_ERROR(GPadLog())
          << "Array of axis bound has wrong size " <<  vecBeginAndEnd.size()
-         << " versus numer of axes in frame " << fFrame->GetNDimensions();
+         << " versus numer of axes in frame " << frame->GetNDimensions();
       return;
    }
 
-   for (size_t i = 0, n = fFrame->GetNDimensions(); i < n; ++i)
-      fFrame->GetUserAxis(i).SetBounds(vecBeginAndEnd[i][0], vecBeginAndEnd[i][1]);
+   for (size_t i = 0, n = frame->GetNDimensions(); i < n; ++i)
+      frame->GetUserAxis(i).SetBounds(vecBeginAndEnd[i][0], vecBeginAndEnd[i][1]);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,16 +312,18 @@ void ROOT::Experimental::RPadBase::SetAllAxisBounds(const std::vector<std::array
 
 void ROOT::Experimental::RPadBase::SetAllAxisBound(const std::vector<BoundKindAndValue> &vecBoundAndKind)
 {
-   GetOrCreateFrame()->GrowToDimensions(vecBoundAndKind.size());
-   if (vecBoundAndKind.size() != fFrame->GetNDimensions()) {
-      R__ERROR_HERE("Gpadv7")
-         << "Array of axis bound has wrong size " <<  vecBoundAndKind.size()
-         << " versus numer of axes in frame " << fFrame->GetNDimensions();
+   auto frame = GetOrCreateFrame();
+
+   frame->GrowToDimensions(vecBoundAndKind.size());
+   if (vecBoundAndKind.size() != frame->GetNDimensions()) {
+      R__LOG_ERROR(GPadLog())
+         << "Array of axis bound has wrong size " << vecBoundAndKind.size()
+         << " versus numer of axes in frame " << frame->GetNDimensions();
       return;
    }
 
-   for (size_t i = 0, n = fFrame->GetNDimensions(); i < n; ++i)
-      fFrame->GetUserAxis(i).SetBound(vecBoundAndKind[i].fKind, vecBoundAndKind[i].fBound);
+   for (size_t i = 0, n = frame->GetNDimensions(); i < n; ++i)
+      frame->GetUserAxis(i).SetBound(vecBoundAndKind[i].fKind, vecBoundAndKind[i].fBound);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -279,6 +343,30 @@ void ROOT::Experimental::RPadBase::CollectShared(Internal::RIOSharedVector_t &ve
 
 void ROOT::Experimental::RPadBase::SetAllAxisAutoBounds()
 {
-   for (size_t i = 0, n = GetOrCreateFrame()->GetNDimensions(); i < n; ++i)
-      fFrame->GetUserAxis(i).SetAutoBounds();
+   auto frame = GetOrCreateFrame();
+
+   for (size_t i = 0, n = frame->GetNDimensions(); i < n; ++i)
+      frame->GetUserAxis(i).SetAutoBounds();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// Convert user coordinates to normal coordinates.
+
+std::array<ROOT::Experimental::RPadLength::Normal, 2> ROOT::Experimental::RPadBase::UserToNormal(const std::array<RPadLength::User, 2> &pos) const
+{
+   auto frame = GetFrame();
+   if (!frame) return {};
+
+   return frame->UserToNormal(pos);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// Assign drawable version - for pad itself and all primitives
+
+void ROOT::Experimental::RPadBase::SetDrawableVersion(Version_t vers)
+{
+   RDrawable::SetDrawableVersion(vers);
+
+   for (auto &drawable : fPrimitives)
+      drawable->SetDrawableVersion(vers);
 }

@@ -7,6 +7,8 @@
 
 #include <TString.h>
 #include <TMultiGraph.h>
+#include <vector>
+#include <map>
 
 #include <TMVA/IMethod.h>
 #include <TMVA/MethodBase.h>

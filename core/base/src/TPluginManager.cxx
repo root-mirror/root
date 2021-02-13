@@ -79,14 +79,12 @@ TFile, TSQLServer, TGrid, etc. functionality.
 */
 
 #include "TPluginManager.h"
-#include "Varargs.h"
 #include "TEnv.h"
 #include "TRegexp.h"
 #include "TROOT.h"
 #include "TSortedList.h"
 #include "THashList.h"
 #include "THashTable.h"
-#include "Varargs.h"
 #include "TClass.h"
 #include "TInterpreter.h"
 #include "TMethod.h"
@@ -96,6 +94,7 @@ TFile, TSQLServer, TGrid, etc. functionality.
 #include "TVirtualMutex.h"
 #include "TSystem.h"
 #include "TObjString.h"
+#include "TObjArray.h"
 #include "ThreadLocalStorage.h"
 
 #include <memory>

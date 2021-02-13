@@ -44,16 +44,20 @@ public:
       printf("v(%f, %f, %f) B(%f, %f, %f) \n", x, y, z, b.fX, b.fY, b.fZ);
    }
 
+   // Track propagator uses only GetFieldD() and GetMaxFieldMagD().
+   //
+   // Here, in this base-class, we have to keep float versions GetField() and GetMaxFieldMag() as
+   // primary sources of field data (for backward compatibility in ALICE and CMS).
+   //
+   // One only needs to redefine the double versions in subclasses.
+
+   virtual Double_t    GetMaxFieldMagD() const { return GetMaxFieldMag(); }
+   virtual TEveVectorD GetFieldD(Double_t x, Double_t y, Double_t z) const { return GetField(x, y, z); }
+
    TEveVectorD GetFieldD(const TEveVectorD &v) const { return GetFieldD(v.fX, v.fY, v.fZ); }
 
-   // Track propgator uses only GetFieldD() and GetMaxFieldMagD(). Have to keep/reuse
-   // GetField() and GetMaxFieldMag() because of backward compatibility.
-
-   virtual TEveVectorD GetFieldD(Double_t x, Double_t y, Double_t z) const { return GetField(x, y, z); }
-   virtual Double_t GetMaxFieldMagD() const { return GetMaxFieldMag(); } // not abstract because of backward compatibility
-
+   virtual Float_t    GetMaxFieldMag() const { return 4; }
    virtual TEveVector GetField(Float_t, Float_t, Float_t) const { return TEveVector(); }
-   virtual Float_t GetMaxFieldMag() const { return 4; } // not abstract because of backward compatibility
 
    ClassDef(TEveMagField, 0); // Abstract interface to magnetic field
 };
@@ -74,9 +78,8 @@ public:
    { fFieldConstant = kTRUE; }
    virtual ~TEveMagFieldConst() {}
 
-   using   TEveMagField::GetField;
+   virtual Double_t    GetMaxFieldMagD() const { return fB.Mag(); };
    virtual TEveVectorD GetFieldD(Double_t /*x*/, Double_t /*y*/, Double_t /*z*/) const { return fB; }
-   virtual Double_t GetMaxFieldMagD() const { return fB.Mag(); };
 
    ClassDef(TEveMagFieldConst, 0); // Interface to constant magnetic field.
 };
@@ -102,12 +105,10 @@ public:
    }
    virtual ~TEveMagFieldDuo() {}
 
-   using   TEveMagField::GetField;
+   virtual Double_t GetMaxFieldMagD() const { return std::max(fBIn.Mag(), fBOut.Mag()); }
+
    virtual TEveVectorD GetFieldD(Double_t x, Double_t y, Double_t /*z*/) const
    { return  ((x*x+y*y)<fR2) ? fBIn : fBOut; }
-
-   virtual Double_t GetMaxFieldMagD() const
-   { Double_t b1 = fBIn.Mag(), b2 = fBOut.Mag(); return b1 > b2 ? b1 : b2; }
 
    ClassDef(TEveMagFieldDuo, 0); // Interface to magnetic field with two different values depending on radius.
 };

@@ -3,7 +3,9 @@
 
 ## Matrix and Vector Operators
 
-The ROOT::Math::SVector and ROOT::Math::SMatrix classes defines the following operators described below. The _m1,m2,m3_ are vectors or matrices of the same type (and size) and _a_ is a scalar value:
+The ROOT::Math::SVector and ROOT::Math::SMatrix classes defines the following operators
+described below. The _m1,m2,m3_ are vectors or matrices of the same type (and size)
+and _a_ is a scalar value:
 
 ~~~ {.cpp}
 m1 == m2           // returns whether m1 is equal to m2 (element by element comparison)
@@ -23,7 +25,10 @@ m3 = a*m1; m3 = m1*a; m3 = m1/a;
 
 ### Vector-Vector multiplication
 
-The _operator *_ defines an element by element multiplication between vectors. For the standard vector-vector multiplication, \f$ a = v^T v \f$, (dot product) one must use the ROOT::Math::Dot function. In addition, the Cross (only for vector sizes of 3), ROOT::Math::Cross, and the Tensor product, ROOT::Math::TensorProd, are defined.
+The _operator *_ defines an element by element multiplication between vectors. For the
+standard vector-vector multiplication, \f$ a = v^T v \f$, (dot product) one must use the
+ROOT::Math::Dot function. In addition, the Cross (only for vector sizes of 3),
+ROOT::Math::Cross, and the Tensor product, ROOT::Math::TensorProd, are defined.
 
 ### Matrix - Vector multiplication
 
@@ -36,7 +41,10 @@ y = M * x
 
 
 It compiles only if the matrix and the vectors have the right sizes.
-**Matrix - Matrix multiplication** The _operator *_ defines the matrix-matrix multiplication, \f$ C_{ij} = \sum_{k} A_{ik} B_{kj}\f$:
+
+### Matrix - Matrix multiplication
+
+The _operator *_ defines the matrix-matrix multiplication, \f$ C_{ij} = \sum_{k} A_{ik} B_{kj}\f$:
 
 ~~~ {.cpp}
 // A is a N1xN2 matrix, B is a N2xN3 matrix and C is a N1xN3 matrix
@@ -44,7 +52,29 @@ C = A * B
 ~~~
 
 
-The operation compiles only if the matrices have the right size. In the case that A and B are symmetric matrices, C is a general one, since their product is not guaranteed to be symmetric.
+The operation compiles only if the matrices have the right size. In the case that A and B
+are symmetric matrices, C is a general one, since their product is not guaranteed to be symmetric.
+
+#### Special note on using the C++ auto keyword
+
+Special care must be taken when using the C++ ``auto`` keyword with expression templates.
+Some expression can lead to temporary objects that the compiler might remove. One example
+is when dealing with an expression like:
+
+~~~ {.cpp}
+auto D = (A * B) * C;
+~~~
+
+while instead declaring directly the matrix as
+
+~~~ {.cpp}
+SMatrix<double, N, N> D = (A * B) * C;
+~~~
+
+will be fine, because it will force the evaluation of the expression template when
+constructing the matrix D.
+This is a limitation of the package, see [ROOT-6731](https://sft.its.cern.ch/jira/browse/ROOT-6371)
+and present in other similar libraries such as Eigen.
 
 ### Matrix and Vector Functions
 

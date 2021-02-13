@@ -24,7 +24,8 @@
 #include "TGButton.h"
 #include "TList.h"
 #include "TTimer.h"
-#include "Riostream.h"
+
+#include <iostream>
 
 
 ClassImp(TGShutterItem);

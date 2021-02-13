@@ -1,4 +1,4 @@
-/// \file ROOT/RTupleApply.h
+/// \file ROOT/RTupleApply.hxx
 /// \ingroup Base StdExt ROOT7
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-09-06

@@ -1,12 +1,12 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook
-/// Multidimensional models: full p.d.f. with per-event errors
-///
-///
+/// Multidimensional models: full pdf with per-event errors
 ///
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -44,7 +44,7 @@ void rf307_fullpereventerrors()
    // C o n s t r u c t   e m p i r i c a l   p d f   f o r   p e r - e v e n t   e r r o r
    // -----------------------------------------------------------------
 
-   // Use landau p.d.f to get empirical distribution with long tail
+   // Use landau pdf to get empirical distribution with long tail
    RooLandau pdfDtErr("pdfDtErr", "pdfDtErr", dterr, RooConst(1), RooConst(0.25));
    RooDataSet *expDataDterr = pdfDtErr.generate(dterr, 10000);
 
@@ -65,7 +65,7 @@ void rf307_fullpereventerrors()
    // S a m p l e,   f i t   a n d   p l o t   p r o d u c t   m o d e l
    // ------------------------------------------------------------------
 
-   // Specify external dataset with dterr values to use model_dm as conditional p.d.f.
+   // Specify external dataset with dterr values to use model_dm as conditional pdf
    RooDataSet *data = model.generate(RooArgSet(dt, dterr), 10000);
 
    // F i t   c o n d i t i o n a l   d e c a y _ d m ( d t | d t e r r )
@@ -77,7 +77,7 @@ void rf307_fullpereventerrors()
    // P l o t   c o n d i t i o n a l   d e c a y _ d m ( d t | d t e r r )
    // ---------------------------------------------------------------------
 
-   // Make two-dimensional plot of conditional p.d.f in (dt,dterr)
+   // Make two-dimensional plot of conditional pdf in (dt,dterr)
    TH1 *hh_model = model.createHistogram("hh_model", dt, Binning(50), YVar(dterr, Binning(50)));
    hh_model->SetLineColor(kBlue);
 

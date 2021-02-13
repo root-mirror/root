@@ -18,7 +18,7 @@ quadrilateral shape. The class does not provide navigation functionality, it jus
 for the composing faces.
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include <sstream>
 
 #include "TGeoManager.h"
@@ -26,11 +26,12 @@ for the composing faces.
 #include "TGeoVolume.h"
 #include "TVirtualGeoPainter.h"
 #include "TGeoTessellated.h"
-#include "TVirtualPad.h"
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TMath.h"
-#include "TRandom.h"
+
+#include <array>
+#include <vector>
 
 ClassImp(TGeoTessellated)
 
@@ -51,18 +52,22 @@ std::ostream &operator<<(std::ostream &os, TGeoFacet const &facet)
 TGeoFacet::TGeoFacet(const TGeoFacet &other) : fVertices(other.fVertices), fNvert(other.fNvert), fShared(other.fShared)
 {
    memcpy(fIvert, other.fIvert, 4 * sizeof(int));
-   if (!fShared)
+   if (!fShared && other.fVertices)
       fVertices = new VertexVec_t(*other.fVertices);
 }
 
 const TGeoFacet &TGeoFacet::operator=(const TGeoFacet &other)
 {
    if (&other != this) {
-      fVertices = other.fVertices;
+      if (!fShared)
+         delete fVertices;
       fNvert = other.fNvert;
       fShared = other.fShared;
-      if (!fShared)
+      memcpy(fIvert, other.fIvert, 4 * sizeof(int));
+      if (!fShared && other.fVertices)
          fVertices = new VertexVec_t(*other.fVertices);
+      else
+         fVertices = other.fVertices;
    }
    return *this;
 }
@@ -195,37 +200,6 @@ TGeoTessellated::TGeoTessellated(const char *name, const std::vector<Vertex_t> &
 {
    fVertices = vertices;
    fNvert = fVertices.size();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Copy constructor
-
-TGeoTessellated::TGeoTessellated(const TGeoTessellated &other) : TGeoBBox(other)
-{
-   fNfacets = other.fNfacets;
-   fNvert = other.fNvert;
-   fNseg = other.fNseg;
-   fDefined = other.fDefined;
-   fClosedBody = other.fClosedBody;
-   fVertices = other.fVertices;
-   fFacets = other.fFacets;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Assignment operator
-
-TGeoTessellated &TGeoTessellated::operator=(const TGeoTessellated &other)
-{
-   if (&other != this) {
-      TGeoBBox::operator=(other);
-      fNvert = other.fNvert;
-      fNseg = other.fNseg;
-      fDefined = other.fDefined;
-      fClosedBody = other.fClosedBody;
-      fVertices = other.fVertices;
-      fFacets = other.fFacets;
-   }
-   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -763,7 +737,7 @@ TGeoTessellated *TGeoTessellated::ImportFromObjFormat(const char *objfile, bool 
          while (ss >> word)
             sfacets.push_back(word);
          if (sfacets.size() > 4 || sfacets.size() < 3) {
-            ::Error("TGeoTessellated::ImportFromObjFormat", "Detected face having unsupported %zu faces",
+            ::Error("TGeoTessellated::ImportFromObjFormat", "Detected face having unsupported %zu vertices",
                     sfacets.size());
             return nullptr;
          }

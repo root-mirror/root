@@ -109,11 +109,11 @@
 ///
 
 
-#include "Riostream.h" 
+#include <iostream>
 
 #include "RooFit.h"
-#include "RooFFTConvPdf.h" 
-#include "RooAbsReal.h" 
+#include "RooFFTConvPdf.h"
+#include "RooAbsReal.h"
 #include "RooMsgService.h"
 #include "RooDataHist.h"
 #include "RooHistPdf.h"
@@ -126,15 +126,13 @@
 #include "RooLinearVar.h"
 #include "RooCustomizer.h"
 #include "RooGlobalFunc.h"
-#include "RooLinearVar.h"
 #include "RooConstVar.h"
 #include "TClass.h"
-#include "TSystem.h"
+#include "RooUniformBinning.h"
 
-using namespace std ;
+using namespace std;
 
-ClassImp(RooFFTConvPdf); 
-
+ClassImp(RooFFTConvPdf);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -439,7 +437,6 @@ void RooFFTConvPdf::fillCacheObject(RooAbsCachedPdf::PdfCacheElem& cache) const
   RooAbsArg* histArg = otherObs.find(_x.arg().GetName()) ;
   if (histArg) {
     otherObs.remove(*histArg,kTRUE,kTRUE) ;
-    delete histArg ;
   } 
 
   //cout << "RooFFTConvPdf::fillCacheObject() otherObs = " << otherObs << endl ;

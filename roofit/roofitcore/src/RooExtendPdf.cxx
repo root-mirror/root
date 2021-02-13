@@ -39,7 +39,6 @@ the nominal integration range \f$ \mathrm{normRegion}[x] \f$.
 #include "Riostream.h"
 
 #include "RooExtendPdf.h"
-#include "RooExtendPdf.h"
 #include "RooArgList.h"
 #include "RooRealVar.h"
 #include "RooFormulaVar.h"
@@ -70,17 +69,17 @@ RooExtendPdf::RooExtendPdf() : _rangeName(0)
 /// \param[in] norm   Expected number of events
 /// \param[in] rangeName  If given, the number of events denoted by `norm` is interpreted as
 /// the number of events in this range only
-RooExtendPdf::RooExtendPdf(const char *name, const char *title, const RooAbsPdf& pdf,
-			   const RooAbsReal& norm, const char* rangeName) :
+RooExtendPdf::RooExtendPdf(const char *name, const char *title, RooAbsPdf& pdf,
+			   RooAbsReal& norm, const char* rangeName) :
   RooAbsPdf(name,title),
-  _pdf("pdf","PDF",this,(RooAbsReal&)pdf),
-  _n("n","Normalization",this,(RooAbsReal&)norm),
+  _pdf("pdf", "PDF", this, pdf),
+  _n("n","Normalization",this,norm),
   _rangeName(RooNameReg::ptr(rangeName))
 {
 
   // Copy various setting from pdf
-  setUnit(_pdf.arg().getUnit()) ;
-  setPlotLabel(_pdf.arg().getPlotLabel()) ;
+  setUnit(_pdf->getUnit()) ;
+  setPlotLabel(_pdf->getPlotLabel()) ;
 }
 
 
@@ -116,7 +115,7 @@ RooExtendPdf::~RooExtendPdf()
 /// If the nested PDF can be extended, \f$ N \f$ is further scaled by its expected number of events.
 Double_t RooExtendPdf::expectedEvents(const RooArgSet* nset) const 
 {
-  RooAbsPdf& pdf = (RooAbsPdf&)_pdf.arg() ;
+  const RooAbsPdf& pdf = *_pdf;
 
   if (_rangeName && (!nset || nset->getSize()==0)) {
     coutW(InputArguments) << "RooExtendPdf::expectedEvents(" << GetName() << ") WARNING: RooExtendPdf needs non-null normalization set to calculate fraction in range " 

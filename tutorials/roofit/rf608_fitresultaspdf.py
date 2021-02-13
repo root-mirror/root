@@ -1,13 +1,13 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
-## Likelihood and minimization: representing the parabolic approximation of the fit as a multi-variate Gaussian on the parameters of the fitted p.d.f.
+## Likelihood and minimization: representing the parabolic approximation of the fit as a
+## multi-variate Gaussian on the parameters of the fitted pdf
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -47,22 +47,22 @@ parabPdf = r.createHessePdf(ROOT.RooArgSet(frac, mean, sigma_g2))
 # Some exercises with the parameter pdf
 # -----------------------------------------------------------------------------
 
-# Generate 100K points in the parameter space, from the MVGaussian p.d.f.
+# Generate 100K points in the parameter space, from the MVGaussian pdf
 d = parabPdf.generate(ROOT.RooArgSet(mean, sigma_g2, frac), 100000)
 
-# Sample a 3-D histogram of the p.d.f. to be visualized as an error
+# Sample a 3-D histogram of the pdf to be visualized as an error
 # ellipsoid using the GLISO draw option
 hh_3d = parabPdf.createHistogram("mean,sigma_g2,frac", 25, 25, 25)
 hh_3d.SetFillColor(ROOT.kBlue)
 
-# Project 3D parameter p.d.f. down to 3 permutations of two-dimensional p.d.f.s
+# Project 3D parameter pdf down to 3 permutations of two-dimensional pdfs
 # The integrations corresponding to these projections are performed analytically
-# by the MV Gaussian p.d.f.
+# by the MV Gaussian pdf
 pdf_sigmag2_frac = parabPdf.createProjection(ROOT.RooArgSet(mean))
 pdf_mean_frac = parabPdf.createProjection(ROOT.RooArgSet(sigma_g2))
 pdf_mean_sigmag2 = parabPdf.createProjection(ROOT.RooArgSet(frac))
 
-# Make 2D plots of the 3 two-dimensional p.d.f. projections
+# Make 2D plots of the 3 two-dimensional pdf projections
 hh_sigmag2_frac = pdf_sigmag2_frac.createHistogram("sigma_g2,frac", 50, 50)
 hh_mean_frac = pdf_mean_frac.createHistogram("mean,frac", 50, 50)
 hh_mean_sigmag2 = pdf_mean_sigmag2.createHistogram("mean,sigma_g2", 50, 50)
@@ -78,7 +78,7 @@ hh_3d.Draw("gliso")
 
 c1.SaveAs("rf608_fitresultaspdf_1.png")
 
-# Draw the 2D projections of the 3D p.d.f.
+# Draw the 2D projections of the 3D pdf
 c2 = ROOT.TCanvas("rf608_fitresultaspdf_2",
                   "rf608_fitresultaspdf_2", 900, 600)
 c2.Divide(3, 2)
@@ -95,7 +95,7 @@ ROOT.gPad.SetLeftMargin(0.15)
 hh_mean_frac.GetZaxis().SetTitleOffset(1.4)
 hh_mean_frac.Draw("surf3")
 
-# Draw the distributions of parameter points sampled from the p.d.f.
+# Draw the distributions of parameter points sampled from the pdf
 tmp1 = d.createHistogram(mean, sigma_g2, 50, 50)
 tmp2 = d.createHistogram(sigma_g2, frac, 50, 50)
 tmp3 = d.createHistogram(mean, frac, 50, 50)

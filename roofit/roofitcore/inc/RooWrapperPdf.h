@@ -19,6 +19,7 @@
 #include "RooAbsReal.h"
 #include "RooRealProxy.h"
 #include "RooAbsPdf.h"
+#include <list>
 
 class RooWrapperPdf final : public RooAbsPdf {
 public:

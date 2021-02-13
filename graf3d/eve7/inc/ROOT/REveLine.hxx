@@ -29,7 +29,7 @@ class REveLine : public REvePointSet,
                  public TAttLine
 {
 private:
-   REveLine &operator=(const REveLine &); // Not implemented
+   REveLine &operator=(const REveLine &) = delete;
 
 protected:
    Bool_t fRnrLine;
@@ -80,8 +80,8 @@ public:
 
 class REveLineProjected : public REveLine, public REveProjected {
 private:
-   REveLineProjected(const REveLineProjected &);            // Not implemented
-   REveLineProjected &operator=(const REveLineProjected &); // Not implemented
+   REveLineProjected(const REveLineProjected &) = delete;
+   REveLineProjected &operator=(const REveLineProjected &) = delete;
 
 protected:
    void SetDepthLocal(Float_t d) override;

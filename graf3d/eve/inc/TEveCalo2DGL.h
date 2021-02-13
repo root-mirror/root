@@ -15,6 +15,7 @@
 #include "TGLObject.h"
 #include "TEveCaloData.h"
 #include "TEveCalo.h"
+#include <vector>
 
 class TGLViewer;
 class TGLScene;
@@ -25,8 +26,8 @@ class TEveProjection;
 class TEveCalo2DGL : public TGLObject
 {
 private:
-   TEveCalo2DGL(const TEveCalo2DGL&);            // Not implemented
-   TEveCalo2DGL& operator=(const TEveCalo2DGL&); // Not implemented
+   TEveCalo2DGL(const TEveCalo2DGL&) = delete;
+   TEveCalo2DGL& operator=(const TEveCalo2DGL&) = delete;
 
 protected:
    TEveCalo2D   *fM;  // Model object.

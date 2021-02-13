@@ -17,6 +17,7 @@
 #define ROOT7_RNTupleMetrics
 
 #include <ROOT/RConfig.hxx>
+#include <ROOT/RStringView.hxx>
 
 #include <TError.h>
 
@@ -24,6 +25,8 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime> // for CPU time measurement with clock()
+#include <functional>
+#include <limits>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -33,6 +36,8 @@
 namespace ROOT {
 namespace Experimental {
 namespace Detail {
+
+class RNTupleMetrics;
 
 // clang-format off
 /**
@@ -63,7 +68,8 @@ public:
    std::string GetDescription() const { return fDescription; }
    std::string GetUnit() const { return fUnit; }
 
-   virtual std::string ValueToString() const = 0;
+   virtual std::int64_t GetValueAsInt() const = 0;
+   virtual std::string GetValueAsString() const = 0;
    std::string ToString() const;
 };
 
@@ -90,7 +96,8 @@ public:
    R__ALWAYS_INLINE void Add(int64_t delta) { fCounter += delta; }
    R__ALWAYS_INLINE int64_t GetValue() const { return fCounter; }
    R__ALWAYS_INLINE void SetValue(int64_t val) { fCounter = val; }
-   std::string ValueToString() const override { return std::to_string(fCounter); }
+   std::int64_t GetValueAsInt() const override { return fCounter; }
+   std::string GetValueAsString() const override { return std::to_string(fCounter); }
 };
 
 
@@ -147,9 +154,48 @@ public:
          fCounter.store(val);
    }
 
-   std::string ValueToString() const override { return std::to_string(GetValue()); }
+   std::int64_t GetValueAsInt() const override { return GetValue(); }
+   std::string GetValueAsString() const override { return std::to_string(GetValue()); }
 };
 
+
+// clang-format off
+/**
+\class ROOT::Experimental::Detail::RNTupleCalcPerf
+\ingroup NTuple
+\brief A metric element that computes its floating point value from other counters.
+*/
+// clang-format on
+class RNTupleCalcPerf : public RNTuplePerfCounter {
+public:
+   using MetricFunc_t = std::function<std::pair<bool, double>(const RNTupleMetrics &)>;
+
+private:
+   RNTupleMetrics &fMetrics;
+   const MetricFunc_t fFunc;
+
+public:
+   RNTupleCalcPerf(const std::string &name, const std::string &unit, const std::string &desc,
+                   RNTupleMetrics &metrics, MetricFunc_t &&func)
+      : RNTuplePerfCounter(name, unit, desc), fMetrics(metrics), fFunc(std::move(func))
+   {
+   }
+
+   double GetValue() const {
+      auto ret = fFunc(fMetrics);
+      if (ret.first)
+         return ret.second;
+      return std::numeric_limits<double>::quiet_NaN();
+   }
+
+   std::int64_t GetValueAsInt() const override {
+      return static_cast<std::int64_t>(GetValue());
+   }
+
+   std::string GetValueAsString() const override {
+      return std::to_string(GetValue());
+   }
+};
 
 // clang-format off
 /**
@@ -169,10 +215,13 @@ public:
       R__ASSERT(unit == "ns");
    }
 
-   std::string ValueToString() const final {
+   std::int64_t GetValueAsInt() const final {
       auto ticks = BaseCounterT::GetValue();
-      return std::to_string(std::uint64_t(
-         (double(ticks) / double(CLOCKS_PER_SEC)) * (1000. * 1000. * 1000.)));
+      return std::uint64_t((double(ticks) / double(CLOCKS_PER_SEC)) * (1000. * 1000. * 1000.));
+   }
+
+   std::string GetValueAsString() const final {
+      return std::to_string(GetValueAsInt());
    }
 };
 
@@ -196,7 +245,7 @@ private:
    /// Wall clock time
    Clock_t::time_point fStartTime;
    /// CPU time
-   clock_t fStartTicks;
+   clock_t fStartTicks = 0;
 
 public:
    RNTupleTimer(WallTimeT &ctrWallTime, CpuTimeT &ctrCpuTicks)
@@ -249,17 +298,23 @@ public:
    explicit RNTupleMetrics(const std::string &name) : fName(name) {}
    RNTupleMetrics(const RNTupleMetrics &other) = delete;
    RNTupleMetrics & operator=(const RNTupleMetrics &other) = delete;
+   RNTupleMetrics(RNTupleMetrics &&other) = default;
+   RNTupleMetrics & operator=(RNTupleMetrics &&other) = default;
    ~RNTupleMetrics() = default;
 
-   template <typename CounterPtrT>
-   CounterPtrT MakeCounter(const std::string &name, const std::string &unit, const std::string &desc)
+   // TODO(jblomer): return a reference
+   template <typename CounterPtrT, class... Args>
+   CounterPtrT MakeCounter(const std::string &name, Args&&... args)
    {
       R__ASSERT(!Contains(name));
-      auto counter = std::make_unique<std::remove_pointer_t<CounterPtrT>>(name, unit, desc);
+      auto counter = std::make_unique<std::remove_pointer_t<CounterPtrT>>(name, std::forward<Args>(args)...);
       auto ptrCounter = counter.get();
       fCounters.emplace_back(std::move(counter));
       return ptrCounter;
    }
+
+   /// Searches this object and all the observed sub metrics. Returns nullptr if name is not found.
+   const RNTuplePerfCounter *GetCounter(std::string_view name) const;
 
    void ObserveMetrics(RNTupleMetrics &observee);
 

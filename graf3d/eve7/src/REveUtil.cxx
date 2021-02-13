@@ -13,23 +13,18 @@
 #include <ROOT/REveElement.hxx>
 #include <ROOT/REveManager.hxx>
 
+#include <ROOT/RLogger.hxx>
+
 #include "TError.h"
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
 #include "TClass.h"
 #include "TMath.h"
 
-#include "TStyle.h"
 #include "TColor.h"
 
 #include "TROOT.h"
 #include "TInterpreter.h"
-#include "TSystem.h"
-
-#include "TGClient.h"
-#include "TGMimeTypes.h"
-
-#include "Riostream.h"
 
 #include <list>
 #include <algorithm>
@@ -38,12 +33,17 @@
 using namespace ROOT::Experimental;
 namespace REX = ROOT::Experimental;
 
+REX::RLogChannel &REX::EveLog() {
+   static RLogChannel sLog("ROOT.Eve");
+   return sLog;
+}
+
 /** \class REveUtil
 \ingroup REve
 Standard utility functions for Eve.
 */
 
-TObjArray* REX::REveUtil::fgDefaultColors = nullptr;
+TObjArray *REveUtil::fgDefaultColors = nullptr;
 
 namespace
 {

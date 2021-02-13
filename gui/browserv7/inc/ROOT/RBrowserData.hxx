@@ -1,3 +1,7 @@
+// Author: Sergey Linev <S.Linev@gsi.de>
+// Date: 2019-10-14
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
+
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
@@ -17,17 +21,14 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace ROOT {
 namespace Experimental {
 
-/** \class RBrowserData
-\ingroup rbrowser
-\brief Way to browse (hopefully) everything in ROOT
-\author Sergey Linev <S.Linev@gsi.de>
-\date 2019-10-14
-\warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
-*/
+class RLogChannel;
+/// Log channel for Browser diagnostics.
+RLogChannel &BrowserLog();
 
 
 class RBrowserData {
@@ -35,7 +36,8 @@ class RBrowserData {
    std::shared_ptr<Browsable::RElement> fTopElement;    ///<! top element
 
    Browsable::RElementPath_t  fWorkingPath;             ///<! path showed in Breadcrumb
-   std::shared_ptr<Browsable::RElement> fWorkElement;   ///<! main element used for working in browser dialog
+
+   std::map<Browsable::RElementPath_t, std::shared_ptr<Browsable::RElement>> fCache; ///<! already requested elements
 
    Browsable::RElementPath_t fLastPath;                  ///<! path to last used element
    std::shared_ptr<Browsable::RElement> fLastElement;    ///<! last element used in request
@@ -43,10 +45,9 @@ class RBrowserData {
    bool fLastAllChilds{false};                           ///<! if all chlds were extracted
    std::vector<const Browsable::RItem *> fLastSortedItems;   ///<! sorted child items, used in requests
    std::string fLastSortMethod;                          ///<! last sort method
+   bool fLastSortReverse{false};                         ///<! last request reverse order
 
-   Browsable::RElementPath_t DecomposePath(const std::string &path);
-
-   void ResetLastRequest();
+   void ResetLastRequestData(bool with_element);
 
    bool ProcessBrowserRequest(const RBrowserRequest &request, RBrowserReply &reply);
 
@@ -59,7 +60,6 @@ public:
 
    void SetTopElement(std::shared_ptr<Browsable::RElement> elem);
 
-   void SetWorkingDirectory(const std::string &strpath);
    void SetWorkingPath(const Browsable::RElementPath_t &path);
 
    const Browsable::RElementPath_t &GetWorkingPath() const { return fWorkingPath; }
@@ -68,6 +68,11 @@ public:
 
    std::shared_ptr<Browsable::RElement> GetElement(const std::string &str);
    std::shared_ptr<Browsable::RElement> GetElementFromTop(const Browsable::RElementPath_t &path);
+
+   Browsable::RElementPath_t DecomposePath(const std::string &path, bool relative_to_work_element);
+   std::shared_ptr<Browsable::RElement> GetSubElement(const Browsable::RElementPath_t &path);
+
+
 };
 
 

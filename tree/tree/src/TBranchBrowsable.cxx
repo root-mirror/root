@@ -25,6 +25,7 @@
 #include "TStreamerElement.h"
 #include "TVirtualCollectionProxy.h"
 #include "TRef.h"
+#include "TError.h"
 #include <algorithm>
 
 ClassImp(TVirtualBranchBrowsable);
@@ -80,10 +81,10 @@ Bool_t TVirtualBranchBrowsable::fgGeneratorsSet=kFALSE;
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor setting all members according to parameters.
 
-TVirtualBranchBrowsable::TVirtualBranchBrowsable(const TBranch* branch, TClass* type,
+TVirtualBranchBrowsable::TVirtualBranchBrowsable(const TBranch *branch, TClass *type,
                                                  Bool_t typeIsPointer,
-                                                 const TVirtualBranchBrowsable* parent /*=0*/):
-fBranch(branch), fParent(parent), fLeaves(0), fClass(type), fTypeIsPointer(typeIsPointer)
+                                                 const TVirtualBranchBrowsable *parent /*=0*/):
+fBranch(branch), fParent(parent), fLeaves(nullptr), fClass(type), fTypeIsPointer(typeIsPointer)
 {
    if (!fgGeneratorsSet) RegisterDefaultGenerators();
    if (!branch)

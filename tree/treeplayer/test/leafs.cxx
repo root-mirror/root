@@ -1,5 +1,4 @@
 #include "ROOT/RMakeUnique.hxx"
-#include "TFile.h"
 #include "TInterpreter.h"
 #include "TTree.h"
 #include "TTreeReader.h"
@@ -11,8 +10,6 @@
 #include "data.h"
 
 #include "RErrorIgnoreRAII.hxx"
-
-#include <fstream>
 
 TEST(TTreeReaderLeafs, LeafListCaseA) {
    // From "Case A" of the TTree class doc:
@@ -27,6 +24,8 @@ TEST(TTreeReaderLeafs, LeafListCaseA) {
    double Double = 9.;
    long long SLL = 10;
    unsigned long long ULL = 11;
+   long SL = 12;
+   unsigned long UL = 13;
    bool Bool = true;
 
    auto tree = std::make_unique<TTree>("T", "In-memory test tree");
@@ -41,6 +40,8 @@ TEST(TTreeReaderLeafs, LeafListCaseA) {
    tree->Branch("D", &Double, "D/D");
    tree->Branch("L", &SLL, "L/L");
    tree->Branch("l", &ULL, "l/l");
+   tree->Branch("G", &SL, "G/G");
+   tree->Branch("g", &UL, "g/g");
    tree->Branch("O", &Bool, "O/O");
 
    tree->Fill();
@@ -59,6 +60,8 @@ TEST(TTreeReaderLeafs, LeafListCaseA) {
    TTreeReaderValue<double> trDouble(TR, "D");
    TTreeReaderValue<signed long long> trSLL(TR, "L");
    TTreeReaderValue<unsigned long long> trULL(TR, "l");
+   TTreeReaderValue<signed long> trSL(TR, "G");
+   TTreeReaderValue<unsigned long> trUL(TR, "g");
    TTreeReaderValue<bool> trBool(TR, "O");
 
    TR.SetEntry(1);
@@ -74,6 +77,8 @@ TEST(TTreeReaderLeafs, LeafListCaseA) {
    EXPECT_DOUBLE_EQ(Double, *trDouble);
    EXPECT_EQ(SLL, *trSLL);
    EXPECT_EQ(ULL, *trULL);
+   EXPECT_EQ(SL, *trSL);
+   EXPECT_EQ(UL, *trUL);
    EXPECT_EQ(Bool, *trBool);
 }
 

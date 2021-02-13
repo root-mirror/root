@@ -16,12 +16,15 @@
 #ifndef ROO_ABS_COLLECTION
 #define ROO_ABS_COLLECTION
 
+#include "TObject.h"
 #include "TString.h"
 #include "RooAbsArg.h"
 #include "RooPrintable.h"
 #include "RooCmdArg.h"
 #include "RooLinkedListIter.h"
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 class RooCmdArg;
 
@@ -53,13 +56,15 @@ public:
   RooAbsCollection *snapshot(Bool_t deepCopy=kTRUE) const ;
   Bool_t snapshot(RooAbsCollection& output, Bool_t deepCopy=kTRUE) const ;
 
-  /// \deprecated Without effect.
-  void setHashTableSize(Int_t) {
-    // Set size of internal hash table to i (should be a prime number)
+  /// Set the size at which the collection will automatically start using an extra
+  /// lookup table instead of performing a linear search.
+  void setHashTableSize(Int_t number) {
+    _sizeThresholdForMapSearch = number;
   }
-  /// \deprecated Without effect.
+  /// Query the size at which the collection will automatically start using an extra
+  /// lookup table instead of performing a linear search.
   Int_t getHashTableSize() const { 
-    return 0;
+    return _sizeThresholdForMapSearch;
   }
 
   // List content management
@@ -93,12 +98,13 @@ public:
   RooAbsArg *find(const char *name) const ;
   RooAbsArg *find(const RooAbsArg&) const ;
 
+  /// Check if collection contains an argument with the same name as var.
+  /// To check for a specific instance, use containsInstance().
   Bool_t contains(const RooAbsArg& var) const { 
-    // Returns true if object with same name as var is contained in this collection
-    return (0 == find(var)) ? kFALSE:kTRUE; 
+    return find(var) != nullptr;
   }
+  /// Check if this exact instance is in this collection.
   Bool_t containsInstance(const RooAbsArg& var) const { 
-    // Returns true if var is contained in this collection
     return std::find(_list.begin(), _list.end(), &var) != _list.end();
   }
   RooAbsCollection* selectByAttrib(const char* name, Bool_t value) const ;
@@ -137,6 +143,14 @@ public:
   const_iterator end() const {
     return _list.end();
   }
+
+  Storage_t::const_reverse_iterator rbegin() const {
+    return _list.rbegin();
+  }
+
+  Storage_t::const_reverse_iterator rend() const {
+      return _list.rend();
+    }
 
   Storage_t::size_type size() const {
     return _list.size();
@@ -181,14 +195,7 @@ public:
     return index(&arg);
   }
 
-  /// Returns index of arg with given name, or -1 if arg is not in the collection.
-  inline Int_t index(const char* name) const {
-    const std::string theName(name);
-    auto item = std::find_if(_list.begin(), _list.end(), [&theName](const RooAbsArg * elm){
-      return elm->GetName() == theName;
-    });
-    return item != _list.end() ? item - _list.begin() : -1;
-  }
+  Int_t index(const char* name) const;
 
   inline virtual void Print(Option_t *options= 0) const {
     // Printing interface (human readable)
@@ -237,10 +244,9 @@ public:
 
   virtual void RecursiveRemove(TObject *obj);
 
+  void useHashMapForFind(bool flag) const;
+
 protected:
-
-  friend class RooMultiCatIter ;
-
   Storage_t _list; // Actual object storage
   using LegacyIterator_t = TIteratorToSTLInterface<Storage_t>;
 
@@ -266,6 +272,10 @@ protected:
   
 private:
   std::unique_ptr<LegacyIterator_t> makeLegacyIterator (bool forward = true) const;
+  mutable std::unique_ptr<std::unordered_map<const TNamed*, Storage_t::value_type>> _nameToItemMap; //!
+  std::size_t _sizeThresholdForMapSearch; //!
+  void insert(RooAbsArg*);
+  RooAbsArg* tryFastFind(const TNamed* namePtr) const;
 
   ClassDef(RooAbsCollection,3) // Collection of RooAbsArg objects
 };

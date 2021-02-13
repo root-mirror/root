@@ -72,7 +72,7 @@ struct BranchlessTree {
 /// Perform inference on a single input vector
 /// \param[in] input Pointer to data containing the input values
 /// \param[in] stride Stride to go from one input variable to the next one
-/// \param[out] Tree score, result of the inference
+/// \return Tree score, result of the inference
 template <typename T>
 inline T BranchlessTree<T>::Inference(const T *input, const int stride)
 {
@@ -105,7 +105,7 @@ inline void BranchlessTree<T>::FillSparse()
 ///
 /// \param[in] funcName Name of the function
 /// \param[in] typeName Name of the type used for the computation
-/// \param[out] Code of the inference function as string
+/// \return Code of the inference function as string
 template <typename T>
 inline std::string BranchlessTree<T>::GetInferenceCode(const std::string& funcName, const std::string& typeName)
 {

@@ -15,7 +15,8 @@
 
 namespace TMVA{
 
-   void mvaeffs(TString dataset, TString fin = "TMVA.root", 
+   void mvaeffs(TString dataset, TString fin = "TMVA.root",
+                Float_t nSignal = 1000, Float_t nBackground = 1000,
                 Bool_t useTMVAStyle = kTRUE, TString formula="S/sqrt(S+B)" );
 
    // this macro plots the signal and background efficiencies
@@ -54,7 +55,7 @@ namespace TMVA{
       TH1*     sigE;
       TH1*     bgdE;
       TH1*     purS;
-      TH1*     sSig;    
+      TH1*     sSig;
       TH1*     effpurS;
       TCanvas* canvas;
       TLatex*  line1;
@@ -63,25 +64,25 @@ namespace TMVA{
       Double_t maxSignificance;
       Double_t maxSignificanceErr;
 
-      void SetResultHists(); 
+      void SetResultHists();
 
       ClassDef(MethodInfo,0);
    };
 
-   class StatDialogMVAEffs {  
+   class StatDialogMVAEffs {
 
       RQ_OBJECT("StatDialogMVAEffs")
-      
+
          public:
 
       StatDialogMVAEffs(TString ds,const TGWindow* p, Float_t ns, Float_t nb);
       virtual ~StatDialogMVAEffs();
-   
+
       void SetFormula(const TString& f) { fFormula = f; }
       TString GetFormula();
       TString GetFormulaString() { return fFormula; }
       TString GetLatexFormula();
-   
+
       void ReadHistograms(TFile* file);
       void UpdateSignificanceHists();
       void DrawHistograms();
@@ -92,7 +93,7 @@ namespace TMVA{
 
       TGMainFrame *fMain;
       Float_t fNSignal;
-      Float_t fNBackground;  
+      Float_t fNBackground;
       TString fFormula;
       TString dataset;
       TList * fInfoList;

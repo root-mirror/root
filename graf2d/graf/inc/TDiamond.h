@@ -12,11 +12,7 @@
 #ifndef ROOT_TDiamond
 #define ROOT_TDiamond
 
-
 #include "TPaveText.h"
-#include "TAttLine.h"
-#include "TAttFill.h"
-
 
 class TDiamond :  public TPaveText {
 

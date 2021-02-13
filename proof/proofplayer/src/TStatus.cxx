@@ -23,6 +23,7 @@ No messages indicates success.
 #include "Riostream.h"
 #include "TBuffer.h"
 #include "TClass.h"
+#include "TObjString.h"
 #include "TProofDebug.h"
 
 ClassImp(TStatus);

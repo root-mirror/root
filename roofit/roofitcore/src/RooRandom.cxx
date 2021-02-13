@@ -27,7 +27,6 @@ By default a private copy of TRandom3 is used to generate all random numbers.
 #include "RooFit.h"
 
 #include "RooRandom.h"
-#include "RooRandom.h"
 #include "RooQuasiRandomGenerator.h"
 
 #include "TRandom3.h"

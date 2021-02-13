@@ -32,6 +32,8 @@
 #define ROOT_TMVA_Rule
 
 #include "TMath.h"
+#include <vector>
+#include <iostream>
 
 #include "TMVA/DecisionTree.h"
 #include "TMVA/Event.h"

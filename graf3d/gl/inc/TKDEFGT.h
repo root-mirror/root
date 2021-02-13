@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 //KDE - kenrel density estimator,
 //based on fast Gauss transform.

@@ -17,12 +17,7 @@
 #include <map>
 #include <string>
 
-#if !defined(__CINT__)
 #include <libpq-fe.h>
-#else
-struct PGconn;
-#endif
-
 
 class TPgSQLServer : public TSQLServer {
 

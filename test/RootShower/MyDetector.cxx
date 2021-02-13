@@ -7,8 +7,7 @@
  * For the licensing terms see the LICENSE file.                         *
  *************************************************************************/
 
-#include <stdlib.h>
-#include "TROOT.h"
+#include <cstdlib>
 #include "TMath.h"
 
 #include "MyDetector.h"

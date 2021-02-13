@@ -25,7 +25,6 @@
 
 #include "TEnv.h"
 #include "TFileStager.h"
-#include "TObjString.h"
 #include "TROOT.h"
 #include "TSocket.h"
 #include "TString.h"

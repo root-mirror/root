@@ -50,6 +50,8 @@
 #include "TMVA/MethodBase.h"
 #include "TMVA/BinarySearchTree.h"
 #include "TVector.h"
+#include "ThreadLocalStorage.h"
+#include <vector>
 
 namespace TMVA {
 

@@ -4,7 +4,7 @@
 
 /* Converted to echo client/server with select() (timeout option).
    See testTUDPSocket.C */
-/* Compile with: gcc udpserver.c -o udpserver
+/* Compile with: gcc udpserver.c -o udpserver */
 /* on Windows: cl -nologo -Z7 -MD -GR -EHsc udpserver.c */
 /* 3/30/05 John Schultz */
 

@@ -96,5 +96,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(TMVAGui
     XMLIO
     TMVA
     Gui
+    HistPainter
     Core
 )

@@ -14,8 +14,6 @@
 
 #include <memory> // shared_ptr, unique_ptr for IsSmartOrDumbPtr
 #include <type_traits>
-#include <vector> // for IsContainer
-#include "ROOT/RSpan.hxx" // for IsContainer
 
 namespace ROOT {
 
@@ -93,40 +91,6 @@ template <class P>
 class IsSmartOrDumbPtr<std::unique_ptr<P>> : public std::true_type {
 };
 
-/// Check for container traits.
-template <typename T>
-struct IsContainer {
-   using Test_t = typename std::decay<T>::type;
-
-   template <typename A>
-   static constexpr bool Test(A *pt, A const *cpt = nullptr, decltype(pt->begin()) * = nullptr,
-                              decltype(pt->end()) * = nullptr, decltype(cpt->begin()) * = nullptr,
-                              decltype(cpt->end()) * = nullptr, typename A::iterator *pi = nullptr,
-                              typename A::const_iterator *pci = nullptr)
-   {
-      using It_t = typename A::iterator;
-      using CIt_t = typename A::const_iterator;
-      using V_t = typename A::value_type;
-      return std::is_same<Test_t, std::vector<bool>>::value ||
-             (std::is_same<decltype(pt->begin()), It_t>::value && std::is_same<decltype(pt->end()), It_t>::value &&
-              std::is_same<decltype(cpt->begin()), CIt_t>::value && std::is_same<decltype(cpt->end()), CIt_t>::value &&
-              std::is_same<decltype(**pi), V_t &>::value && std::is_same<decltype(**pci), V_t const &>::value);
-   }
-
-   template <typename A>
-   static constexpr bool Test(...)
-   {
-      return false;
-   }
-
-   static constexpr bool value = Test<Test_t>(nullptr);
-};
-
-template<typename T>
-struct IsContainer<std::span<T>> {
-   static constexpr bool value = true;
-};
-
 /// Checks for signed integers types that are not characters
 template<class T>
 struct IsSignedNumeral : std::integral_constant<bool,
@@ -191,7 +155,7 @@ template <typename T>
 using TakeFirstParameter_t = typename TakeFirstParameter<T>::type;
 
 /// Remove first of possibly many template parameters.
-/// e.g. RemoveFirstParameter_t<U<A,B>> is U<B>
+/// e.g. RemoveFirstParameter_t<U<A,B>> is U\<B\>
 template <typename>
 struct RemoveFirstParameter {
 };

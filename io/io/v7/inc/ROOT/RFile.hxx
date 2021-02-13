@@ -1,4 +1,4 @@
-/// \file ROOT/RFile.h
+/// \file ROOT/RFile.hxx
 /// \ingroup Base ROOT7
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-07-31
@@ -17,6 +17,7 @@
 #define ROOT7_RFile
 
 #include "ROOT/RDirectory.hxx"
+#include "ROOT/RMakeUnique.hxx"
 #include "ROOT/RStringView.hxx"
 
 #include "TClass.h"

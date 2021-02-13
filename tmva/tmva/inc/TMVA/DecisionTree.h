@@ -41,6 +41,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TH2.h"
+#include <vector>
 
 #include "TMVA/Types.h"
 #include "TMVA/DecisionTreeNode.h"

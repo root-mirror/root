@@ -369,9 +369,9 @@ TList* TMySQLServer::GetTablesList(const char* wild)
    while (row!=0) {
       CheckErrNo("GetTablesList", kFALSE, lst);
 
-      const char* tablename = row[0];
+      const char *tablename = row[0];
 
-      if (!tablename) {
+      if (tablename) {
          if (!lst) {
             lst = new TList();
             lst->SetOwner(kTRUE);
@@ -431,7 +431,7 @@ TSQLTableInfo *TMySQLServer::GetTableInfo(const char* tablename)
       if ((nfield>=numfields) ||
           (strcmp(column_name, fields[nfield].name)!=0))
       {
-         SetError(-1,"missmatch in column names","GetTableInfo");
+         SetError(-1,"mismatch in column names","GetTableInfo");
          break;
       }
 

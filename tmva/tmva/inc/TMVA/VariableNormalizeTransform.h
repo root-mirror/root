@@ -41,12 +41,14 @@
 
 #include "TMVA/VariableTransformBase.h"
 
+#include <vector>
+
 namespace TMVA {
 
    class VariableNormalizeTransform : public VariableTransformBase {
 
    public:
-  
+
       typedef std::vector<Float_t>       FloatVector;
       typedef std::vector< FloatVector > VectorOfFloatVectors;
       VariableNormalizeTransform( DataSetInfo& dsi, TString strcor=""  );

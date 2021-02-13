@@ -26,8 +26,8 @@ enum EVoxelsType {
 };
 
 private:
-TGeoVoxelFinder(const TGeoVoxelFinder&); // not implemented
-TGeoVoxelFinder& operator=(const TGeoVoxelFinder&); // not implemented
+   TGeoVoxelFinder(const TGeoVoxelFinder&) = delete;
+   TGeoVoxelFinder& operator=(const TGeoVoxelFinder&) = delete;
 
 protected:
    TGeoVolume      *fVolume;          // volume to which applies

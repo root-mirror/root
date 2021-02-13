@@ -1,4 +1,4 @@
-/// \file RDrawableRHist.cxx
+/// \file RHistDraw7Provider.cxx
 /// \ingroup rbrowser
 /// \author Bertrand Bellenot <bertrand.bellenot@cern.ch>
 /// \author Sergey Linev <S.Linev@gsi.de>

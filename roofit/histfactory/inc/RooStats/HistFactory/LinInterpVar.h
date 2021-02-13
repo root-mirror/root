@@ -14,6 +14,7 @@
 #include "RooAbsPdf.h"
 #include "RooRealProxy.h"
 #include "RooListProxy.h"
+#include <vector>
 
 class RooRealVar;
 class RooArgList ;

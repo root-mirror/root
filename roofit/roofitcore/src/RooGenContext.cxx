@@ -33,7 +33,6 @@ use a RooAcceptReject sampling technique.
 #include "Riostream.h"
 
 #include "RooGenContext.h"
-#include "RooGenContext.h"
 #include "RooAbsPdf.h"
 #include "RooDataSet.h"
 #include "RooRealIntegral.h"

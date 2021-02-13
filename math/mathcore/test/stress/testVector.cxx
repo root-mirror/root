@@ -29,7 +29,7 @@ public:
    VectorTestFixture() : fVectorTest(fNGen) {}
 };
 
-TYPED_TEST_CASE_P(VectorTestFixture);
+TYPED_TEST_SUITE_P(VectorTestFixture);
 
 // Test of a Composite Object (containing Vector's and Matrices)
 TYPED_TEST_P(VectorTestFixture, TestCompositeObj)
@@ -74,8 +74,8 @@ TYPED_TEST_P(VectorTestFixture, TestCompositeObj)
    }
 }
 
-REGISTER_TYPED_TEST_CASE_P(VectorTestFixture, TestCompositeObj);
+REGISTER_TYPED_TEST_SUITE_P(VectorTestFixture, TestCompositeObj);
 
 typedef testing::Types<TrackD, TrackD32, TrackErrD, TrackErrD32, VecTrack<TrackD>, VecTrack<TrackErrD>> TrackTypes_t;
 
-INSTANTIATE_TYPED_TEST_CASE_P(StressMathCore, VectorTestFixture, TrackTypes_t);
+INSTANTIATE_TYPED_TEST_SUITE_P(StressMathCore, VectorTestFixture, TrackTypes_t);

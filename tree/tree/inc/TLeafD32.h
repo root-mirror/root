@@ -20,8 +20,10 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TStreamerElement.h"
 #include "TLeaf.h"
+
+class TStreamerElement;
+
 
 class TLeafD32 : public TLeaf {
 

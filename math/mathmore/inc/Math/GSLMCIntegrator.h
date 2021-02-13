@@ -35,10 +35,6 @@
 
 #include "Math/IFunction.h"
 
-
-#include "Math/MCIntegrationTypes.h"
-
-
 #include "Math/MCParameters.h"
 
 #include "Math/VirtualIntegrator.h"

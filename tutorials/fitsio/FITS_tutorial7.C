@@ -1,7 +1,6 @@
 /// \file
 /// \ingroup tutorial_FITS
 /// \notebook
-///
 /// Open a FITS file that contains a catalog of astronomical objects
 /// and dump some of its columns
 ///

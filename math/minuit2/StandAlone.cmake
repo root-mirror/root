@@ -155,7 +155,7 @@ if(minuit2_standalone)
 endif()
 
 # Setup package info
-add_feature_info(minuit2_openmp minuit2_openmp "OpenMP (Thread safe FCNs only)")
+add_feature_info(minuit2_omp minuit2_omp "OpenMP (Thread safe FCNs only)")
 add_feature_info(minuit2_mpi minuit2_mpi "MPI (Thread safe FCNs only)")
 set_package_properties(OpenMP PROPERTIES
     URL "http://www.openmp.org"

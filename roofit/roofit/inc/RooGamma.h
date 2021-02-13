@@ -17,8 +17,6 @@
 #include "RooAbsPdf.h"
 #include "RooRealProxy.h"
 
-class RooRealVar;
-
 class RooGamma : public RooAbsPdf {
 public:
   RooGamma() {} ;
@@ -42,8 +40,7 @@ protected:
   RooRealProxy mu ;
 
   Double_t evaluate() const ;
-  RooSpan<double> evaluateBatch(std::size_t begin, std::size_t batchSize) const;
-
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
 
 private:
 

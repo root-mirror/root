@@ -23,7 +23,6 @@ Utility class to display PROOF stats feedback histos during queries
 #include "TH1.h"
 #include "TH2.h"
 #include "THashList.h"
-#include "TObjString.h"
 #include "TProof.h"
 #include "TProofDebug.h"
 #include "TROOT.h"

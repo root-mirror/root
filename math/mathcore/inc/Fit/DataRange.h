@@ -14,6 +14,7 @@
 #define ROOT_Fit_DataRange
 
 #include <vector>
+#include <utility>
 
 namespace ROOT {
 

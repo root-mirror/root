@@ -60,6 +60,12 @@ namespace mathtext {
          _x[0] = x0;
          _x[1] = y0;
       }
+      inline point_t& operator=(const point_t &point)
+      {
+         _x[0] = point._x[0];
+         _x[1] = point._x[1];
+         return *this;
+      }
       inline const float *x(void) const
       {
          return _x;

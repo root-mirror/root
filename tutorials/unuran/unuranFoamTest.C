@@ -67,7 +67,7 @@ Int_t run_foam(int nev){
   TH2D  *hst_xy = new TH2D("foam_hst_xy" ,  "FOAM x-y plot", 50,0,1.0, 50,0,1.0);
   hFoam = hst_xy;
 
-  Double_t *MCvect =new Double_t[2]; // 2-dim vector generated in the MC run
+  Double_t MCvect[2]; // 2-dim vector generated in the MC run
   //
   TRandom     *PseRan   = new TRandom3();  // Create random number generator
   PseRan->SetSeed(4357);

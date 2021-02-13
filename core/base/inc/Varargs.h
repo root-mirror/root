@@ -50,8 +50,6 @@
 #     define R__VA_COPY(to, from) __va_copy((to), (from))
 #  elif defined(va_copy)
 #     define R__VA_COPY(to, from) va_copy((to), (from))
-#  elif defined (R__VA_COPY_AS_ARRAY)
-#     define R__VA_COPY(to, from) memmove((to), (from), sizeof(va_list))
 #  elif defined(_WIN32) && _MSC_VER < 1310
 #     define R__VA_COPY(to, from) (*(to) = *(from))
 #  else

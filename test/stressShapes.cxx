@@ -2,6 +2,7 @@
 #ifndef __CINT__
 #include <TRandom3.h>
 #include <TROOT.h>
+#include <snprintf.h>
 #include <TH1.h>
 #include <TMath.h>
 #include <TGeoManager.h>

@@ -62,6 +62,8 @@
 #include "TMVA/PDEFoamKernelLinN.h"
 #include "TMVA/PDEFoamKernelGauss.h"
 
+#include <vector>
+
 namespace TMVA {
 
    class MethodPDEFoam : public MethodBase {

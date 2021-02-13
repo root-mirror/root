@@ -1,14 +1,16 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Basic functionality: fitting, plotting, toy data generation on one-dimensional p.d.f
+/// Basic functionality: fitting, plotting, toy data generation on one-dimensional PDFs.
 ///
 ///  pdf = gauss(x,m,s)
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -28,11 +30,11 @@ void rf101_basics()
    RooRealVar mean("mean", "mean of gaussian", 1, -10, 10);
    RooRealVar sigma("sigma", "width of gaussian", 1, 0.1, 10);
 
-   // Build gaussian p.d.f in terms of x,mean and sigma
+   // Build gaussian pdf in terms of x,mean and sigma
    RooGaussian gauss("gauss", "gaussian PDF", x, mean, sigma);
 
    // Construct plot frame in 'x'
-   RooPlot *xframe = x.frame(Title("Gaussian p.d.f."));
+   RooPlot *xframe = x.frame(Title("Gaussian pdf."));
 
    // P l o t   m o d e l   a n d   c h a n g e   p a r a m e t e r   v a l u e s
    // ---------------------------------------------------------------------------
@@ -53,8 +55,8 @@ void rf101_basics()
    RooDataSet *data = gauss.generate(x, 10000);
 
    // Make a second plot frame in x and draw both the
-   // data and the p.d.f in the frame
-   RooPlot *xframe2 = x.frame(Title("Gaussian p.d.f. with data"));
+   // data and the pdf in the frame
+   RooPlot *xframe2 = x.frame(Title("Gaussian pdf with data"));
    data->plotOn(xframe2);
    gauss.plotOn(xframe2);
 

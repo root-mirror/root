@@ -13,7 +13,6 @@
 #include "TPRegexp.h"
 #include "TGFrame.h"
 #include "TGTextView.h"
-#include "TGScrollBar.h"
 #include "TGLabel.h"
 #include "TProof.h"
 #include "TProofProgressDialog.h"
@@ -21,7 +20,6 @@
 #include "TProofLog.h"
 #include "TGNumberEntry.h"
 #include "TGListBox.h"
-#include "TGMenu.h"
 #include "TGButton.h"
 
 const UInt_t kLogElemFilled = BIT(17); // If the log element has been retrieved at least once
@@ -560,9 +558,9 @@ void TProofProgressLog::SaveToFile()
       fProofLog->Save(ord.Data(), filename.Data(), option);
       writemode=kFALSE;
    }
+   delete selected;
 
    Info("SaveToFile", "logs saved to file %s", filename.Data());
-   return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

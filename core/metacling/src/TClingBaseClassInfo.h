@@ -32,6 +32,7 @@
 
 #include <utility>
 #include <vector>
+#include <string>
 
 namespace cling {
    class Interpreter;

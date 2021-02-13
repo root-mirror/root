@@ -1,6 +1,8 @@
 #ifndef ROOT_REP
 #define ROOT_REP
 
+#include <string>
+
 template <int D1, int D2>
 struct RepStd {
    typedef typename ROOT::Math::MatRepStd<double, D1, D2> R_t;

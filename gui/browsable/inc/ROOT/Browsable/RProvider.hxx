@@ -39,7 +39,25 @@ public:
 
    virtual ~RProvider();
 
-   static std::string GetClassIcon(const std::string &classname);
+   class ClassArg {
+      friend class RProvider;
+      const TClass *cl{nullptr};
+      std::string name;
+      ClassArg() = delete;
+   public:
+      ClassArg(const TClass *_cl) : cl(_cl) {}
+      ClassArg(const std::string &_name) : name(_name) {}
+      ClassArg(const char *_name) : name(_name) {}
+
+      bool empty() const { return !cl && name.empty(); }
+      const TClass *GetClass() const { return cl; }
+      const std::string &GetName() const { return name; }
+   };
+
+   static std::string GetClassIcon(const ClassArg &, bool = false);
+   static bool CanHaveChilds(const ClassArg &);
+   static bool CanDraw6(const ClassArg &);
+   static bool CanDraw7(const ClassArg &);
 
    static bool IsFileFormatSupported(const std::string &extension);
    static std::shared_ptr<RElement> OpenFile(const std::string &extension, const std::string &fullname);
@@ -58,23 +76,38 @@ protected:
    void RegisterBrowse(const TClass *cl, BrowseFunc_t func);
    void RegisterDraw6(const TClass *cl, Draw6Func_t func);
    void RegisterDraw7(const TClass *cl, Draw7Func_t func);
+   void RegisterClass(const std::string &clname,
+                      const std::string &iconname,
+                      const std::string &browselib = "",
+                      const std::string &draw6lib = "",
+                      const std::string &draw7lib = "");
 
 private:
 
-   struct StructBrowse { RProvider *provider{nullptr};  BrowseFunc_t func; };
-   struct StructFile { RProvider *provider{nullptr};  FileFunc_t func; };
-   struct StructDraw6 { RProvider *provider{nullptr};  Draw6Func_t func; };
-   struct StructDraw7 { RProvider *provider{nullptr};  Draw7Func_t func; };
+   struct StructBrowse { RProvider *provider{nullptr}; BrowseFunc_t func; };
+   struct StructFile { RProvider *provider{nullptr}; FileFunc_t func; };
+   struct StructDraw6 { RProvider *provider{nullptr}; Draw6Func_t func; };
+   struct StructDraw7 { RProvider *provider{nullptr}; Draw7Func_t func; };
+   struct StructClass {
+      RProvider *provider{nullptr};
+      bool can_have_childs{false};
+      std::string iconname, browselib, draw6lib, draw7lib;
+      bool dummy() const { return !provider; }
+   };
 
-   using BrowseMap_t = std::multimap<const TClass*, StructBrowse>;
+   using ClassMap_t = std::multimap<std::string, StructClass>;
    using FileMap_t = std::multimap<std::string, StructFile>;
+   using BrowseMap_t = std::multimap<const TClass*, StructBrowse>;
    using Draw6Map_t = std::multimap<const TClass*, StructDraw6>;
    using Draw7Map_t = std::multimap<const TClass*, StructDraw7>;
 
-   static BrowseMap_t &GetBrowseMap();
+   static ClassMap_t &GetClassMap();
    static FileMap_t &GetFileMap();
+   static BrowseMap_t &GetBrowseMap();
    static Draw6Map_t &GetDraw6Map();
    static Draw7Map_t &GetDraw7Map();
+
+   static const StructClass &GetClassEntry(const ClassArg &);
 
    template<class Map_t>
    void CleanThis(Map_t &fmap)

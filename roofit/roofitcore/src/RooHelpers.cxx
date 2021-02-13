@@ -17,12 +17,52 @@
 #include "RooHelpers.h"
 #include "RooAbsRealLValue.h"
 
+#include "TClass.h"
+
 namespace RooHelpers {
+
+LocalChangeMsgLevel::LocalChangeMsgLevel(RooFit::MsgLevel lvl,
+    unsigned int extraTopics, unsigned int removeTopics, bool overrideExternalLevel) {
+  auto& msg = RooMsgService::instance();
+  fOldKillBelow = msg.globalKillBelow();
+  if (overrideExternalLevel) msg.setGlobalKillBelow(lvl);
+
+  for (int i = 0; i < msg.numStreams(); ++i) {
+    fOldConf.push_back(msg.getStream(i));
+    if (overrideExternalLevel) msg.getStream(i).minLevel = lvl;
+    msg.getStream(i).removeTopic(static_cast<RooFit::MsgTopic>(removeTopics));
+    msg.setStreamStatus(i, true);
+  }
+
+  if (extraTopics != 0) {
+    fExtraStream = msg.addStream(lvl);
+    msg.getStream(fExtraStream).addTopic(static_cast<RooFit::MsgTopic>(extraTopics));
+  }
+}
+
+LocalChangeMsgLevel::~LocalChangeMsgLevel() {
+  auto& msg = RooMsgService::instance();
+  msg.setGlobalKillBelow(fOldKillBelow);
+  for (int i=0; i < msg.numStreams(); ++i) {
+    if (i < static_cast<int>(fOldConf.size()))
+      msg.getStream(i) = fOldConf[i];
+  }
+
+  if (fExtraStream > 0)
+    msg.deleteStream(fExtraStream);
+}
+
 
 /// Tokenise the string by splitting at the characters in delims.
 /// Consecutive delimiters are collapsed, so that no delimiters will appear in the
 /// tokenised strings, and no emtpy strings are returned.
-std::vector<std::string> tokenise(const std::string &str, const std::string &delims) {
+/// \param[in] str String to tokenise.
+/// \param[in] delims One or more delimiters used to split the string.
+/// \param[in] returnEmptyToken If the string is empty, return one empty token. Default is to return an empty vector.
+std::vector<std::string> tokenise(const std::string &str, const std::string &delims, bool returnEmptyToken /*= true*/) {
+  if (str.empty())
+    return std::vector<std::string>(returnEmptyToken ? 1 : 0);
+
   std::vector<std::string> tokens;
 
   auto beg = str.find_first_not_of(delims, 0);
@@ -37,9 +77,11 @@ std::vector<std::string> tokenise(const std::string &str, const std::string &del
 }
 
 
-
-HijackMessageStream::HijackMessageStream(RooFit::MsgLevel level, RooFit::MsgTopic topics, const char* objectName) :
-  std::ostringstream()
+/// Hijack all messages with given level and topics while this object is alive.
+/// \param[in] level Minimum level to hijack. Higher levels also get captured.
+/// \param[in] topics Topics to hijack. Use `|` to combine different topics, and cast to `RooFit::MsgTopic` if necessary.
+/// \param[in] objectName Only hijack messages from an object with the given name. Defaults to any object.
+HijackMessageStream::HijackMessageStream(RooFit::MsgLevel level, RooFit::MsgTopic topics, const char* objectName)
 {
   auto& msg = RooMsgService::instance();
   _oldKillBelow = msg.globalKillBelow();
@@ -52,7 +94,7 @@ HijackMessageStream::HijackMessageStream(RooFit::MsgLevel level, RooFit::MsgTopi
 
   _thisStream = msg.addStream(level,
       RooFit::Topic(topics),
-      RooFit::OutputStream(*this),
+      RooFit::OutputStream(_str),
       objectName ? RooFit::ObjectName(objectName) : RooCmdArg());
 }
 

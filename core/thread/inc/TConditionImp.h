@@ -12,7 +12,6 @@
 #ifndef ROOT_TConditionImp
 #define ROOT_TConditionImp
 
-
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // TConditionImp                                                        //
@@ -22,9 +21,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
 #include "TObject.h"
-
 
 class TConditionImp : public TObject {
 

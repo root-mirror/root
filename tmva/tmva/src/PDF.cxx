@@ -46,13 +46,14 @@ PDF wrapper for histograms; uses user-defined spline interpolation.
 #include "TMVA/TSpline2.h"
 #include "TMVA/Version.h"
 
-#include "Riostream.h"
 #include "TF1.h"
 #include "TH1F.h"
 #include "TMath.h"
 #include "TVectorD.h"
+#include "TGraph.h"
 
 #include <cstdlib>
+#include <iostream>
 #include <iomanip>
 
 // static configuration settings

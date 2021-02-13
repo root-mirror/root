@@ -7,7 +7,6 @@
 #include "Fit/UnBinData.h"
 #include "Fit/Fitter.h"
 
-
 #include "Math/IParamFunction.h"
 #include "Math/WrappedTF1.h"
 #include "Math/WrappedMultiTF1.h"
@@ -17,7 +16,6 @@
 #include "TGraphErrors.h"
 
 #include "TStyle.h"
-
 
 #include "Math/DistFunc.h"
 
@@ -38,25 +36,25 @@ const int NPoints = 100000;
 // const std::string branchType = "x[50]/D";
 // const int NPoints = 10000;
 
-
-
-double truePar[2*N];
-double iniPar[2*N];
-//const int nfit = 1;
+double truePar[2 * N];
+double iniPar[2 * N];
+// const int nfit = 1;
 const int strategy = 0;
 
-double gausnorm(const double *x, const double *p) {
+double gausnorm(const double *x, const double *p)
+{
 
-   double invsig = 1./p[1];
-   double tmp = (x[0]-p[0]) * invsig;
-   const double sqrt_2pi = 1./std::sqrt(2.* 3.14159 );
-   return std::exp(-0.5 * tmp*tmp ) * sqrt_2pi * invsig;
+   double invsig = 1. / p[1];
+   double tmp = (x[0] - p[0]) * invsig;
+   const double sqrt_2pi = 1. / std::sqrt(2. * 3.14159);
+   return std::exp(-0.5 * tmp * tmp) * sqrt_2pi * invsig;
 }
 
-double gausnormN(const double *x, const double *p) {
+double gausnormN(const double *x, const double *p)
+{
    double f = 1;
    for (int i = 0; i < N; ++i)
-      f *= gausnorm(x+i,p+2*i);
+      f *= gausnorm(x + i, p + 2 * i);
 
    return f;
 }
@@ -67,10 +65,11 @@ struct MINUIT2 {
 };
 
 // fill fit data structure
-ROOT::Fit::UnBinData * FillUnBinData(TTree * tree ) {
+ROOT::Fit::UnBinData *FillUnBinData(TTree *tree)
+{
 
    // fill the unbin data set from a TTree
-   ROOT::Fit::UnBinData * d = 0;
+   ROOT::Fit::UnBinData *d = 0;
 
    // for the large tree access directly the branches
    d = new ROOT::Fit::UnBinData();
@@ -79,54 +78,51 @@ ROOT::Fit::UnBinData * FillUnBinData(TTree * tree ) {
 #ifdef DEBUG
    std::cout << "number of unbin data is " << n << " of dim " << N << std::endl;
 #endif
-   d->Initialize(n,N);
-   TBranch * bx = tree->GetBranch("x");
+   d->Initialize(n, N);
+   TBranch *bx = tree->GetBranch("x");
    double vx[N];
    bx->SetAddress(vx);
-   std::vector<double>  m(N);
+   std::vector<double> m(N);
    for (int unsigned i = 0; i < n; ++i) {
-     bx->GetEntry(i);
-     d->Add(vx);
-     for (int j = 0; j < N; ++j)
-       m[j] += vx[j];
+      bx->GetEntry(i);
+      d->Add(vx);
+      for (int j = 0; j < N; ++j)
+         m[j] += vx[j];
    }
 
 #ifdef DEBUG
    std::cout << "average values of means :\n";
    for (int j = 0; j < N; ++j)
-     std::cout << m[j]/n << "  ";
+      std::cout << m[j] / n << "  ";
    std::cout << "\n";
 #endif
 
    delete tree;
    tree = 0;
    return d;
-
 }
-
 
 // unbin fit
 
 typedef ROOT::Math::IParamMultiFunction Func;
 template <class MinType, class T>
-int DoUnBinFit(T * tree, Func & func, bool debug = false ) {
+int DoUnBinFit(T *tree, Func &func, bool debug = false)
+{
 
-   ROOT::Fit::UnBinData * d  = FillUnBinData(tree );
+   ROOT::Fit::UnBinData *d = FillUnBinData(tree);
    // need to have done Tree->Draw() before fit
-   //FillUnBinData(d,tree);
+   // FillUnBinData(d,tree);
 
-   //std::cout << "data size type and size  is " << typeid(*d).name() <<  "   " << d->Size() << std::endl;
+   // std::cout << "data size type and size  is " << typeid(*d).name() <<  "   " << d->Size() << std::endl;
    std::cout << "Fit data size =  " << d->Size() << " dimension = " << d->NDim() << std::endl;
 
-
-
-   //printData(d);
+   // printData(d);
 
    // create the fitter
-   //std::cout << "Fit parameter 2  " << f.Parameters()[2] << std::endl;
+   // std::cout << "Fit parameter 2  " << f.Parameters()[2] << std::endl;
 
    ROOT::Fit::Fitter fitter;
-   fitter.Config().SetMinimizer(MinType::name().c_str(),MinType::name2().c_str());
+   fitter.Config().SetMinimizer(MinType::name().c_str(), MinType::name2().c_str());
 
    if (debug)
       fitter.Config().MinimizerOptions().SetPrintLevel(3);
@@ -139,12 +135,11 @@ int DoUnBinFit(T * tree, Func & func, bool debug = false ) {
    // set strategy (0 to avoid MnHesse
    fitter.Config().MinimizerOptions().SetStrategy(strategy);
 
-
    // create the function
 
    fitter.SetFunction(func);
    // need to fix param 0 , normalization in the unbinned fits
-   //fitter.Config().ParSettings(0).Fix();
+   // fitter.Config().ParSettings(0).Fix();
 
    bool ret = fitter.Fit(*d);
    if (!ret) {
@@ -157,30 +152,30 @@ int DoUnBinFit(T * tree, Func & func, bool debug = false ) {
    // check fit result
    double chi2 = 0;
    for (int i = 0; i < N; ++i) {
-      double d = (truePar[i] - fitter.Result().Value(i) )/ (fitter.Result().Error(i) );
-      chi2 += d*d;
+      double d = (truePar[i] - fitter.Result().Value(i)) / (fitter.Result().Error(i));
+      chi2 += d * d;
    }
-   double prob = ROOT::Math::chisquared_cdf_c(chi2,N);
-   int iret =  (prob < 1.0E-6) ? -1 : 0;
+   double prob = ROOT::Math::chisquared_cdf_c(chi2, N);
+   int iret = (prob < 1.0E-6) ? -1 : 0;
    if (iret != 0) {
-      std::cout <<"Found difference in fitted values - prob = " << prob << std::endl;
-      if (!debug) fitter.Result().Print(std::cout);
+      std::cout << "Found difference in fitted values - prob = " << prob << std::endl;
+      if (!debug)
+         fitter.Result().Print(std::cout);
       for (int i = 0; i < N; ++i) {
-         double d = (truePar[i] - fitter.Result().Value(i) )/ (fitter.Result().Error(i) );
-         std::cout << "par_" << i << " = " << fitter.Result().Value(i) << " true  = " << truePar[i] << " pull = " << d << std::endl;
+         double d = (truePar[i] - fitter.Result().Value(i)) / (fitter.Result().Error(i));
+         std::cout << "par_" << i << " = " << fitter.Result().Value(i) << " true  = " << truePar[i] << " pull = " << d
+                   << std::endl;
       }
-
    }
 
    delete d;
 
    return iret;
-
 }
 
-
 template <class MinType>
-int DoFit(TTree * tree, Func & func, bool debug = false ) {
+int DoFit(TTree *tree, Func &func, bool debug = false)
+{
    return DoUnBinFit<MinType, TTree>(tree, func, debug);
 }
 // template <class MinType>
@@ -193,24 +188,27 @@ int DoFit(TTree * tree, Func & func, bool debug = false ) {
 // }
 
 template <class MinType, class FitObj>
-int FitUsingNewFitter(FitObj * fitobj, Func & func ) {
+int FitUsingNewFitter(FitObj *fitobj, Func &func)
+{
 
    std::cout << "\n************************************************************\n";
    std::cout << "\tFit using new Fit::Fitter  " << typeid(*fitobj).name() << std::endl;
-   std::cout << "\tMinimizer is " << MinType::name() << "  " << MinType::name2() << " func dim = " << func.NDim() << std::endl;
+   std::cout << "\tMinimizer is " << MinType::name() << "  " << MinType::name2() << " func dim = " << func.NDim()
+             << std::endl;
 
    int iret = 0;
-   TStopwatch w; w.Start();
+   TStopwatch w;
+   w.Start();
 
 #ifdef DEBUG
-   std::cout << "initial Parameters " << iniPar << "  " << *iniPar << "   " <<  *(iniPar+1) << std::endl;
+   std::cout << "initial Parameters " << iniPar << "  " << *iniPar << "   " << *(iniPar + 1) << std::endl;
    func.SetParameters(iniPar);
-   iret |= DoFit<MinType>(fitobj,func,true );
+   iret |= DoFit<MinType>(fitobj, func, true);
 
 #else
    for (int i = 0; i < nfit; ++i) {
       func.SetParameters(iniPar);
-      iret = DoFit<MinType>(fitobj,func, false);
+      iret = DoFit<MinType>(fitobj, func, false);
       if (iret != 0) {
          std::cout << "Fit failed " << std::endl;
          break;
@@ -224,60 +222,57 @@ int FitUsingNewFitter(FitObj * fitobj, Func & func ) {
    return iret;
 }
 
-
-int testNdimFit() {
-
+int testNdimFit()
+{
 
    std::cout << "\n\n************************************************************\n";
    std::cout << "\t UNBINNED TREE (GAUSSIAN MULTI-DIM)  FIT\n";
    std::cout << "************************************************************\n";
 
-   TTree * t1 = new TTree("t2","a large Tree with gaussian variables");
-   double  x[N];
+   TTree *t1 = new TTree("t2", "a large Tree with gaussian variables");
+   double x[N];
    Int_t ev;
-   t1->Branch("x",x,branchType.c_str());
-   t1->Branch("ev",&ev,"ev/I");
+   t1->Branch("x", x, branchType.c_str());
+   t1->Branch("ev", &ev, "ev/I");
 
    // generate the true parameters
-      for (int j = 0;  j < N; ++j) {
-         double mu = double(j)/10.;
-         double s  = 1.0 + double(j)/10.;
-         truePar[2*j] = mu;
-         truePar[2*j+1] = s;
-      }
+   for (int j = 0; j < N; ++j) {
+      double mu = double(j) / 10.;
+      double s = 1.0 + double(j) / 10.;
+      truePar[2 * j] = mu;
+      truePar[2 * j + 1] = s;
+   }
 
-
-   //fill the tree
+   // fill the tree
    TRandom3 r;
-   for (Int_t i=0;i<NPoints;i++) {
-      for (int j = 0;  j < N; ++j) {
-         double mu = truePar[2*j];
-         double s  = truePar[2*j+1];
-         x[j] = r.Gaus(mu,s);
+   for (Int_t i = 0; i < NPoints; i++) {
+      for (int j = 0; j < N; ++j) {
+         double mu = truePar[2 * j];
+         double s = truePar[2 * j + 1];
+         x[j] = r.Gaus(mu, s);
       }
 
       ev = i;
       t1->Fill();
-
    }
-   //t1.Draw("x"); // to select fit variable
+   // t1.Draw("x"); // to select fit variable
 
-
-   for (int i = 0; i <N; ++i) {
-      iniPar[2*i] = 0;
-      iniPar[2*i+1] = 1;
+   for (int i = 0; i < N; ++i) {
+      iniPar[2 * i] = 0;
+      iniPar[2 * i + 1] = 1;
    }
 
    // use simply TF1 wrapper
-   //ROOT::Math::WrappedMultiTF1 f2(*f1);
-   ROOT::Math::WrappedParamFunction<> f2(&gausnormN,N,2*N,iniPar);
+   // ROOT::Math::WrappedMultiTF1 f2(*f1);
+   ROOT::Math::WrappedParamFunction<> f2(&gausnormN, N, 2 * N, iniPar);
 
    int iret = 0;
-   iret |= FitUsingNewFitter<MINUIT2>(t1,f2);
+   iret |= FitUsingNewFitter<MINUIT2>(t1, f2);
 
    return iret;
 }
 
-int main() {
-  return testNdimFit();
+int main()
+{
+   return testNdimFit();
 }

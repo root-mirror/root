@@ -30,22 +30,20 @@ to create new primitives in gPad from the TPad toolbar.
 #include "KeySymbols.h"
 #include "TCutG.h"
 
-#include <iostream>
-
-TLatex *TCreatePrimitives::fgText = 0;
-TCurlyLine *TCreatePrimitives::fgCLine = 0;
-TArrow *TCreatePrimitives::fgArrow = 0;
-TLine *TCreatePrimitives::fgLine = 0;
-TCurlyArc *TCreatePrimitives::fgCArc = 0;
-TArc *TCreatePrimitives::fgArc = 0;
-TEllipse *TCreatePrimitives::fgEllipse = 0;
-TPave *TCreatePrimitives::fgPave = 0;
-TPaveText *TCreatePrimitives::fgPaveText = 0;
-TPavesText *TCreatePrimitives::fgPavesText = 0;
-TDiamond *TCreatePrimitives::fgDiamond = 0;
-TPaveLabel *TCreatePrimitives::fgPaveLabel = 0;
-TGraph *TCreatePrimitives::fgPolyLine = 0;
-TBox *TCreatePrimitives::fgPadBBox = 0;
+TLatex *TCreatePrimitives::fgText = nullptr;
+TCurlyLine *TCreatePrimitives::fgCLine = nullptr;
+TArrow *TCreatePrimitives::fgArrow = nullptr;
+TLine *TCreatePrimitives::fgLine = nullptr;
+TCurlyArc *TCreatePrimitives::fgCArc = nullptr;
+TArc *TCreatePrimitives::fgArc = nullptr;
+TEllipse *TCreatePrimitives::fgEllipse = nullptr;
+TPave *TCreatePrimitives::fgPave = nullptr;
+TPaveText *TCreatePrimitives::fgPaveText = nullptr;
+TPavesText *TCreatePrimitives::fgPavesText = nullptr;
+TDiamond *TCreatePrimitives::fgDiamond = nullptr;
+TPaveLabel *TCreatePrimitives::fgPaveLabel = nullptr;
+TGraph *TCreatePrimitives::fgPolyLine = nullptr;
+TBox *TCreatePrimitives::fgPadBBox = nullptr;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// TCreatePrimitives default constructor.

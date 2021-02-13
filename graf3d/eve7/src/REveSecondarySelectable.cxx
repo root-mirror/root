@@ -13,7 +13,6 @@
 #include <ROOT/REveElement.hxx>
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveSecondarySelectable
 \ingroup REve

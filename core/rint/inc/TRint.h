@@ -39,12 +39,12 @@ private:
    Int_t         fCaughtSignal;       // TRint just caught a signal
    TFileHandler *fInputHandler;       // terminal input handler
 
-   TRint(const TRint&);               // not implemented
-   TRint& operator=(const TRint&);    // not implemented
+   TRint(const TRint&) = delete;
+   TRint& operator=(const TRint&) = delete;
 
    void    ExecLogon();
-   Long_t  ProcessRemote(const char *line, Int_t *error = 0);
-   Long_t  ProcessLineNr(const char* filestem, const char *line, Int_t *error = 0);
+   Long_t  ProcessRemote(const char *line, Int_t *error = nullptr);
+   Long_t  ProcessLineNr(const char* filestem, const char *line, Int_t *error = nullptr);
 
 public:
    TRint(const char *appClassName, int *argc, char **argv,

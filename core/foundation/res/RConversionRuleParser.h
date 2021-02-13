@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 #include <ostream>
-#include <utility>
 
 #include "RConfigure.h"
 

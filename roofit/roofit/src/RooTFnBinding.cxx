@@ -6,7 +6,9 @@
 
 /** \class RooTFnBinding
     \ingroup Roofit
-
+  Use TF1, TF2, TF3 functions as RooFit objects. To create a function binding,
+  either directly invoke RooTFnBinding::RooTFnBinding() or use the convenience
+  functions RooFit::bindFunction().
 **/
 
 #include "Riostream.h"
@@ -84,27 +86,27 @@ void RooTFnBinding::printArgs(ostream& os) const
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace RooFit {
-
+  /// Bind a TFx function to RooFit variables. Also see RooTFnBinding.
   RooAbsReal* bindFunction(TF1* func,RooAbsReal& x) {
     return new RooTFnBinding(func->GetName(),func->GetTitle(),func,x) ;
   }
-
+  /// Bind a TFx function to RooFit variables. Also see RooTFnBinding.
   RooAbsReal* bindFunction(TF2* func,RooAbsReal& x, RooAbsReal& y) {
     return new RooTFnBinding(func->GetName(),func->GetTitle(),func,RooArgList(x,y)) ;
   }
-
+  /// Bind a TFx function to RooFit variables. Also see RooTFnBinding.
   RooAbsReal* bindFunction(TF3* func,RooAbsReal& x, RooAbsReal& y, RooAbsReal& z) {
     return new RooTFnBinding(func->GetName(),func->GetTitle(),func,RooArgList(x,y,z)) ;
   }
-
+  /// Bind a TFx function to RooFit variables. Also see RooTFnBinding.
   RooAbsReal* bindFunction(TF1* func,RooAbsReal& x, const RooArgList& params) {
     return new RooTFnBinding(func->GetName(),func->GetTitle(),func,x,params) ;
   }
-
+  /// Bind a TFx function to RooFit variables. Also see RooTFnBinding.
   RooAbsReal* bindFunction(TF2* func,RooAbsReal& x, RooAbsReal& y, const RooArgList& params) {
     return new RooTFnBinding(func->GetName(),func->GetTitle(),func,RooArgList(x,y),params) ;
   }
-
+  /// Bind a TFx function to RooFit variables. Also see RooTFnBinding.
   RooAbsReal* bindFunction(TF3* func,RooAbsReal& x, RooAbsReal& y, RooAbsReal& z, const RooArgList& params) {
     return new RooTFnBinding(func->GetName(),func->GetTitle(),func,RooArgList(x,y,z),params) ;
   }

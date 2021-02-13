@@ -8,8 +8,6 @@
 # CMakeLists.txt file for building ROOT graf3d/x3d package
 ############################################################################
 
-include_directories(${X11_INCLUDE_DIR})
-
 ROOT_STANDARD_LIBRARY_PACKAGE(X3d
   HEADERS
     TViewerX3D.h
@@ -24,3 +22,5 @@ ROOT_STANDARD_LIBRARY_PACKAGE(X3d
     Graf3d
     Gui
 )
+
+target_include_directories(X3d PRIVATE ${X11_INCLUDE_DIR})

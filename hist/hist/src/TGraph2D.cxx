@@ -9,8 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TMath.h"
 #include "TH2.h"
 #include "TF2.h"
@@ -20,11 +20,16 @@
 #include "TGraphDelaunay2D.h"
 #include "TVirtualPad.h"
 #include "TVirtualFitter.h"
+#include "TVirtualHistPainter.h"
 #include "TPluginManager.h"
-#include "TClass.h"
 #include "TSystem.h"
-#include <stdlib.h>
+#include "strtok.h"
+#include "snprintf.h"
+
+#include <cstdlib>
 #include <cassert>
+#include <iostream>
+#include <fstream>
 
 #include "HFitInterface.h"
 #include "Fit/DataRange.h"
@@ -788,7 +793,7 @@ TFitResultPtr TGraph2D::Fit(const char *fname, Option_t *option, Option_t *)
 ///
 /// | Option   | Description                                                       |
 /// |----------|-------------------------------------------------------------------|
-/// | "W"      | Set all weights to 1; ignore error bars |
+/// | "W"      | Ignore all point errors when fitting a TGraph2DErrors |
 /// | "U"      | Use a User specified fitting algorithm (via SetFCN) |
 /// | "Q"      | Quiet mode (minimum printing) |
 /// | "V"      | Verbose mode (default is between Q and V) |
@@ -797,7 +802,7 @@ TFitResultPtr TGraph2D::Fit(const char *fname, Option_t *option, Option_t *)
 /// | "0"      | Do not plot the result of the fit. By default the fitted function is drawn unless the option "N" above is specified. |
 /// | "+"      | Add this new fitted function to the list of fitted functions (by default, any previous function is deleted) |
 /// | "C"      | In case of linear fitting, not calculate the chisquare (saves time) |
-/// | "EX0"    | When fitting a TGraphErrors do not consider errors in the coordinate |
+/// | "EX0"    | When fitting a TGraph2DErrors do not consider errors in the X,Y coordinates |
 /// | "ROB"    | In case of linear fitting, compute the LTS regression coefficients (robust (resistant) regression), using the default fraction of good points "ROB=0.x" - compute the LTS regression coefficients, using 0.x as a fraction of good points |
 /// | "S"      | The result of the fit is returned in the TFitResultPtr (see below Access to the Fit Result) |
 ///
@@ -1078,10 +1083,9 @@ TH2D *TGraph2D::GetHistogram(Option_t *option)
    // for an empty graph create histogram in [0,1][0,1]
    if (fNpoints <= 0) {
       if (!fHistogram) {
-         Bool_t add = TH1::AddDirectoryStatus();
-         TH1::AddDirectory(kFALSE);
+         // do not add the histogram to gDirectory
+         TDirectory::TContext ctx(nullptr);
          fHistogram = new TH2D(GetName(), GetTitle(), fNpx , 0., 1., fNpy, 0., 1.);
-         TH1::AddDirectory(add);
          fHistogram->SetBit(TH1::kNoStats);
       }
       return fHistogram;
@@ -1117,8 +1121,6 @@ TH2D *TGraph2D::GetHistogram(Option_t *option)
 
    // Book fHistogram if needed. It is not added in the current directory
    if (!fUserHisto) {
-      Bool_t add = TH1::AddDirectoryStatus();
-      TH1::AddDirectory(kFALSE);
       Double_t xmax  = GetXmaxE();
       Double_t ymax  = GetYmaxE();
       Double_t xmin  = GetXminE();
@@ -1149,12 +1151,12 @@ TH2D *TGraph2D::GetHistogram(Option_t *option)
          fHistogram->GetXaxis()->SetLimits(hxmin, hxmax);
          fHistogram->GetYaxis()->SetLimits(hymin, hymax);
       } else {
+         TDirectory::TContext ctx(nullptr); // to avoid adding fHistogram to gDirectory
          fHistogram = new TH2D(GetName(), GetTitle(),
                                fNpx , hxmin, hxmax,
                                fNpy, hymin, hymax);
          CreateInterpolator(oldInterp);
       }
-      TH1::AddDirectory(add);
       fHistogram->SetBit(TH1::kNoStats);
    } else {
       hxmin = fHistogram->GetXaxis()->GetXmin();
@@ -1169,12 +1171,12 @@ TH2D *TGraph2D::GetHistogram(Option_t *option)
       if (fMinimum != -1111) {
          hzmin = fMinimum;
       } else {
-         hzmin = GetZmin();
+         hzmin = GetZminE();
       }
       if (fMaximum != -1111) {
          hzmax = fMaximum;
       } else {
-         hzmax = GetZmax();
+         hzmax = GetZmaxE();
       }
       if (hzmin == hzmax) {
          Double_t hz = hzmin;

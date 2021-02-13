@@ -15,12 +15,13 @@
 #define ROOT_Math_KDTree
 
 //STL header
-#include <assert.h>
+#include <cassert>
 #include <vector>
 #include <cmath>
+#include <utility>
 
 // ROOT include(s)
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 namespace ROOT
 {

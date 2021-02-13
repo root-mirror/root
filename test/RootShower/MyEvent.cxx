@@ -7,9 +7,8 @@
  * For the licensing terms see the LICENSE file.                         *
  *************************************************************************/
 
-#include <stdlib.h>
+#include <cstdlib>
 
-#include <TROOT.h>
 #include <TPolyLine3D.h>
 #include <TRandom.h>
 #include <TParticle.h>

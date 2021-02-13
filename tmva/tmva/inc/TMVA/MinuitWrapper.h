@@ -35,6 +35,7 @@
 
 #include "TMinuit.h"
 #include "TMVA/IFitterTarget.h"
+#include <vector>
 
 class TMinuit;
 
@@ -43,9 +44,9 @@ namespace TMVA {
    class IFitterTarget;
 
    class MinuitWrapper : public TMinuit {
-      
+
    public:
-          
+
       MinuitWrapper( IFitterTarget& target, Int_t maxpar);
       virtual ~MinuitWrapper() {}
 

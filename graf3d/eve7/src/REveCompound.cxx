@@ -14,7 +14,6 @@
 #include "TClass.h"
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveCompound
 \ingroup REve

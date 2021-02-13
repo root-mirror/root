@@ -9,6 +9,7 @@
 ///   - run with `.x geomD0.C`    top level detectors are transparent
 ///   - or       `.x geomD0.C(1)` top level detectors are visible
 ///
+/// \image html geom_geomD0.png width=800px
 /// \macro_code
 ///
 /// \authors Bertrand Bellenot, Rene Brun

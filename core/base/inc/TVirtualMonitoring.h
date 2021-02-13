@@ -22,8 +22,13 @@
 
 #include "TNamed.h"
 
+#ifdef R__LESS_INCLUDES
+class TList;
+class TMap;
+#else
 #include "TList.h"
 #include "TMap.h"
+#endif
 
 class TFile;
 
@@ -31,8 +36,8 @@ class TVirtualMonitoringWriter : public TNamed {
 
 private:
 
-   TVirtualMonitoringWriter(const TVirtualMonitoringWriter&); // Not implemented
-   TVirtualMonitoringWriter& operator=(const TVirtualMonitoringWriter&); // Not implemented
+   TVirtualMonitoringWriter(const TVirtualMonitoringWriter&) = delete;
+   TVirtualMonitoringWriter& operator=(const TVirtualMonitoringWriter&) = delete;
 
    Double_t fValue;  // double monitor value
 
@@ -44,7 +49,7 @@ public:
    TVirtualMonitoringWriter(const char *name, Double_t value)
      : TNamed(name, ""), fValue(value), fTmpOpenPhases(0) { }
 
-   virtual ~TVirtualMonitoringWriter() { if (fTmpOpenPhases) delete fTmpOpenPhases; }
+   virtual ~TVirtualMonitoringWriter();
 
    // TFile related info. In general they are gathered and sent only sometimes as summaries
    virtual Bool_t SendFileCloseEvent(TFile * /*file*/)

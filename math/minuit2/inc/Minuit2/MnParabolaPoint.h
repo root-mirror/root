@@ -12,9 +12,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
+namespace Minuit2 {
 
 /**
 
@@ -35,55 +33,49 @@ and Lorenzo Moneta
 
  */
 
-
 class MnParabolaPoint {
 
 public:
+   /**
 
+   Initializes the point with its coordinates.
 
-  /**
+   @param x the x (first) coordinate of the point.
+   @param y the y (second) coordinate of the point.
 
-  Initializes the point with its coordinates.
+   */
 
-  @param x the x (first) coordinate of the point.
-  @param y the y (second) coordinate of the point.
+   MnParabolaPoint(double x, double y) : fX(x), fY(y) {}
 
-  */
+   ~MnParabolaPoint() {}
 
-  MnParabolaPoint(double x, double y) : fX(x), fY(y) {}
+   /**
 
-  ~MnParabolaPoint() {}
+   Accessor to the x (first) coordinate.
 
+   @return the x (first) coordinate of the point.
 
-  /**
+   */
 
-  Accessor to the x (first) coordinate.
+   double X() const { return fX; }
 
-  @return the x (first) coordinate of the point.
+   /**
 
-  */
+   Accessor to the y (second) coordinate.
 
-  double X() const {return fX;}
+   @return the y (second) coordinate of the point.
 
+   */
 
-  /**
-
-  Accessor to the y (second) coordinate.
-
-  @return the y (second) coordinate of the point.
-
-  */
-
-  double Y() const {return fY;}
+   double Y() const { return fY; }
 
 private:
-
-  double fX;
-  double fY;
+   double fX;
+   double fY;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnParabolaPoint
+#endif // ROOT_Minuit2_MnParabolaPoint

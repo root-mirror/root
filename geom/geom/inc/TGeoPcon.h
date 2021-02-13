@@ -18,28 +18,32 @@ class TGeoPcon : public TGeoBBox
 {
 protected:
    // data members
-   Int_t                 fNz;      // number of z planes (at least two)
-   Double_t              fPhi1;    // lower phi limit (converted to [0,2*pi)
-   Double_t              fDphi;    // phi range
-   Double_t             *fRmin;    //[fNz] pointer to array of inner radii
-   Double_t             *fRmax;    //[fNz] pointer to array of outer radii
-   Double_t             *fZ;       //[fNz] pointer to array of Z planes positions
-   Bool_t                fFullPhi; //! Full phi range flag
-   Double_t              fC1;      //! Cosine of phi1
-   Double_t              fS1;      //! Sine of phi1
-   Double_t              fC2;      //! Cosine of phi1+dphi
-   Double_t              fS2;      //! Sine of phi1+dphi
-   Double_t              fCm;      //! Cosine of (phi1+phi2)/2
-   Double_t              fSm;      //! Sine of (phi1+phi2)/2
-   Double_t              fCdphi;   //! Cosine of dphi
+   Int_t                 fNz = 0;            // number of z planes (at least two)
+   Double_t              fPhi1 = 0;          // lower phi limit (converted to [0,2*pi)
+   Double_t              fDphi = 0;          // phi range
+   Double_t             *fRmin = nullptr;    //[fNz] pointer to array of inner radii
+   Double_t             *fRmax = nullptr;    //[fNz] pointer to array of outer radii
+   Double_t             *fZ = nullptr;       //[fNz] pointer to array of Z planes positions
+   Bool_t                fFullPhi = false;   //! Full phi range flag
+   Double_t              fC1 = 0;            //! Cosine of phi1
+   Double_t              fS1 = 0;            //! Sine of phi1
+   Double_t              fC2 = 0;            //! Cosine of phi1+dphi
+   Double_t              fS2 = 0;            //! Sine of phi1+dphi
+   Double_t              fCm = 0;            //! Cosine of (phi1+phi2)/2
+   Double_t              fSm = 0;            //! Sine of (phi1+phi2)/2
+   Double_t              fCdphi = 0;         //! Cosine of dphi
 
    // methods
-   TGeoPcon(const TGeoPcon&);
-   TGeoPcon& operator=(const TGeoPcon&);
+   TGeoPcon(const TGeoPcon&) = delete;
+   TGeoPcon& operator=(const TGeoPcon&) = delete;
+
+   Bool_t                HasInsideSurface() const;
+   void                  SetSegsAndPolsNoInside(TBuffer3D &buff) const;
 
 public:
    // constructors
    TGeoPcon();
+   TGeoPcon(const char *name) : TGeoBBox(name, 0, 0, 0) {}
    TGeoPcon(Double_t phi, Double_t dphi, Int_t nz);
    TGeoPcon(const char *name, Double_t phi, Double_t dphi, Int_t nz);
    TGeoPcon(Double_t *params);

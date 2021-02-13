@@ -29,9 +29,8 @@ Base definition for genetic algorithm
 
 */
 
-#include <iostream>
 #include <algorithm>
-#include <float.h>
+#include <cfloat>
 
 #ifdef _GLIBCXX_PARALLEL
 #include <omp.h>

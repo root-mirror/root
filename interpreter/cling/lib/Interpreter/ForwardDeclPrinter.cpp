@@ -54,7 +54,7 @@ namespace cling {
     Out() << "#pragma clang diagnostic ignored \"-Wignored-attributes\"" <<"\n";
     Out() << "#pragma clang diagnostic ignored \"-Wreturn-type-c-linkage\"" <<"\n";
     // Inject a special marker:
-    Out() << "extern int __Cling_Autoloading_Map;\n";
+    Out() << "extern int __Cling_AutoLoading_Map;\n";
 
     std::vector<std::string> macrodefs;
     if (printMacros) {
@@ -490,7 +490,7 @@ namespace cling {
         Proto += ")";
       } else if (FT && isNoexceptExceptionSpec(FT->getExceptionSpecType())) {
         Proto += " noexcept";
-        if (FT->getExceptionSpecType() == EST_ComputedNoexcept) {
+        if (isComputedNoexcept(FT->getExceptionSpecType())) {
           Proto += "(";
           llvm::raw_string_ostream EOut(Proto);
           FT->getNoexceptExpr()->printPretty(EOut, 0, SubPolicy,

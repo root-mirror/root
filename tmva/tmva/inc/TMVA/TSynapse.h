@@ -32,9 +32,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TString.h"
-#include "TFormula.h"
-
+#include "TObject.h"
 
 namespace TMVA {
 

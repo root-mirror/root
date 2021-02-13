@@ -36,6 +36,9 @@ class TList ;
 class RooLinkedList ;
 class RooNumGenConfig ;
 class RooRealIntegral ;
+namespace RooBatchCompute {
+struct RunContext;
+}
 
 class RooAbsPdf : public RooAbsReal {
 public:
@@ -196,17 +199,16 @@ public:
   RooAbsReal* createScanCdf(const RooArgSet& iset, const RooArgSet& nset, Int_t numScanBins, Int_t intOrder) ;
 
   // Function evaluation support
-  virtual Bool_t R__DEPRECATED(6,22,"Call traceEvalPdf() instead.") traceEvalHook(Double_t value) const ;
   virtual Double_t getValV(const RooArgSet* set=0) const ;
   virtual Double_t getLogVal(const RooArgSet* set=0) const ;
 
-  virtual RooSpan<const double> getValBatch(std::size_t begin, std::size_t batchSize,
-      const RooArgSet* normSet = nullptr) const;
+  RooSpan<const double> getValues(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
   RooSpan<const double> getLogValBatch(std::size_t begin, std::size_t batchSize,
       const RooArgSet* normSet = nullptr) const;
+  RooSpan<const double> getLogProbabilities(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet = nullptr) const;
 
+  /// \copydoc getNorm(const RooArgSet*) const
   Double_t getNorm(const RooArgSet& nset) const { 
-    // Get p.d.f normalization term needed for observables 'nset'
     return getNorm(&nset) ; 
   }
   virtual Double_t getNorm(const RooArgSet* set=0) const ;
@@ -220,31 +222,29 @@ public:
 
   Double_t analyticalIntegralWN(Int_t code, const RooArgSet* normSet, const char* rangeName=0) const ;
 
+  /// Shows if a PDF is self-normalized, which means that no attempt is made to add a normalization term.
+  /// Always returns false, unless a PDF overrides this function.
   virtual Bool_t selfNormalized() const { 
-    // If true, p.d.f is taken as self-normalized and no attempt is made to add a normalization term
-    // This default implementation return false
     return kFALSE ; 
   }
 
   // Support for extended maximum likelihood, switched off by default
   enum ExtendMode { CanNotBeExtended, CanBeExtended, MustBeExtended } ;
-  virtual ExtendMode extendMode() const { 
-    // Returns ability of p.d.f to provided extended likelihood terms. Possible
-    // answers are CanNotBeExtended, CanBeExtended or MustBeExtended. This
-    // default implementation always return CanNotBeExtended
-    return CanNotBeExtended ; 
-  } 
-  inline Bool_t canBeExtended() const { 
-    // If true p.d.f can provide extended likelihood term
+  /// Returns ability of PDF to provide extended likelihood terms. Possible
+  /// answers are in the enumerator RooAbsPdf::ExtendMode.
+  /// This default implementation always returns CanNotBeExtended.
+  virtual ExtendMode extendMode() const { return CanNotBeExtended; }
+  /// If true, PDF can provide extended likelihood term.
+  inline Bool_t canBeExtended() const {
     return (extendMode() != CanNotBeExtended) ; 
   }
-  inline Bool_t mustBeExtended() const { 
-    // If true p.d.f must extended likelihood term
+  /// If true PDF must provide extended likelihood term.
+  inline Bool_t mustBeExtended() const {
     return (extendMode() == MustBeExtended) ; 
   }
   virtual Double_t expectedEvents(const RooArgSet* nset) const ; 
-  virtual Double_t expectedEvents(const RooArgSet& nset) const { 
-    // Return expecteded number of p.d.fs to be used in calculated of extended likelihood
+  /// Return expected number of events to be used in calculation of extended likelihood.
+  virtual Double_t expectedEvents(const RooArgSet& nset) const {
     return expectedEvents(&nset) ; 
   }
 

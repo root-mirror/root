@@ -17,6 +17,7 @@ of the autoloading of branches as well as all the generic setup routine.
 #include "TBranchProxy.h"
 #include "TLeaf.h"
 #include "TBranchElement.h"
+#include "TBranchObject.h"
 #include "TStreamerElement.h"
 #include "TStreamerInfo.h"
 
@@ -113,14 +114,14 @@ static std::string GetFriendBranchName(TTree* directorTree, TBranch* branch, con
    // ROOT-10046: Here we need to ask for the tree with GetTree otherwise, if directorTree
    // is a chain, this check is bogus and a bug can occour (ROOT-10046)
    if (directorTree->GetTree() == branch->GetTree())
-      return branch->GetName();
+      return branch->GetFullName().Data();
 
    // Friend case:
    std::string sFullBranchName = fullBranchName;
-   std::string::size_type pos = sFullBranchName.rfind(branch->GetName());
+   std::string::size_type pos = sFullBranchName.rfind(branch->GetFullName());
    if (pos != std::string::npos) {
       sFullBranchName.erase(pos);
-      sFullBranchName += branch->GetName();
+      sFullBranchName += branch->GetFullName();
    }
    return sFullBranchName;
 }
@@ -307,7 +308,7 @@ Bool_t ROOT::Detail::TBranchProxy::Setup()
       }
 
       if (!fWhere) {
-         fBranch->SetAddress(0);
+         fBranch->SetupAddresses();
          fWhere = (double*)fBranch->GetAddress();
       }
 
@@ -400,11 +401,14 @@ Bool_t ROOT::Detail::TBranchProxy::Setup()
             fWhere = ((unsigned char*)be->GetObject()) + fOffset;
 
          }
+      } else if (fBranch->IsA() == TBranchObject::Class()) {
+         fIsaPointer = true; // this holds for all cases we test
+         fClassName = fBranch->GetClassName();
+         fClass = TClass::GetClass(fClassName);
       } else {
          fClassName = fBranch->GetClassName();
          fClass = TClass::GetClass(fClassName);
       }
-
 
       /*
         fClassName = fBranch->GetClassName(); // What about TClonesArray?

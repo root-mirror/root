@@ -10,7 +10,6 @@
 #define ROOT7_RPadDisplayItem
 
 #include <ROOT/RDisplayItem.hxx>
-#include <ROOT/RFrame.hxx>
 #include <ROOT/RPad.hxx>
 #include "ROOT/RStyle.hxx"
 
@@ -32,14 +31,12 @@ public:
    using PadPrimitives_t = std::vector<std::unique_ptr<RDisplayItem>>;
 
 protected:
-   const RFrame *fFrame{nullptr};       ///< temporary pointer on frame object
    const RAttrMap *fAttr{nullptr};      ///< temporary pointer on attributes
    PadPrimitives_t fPrimitives;         ///< display items for all primitives in the pad
    std::vector<std::shared_ptr<RStyle>> fStyles; ///<! locked styles of the objects and pad until streaming is performed
 public:
    RPadBaseDisplayItem() = default;
    virtual ~RPadBaseDisplayItem() = default;
-   void SetFrame(const RFrame *f) { fFrame = f; }
    void SetAttributes(const RAttrMap *f) { fAttr = f; }
    /// Add display item and style which should be used for it
    void Add(std::unique_ptr<RDisplayItem> &&item, std::shared_ptr<RStyle> &&style)

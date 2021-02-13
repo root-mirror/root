@@ -1,8 +1,8 @@
 #ifndef likelihoodrefs__HH
 #define likelihoodrefs__HH
-#include <vector>
-#include <string>
+
 #include "tmvaglob.h"
+
 namespace TMVA{
 
 

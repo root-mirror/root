@@ -1,7 +1,6 @@
 #include "TMVA/PlotFoams.h"
 
 #include "TControlBar.h"
-#include "TMap.h"
 #include "TVectorT.h"
 #include "TLine.h"
 #include "TPaveText.h"

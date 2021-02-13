@@ -29,16 +29,14 @@
 //
 
 // need to be included later
-#include <time.h>
+#include <ctime>
 #include <vector>
-#include <stdlib.h>
+#include <cstdlib>
 #include <cassert>
-
 
 #include "Math/GSLQuasiRandom.h"
 #include "GSLQRngWrapper.h"
 
-//#include <iostream>
 
 namespace ROOT {
 namespace Math {

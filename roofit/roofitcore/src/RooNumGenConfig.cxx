@@ -141,20 +141,20 @@ RooNumGenConfig& RooNumGenConfig::operator=(const RooNumGenConfig& other)
   }
 
   // Copy common properties
-  _method1D.setIndex(other._method1D.getIndex()) ;
-  _method1DCat.setIndex(other._method1DCat.getIndex()) ;
-  _method1DCond.setIndex(other._method1DCond.getIndex()) ;
-  _method1DCondCat.setIndex(other._method1DCondCat.getIndex()) ;
+  _method1D.setIndex(other._method1D.getCurrentIndex()) ;
+  _method1DCat.setIndex(other._method1DCat.getCurrentIndex()) ;
+  _method1DCond.setIndex(other._method1DCond.getCurrentIndex()) ;
+  _method1DCondCat.setIndex(other._method1DCondCat.getCurrentIndex()) ;
 
-  _method2D.setIndex(other._method2D.getIndex()) ;
-  _method2DCat.setIndex(other._method2DCat.getIndex()) ;
-  _method2DCond.setIndex(other._method2DCond.getIndex()) ;
-  _method2DCondCat.setIndex(other._method2DCondCat.getIndex()) ;
+  _method2D.setIndex(other._method2D.getCurrentIndex()) ;
+  _method2DCat.setIndex(other._method2DCat.getCurrentIndex()) ;
+  _method2DCond.setIndex(other._method2DCond.getCurrentIndex()) ;
+  _method2DCondCat.setIndex(other._method2DCondCat.getCurrentIndex()) ;
 
-  _methodND.setIndex(other._methodND.getIndex()) ;
-  _methodNDCat.setIndex(other._methodNDCat.getIndex()) ;
-  _methodNDCond.setIndex(other._methodNDCond.getIndex()) ;
-  _methodNDCondCat.setIndex(other._methodNDCondCat.getIndex()) ;
+  _methodND.setIndex(other._methodND.getCurrentIndex()) ;
+  _methodNDCat.setIndex(other._methodNDCat.getCurrentIndex()) ;
+  _methodNDCond.setIndex(other._methodNDCond.getCurrentIndex()) ;
+  _methodNDCondCat.setIndex(other._methodNDCondCat.getCurrentIndex()) ;
 
   // Delete old integrator-specific configuration data
   _configSets.Delete() ;
@@ -245,7 +245,7 @@ const RooCategory& RooNumGenConfig::methodND(Bool_t cond, Bool_t cat) const
 
 Bool_t RooNumGenConfig::addConfigSection(const RooAbsNumGenerator* proto, const RooArgSet& inDefaultConfig)
 {
-  TString name = proto->IsA()->GetName() ;
+  std::string name = proto->IsA()->GetName();
 
   // Register integrator for appropriate dimensionalities
   
@@ -272,7 +272,7 @@ Bool_t RooNumGenConfig::addConfigSection(const RooAbsNumGenerator* proto, const 
   
   // Store default configuration parameters
   RooArgSet* config = (RooArgSet*) inDefaultConfig.snapshot() ;
-  config->setName(name) ;
+  config->setName(name.c_str());
   _configSets.Add(config) ;
 
   return kFALSE ;
@@ -329,39 +329,39 @@ RooPrintable::StyleOption RooNumGenConfig::defaultPrintStyle(Option_t* opt) cons
 void RooNumGenConfig::printMultiline(ostream &os, Int_t /*content*/, Bool_t verbose, TString indent) const
 {
   os << endl ;
-  os << indent << "1-D sampling method: " << _method1D.getLabel() << endl ;
-  if (_method1DCat.getIndex()!=_method1D.getIndex()) {
-    os << " (" << _method1DCat.getLabel() << " if with categories)" << endl ;
+  os << indent << "1-D sampling method: " << _method1D.getCurrentLabel() << endl ;
+  if (_method1DCat.getCurrentIndex()!=_method1D.getCurrentIndex()) {
+    os << " (" << _method1DCat.getCurrentLabel() << " if with categories)" << endl ;
   }
-  if (_method1DCond.getIndex()!=_method1D.getIndex()) {
-    os << " (" << _method1DCond.getLabel() << " if conditional)" << endl ;
+  if (_method1DCond.getCurrentIndex()!=_method1D.getCurrentIndex()) {
+    os << " (" << _method1DCond.getCurrentLabel() << " if conditional)" << endl ;
   }
-  if (_method1DCondCat.getIndex()!=_method1D.getIndex()) {
-    os << " (" << _method1DCondCat.getLabel() << " if conditional with categories)" << endl ;    
-  }
-  os << endl ;
-
-  os << indent << "2-D sampling method: " << _method2D.getLabel() << endl ;
-  if (_method2DCat.getIndex()!=_method2D.getIndex()) {
-    os << " (" << _method2DCat.getLabel() << " if with categories)" << endl ;
-  }
-  if (_method2DCond.getIndex()!=_method2D.getIndex()) {
-    os << " (" << _method2DCond.getLabel() << " if conditional)" << endl ;
-  }
-  if (_method2DCondCat.getIndex()!=_method2D.getIndex()) {
-    os << " (" << _method2DCondCat.getLabel() << " if conditional with categories)" << endl ;
+  if (_method1DCondCat.getCurrentIndex()!=_method1D.getCurrentIndex()) {
+    os << " (" << _method1DCondCat.getCurrentLabel() << " if conditional with categories)" << endl ;    
   }
   os << endl ;
 
-  os << indent << "N-D sampling method: " << _methodND.getLabel() << endl ;
-  if (_methodNDCat.getIndex()!=_methodND.getIndex()) {
-    os << " (" << _methodNDCat.getLabel() << " if with categories)" << endl ;
+  os << indent << "2-D sampling method: " << _method2D.getCurrentLabel() << endl ;
+  if (_method2DCat.getCurrentIndex()!=_method2D.getCurrentIndex()) {
+    os << " (" << _method2DCat.getCurrentLabel() << " if with categories)" << endl ;
   }
-  if (_methodNDCond.getIndex()!=_methodND.getIndex()) {
-    os << " (" << _methodNDCond.getLabel() << " if conditional)" << endl ;
+  if (_method2DCond.getCurrentIndex()!=_method2D.getCurrentIndex()) {
+    os << " (" << _method2DCond.getCurrentLabel() << " if conditional)" << endl ;
   }
-  if (_methodNDCondCat.getIndex()!=_methodND.getIndex()) {
-    os << " (" << _methodNDCondCat.getLabel() << " if conditional with categories)" << endl ;
+  if (_method2DCondCat.getCurrentIndex()!=_method2D.getCurrentIndex()) {
+    os << " (" << _method2DCondCat.getCurrentLabel() << " if conditional with categories)" << endl ;
+  }
+  os << endl ;
+
+  os << indent << "N-D sampling method: " << _methodND.getCurrentLabel() << endl ;
+  if (_methodNDCat.getCurrentIndex()!=_methodND.getCurrentIndex()) {
+    os << " (" << _methodNDCat.getCurrentLabel() << " if with categories)" << endl ;
+  }
+  if (_methodNDCond.getCurrentIndex()!=_methodND.getCurrentIndex()) {
+    os << " (" << _methodNDCond.getCurrentLabel() << " if conditional)" << endl ;
+  }
+  if (_methodNDCondCat.getCurrentIndex()!=_methodND.getCurrentIndex()) {
+    os << " (" << _methodNDCondCat.getCurrentLabel() << " if conditional with categories)" << endl ;
   }
   os << endl ;
    

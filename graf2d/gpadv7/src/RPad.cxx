@@ -15,6 +15,8 @@
 #include <cassert>
 #include <limits>
 
+using namespace ROOT::Experimental;
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 ROOT::Experimental::RPad::~RPad() = default;
@@ -22,14 +24,15 @@ ROOT::Experimental::RPad::~RPad() = default;
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /// Create pad display item
 
-std::unique_ptr<ROOT::Experimental::RDisplayItem> ROOT::Experimental::RPad::Display() const
+std::unique_ptr<RDisplayItem> RPad::Display(const RDisplayContext &ctxt)
 {
    auto paditem = std::make_unique<RPadDisplayItem>();
 
-   DisplayPrimitives(*paditem.get());
+   RDisplayContext subctxt(ctxt.GetCanvas(), this, ctxt.GetLastVersion());
+
+   DisplayPrimitives(*paditem.get(), subctxt);
 
    paditem->SetPadPosSize(&fPos, &fSize);
 
    return paditem;
 }
-

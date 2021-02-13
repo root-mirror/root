@@ -19,7 +19,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TAuthenticate.h"
-#include "TEnv.h"
 #include "TError.h"
 #include "THostAuth.h"
 #include "TRootAuth.h"

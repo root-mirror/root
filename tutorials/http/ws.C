@@ -10,15 +10,15 @@
 
 class TUserHandler : public THttpWSHandler {
    public:
-      UInt_t fWSId;
-      Int_t fServCnt;
+      UInt_t fWSId{0};
+      Int_t fServCnt{0};
 
-      TUserHandler(const char *name = 0, const char *title = 0) : THttpWSHandler(name, title), fWSId(0), fServCnt(0) {}
+      TUserHandler(const char *name = nullptr, const char *title = nullptr) : THttpWSHandler(name, title) {}
 
-      // load custom HTML page when open correpondent address
-      TString GetDefaultPageContent() { return "file:ws.htm"; }
+      // load custom HTML page when open correspondent address
+      TString GetDefaultPageContent() override { return "file:ws.htm"; }
 
-      virtual Bool_t ProcessWS(THttpCallArg *arg)
+      Bool_t ProcessWS(THttpCallArg *arg) override
       {
          if (!arg || (arg->GetWSId()==0)) return kTRUE;
 
@@ -54,7 +54,7 @@ class TUserHandler : public THttpWSHandler {
       }
 
       /// per timeout sends data portion to the client
-      virtual Bool_t HandleTimer(TTimer *)
+      Bool_t HandleTimer(TTimer *) override
       {
          TDatime now;
          if (fWSId) SendCharStarWS(fWSId, Form("Server sends data:%s server counter:%d", now.AsString(), fServCnt++));
@@ -75,9 +75,12 @@ void ws()
 
    printf("Starting browser with URL address %s\n", addr);
    printf("In browser content of ws.htm file should be loaded\n");
+   printf("Please be sure that ws.htm is provided in current directory\n");
 
    if (gSystem->InheritsFrom("TMacOSXSystem"))
       gSystem->Exec(Form("open %s", addr));
+   else if (gSystem->InheritsFrom("TWinNTSystem"))
+      gSystem->Exec(Form("start %s", addr));
    else
       gSystem->Exec(Form("xdg-open %s &", addr));
 

@@ -16,13 +16,12 @@
 #ifndef ROO_LINKED_LIST
 #define ROO_LINKED_LIST
 
-#include <map>
-#include <list>
 #include <vector>
 
-#include "TNamed.h"
+#include "TObject.h"
 #include "RooLinkedListElem.h"
 #include "RooHashTable.h"
+
 class RooLinkedListIter ;
 class RooFIter;
 class TIterator ;

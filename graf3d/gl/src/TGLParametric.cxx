@@ -24,11 +24,8 @@
 #include "TGLPlotCamera.h"
 #include "TGLParametric.h"
 #include "TGLIncludes.h"
-#include "TVirtualPad.h"
 #include "KeySymbols.h"
 #include "Buttons.h"
-#include "TString.h"
-#include "TColor.h"
 #include "TMath.h"
 
 namespace

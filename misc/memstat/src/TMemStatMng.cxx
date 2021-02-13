@@ -12,7 +12,6 @@
 #include <cstdlib>
 // ROOT
 #include "TSystem.h"
-#include "TEnv.h"
 #include "TError.h"
 #include "Riostream.h"
 #include "TObject.h"

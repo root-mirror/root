@@ -20,22 +20,23 @@ the object pointer also a previous and next pointer.
 
 There are several ways to iterate over a TList; in order of preference, if
 not forced by other constraints:
-  0. (Preferred way) Using the C++ range-based `for` or `begin()` / `end()`:
+
+  1. (Preferred way) Using the C++ range-based `for` or `begin()` / `end()`:
 ~~~ {.cpp}
          for(const auto&& obj: *GetListOfPrimitives())
             obj->Write();
 ~~~
-  1. Using the R__FOR_EACH macro:
+  2. Using the R__FOR_EACH macro:
 ~~~ {.cpp}
          GetListOfPrimitives()->R__FOR_EACH(TObject,Paint)(option);
 ~~~
-  2. Using the TList iterator TListIter (via the wrapper class TIter):
+  3. Using the TList iterator TListIter (via the wrapper class TIter):
 ~~~ {.cpp}
          TIter next(GetListOfPrimitives());
          while (TObject *obj = next())
             obj->Draw(next.GetOption());
 ~~~
-  3. Using the TList iterator TListIter and std::for_each algorithm:
+  4. Using the TList iterator TListIter and std::for_each algorithm:
 ~~~ {.cpp}
          // A function object, which will be applied to each element
          // of the given range.
@@ -50,7 +51,7 @@ not forced by other constraints:
          TIter iter(mylist);
          for_each( iter.Begin(), TIter::End(), STestFunctor() );
 ~~~
-  4. Using the TObjLink list entries (that wrap the TObject*):
+  5. Using the TObjLink list entries (that wrap the TObject*):
 ~~~ {.cpp}
          TObjLink *lnk = GetListOfPrimitives()->FirstLink();
          while (lnk) {
@@ -58,7 +59,7 @@ not forced by other constraints:
             lnk = lnk->Next();
          }
 ~~~
-  5. Using the TList's After() and Before() member functions:
+  6. Using the TList's After() and Before() member functions:
 ~~~ {.cpp}
          TFree *idcur = this;
          while (idcur) {
@@ -67,7 +68,7 @@ not forced by other constraints:
             idcur = (TFree*)GetListOfFree()->After(idcur);
          }
 ~~~
-Methods 2, 3 and 4 can also easily iterate backwards using either
+Methods 3, 4 and 5 can also easily iterate backwards using either
 a backward TIter (using argument kIterBackward) or by using
 LastLink() and lnk->Prev() or by using the Before() member.
 */
@@ -76,9 +77,11 @@ LastLink() and lnk->Prev() or by using the Before() member.
 #include "TClass.h"
 #include "TROOT.h"
 #include "TVirtualMutex.h"
+#include "TBuffer.h"
 
 #include <string>
-namespace std {} using namespace std;
+
+using namespace std;
 
 ClassImp(TList);
 

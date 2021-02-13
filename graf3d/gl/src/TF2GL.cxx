@@ -14,7 +14,6 @@
 #include <TF2.h>
 #include <TF3.h>
 #include <TH2.h>
-#include <TVirtualPad.h>
 
 #include "TGLSurfacePainter.h"
 #include "TGLTF3Painter.h"

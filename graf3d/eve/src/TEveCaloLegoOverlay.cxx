@@ -13,8 +13,6 @@
 #include "TEveCaloLegoGL.h"
 
 #include "TAxis.h"
-#include "TColor.h"
-#include "TROOT.h"
 #include "THLimitsFinder.h"
 
 #include "TGLRnrCtx.h"

@@ -11,7 +11,6 @@
 
 #include "TRotMatrix.h"
 #include "TBuffer.h"
-#include "TClass.h"
 #include "TGeometry.h"
 #include "TMath.h"
 

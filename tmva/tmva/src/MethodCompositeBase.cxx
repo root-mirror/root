@@ -52,13 +52,10 @@ and the evaluation is done here.
 #include "TMVA/Types.h"
 #include "TMVA/Config.h"
 
-#include "Riostream.h"
 #include "TRandom3.h"
-#include "TMath.h"
-#include "TObjString.h"
 
+#include <iostream>
 #include <algorithm>
-#include <iomanip>
 #include <vector>
 
 

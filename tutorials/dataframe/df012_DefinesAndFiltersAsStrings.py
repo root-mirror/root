@@ -1,6 +1,7 @@
 ## \file
 ## \ingroup tutorial_dataframe
 ## \notebook -nodraw
+## Use just-in-time-compiled Filters and Defines for quick prototyping.
 ##
 ## This tutorial illustrates how to use jit-compiling features of RDataFrame
 ## to define data using C++ code in a Python script
@@ -9,7 +10,7 @@
 ## \macro_output
 ##
 ## \date October 2017
-## \author Guilherme Amadio
+## \author Guilherme Amadio (CERN)
 
 import ROOT
 
@@ -21,15 +22,15 @@ import ROOT
 ## circle).
 
 npoints = 10000000
-tdf = ROOT.ROOT.RDataFrame(npoints)
+df = ROOT.RDataFrame(npoints)
 
 ## Define what data we want inside the dataframe. We do not need to define p
 ## as an array, but we do it here to demonstrate how to use jitting with RDataFrame
 
-pidf = tdf.Define("x", "gRandom->Uniform(-1.0, 1.0)") \
-          .Define("y", "gRandom->Uniform(-1.0, 1.0)") \
-          .Define("p", "std::array<double, 2> v{x, y}; return v;") \
-          .Define("r", "double r2 = 0.0; for (auto&& w : p) r2 += w*w; return sqrt(r2);")
+pidf = df.Define("x", "gRandom->Uniform(-1.0, 1.0)") \
+         .Define("y", "gRandom->Uniform(-1.0, 1.0)") \
+         .Define("p", "std::array<double, 2> v{x, y}; return v;") \
+         .Define("r", "double r2 = 0.0; for (auto&& w : p) r2 += w*w; return sqrt(r2);")
 
 ## Now we have a dataframe with columns x, y, p (which is a point based on x
 ## and y), and the radius r = sqrt(x*x + y*y). In order to approximate pi, we

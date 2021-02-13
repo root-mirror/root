@@ -35,6 +35,7 @@
 
 #include "TMVA/FitterBase.h"
 #include "TMVA/IFitterTarget.h"
+#include <vector>
 
 class TFitter;
 
@@ -43,11 +44,11 @@ namespace TMVA {
    class IFitterTarget;
    class Interval;
    class MinuitWrapper;
-   
+
    class MinuitFitter : public FitterBase, public IFitterTarget {
-      
+
    public:
-      
+
       MinuitFitter( IFitterTarget& target, const TString& name, 
                     std::vector<TMVA::Interval*>& ranges, const TString& theOption );
 

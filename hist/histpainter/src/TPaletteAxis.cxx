@@ -9,16 +9,19 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TPaletteAxis.h"
 #include "TVirtualPad.h"
+#include "TVirtualX.h"
 #include "TStyle.h"
 #include "TMath.h"
 #include "TView.h"
 #include "TH1.h"
 #include "TGaxis.h"
 #include "TLatex.h"
+#include "snprintf.h"
+
+#include <iostream>
 
 ClassImp(TPaletteAxis);
 
@@ -427,7 +430,7 @@ void TPaletteAxis::Paint(Option_t *)
    ndivz = TMath::Abs(ndivz);
    Int_t theColor, color;
    // import Attributes already here since we might need them for CJUST
-   fAxis.ImportAxisAttributes(fH->GetZaxis());
+   if (fH->GetDimension() == 2) fAxis.ImportAxisAttributes(fH->GetZaxis());
    // case option "CJUST": put labels directly at color boundaries
    TLatex *label = NULL;
    TLine *line = NULL;

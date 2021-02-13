@@ -26,8 +26,9 @@ For RooRealVars these are the definitions of the named ranges.
 
 #include "RooFit.h"
 #include "RooRealVarSharedProperties.h"
-#include "Riostream.h"
+#include "RooAbsBinning.h"
 
+#include <iostream>
 
 using namespace std;
 
@@ -54,11 +55,12 @@ RooRealVarSharedProperties::RooRealVarSharedProperties(const char* uuidstr) : Ro
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Copy constructor
-
 RooRealVarSharedProperties::RooRealVarSharedProperties(const RooRealVarSharedProperties& other) :
-  RooSharedProperties(other), 
-  _altBinning(other._altBinning)
+  RooSharedProperties(other),
+  _altBinning(other._altBinning),
+  _ownBinnings(false)
 {
+  std::cerr << "Warning: RooRealVarSharedProperties should not be copied. The copy will not own the binnings." << std::endl;
 }
 
 
@@ -68,7 +70,11 @@ RooRealVarSharedProperties::RooRealVarSharedProperties(const RooRealVarSharedPro
 
 RooRealVarSharedProperties::~RooRealVarSharedProperties() 
 {
-  _altBinning.Delete() ;
+  if (_ownBinnings) {
+    for (auto& item : _altBinning) {
+      delete item.second;
+    }
+  }
 } 
 
 

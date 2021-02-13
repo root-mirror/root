@@ -15,12 +15,13 @@
 Class describing a generic file including meta information.
 */
 
-#include "Riostream.h"
 #include "TFileInfo.h"
 #include "TRegexp.h"
 #include "TSystem.h"
 #include "TClass.h"
-
+#include "TUrl.h"
+#include "TUUID.h"
+#include "TMD5.h"
 
 ClassImp(TFileInfo);
 ClassImp(TFileInfoMeta);

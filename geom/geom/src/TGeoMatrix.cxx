@@ -210,14 +210,14 @@ A generic singleton matrix representing a identity transformation
    NOTE: identified by the global variable gGeoIdentity.
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include "TObjArray.h"
 
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
 #include "TMath.h"
 
-TGeoIdentity *gGeoIdentity = 0;
+TGeoIdentity *gGeoIdentity = nullptr;
 const Int_t kN3 = 3*sizeof(Double_t);
 const Int_t kN9 = 9*sizeof(Double_t);
 

@@ -59,80 +59,76 @@ attractive.
 
 
 This script builds a **`TTree`** from an ASCII file containing
-statistics about the staff at CERN. This script, `staff.C` and its input
-file `staff.dat` are in `$ROOTSYS/tutorials/tree`.
+statistics about the staff at CERN. This script, `cernbuild.C` and its input
+file `cernstaff.dat` are in `$ROOTSYS/tutorials/tree`.
 
 ``` {.cpp}
 {
-   // example of macro to read data from an ascii file and
-   // create a root file with an histogram and a TTree
-   gROOT->Reset();
+   // Simplified version of cernbuild.C.
+   // This macro to read data from an ascii file and
+   // create a root file with a TTree
 
-   // the structure to hold the variables for the branch
+   Int_t           Category;
+   UInt_t          Flag;
+   Int_t           Age;
+   Int_t           Service;
+   Int_t           Children;
+   Int_t           Grade;
+   Int_t           Step;
+   Int_t           Hrweek;
+   Int_t           Cost;
+   Char_t          Division[4];
+   Char_t          Nation[3];
 
-   struct staff_t {
-      Int_t cat;
-      Int_t division;
-      Int_t flag;
-      Int_t age;
-      Int_t service;
-      Int_t children;
-      Int_t grade;
-      Int_t step;
-      Int_t nation;
-      Int_t hrweek;
-      Int_t cost;
-   };
-   staff_t staff;
-   // continued...
-   // open the ASCII file
-   FILE *fp = fopen("staff.dat","r");
-   char line[81];
-   // create a new ROOT file
-   TFile *f = new TFile("staff.root","RECREATE");
-   // create a TTree
-   TTree *tree = new TTree("T","staff data from ascii file");
-   // create one branch with all information from the stucture
-   tree->Branch("staff",&staff.cat,"cat/I:division:flag:age:service:
-                           children:grade:step:nation:hrweek:cost");
-   // fill the tree from the values in ASCII file
-   while (fgets(&line,80,fp)) {
-      sscanf(&line[0],"%d%d%d%d",&staff.cat,&staff.division,
-          &staff.flag,&staff.age);
-      sscanf(&line[13],"%d%d%d%d",&staff.service,&staff.children,
-          &staff.grade,&staff.step);
-      sscanf(&line[24],"%d%d%d",&staff.nation,&staff.hrweek,
-          &staff.cost);
+   FILE *fp = fopen("cernstaff.dat","r");
+
+   TFile *hfile = hfile = TFile::Open("cernstaff.root","RECREATE");
+
+   TTree *tree = new TTree("T","CERN 1988 staff data");
+   tree->Branch("Category",&Category,"Category/I");
+   tree->Branch("Flag",&Flag,"Flag/i");
+   tree->Branch("Age",&Age,"Age/I");
+   tree->Branch("Service",&Service,"Service/I");
+   tree->Branch("Children",&Children,"Children/I");
+   tree->Branch("Grade",&Grade,"Grade/I");
+   tree->Branch("Step",&Step,"Step/I");
+   tree->Branch("Hrweek",&Hrweek,"Hrweek/I");
+   tree->Branch("Cost",&Cost,"Cost/I");
+   tree->Branch("Division",Division,"Division/C");
+   tree->Branch("Nation",Nation,"Nation/C");
+   char line[80];
+   while (fgets(line,80,fp)) {
+      sscanf(&line[0],"%d %d %d %d %d %d %d  %d %d %s %s",
+      &Category,&Flag,&Age,&Service,&Children,&Grade,&Step,&Hrweek,&Cost,Division,Nation);
       tree->Fill();
    }
-   // check what the tree looks like
    tree->Print();
+   tree->Write();
+
    fclose(fp);
-   f->Write();
+   delete hfile;
 }
 ```
 
-The script declares a structure called `staff_t`, with several integers
-representing the relevant attribute of a staff member. It opens the
-ASCII file, creates a ROOT file and a **`TTree`**. Then it creates one
-branch with the **`TTree`**`::Branch` method. The first parameter of the
+The script opens the
+ASCII file, creates a ROOT file and a **`TTree`**. Then it creates
+branches with the `TTree::Branch` method. The first parameter of the
 `Branch` method is the branch name. The second parameter is the address
-from which the first leaf is to be read. In this example it is the
-address of the structure `staff`. Once the branch is defined, the script
-reads the data from the ASCII file into the `staff_t` structure and
+from which the first leaf is to be read. Once the branches are defined, the script
+reads the data from the ASCII file into C variables and
 fills the `tree`. The ASCII file is closed, and the ROOT file is written
-to disk saving the `tree`. Remember, trees and histograms are created in
-the current directory, which is the file in our example. Hence an
+to disk saving the `tree`. Remember, trees (and histograms) are created in
+the current directory, which is the file in our example. Hence a
 `f->Write() `saves the tree.
 
 ## Show an Entry with TTree::Show
 
 
 An easy way to access one entry of a tree is the use the `TTree::Show`
-method. For example to look at the 10th entry in the `staff.root` tree:
+method. For example to look at the 10th entry in the `cernstaff.root` tree:
 
 ``` {.cpp}
-root[] TFile f("staff.root")
+root[] TFile f("cernstaff.root")
 root[] T->Show(10)
 ======> EVENT:10
  Category        = 361
@@ -152,7 +148,7 @@ root[] T->Show(10)
 
 
 A helpful command to see the tree structure meaning the number of
-entries, the branches and the leaves, is **`TTree`**`::Print`.
+entries, the branches and the leaves, is `TTree::Print`.
 
 ``` {.cpp}
 root[] T->Print()
@@ -200,7 +196,7 @@ from the command line. First load the viewer library.
 
 
 ``` {.cpp}
-root[] TFile f("staff.root")
+root[] TFile f("cernstaff.root")
 root[] T->StartViewer()
 ```
 
@@ -213,7 +209,7 @@ root[] new TTreeViewer()
 ```
 
 The figure above shows how the tree viewer looks like for the example file
-`staff.root`. The left panel contains the list of trees and their
+`cernstaff.root`. The left panel contains the list of trees and their
 branches; in this case there is only one tree. You can add more trees
 with the File-Open command to open the file containing the new tree,
 then use the context menu on the right panel, select `SetTreeName` and
@@ -339,7 +335,7 @@ tree with branches for each of the sub-folders:
 The second argument `"/MyFolder" `is the top folder, and the "/" signals
 the **`TTree`** constructor that this is a folder not just the title.
 You fill the tree by placing the data into the folder structure and
-calling **`TTree`**`::Fill`.
+calling `TTree::Fill`.
 
 ### Tree and TRef Objects
 
@@ -356,7 +352,7 @@ the referenced objects are saved in the table of references. When the
 Tree header is saved (via `TTree::Write` for example), the branch is
 saved, keeping the information with the pointers to the branches having
 referenced objects. Enabling this optional table, allow
-**`TTree`**`::Draw` to automatically load the branches needed to
+`TTree::Draw` to automatically load the branches needed to
 dereference a **`TRef`** (or **`TRefArray`**) object.
 
 ### Autosave
@@ -523,7 +519,7 @@ there, you have to build it by typing make in `$ROOTSYS/test`.
 ## Adding a Branch to Hold a List of Variables
 
 
-As in the very first example (`staff.root`)
+As in the very first example (`cernstaff.root.root`)
 the data we want to save is a list of simple variables, such as integers
 or floats. In this case, we use the following `TTree::Branch` signature:
 
@@ -589,6 +585,8 @@ The symbols used for the type are:
 -   `i`: a 32 bit unsigned integer
 -   `L`: a 64 bit signed integer
 -   `l`: a 64 bit unsigned integer
+-   `G`: a long signed integer, stored as 64 bit
+-   `g`: a long unsigned integer, stored as 64 bit
 -   `F`: a 32 bit floating point
 -   `D`: a 64 bit floating point
 -   `O`: [the letter 'o', not a zero] a boolean (Bool\_t)
@@ -657,7 +655,7 @@ root[]     TTree *tree = new TTree("T","A Root Tree")
 ```
 
 We need to create a pointer to an `Event` object that will be used as a
-reference in the **`TTree`**`::Branch` method. Then we create a branch
+reference in the `TTree::Branch` method. Then we create a branch
 with the `TTree::Branch` method.
 
 ``` {.cpp}
@@ -1008,7 +1006,7 @@ each branch where to get the value from. After this script is executed
 we have a ROOT file called `tree1.root` with a tree called `t1`. There
 is a possibility to fill branches one by one using the method
 `TBranch::Fill()`. In this case you do not need to call `TTree::Fill()`
-method. The entries can be set by **`TTree`**`::SetEntries(Double_t n)`.
+method. The entries can be set by `TTree::SetEntries(Double_t n)`.
 Calling this method makes sense only if the number of existing entries
 is null.
 
@@ -1038,7 +1036,7 @@ and each leaf. We first define the variables to hold the read values.
 ```
 
 Then we tell the tree to populate these variables when reading an entry.
-We do this with the method **`TTree`**`::SetBranchAddress`. The first
+We do this with the method `TTree::SetBranchAddress`. The first
 parameter is the branch name, and the second is the address of the
 variable where the branch data is to be placed. In this example, the
 branch name is `px`. This name was given when the tree was written (see
@@ -1051,7 +1049,7 @@ branch name is `px`. This name was given when the tree was written (see
 #### GetEntry
 
 Once the branches have been given the address, a specific entry can be
-read into the variables with the method **`TTree`**`::GetEntry(n)`. It
+read into the variables with the method `TTree::GetEntry(n)`. It
 reads all the branches for entry (n) and populates the given address
 accordingly. By default, `GetEntry()` reuses the space allocated by the
 previous object for each branch. You can force the previous object to be
@@ -1124,7 +1122,7 @@ Option 3 - same as option 1, but you delete the event yourself:
 ```
 
 It is strongly recommended to use the default option 1. It has the
-additional advantage that functions like **`TTree`**`::Draw` (internally
+additional advantage that functions like `TTree::Draw` (internally
 calling `TTree::GetEntry`) will be functional even when the classes in
 the file are not available. Reading selected branches is quicker than
 reading an entire entry. If you are interested in only one branch, you
@@ -1493,7 +1491,7 @@ A tree keeps a list of friends. In the context of a tree (or a chain),
 friendship means unrestricted access to the friends data. In this way it
 is much like adding another branch to the tree without taking the risk
 of damaging it. To add a friend to the list, you can use the
-**`TTree`**`::AddFriend `method. The **`TTree`** (`tree`) below has two
+`TTree::AddFriend` method. The **`TTree`** (`tree`) below has two
 friends (`ft1` and `ft2`) and now has access to the variables
 `a,b,c,i,j,k,l` and `m`.
 
@@ -1959,7 +1957,7 @@ read from the file is returned.
 ## Trees in Analysis
 
 
-The methods `TTree::Draw`, **`TTree`**`::MakeClass` and
+The methods `TTree::Draw`, `TTree::MakeClass` and
 `TTree::MakeSelector` are available for data analysis using trees. The
 **`TTree::Draw`** method is a powerful yet simple way to look and draw the
 trees contents. It enables you to plot a variable (a leaf) with just one
@@ -1979,16 +1977,16 @@ With `MakeClass` the user has control over the event loop, with
 ## Simple Analysis Using TTree::Draw
 
 
-We will use the tree in `staff.root` that was made by the macro in
+We will use the tree in `cernstaff.root` that was made by the macro in
 `$ROOTSYS/tutorials/tree/staff.C`.
 
 First, open the file and lists its contents.
 
 ``` {.cpp}
-root[] TFile f ("staff.root")
+root[] TFile f ("cernstaff.root")
 root[] f.ls()
-TFile**         staff.root
-TFile*         staff.root
+TFile**         cernstaff.root
+TFile*         cernstaff.root
 KEY: TTree    T;1     staff data from ascii file
 ```
 
@@ -2207,7 +2205,7 @@ and using the "`same`" option, you will need to update the pad between
    h2->SetMarkerColor(kGreen);
    h2->Draw();
    // Open the example file and get the tree
-   TFile f("staff.root");
+   TFile f("cernstaff.root");
    TTree *myTree = (TTree*)f.Get("T");
    // the update is needed for the next draw command to work properly
    gPad->Update();
@@ -2528,7 +2526,7 @@ functions can be called.
 26. **`tree->Draw("fEvtHdr.fEvtNum","fType=="type1" ")`**
 
 You can compare strings, using the symbols == and !=, in the first two
-parameters of the `Draw` command (**`TTree`**`Formula`). In this case,
+parameters of the `Draw` command (`TTreeFormula`). In this case,
 the event number for ‘type1' events is plotted.
 
 27. **`tree->Draw("fEvtHdr.fEvtNum","strstr(fType,"1") ")`**
@@ -4096,7 +4094,7 @@ loop on all events of all files of the chain.
 \index{tree!friend}
 
 `A `**`TChain`** has a list of friends similar to a tree (see
-**`TTree`**`::AddFriend)`. You can add a friend to a chain with the
+`TTree::AddFriend)`. You can add a friend to a chain with the
 `TChain::AddFriend` method. With `TChain::GetListOfFriends` you can
 retrieve the list of friends. The next example has four chains each has
 20 ROOT trees from 20 ROOT files.
@@ -4136,7 +4134,7 @@ variable `v1 in `**`TChain t1` versus variable `v2` in `TChain`**` t2`.
 ```
 
 When a `TChain::Draw` is executed, an automatic call to
-**`TTree`**`::AddFriend `connects the trees in the chain. When a chain
+`TTree::AddFriend `connects the trees in the chain. When a chain
 is deleted, its friend elements are also deleted.
 
 ![](pictures/02000108.jpg)

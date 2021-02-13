@@ -24,7 +24,6 @@ Full description with examples and pictures
 #include "TGeoVoxelFinder.h"
 
 #include "TBuffer.h"
-#include "TObject.h"
 #include "TMath.h"
 #include "TGeoMatrix.h"
 #include "TGeoBBox.h"

@@ -34,7 +34,7 @@
 #include "TSystem.h"
 #include "TDatime.h"
 #include "TRegexp.h"
-
+#include "strlcpy.h"
 
 ClassImp(TGMimeTypes);
 

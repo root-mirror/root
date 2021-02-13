@@ -83,8 +83,12 @@
 #include "TSystem.h"
 #include "TGToolTip.h"
 #include "TMath.h"
-#include "Riostream.h"
-#include <ctype.h>
+#include "TVirtualX.h"
+#include "strlcpy.h"
+#include "snprintf.h"
+
+#include <cctype>
+#include <iostream>
 
 
 ClassImp(TGNumberFormat);

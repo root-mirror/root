@@ -24,11 +24,11 @@
 #include "RVersion.h"
 #include "TMatrixFfwd.h"
 #include "TMatrixDSym.h"
-#include "TRootIOCtor.h"
+#include "TList.h"
 
 #include <vector>
 #include <string>
-#include <map>
+#include <utility>
 
 class RooArgSet ;
 class RooAbsPdf ;
@@ -74,8 +74,8 @@ public:
   RooAbsPdf* createHessePdf(const RooArgSet& params) const ;
 
   // Accessors
+  /// Return MINUIT status code
   inline Int_t status() const {
-    // Return MINUIT status code
     return _status ;     
   }
 
@@ -83,43 +83,43 @@ public:
   Int_t statusCodeHistory(UInt_t icycle) const ;
   const char* statusLabelHistory(UInt_t icycle) const ;
 
+  /// Return MINUIT quality code of covariance matrix
   inline Int_t covQual() const { 
-    // Return MINUIT quality code of covariance matrix
     return _covQual ; 
   }
+  /// Return number of NLL evaluations with problems.
   inline Int_t numInvalidNLL() const { 
-    // Return number of NLL evaluations with problems
     return _numBadNLL ; 
   }
+  /// Return estimated distance to minimum.
   inline Double_t edm() const { 
-    // Return estimated distance to minimum
     return _edm ; 
   }
+  /// Return minimized -log(L) value.
   inline Double_t minNll() const { 
-    // Return minimized -log(L) value
     return _minNLL ; 
   }
+  /// Return list of constant parameters.
   inline const RooArgList& constPars() const { 
-    // Return list of constant parameters
     return *_constPars ; 
   }
+  //. Return list of floating parameters before fit.
   inline const RooArgList& floatParsInit() const { 
-    // Return list of floating parameters before fit
     return *_initPars ; 
-  } 
-  inline const RooArgList& floatParsFinal() const { 
-    // Return list of floarting parameters after fit
+  }
+  /// Return list of floarting parameters after fit.
+  inline const RooArgList& floatParsFinal() const {
     return *_finalPars ; 
   } 
 
   TH2* correlationHist(const char* name = "correlation_matrix") const ;
 
+  /// Return correlation between par1 and par2.
   Double_t correlation(const RooAbsArg& par1, const RooAbsArg& par2) const {
-    // Return correlation between par1 and par2
     return correlation(par1.GetName(),par2.GetName()) ;
   }
+  /// Return pointer to list of correlations of all parameters with par.
   const RooArgList* correlation(const RooAbsArg& par) const {
-    // Return pointer to list of correlations of all parameters with par
     return correlation(par.GetName()) ;
   }
 
@@ -139,16 +139,16 @@ public:
   const RooArgList* globalCorr() ;
 
 
-  // Add objects to a 2D plot
+  /// Add objects to a 2D plot.
+  /// Plot error ellipse in par1 and par2 on frame.
   inline RooPlot *plotOn(RooPlot *frame, const RooAbsArg &par1, const RooAbsArg &par2,
 			 const char *options= "ME") const {
-    // Plot error ellipse in par1 and par2 on frame
     return plotOn(frame,par1.GetName(),par2.GetName(),options);
   }
   RooPlot *plotOn(RooPlot *plot, const char *parName1, const char *parName2,
 		  const char *options= "ME") const;
 
-  // Generate random perturbations of the final parameters using the covariance matrix
+  /// Generate random perturbations of the final parameters using the covariance matrix.
   const RooArgList& randomizePars() const;
 
   Bool_t isIdentical(const RooFitResult& other, Double_t tol=1e-6, Double_t tolCorr=1e-4, Bool_t verbose=kTRUE) const ;

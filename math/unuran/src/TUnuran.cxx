@@ -21,12 +21,8 @@
 #include "UnuranDistrAdapter.h"
 
 #include "TRandom.h"
-#include "TSystem.h"
-
-#include "TH1.h"
 
 #include <cassert>
-
 
 #include <unuran.h>
 

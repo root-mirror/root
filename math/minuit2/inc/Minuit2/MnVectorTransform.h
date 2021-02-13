@@ -12,32 +12,34 @@
 
 #include "Minuit2/MnMatrix.h"
 
+#include <vector>
+
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MnVectorTransform {
 
 public:
+   MnVectorTransform() {}
 
-  MnVectorTransform() {}
+   ~MnVectorTransform() {}
 
-  ~MnVectorTransform() {}
+   std::vector<double> operator()(const MnAlgebraicVector &avec) const
+   {
 
-  std::vector<double> operator()(const MnAlgebraicVector& avec) const {
+      std::vector<double> result;
+      result.reserve(avec.size());
 
-    std::vector<double> result; result.reserve(avec.size());
+      for (unsigned int i = 0; i < avec.size(); i++)
+         result.push_back(avec(i));
 
-    for(unsigned int i = 0; i < avec.size(); i++) result.push_back(avec(i));
-
-    return result;
-  }
-
+      return result;
+   }
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnVectorTransform
+#endif // ROOT_Minuit2_MnVectorTransform

@@ -1,12 +1,12 @@
+## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
 ## Numeric algorithm tuning: caching of slow numeric integrals and parameterizations of slow numeric integrals
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import sys
 import ROOT
@@ -26,7 +26,7 @@ def getWorkspace(mode):
         # Create empty workspace workspace
         w = ROOT.RooWorkspace("w", 1)
 
-        # Make a difficult to normalize  p.d.f. in 3 dimensions that is
+        # Make a difficult to normalize  pdf in 3 dimensions that is
         # integrated numerically.
         w.factory(
             "EXPR::model('1/((x-a)*(x-a)+0.01)+1/((y-a)*(y-a)+0.01)+1/((z-a)*(z-a)+0.01)',x[-1,1],y[-1,1],z[-1,1],a[-5,5])")
@@ -41,7 +41,7 @@ def getWorkspace(mode):
         # w.pdf("model").setNormValueCaching(3)
         w.pdf("model").setStringAttribute("CACHEPARMINT", "x:y:z")
 
-        # Evaluate p.d.f. once to trigger filling of cache
+        # Evaluate pdf once to trigger filling of cache
         normSet = ROOT.RooArgSet(w.var("x"), w.var("y"), w.var("z"))
         w.pdf("model").getVal(normSet)
         w.writeToFile("rf903_numintcache.root")

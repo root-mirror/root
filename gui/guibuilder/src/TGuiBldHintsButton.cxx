@@ -11,6 +11,7 @@
 
 #include "TGuiBldHintsButton.h"
 #include "TGResourcePool.h"
+#include "TVirtualX.h"
 
 //_____________________________________________________________________________
 //

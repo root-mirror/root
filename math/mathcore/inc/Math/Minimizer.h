@@ -22,10 +22,7 @@
 #include "Math/Error.h"
 
 
-
-#include <vector>
 #include <string>
-
 #include <limits>
 #include <cmath>
 
@@ -344,7 +341,6 @@ public:
       minos error for variable i, return false if Minos failed or not supported
       and the lower and upper errors are returned in errLow and errUp
       An extra flag  specifies if only the lower (option=-1) or the upper (option=+1) error calculation is run
-      (This feature is not yet implemented)
    */
    virtual bool GetMinosError(unsigned int ivar , double & errLow, double & errUp, int option = 0) {
       MATH_ERROR_MSG("Minimizer::GetMinosError","Minos Error not implemented");
@@ -428,6 +424,9 @@ public:
 
    /// status code of minimizer
    int Status() const { return fStatus; }
+
+   /// status code of Minos (to be re-implemented by the minimizers supporting Minos)
+   virtual int MinosStatus() const { return -1; }
 
    /// return the statistical scale used for calculate the error
    /// is typically 1 for Chi2 and 0.5 for likelihood minimization

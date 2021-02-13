@@ -16,10 +16,10 @@
 #ifndef ROO_NAME_SET
 #define ROO_NAME_SET
 
-#include "TString.h"
 #include "TObject.h"
 #include "RooPrintable.h"
-class RooArgSet ;
+
+class RooArgSet;
 
 class RooNameSet : public TObject, public RooPrintable {
 public:

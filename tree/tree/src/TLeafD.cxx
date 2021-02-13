@@ -19,7 +19,7 @@ A TLeaf for a 64 bit floating point data type.
 #include "TBranch.h"
 #include "TBuffer.h"
 #include "TClonesArray.h"
-#include "Riostream.h"
+#include <iostream>
 
 ClassImp(TLeafD);
 

@@ -32,14 +32,23 @@ ROOT distribution, portability of workspaces can be enhanced by
 storing the source code of those classes in the workspace as well.
 This process is also organized by the workspace through the
 `importClassCode()` method.
+
+### Seemingly random crashes when reading large workspaces
+When reading or loading workspaces with deeply nested PDFs, one can encounter
+ouf-of-memory errors if the stack size is too small. This manifests in crashes
+at seemingly random locations, or in the process silently ending.
+Unfortunately, ROOT neither recover from this situation, nor warn or give useful
+instructions. When suspecting to have run out of stack memory, check
+```
+ulimit -s
+```
+and try reading again.
 **/
 
 #include "RooWorkspace.h"
 #include "RooHelpers.h"
 #include "RooFit.h"
-#include "RooWorkspace.h"
 #include "RooWorkspaceHandle.h"
-#include "RooFit.h"
 #include "RooAbsPdf.h"
 #include "RooRealVar.h"
 #include "RooCategory.h"
@@ -50,6 +59,7 @@ This process is also organized by the workspace through the
 #include "RooResolutionModel.h"
 #include "RooPlot.h"
 #include "RooRandom.h"
+#include "TBuffer.h"
 #include "TInterpreter.h"
 #include "TClassTable.h"
 #include "TBaseClass.h"
@@ -62,15 +72,17 @@ This process is also organized by the workspace through the
 #include "TROOT.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TClass.h"
+#include "strlcpy.h"
+
 #include <map>
 #include <sstream>
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <cstring>
 
-using namespace std ;
-
-#include "TClass.h"
-#include "Riostream.h"
-#include <string.h>
+using namespace std;
 
 ClassImp(RooWorkspace);
 
@@ -241,7 +253,7 @@ RooWorkspace::~RooWorkspace()
 ////////////////////////////////////////////////////////////////////////////////
 /// Import a RooAbsArg or RooAbsData set from a workspace in a file. Filespec should be constructed as "filename:wspacename:objectname"
 /// The arguments will be passed to the relevant import() or import(RooAbsData&, ...) import calls
-
+/// \note From python, use `Import()`, since `import` is a reserved keyword.
 Bool_t RooWorkspace::import(const char* fileSpec,
 			    const RooCmdArg& arg1, const RooCmdArg& arg2, const RooCmdArg& arg3,
 			    const RooCmdArg& arg4, const RooCmdArg& arg5, const RooCmdArg& arg6,
@@ -303,7 +315,7 @@ Bool_t RooWorkspace::import(const char* fileSpec,
 ////////////////////////////////////////////////////////////////////////////////
 /// Import multiple RooAbsArg objects into workspace. For details on arguments see documentation
 /// of import() method for single RooAbsArg
-
+/// \note From python, use `Import()`, since `import` is a reserved keyword.
 Bool_t RooWorkspace::import(const RooArgSet& args,
 			    const RooCmdArg& arg1, const RooCmdArg& arg2, const RooCmdArg& arg3,
 			    const RooCmdArg& arg4, const RooCmdArg& arg5, const RooCmdArg& arg6,
@@ -331,10 +343,10 @@ Bool_t RooWorkspace::import(const RooArgSet& args,
 ///  <table>
 ///  <tr><th> Accepted arguments
 ///  <tr><td> `RenameConflictNodes(const char* suffix)`   <td>  Add suffix to branch node name if name conflicts with existing node in workspace
-///  <tr><td> `RenameAllNodes(const char* suffix)`    <td>  Add suffix to all branch node names including top level node
-///  <tr><td> `RenameAllVariables(const char* suffix)`    <td>  Add suffix to all variables names
+///  <tr><td> `RenameAllNodes(const char* suffix)`    <td>  Add suffix to all branch node names including top level node.
+///  <tr><td> `RenameAllVariables(const char* suffix)`    <td>  Add suffix to all variables of objects being imported.
 ///  <tr><td> `RenameAllVariablesExcept(const char* suffix, const char* exceptionList)`   <td>  Add suffix to all variables names, except ones listed
-///  <tr><td> `RenameVariable(const char* inputName, const char* outputName)` <td>  Rename variable as specified upon import.
+///  <tr><td> `RenameVariable(const char* inputName, const char* outputName)` <td>  Rename a single variable as specified upon import.
 ///  <tr><td> `RecycleConflictNodes()`    <td>  If any of the function objects to be imported already exist in the name space, connect the
 ///                            imported expression to the already existing nodes.
 ///                            \attention Use with care! If function definitions do not match, this alters the definition of your function upon import
@@ -345,11 +357,11 @@ Bool_t RooWorkspace::import(const RooArgSet& args,
 ///  The RenameConflictNodes, RenameNodes and RecycleConflictNodes arguments are mutually exclusive. The RenameVariable argument can be repeated
 ///  as often as necessary to rename multiple variables. Alternatively, a single RenameVariable argument can be given with
 ///  two comma separated lists.
-
+/// \note From python, use `Import()`, since `import` is a reserved keyword.
 Bool_t RooWorkspace::import(const RooAbsArg& inArg,
-			    const RooCmdArg& arg1, const RooCmdArg& arg2, const RooCmdArg& arg3,
-			    const RooCmdArg& arg4, const RooCmdArg& arg5, const RooCmdArg& arg6,
-			    const RooCmdArg& arg7, const RooCmdArg& arg8, const RooCmdArg& arg9)
+    const RooCmdArg& arg1, const RooCmdArg& arg2, const RooCmdArg& arg3,
+    const RooCmdArg& arg4, const RooCmdArg& arg5, const RooCmdArg& arg6,
+    const RooCmdArg& arg7, const RooCmdArg& arg8, const RooCmdArg& arg9)
 {
   RooLinkedList args ;
   args.Add((TObject*)&arg1) ;
@@ -431,14 +443,11 @@ Bool_t RooWorkspace::import(const RooAbsArg& inArg,
 
   if (suffixV != 0 && strlen(suffixV)>0) {
     RooArgSet* vars = inArg.getVariables() ;
-    TIterator* iter = vars->createIterator() ;
-    RooAbsArg* v ;
-    while((v=(RooAbsArg*)iter->Next())) {
+    for (const auto v : *vars) {
       if (exceptVarNames.find(v->GetName())==exceptVarNames.end()) {
-	varMap[v->GetName()] = Form("%s_%s",v->GetName(),suffixV) ;
+        varMap[v->GetName()] = Form("%s_%s",v->GetName(),suffixV) ;
       }
     }
-    delete iter ;
     delete vars ;
   }
 
@@ -456,14 +465,14 @@ Bool_t RooWorkspace::import(const RooAbsArg& inArg,
   if (!suffix && wsarg && !useExistingNodes && !(inArg.isFundamental() && varMap[inArg.GetName()]!="")) {
     if (!factoryMatch) {
       if (wsarg!=&inArg) {
-	coutE(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") ERROR importing object named " << inArg.GetName()
-			      << ": another instance with same name already in the workspace and no conflict resolution protocol specified" << endl ;
-	return kTRUE ;
+        coutE(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") ERROR importing object named " << inArg.GetName()
+			          << ": another instance with same name already in the workspace and no conflict resolution protocol specified" << endl ;
+        return kTRUE ;
       } else {
-	if (!silence) {
-	  coutI(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") Object " << inArg.GetName() << " is already in workspace!" << endl ;
-	}
-	return kTRUE ;
+        if (!silence) {
+          coutI(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") Object " << inArg.GetName() << " is already in workspace!" << endl ;
+        }
+        return kTRUE ;
       }
     } else {
       coutI(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") Recycling existing object " << inArg.GetName() << " created with identical factory specification" << endl ;
@@ -478,25 +487,25 @@ Bool_t RooWorkspace::import(const RooAbsArg& inArg,
   } else {
     inArg.branchNodeServerList(&branchSet) ;
   }
-  TIterator* iter = branchSet.createIterator() ;
-  RooAbsArg* branch ;
-  while ((branch=(RooAbsArg*)iter->Next())) {
+
+  for (const auto branch : branchSet) {
     RooAbsArg* wsbranch = _allOwnedNodes.find(branch->GetName()) ;
     if (wsbranch && wsbranch!=branch && !branch->getAttribute("RooWorkspace::Recycle") && !useExistingNodes) {
       conflictNodes.add(*branch) ;
     }
   }
-  delete iter ;
 
   // Terminate here if there are conflicts and no resolution protocol
   if (conflictNodes.getSize()>0 && !suffix && !useExistingNodes) {
-      coutE(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") ERROR object named " << inArg.GetName() << ": component(s) "
-	   << conflictNodes << " already in the workspace and no conflict resolution protocol specified" << endl ;
-      return kTRUE ;
+    coutE(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") ERROR object named " << inArg.GetName() << ": component(s) "
+        << conflictNodes << " already in the workspace and no conflict resolution protocol specified" << endl ;
+    return kTRUE ;
   }
 
   // Now create a working copy of the incoming object tree
-  RooArgSet* cloneSet = (RooArgSet*) RooArgSet(inArg).snapshot(noRecursion==kFALSE) ;
+  RooArgSet* cloneSet = new RooArgSet();
+  cloneSet->useHashMapForFind(true); // Accelerate finding
+  RooArgSet(inArg).snapshot(*cloneSet, !noRecursion);
   RooAbsArg* cloneTop = cloneSet->find(inArg.GetName()) ;
 
   // Mark all nodes for renaming if we are not in conflictOnly mode
@@ -509,9 +518,7 @@ Bool_t RooWorkspace::import(const RooAbsArg& inArg,
   string topName2 = cloneTop->GetName() ;
   if (!renameConflictOrig) {
     // Mark all nodes to be imported for renaming following conflict resolution protocol
-    TIterator* citer = conflictNodes.createIterator() ;
-    RooAbsArg* cnode ;
-    while ((cnode=(RooAbsArg*)citer->Next())) {
+    for (const auto cnode : conflictNodes) {
       RooAbsArg* cnode2 = cloneSet->find(cnode->GetName()) ;
       string origName = cnode2->GetName() ;
       cnode2->SetName(Form("%s_%s",cnode2->GetName(),suffix)) ;
@@ -519,148 +526,128 @@ Bool_t RooWorkspace::import(const RooAbsArg& inArg,
       string tag = Form("ORIGNAME:%s",origName.c_str()) ;
       cnode2->setAttribute(tag.c_str()) ;
       if (!cnode2->getStringAttribute("origName")) {
-	string tag2 = Form("%s",origName.c_str()) ;
-	cnode2->setStringAttribute("origName",tag2.c_str()) ;
+        string tag2 = Form("%s",origName.c_str()) ;
+        cnode2->setStringAttribute("origName",tag2.c_str()) ;
       }
 
       // Save name of new top level node for later use
       if (cnode2==cloneTop) {
-	topName2 = cnode2->GetName() ;
+        topName2 = cnode2->GetName() ;
       }
 
       if (!silence) {
-	coutI(ObjectHandling) << "RooWorkspace::import(" << GetName()
-			      << ") Resolving name conflict in workspace by changing name of imported node  "
-			      << origName << " to " << cnode2->GetName() << endl ;
+        coutI(ObjectHandling) << "RooWorkspace::import(" << GetName()
+			          << ") Resolving name conflict in workspace by changing name of imported node  "
+			          << origName << " to " << cnode2->GetName() << endl ;
       }
     }
-    delete citer ;
   } else {
 
     // Rename all nodes already in the workspace to 'clear the way' for the imported nodes
-    TIterator* citer = conflictNodes.createIterator() ;
-    RooAbsArg* cnode ;
-    while ((cnode=(RooAbsArg*)citer->Next())) {
+    for (const auto cnode : conflictNodes) {
 
       string origName = cnode->GetName() ;
       RooAbsArg* wsnode = _allOwnedNodes.find(origName.c_str()) ;
       if (wsnode) {
 
-	if (!wsnode->getStringAttribute("origName")) {
-	  wsnode->setStringAttribute("origName",wsnode->GetName()) ;
-	}
+        if (!wsnode->getStringAttribute("origName")) {
+          wsnode->setStringAttribute("origName",wsnode->GetName()) ;
+        }
 
-	if (!_allOwnedNodes.find(Form("%s_%s",cnode->GetName(),suffix))) {
-	  wsnode->SetName(Form("%s_%s",cnode->GetName(),suffix)) ;
-	  wsnode->SetTitle(Form("%s (%s)",cnode->GetTitle(),suffix)) ;
-	} else {
-	  // Name with suffix already taken, add additional suffix
-	  Int_t n=1 ;
-	  while (true) {
-	    string newname = Form("%s_%s_%d",cnode->GetName(),suffix,n) ;
-	    if (!_allOwnedNodes.find(newname.c_str())) {
-	      wsnode->SetName(newname.c_str()) ;
-	      wsnode->SetTitle(Form("%s (%s %d)",cnode->GetTitle(),suffix,n)) ;
-	      break ;
-	    }
-	    n++ ;
-	  }
-	}
-	if (!silence) {
-	  coutI(ObjectHandling) << "RooWorkspace::import(" << GetName()
-				<< ") Resolving name conflict in workspace by changing name of original node "
-				<< origName << " to " << wsnode->GetName() << endl ;
-	}
+        if (!_allOwnedNodes.find(Form("%s_%s",cnode->GetName(),suffix))) {
+          wsnode->SetName(Form("%s_%s",cnode->GetName(),suffix)) ;
+          wsnode->SetTitle(Form("%s (%s)",cnode->GetTitle(),suffix)) ;
+        } else {
+          // Name with suffix already taken, add additional suffix
+          for (unsigned int n=1; true; ++n) {
+            string newname = Form("%s_%s_%d",cnode->GetName(),suffix,n) ;
+            if (!_allOwnedNodes.find(newname.c_str())) {
+              wsnode->SetName(newname.c_str()) ;
+              wsnode->SetTitle(Form("%s (%s %d)",cnode->GetTitle(),suffix,n)) ;
+              break ;
+            }
+          }
+        }
+        if (!silence) {
+          coutI(ObjectHandling) << "RooWorkspace::import(" << GetName()
+				    << ") Resolving name conflict in workspace by changing name of original node "
+				    << origName << " to " << wsnode->GetName() << endl ;
+        }
       } else {
-	coutW(ObjectHandling) << "RooWorkspce::import(" << GetName() << ") Internal error: expected to find existing node "
-			      << origName << " to be renamed, but didn't find it..." << endl ;
+        coutW(ObjectHandling) << "RooWorkspce::import(" << GetName() << ") Internal error: expected to find existing node "
+            << origName << " to be renamed, but didn't find it..." << endl ;
       }
 
     }
-    delete citer ;
-
   }
 
   // Process any change in variable names
   if (strlen(varChangeIn)>0 || (suffixV && strlen(suffixV)>0)) {
 
     // Process all changes in variable names
-    TIterator* cliter = cloneSet->createIterator() ;
-    RooAbsArg* cnode ;
-    while ((cnode=(RooAbsArg*)cliter->Next())) {
+    for (const auto cnode : *cloneSet) {
 
       if (varMap.find(cnode->GetName())!=varMap.end()) {
-	string origName = cnode->GetName() ;
-	cnode->SetName(varMap[cnode->GetName()].c_str()) ;
-	string tag = Form("ORIGNAME:%s",origName.c_str()) ;
-	cnode->setAttribute(tag.c_str()) ;
-	if (!cnode->getStringAttribute("origName")) {
-	  string tag2 = Form("%s",origName.c_str()) ;
-	  cnode->setStringAttribute("origName",tag2.c_str()) ;
-	}
+        string origName = cnode->GetName() ;
+        cnode->SetName(varMap[cnode->GetName()].c_str()) ;
+        string tag = Form("ORIGNAME:%s",origName.c_str()) ;
+        cnode->setAttribute(tag.c_str()) ;
+        if (!cnode->getStringAttribute("origName")) {
+          string tag2 = Form("%s",origName.c_str()) ;
+          cnode->setStringAttribute("origName",tag2.c_str()) ;
+        }
 
-	if (!silence) {
-	  coutI(ObjectHandling) << "RooWorkspace::import(" << GetName() << ") Changing name of variable "
-				<< origName << " to " << cnode->GetName() << " on request" << endl ;
-	}
+        if (!silence) {
+          coutI(ObjectHandling) << "RooWorkspace::import(" << GetName() << ") Changing name of variable "
+              << origName << " to " << cnode->GetName() << " on request" << endl ;
+        }
 
-	if (cnode==cloneTop) {
-	  topName2 = cnode->GetName() ;
-	}
+        if (cnode==cloneTop) {
+          topName2 = cnode->GetName() ;
+        }
 
       }
     }
-    delete cliter ;
   }
 
   // Now clone again with renaming effective
-  RooArgSet* cloneSet2 = (RooArgSet*) RooArgSet(*cloneTop).snapshot(noRecursion==kFALSE) ;
+  RooArgSet* cloneSet2 = new RooArgSet();
+  cloneSet2->useHashMapForFind(true); // Faster finding
+  RooArgSet(*cloneTop).snapshot(*cloneSet2, !noRecursion);
   RooAbsArg* cloneTop2 = cloneSet2->find(topName2.c_str()) ;
 
   // Make final check list of conflicting nodes
   RooArgSet conflictNodes2 ;
   RooArgSet branchSet2 ;
-  //inArg.branchNodeServerList(&branchSet) ; // WVE not needed
-  TIterator* iter2 = branchSet2.createIterator() ;
-  RooAbsArg* branch2 ;
-  while ((branch2=(RooAbsArg*)iter2->Next())) {
+  for (const auto branch2 : branchSet2) {
     if (_allOwnedNodes.find(branch2->GetName())) {
       conflictNodes2.add(*branch2) ;
     }
   }
-  delete iter2 ;
 
   // Terminate here if there are conflicts and no resolution protocol
   if (conflictNodes2.getSize()) {
     coutE(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") ERROR object named " << inArg.GetName() << ": component(s) "
-			  << conflictNodes2 << " cause naming conflict after conflict resolution protocol was executed" << endl ;
+        << conflictNodes2 << " cause naming conflict after conflict resolution protocol was executed" << endl ;
     return kTRUE ;
   }
 
-  // Print a message for each imported node
-  iter = cloneSet2->createIterator() ;
-
   // Perform any auxiliary imports at this point
-  RooAbsArg* node ;
-  while((node=(RooAbsArg*)iter->Next())) {
+  for (const auto node : *cloneSet2) {
     if (node->importWorkspaceHook(*this)) {
       coutE(ObjectHandling) << "RooWorkSpace::import(" << GetName() << ") ERROR object named " << node->GetName()
-			    << " has an error in importing in one or more of its auxiliary objects, aborting" << endl ;
+			        << " has an error in importing in one or more of its auxiliary objects, aborting" << endl ;
       return kTRUE ;
     }
   }
-  iter->Reset() ;
-
-  if (cloneSet2->getSize()+_allOwnedNodes.getSize() > 999) _allOwnedNodes.setHashTableSize(1000);
 
   RooArgSet recycledNodes ;
   RooArgSet nodesToBeDeleted ;
-  while((node=(RooAbsArg*)iter->Next())) {
-
+  for (const auto node : *cloneSet2) {
     if (_autoClass) {
       if (!_classes.autoImportClass(node->IsA())) {
-	coutW(ObjectHandling) << "RooWorkspace::import(" << GetName() << ") WARNING: problems import class code of object "
-			      << node->IsA()->GetName() << "::" << node->GetName() << ", reading of workspace will require external definition of class" << endl ;
+        coutW(ObjectHandling) << "RooWorkspace::import(" << GetName() << ") WARNING: problems import class code of object "
+            << node->IsA()->GetName() << "::" << node->GetName() << ", reading of workspace will require external definition of class" << endl ;
       }
     }
 
@@ -675,9 +662,9 @@ Bool_t RooWorkspace::import(const RooAbsArg& inArg,
     if (wsnode) {
       // Do not import node, add not to list of nodes that require reconnection
       if (!silence && useExistingNodes) {
-	coutI(ObjectHandling) << "RooWorkspace::import(" << GetName() << ") using existing copy of " << node->IsA()->GetName()
-			      << "::" << node->GetName() << " for import of " << cloneTop2->IsA()->GetName() << "::"
-			      << cloneTop2->GetName() << endl ;
+        coutI(ObjectHandling) << "RooWorkspace::import(" << GetName() << ") using existing copy of " << node->IsA()->GetName()
+			          << "::" << node->GetName() << " for import of " << cloneTop2->IsA()->GetName() << "::"
+			          << cloneTop2->GetName() << endl ;
       }
       recycledNodes.add(*_allOwnedNodes.find(node->GetName())) ;
 
@@ -689,42 +676,38 @@ Bool_t RooWorkspace::import(const RooAbsArg& inArg,
     } else {
       // Import node
       if (!silence) {
-	coutI(ObjectHandling) << "RooWorkspace::import(" << GetName() << ") importing " << node->IsA()->GetName() << "::"
-			      << node->GetName() << endl ;
+        coutI(ObjectHandling) << "RooWorkspace::import(" << GetName() << ") importing " << node->IsA()->GetName() << "::"
+            << node->GetName() << endl ;
       }
       _allOwnedNodes.addOwned(*node) ;
       if (_openTrans) {
-	_sandboxNodes.add(*node) ;
+        _sandboxNodes.add(*node) ;
       } else {
-	if (_dir && node->IsA() != RooConstVar::Class()) {
-	  _dir->InternalAppend(node) ;
-	}
-	if (_doExport && node->IsA() != RooConstVar::Class()) {
-	  exportObj(node) ;
-	}
+        if (_dir && node->IsA() != RooConstVar::Class()) {
+          _dir->InternalAppend(node) ;
+        }
+        if (_doExport && node->IsA() != RooConstVar::Class()) {
+          exportObj(node) ;
+        }
       }
     }
   }
 
   // Release working copy
-  // no need to do a safe list since it was generated from a snapshot
+  // no need to do a safe list erase since it was generated from a snapshot
   // just take ownership and delte elements by hand
-  cloneSet->releaseOwnership() ;
-  RooFIter cloneSet_iter = cloneSet->fwdIterator() ;
-  RooAbsArg* cloneNode ;
-  while ((cloneNode=(RooAbsArg*)cloneSet_iter.next())) {
-     delete cloneNode;
+  cloneSet->releaseOwnership();
+  for (auto cloneNode : *cloneSet){
+    delete cloneNode;
   }
   delete cloneSet ;
 
   // Reconnect any nodes that need to be
   if (recycledNodes.getSize()>0) {
-    iter->Reset() ;
-    while((node=(RooAbsArg*)iter->Next())) {
+    for (const auto node : *cloneSet2) {
       node->redirectServers(recycledNodes) ;
     }
   }
-  delete iter ;
 
   cloneSet2->releaseOwnership() ;
   delete cloneSet2 ;
@@ -743,7 +726,7 @@ Bool_t RooWorkspace::import(const RooAbsArg& inArg,
 /// <tr><td> `Rename(const char* suffix)` <td> Rename dataset upon insertion
 /// <tr><td> `RenameVariable(const char* inputName, const char* outputName)` <td> Change names of observables in dataset upon insertion
 /// <tr><td> `Silence` <td> Be quiet, except in case of errors
-
+/// \note From python, use `Import()`, since `import` is a reserved keyword.
 Bool_t RooWorkspace::import(RooAbsData& inData,
 			    const RooCmdArg& arg1, const RooCmdArg& arg2, const RooCmdArg& arg3,
 			    const RooCmdArg& arg4, const RooCmdArg& arg5, const RooCmdArg& arg6,
@@ -793,6 +776,10 @@ Bool_t RooWorkspace::import(RooAbsData& inData,
   }
 
   RooLinkedList& dataList = embedded ? _embeddedDataList : _dataList ;
+  if (dataList.GetSize() > 50 && dataList.getHashTableSize() == 0) {
+    // When the workspaces get larger, traversing the linked list becomes a bottleneck:
+    dataList.setHashTableSize(200);
+  }
 
   // Check that no dataset with target name already exists
   if (dsetName && dataList.FindObject(dsetName)) {
@@ -2190,8 +2177,9 @@ RooFactoryWSTool& RooWorkspace::factory()
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Short-hand function for factory()->process(expr) ;
-
+/// Short-hand function for `factory()->process(expr);`
+///
+/// \copydoc RooFactoryWSTool::process(const char*)
 RooAbsArg* RooWorkspace::factory(const char* expr)
 {
   return factory().process(expr) ;

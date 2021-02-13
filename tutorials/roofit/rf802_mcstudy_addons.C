@@ -8,7 +8,9 @@
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -82,7 +84,7 @@ void rf802_mcstudy_addons()
 
    // Generate 1000 samples of 1000 events
    mcs2->generateAndFit(2000, 1000);
-   
+
    // Request a the pull plot of mean. The pulls will be one-sided because
    // `mean` is limited to 1.8.
    // Note that RooFit will have trouble to compute the pulls because the parameters
@@ -97,7 +99,7 @@ void rf802_mcstudy_addons()
    TH1 *hist2_prob = mcs2->fitParDataSet().createHistogram("prob");
    hist2_chi2->SetLineColor(kRed);
    hist2_prob->SetLineColor(kRed);
-   
+
    TLegend leg;
    leg.AddEntry(hist_chi2, "Optimal fit", "L");
    leg.AddEntry(hist2_chi2, "Biased fit", "L");

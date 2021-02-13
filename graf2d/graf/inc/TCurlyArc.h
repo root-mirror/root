@@ -11,11 +11,9 @@
 #ifndef ROOT_TCurlyArc
 #define ROOT_TCurlyArc
 
-#include "GuiTypes.h"
+#include "TCurlyLine.h"
 
 class TPoint;
-
-#include "TCurlyLine.h"
 
 class TCurlyArc : public TCurlyLine {
 

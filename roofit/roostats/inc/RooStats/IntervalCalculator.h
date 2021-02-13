@@ -11,11 +11,7 @@
 #ifndef ROOSTATS_IntervalCalculator
 #define ROOSTATS_IntervalCalculator
 
-
-
 #include "Rtypes.h"
-
-//#include "TNamed.h"
 
 class RooAbsData;
 class RooWorkspace;

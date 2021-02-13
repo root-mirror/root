@@ -32,6 +32,7 @@
 #include "TMVA/DNN/DataLoader.h"
 #include <utility>
 #include <vector>
+#include <string>
 
 class TRandom;
 
@@ -48,7 +49,7 @@ namespace DNN
  struct CudaConvolutionBwdDataAlgo {};
  struct CudaConvolutionBwdFilterAlgo {};
  struct CudaDataType {};
- struct DummyType {};
+ struct DummyCudaDataType {};
 
  struct CudaEmptyDescriptor {};
 
@@ -80,16 +81,18 @@ public:
    using DropoutDescriptor_t     = CudaDropoutDescriptor;
    //using OpTensorDescriptor_t    = CudaOpTensorDescriptor;
    using PoolingDescriptor_t     = CudaPoolingDescriptor;
-   using TensorDescriptor_t      = DummyType;
+   using TensorDescriptor_t      = DummyCudaDataType;
    //using ReductionDescriptor_t   = CudaReduceTensorDescriptor;
    using AlgorithmForward_t      = CudaConvolutionFwdAlgo;
    using AlgorithmBackward_t     = CudaConvolutionBwdDataAlgo;
    using AlgorithmHelper_t       = CudaConvolutionBwdFilterAlgo;
-   using AlgorithmDataType_t     = CudaDataType;
-   using ReduceTensorDescriptor_t = DummyType;
+   using AlgorithmDataType_t     = DummyCudaDataType;
+   using ReduceTensorDescriptor_t = DummyCudaDataType;
+   using RecurrentDescriptor_t    = DummyCudaDataType;
 
    using EmptyDescriptor_t       = CudaEmptyDescriptor;        // Used if a descriptor is not needed in a class
 
+   using GenLayer_t              = VGeneralLayer<TCuda<AReal>>;
    using BNormLayer_t            = TBatchNormLayer<TCuda<AReal>>;
    using BNormDescriptors_t      = TDNNGenDescriptors<BNormLayer_t>;
 
@@ -100,13 +103,24 @@ public:
    using PoolingDescriptors_t    = CNN::TCNNDescriptors<PoolingLayer_t>;
    using PoolingWorkspace_t      = CNN::TCNNWorkspace<PoolingLayer_t>;
 
+   using RNNDescriptors_t = RNN::TRNNDescriptors<TCuda<AReal>>;
+   using RNNWorkspace_t = RNN::TRNNWorkspace<TCuda<AReal>>;
+
    static TMVA::Experimental::MemoryLayout GetTensorLayout() { return TMVA::Experimental::MemoryLayout::ColumnMajor; }
 
    static Tensor_t CreateTensor(size_t n, size_t c, size_t h, size_t w) {
       return Tensor_t( {c,h*w,n}, GetTensorLayout());
    }
+   static Tensor_t CreateTensor(size_t b, size_t t, size_t w)
+   {
+      return Tensor_t( {t, w, b}, GetTensorLayout());
+   }
    static Tensor_t CreateTensor(DeviceBuffer_t buffer, size_t n, size_t c, size_t h, size_t w) {
-      return Tensor_t( buffer, {n,c,h,w}, GetTensorLayout(), 0, 0);
+      return Tensor_t( buffer, {c,h*w, n}, GetTensorLayout(), 0, 0);
+   }
+   static Tensor_t CreateTensor(DeviceBuffer_t buffer, size_t b, size_t t, size_t w)
+   {
+      return Tensor_t(buffer, {t, w, b}, GetTensorLayout());
    }
 
    // create a weight tensor/matrix  from another tensor using its shape
@@ -122,6 +136,7 @@ public:
          newWeights.emplace_back( weights[i].GetNrows(), weights[i].GetNcols());
    }
 
+   static bool IsCudnn() { return false; }
    //____________________________________________________________________________
    //
    // Architecture Initialization
@@ -156,9 +171,25 @@ public:
 
    static void ReleaseDescriptor(ActivationDescriptor_t &  /*activationDescr*/) {}
 
-   static void FreeConvWorkspace(TWorkspace * & /*workspace*/, ConvLayer_t */*L = nullptr*/) {}     ///< Only used for certain cudnn on-device memory
-   static void FreePoolDropoutWorkspace(TWorkspace * & /*workspace*/, PoolingLayer_t */*L = nullptr*/) {}
+   static void FreeConvWorkspace(TWorkspace * & /*workspace*/) {}     ///< Only used for certain cudnn on-device memory
+   static void FreePoolDropoutWorkspace(TWorkspace * & /*workspace*/) {}
 
+   static void InitializeRNNDescriptors(TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/) {}
+   static void InitializeLSTMDescriptors(TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/) {}
+   static void InitializeGRUDescriptors(TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/) {}
+
+   static void InitializeRNNWorkspace(TWorkspace *& /*workspace*/, TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/){}
+   static void InitializeLSTMWorkspace(TWorkspace *& /*workspace*/, TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/){}
+   static void InitializeGRUWorkspace(TWorkspace *& /*workspace*/, TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/){}
+
+   static void InitializeRNNTensors(GenLayer_t * /*layer*/) {}
+   static void InitializeLSTMTensors(GenLayer_t * /*layer*/) {}
+   static void InitializeGRUTensors(GenLayer_t * /*layer*/) {}
+
+   static void ReleaseRNNDescriptors(TDescriptors *& /*descriptors*/) {}
+   static void FreeRNNWorkspace(TWorkspace *& /*workspace*/) {}
+
+   //static void InitializeRNNTensors(RNNLayer_t * /*layer*/) {}
 
    //____________________________________________________________________________
    //
@@ -291,6 +322,9 @@ public:
    static void TanhDerivative(Tensor_t & B,
                               const Tensor_t & A);
 
+   static void FastTanh(Tensor_t &B) { return Tanh(B);  }
+   static void FastTanhDerivative(Tensor_t &B, const Tensor_t &A) { return TanhDerivative(B, A); }
+
    static void SymmetricRelu(Tensor_t & B);
    static void SymmetricReluDerivative(Tensor_t & B,
                                        const Tensor_t & A);
@@ -399,6 +433,7 @@ public:
    static void InitializeUniform(Matrix_t & A);
    static void InitializeIdentity(Matrix_t & A);
    static void InitializeZero(Matrix_t & A);
+   static void InitializeZero(Tensor_t &A);
    static void InitializeGlorotNormal(Matrix_t & A);
    static void InitializeGlorotUniform(Matrix_t & A);
 
@@ -648,13 +683,65 @@ public:
                                             const Matrix_t & input,  // BxD
                                             Matrix_t & input_gradient);
 
+   // dummy RNN functions
+   static void RNNForward(const Tensor_t & /* x */, const Matrix_t & /* hx */, const Matrix_t & /* cx */,
+                          const Matrix_t & /* weights */, Tensor_t & /* y */, Matrix_t & /* hy */, Matrix_t & /* cy */,
+                          const RNNDescriptors_t & /* descr */, RNNWorkspace_t & /* workspace */, bool /* isTraining */)
+   {
+   }
 
-      ///@}
+   static void RNNBackward(const Tensor_t & /* x */, const Matrix_t & /* hx */, const Matrix_t & /* cx */,
+                           const Tensor_t & /* y */, const Tensor_t & /* dy */, const Matrix_t & /* dhy */,
+                           const Matrix_t & /* dcy */, const Tensor_t & /* weights */, Tensor_t & /* dx */,
+                           Matrix_t & /* dhx */, Matrix_t & /* dcx */, Tensor_t & /* dw */,
+                           const RNNDescriptors_t & /* desc */, RNNWorkspace_t & /* workspace */)
+   {
+   }
+   static Matrix_t &
+   LSTMLayerBackward(Matrix_t &state_gradients_backward, Matrix_t & /*cell_gradients_backward*/,
+                     Matrix_t & /*input_weight_gradients*/, Matrix_t & /*forget_weight_gradients*/,
+                     Matrix_t & /*candidate_weight_gradients*/, Matrix_t & /*output_weight_gradients*/,
+                     Matrix_t & /*input_state_weight_gradients*/, Matrix_t & /*forget_state_weight_gradients*/,
+                     Matrix_t & /*candidate_state_weight_gradients*/, Matrix_t & /*output_state_weight_gradients*/,
+                     Matrix_t & /*input_bias_gradients*/, Matrix_t & /*forget_bias_gradients*/,
+                     Matrix_t & /*candidate_bias_gradients*/, Matrix_t & /*output_bias_gradients*/, Matrix_t & /*di*/,
+                     Matrix_t & /*df*/, Matrix_t & /*dc*/, Matrix_t & /*dout*/,
+                     const Matrix_t & /*precStateActivations*/, const Matrix_t & /*precCellActivations*/,
+                     const Matrix_t & /*fInput*/, const Matrix_t & /*fForget*/, const Matrix_t & /*fCandidate*/,
+                     const Matrix_t & /*fOutput*/, const Matrix_t & /*weights_input*/,
+                     const Matrix_t & /*weights_forget*/, const Matrix_t & /*weights_candidate*/,
+                     const Matrix_t & /*weights_output*/, const Matrix_t & /*weights_input_state*/,
+                     const Matrix_t & /*weights_forget_state*/, const Matrix_t & /*weights_candidate_state*/,
+                     const Matrix_t & /*weights_output_state*/, const Matrix_t & /*input*/,
+                     Matrix_t & /*input_gradient*/, Matrix_t & /*cell_gradient*/, Matrix_t & /*cell_tanh*/)
+   {
+      Fatal("TCuda::LSTMLayerBackward", "Recurrent layers are not supported in the native Cuda architecture!!!");
+      return state_gradients_backward;
+   }
 
-      //____________________________________________________________________________
-      //
-      // Additional Arithmetic Functions
-      //____________________________________________________________________________
+   /** Backward pass for GRU Network */
+   static Matrix_t &
+   GRULayerBackward(Matrix_t &state_gradients_backward, Matrix_t & /*reset_weight_gradients*/,
+                    Matrix_t & /*update_weight_gradients*/, Matrix_t & /*candidate_weight_gradients*/,
+                    Matrix_t & /*reset_state_weight_gradients*/, Matrix_t & /*update_state_weight_gradients*/,
+                    Matrix_t & /*candidate_state_weight_gradients*/, Matrix_t & /*reset_bias_gradients*/,
+                    Matrix_t & /*update_bias_gradients*/, Matrix_t & /*candidate_bias_gradients*/, Matrix_t & /*dr*/,
+                    Matrix_t & /*du*/, Matrix_t & /*dc*/, const Matrix_t & /*precStateActivations*/,
+                    const Matrix_t & /*fReset*/, const Matrix_t & /*fUpdate*/, const Matrix_t & /*fCandidate*/,
+                    const Matrix_t & /*weights_reset*/, const Matrix_t & /*weights_update*/,
+                    const Matrix_t & /*weights_candidate*/, const Matrix_t & /*weights_reset_state*/,
+                    const Matrix_t & /*weights_update_state*/, const Matrix_t & /*weights_candidate_state*/,
+                    const Matrix_t & /*input*/, Matrix_t & /*input_gradient*/, bool)
+   {
+      Fatal("TCuda::GRULayerBackward", "Recurrent layers are not supported in the native Cuda architecture!!!");
+      return state_gradients_backward;
+   }
+   ///@}
+
+   //____________________________________________________________________________
+   //
+   // Additional Arithmetic Functions
+   //____________________________________________________________________________
 
    /** @name Additional Arithmetic Functions
     *

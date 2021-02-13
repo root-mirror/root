@@ -1,14 +1,18 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Addition and convolution: composite p.d.f with signal and background component
+/// Addition and convolution: composite pdf with signal and background component
 ///
+/// ```
 ///  pdf = f_bkg * bkg(x,a0,a1) + (1-fbkg) * (f_sig1 * sig1(x,m,s1 + (1-f_sig1) * sig2(x,m,s2)))
+/// ```
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -36,7 +40,7 @@ void rf201_composite()
    RooGaussian sig1("sig1", "Signal component 1", x, mean, sigma1);
    RooGaussian sig2("sig2", "Signal component 2", x, mean, sigma2);
 
-   // Build Chebychev polynomial p.d.f.
+   // Build Chebychev polynomial pdf
    RooRealVar a0("a0", "a0", 0.5, 0., 1.);
    RooRealVar a1("a1", "a1", 0.2, 0., 1.);
    RooChebychev bkg("bkg", "Background", x, RooArgSet(a0, a1));
@@ -48,7 +52,7 @@ void rf201_composite()
    // A d d   s i g n a l   c o m p o n e n t s
    // ------------------------------------------
 
-   // Sum the signal components into a composite signal p.d.f.
+   // Sum the signal components into a composite signal pdf
    RooRealVar sig1frac("sig1frac", "fraction of component 1 in signal", 0.8, 0., 1.);
    RooAddPdf sig("sig", "Signal", RooArgList(sig1, sig2), sig1frac);
 
@@ -79,7 +83,7 @@ void rf201_composite()
    // Overlay the background+sig2 components of model with a dotted line
    model.plotOn(xframe, Components(RooArgSet(bkg, sig2)), LineStyle(kDotted));
 
-   // Print structure of composite p.d.f.
+   // Print structure of composite pdf
    model.Print("t");
 
    // ---------------------------------------------------------------------------------------------

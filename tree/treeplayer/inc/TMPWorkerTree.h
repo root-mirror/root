@@ -28,6 +28,7 @@
 #include <sstream>
 #include <type_traits> //std::result_of
 #include <unistd.h> //pid_t
+#include <vector>
 
 class TMPWorkerTree : public TMPWorker {
    /// \cond

@@ -22,6 +22,7 @@
 #include "RooRealProxy.h"
 #include "RooSetProxy.h"
 #include "RooListProxy.h"
+#include <list>
 
 class RooArgSet ;
 class TH1F ;
@@ -123,7 +124,6 @@ protected:
   RooNumIntConfig* _iconfig ;
 
   mutable RooListProxy _sumCat ; //! do not persist  
-  TIterator* _sumCatIter ; //!
   
   Int_t _mode ;
   IntOperMode _intOperMode ;   // integration operation mode

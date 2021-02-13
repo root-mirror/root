@@ -3,6 +3,8 @@
 
 #include "gtest/gtest.h"
 
+#include <string>
+
 bool OutsideBounds(double v1, double v2, double scale);
 
 // Compared to ASSERT_NEAR, this function takes into account also the relative error

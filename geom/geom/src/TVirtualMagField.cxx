@@ -11,7 +11,6 @@
 #include "TVirtualMagField.h"
 
 #include "TGeoGlobalMagField.h"
-#include "Rtypes.h"
 
 /** \class TVirtualMagField
 \ingroup Geometry_classes

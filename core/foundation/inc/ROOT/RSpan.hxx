@@ -1,4 +1,4 @@
-/// \file ROOT/RSpan.h
+/// \file ROOT/RSpan.hxx
 /// \ingroup Base StdExt
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-09-06

@@ -27,10 +27,8 @@ the RooRealVar::setRange() method
 #include "RooFit.h"
 
 #include "RooNumber.h"
-#include "RooNumber.h"
 #include "RooMsgService.h"
 #include "Riostream.h"
-#include "RooMsgService.h"
 
 #include "RooRangeBinning.h"
 

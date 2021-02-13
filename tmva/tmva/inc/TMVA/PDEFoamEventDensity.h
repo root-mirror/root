@@ -33,6 +33,7 @@
 #define ROOT_TMVA_PDEFoamEventDensity
 
 #include "TMVA/PDEFoamDensityBase.h"
+#include <vector>
 
 namespace TMVA
 {

@@ -152,8 +152,8 @@ void CXXNewExpr::AllocateArgsArray(const ASTContext &C, bool isArray,
 }
 
 bool CXXNewExpr::shouldNullCheckAllocation(const ASTContext &Ctx) const {
-  return getOperatorNew()->getType()->castAs<FunctionProtoType>()->isNothrow(
-             Ctx) &&
+  return getOperatorNew()->getType()->castAs<FunctionProtoType>()
+                                          ->isNothrow() &&
          !getOperatorNew()->isReservedGlobalPlacementOperator();
 }
 

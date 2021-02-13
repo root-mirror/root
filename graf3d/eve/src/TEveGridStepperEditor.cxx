@@ -13,14 +13,6 @@
 #include "TEveGridStepper.h"
 #include "TEveGValuators.h"
 
-#include "TVirtualPad.h"
-#include "TColor.h"
-
-#include "TGLabel.h"
-#include "TGSlider.h"
-#include "TGButton.h"
-#include "TGNumberEntry.h"
-
 /** \class TEveGridStepperSubEditor
 \ingroup TEve
 Sub-editor for TEveGridStepper class.

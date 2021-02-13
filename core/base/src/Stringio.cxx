@@ -16,9 +16,9 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <ctype.h>              // Looking for isspace()
+#include <cctype>              // Looking for isspace()
+#include <iostream>
 
-#include "Riostream.h"
 #include "TString.h"
 
 

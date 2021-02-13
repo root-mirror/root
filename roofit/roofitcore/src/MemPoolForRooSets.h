@@ -24,15 +24,18 @@
 #ifndef ROOFIT_ROOFITCORE_SRC_MEMPOOLFORROOSETS_H_
 #define ROOFIT_ROOFITCORE_SRC_MEMPOOLFORROOSETS_H_
 
+#include "TStorage.h"
+
 #include <vector>
 #include <algorithm>
+#include <set>
 
 template <class RooSet_t, std::size_t POOLSIZE>
 class MemPoolForRooSets {
 
   struct Arena {
     Arena()
-      : ownedMemory{static_cast<RooSet_t *>(::operator new(POOLSIZE * sizeof(RooSet_t)))},
+      : ownedMemory{static_cast<RooSet_t *>(TStorage::ObjectAlloc(POOLSIZE * sizeof(RooSet_t)))},
         memBegin{ownedMemory}, nextItem{ownedMemory},
         memEnd{memBegin + POOLSIZE}, refCount{0}
     {

@@ -18,6 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "TArchiveFile.h"
 #include "TNetXNGFile.h"
 #include "TEnv.h"
 #include "TSystem.h"
@@ -275,6 +276,10 @@ void TNetXNGFile::Init(Bool_t create)
 
 Long64_t TNetXNGFile::GetSize() const
 {
+   if (fArchive && fArchive->GetMember()) {
+     return fArchive->GetMember()->GetDecompressedSize();
+   }
+
    using namespace XrdCl;
 
    // Check the file isn't a zombie or closed

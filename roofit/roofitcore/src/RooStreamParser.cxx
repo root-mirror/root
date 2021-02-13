@@ -37,7 +37,6 @@
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include <stdlib.h>
 
 #ifndef _WIN32
@@ -136,10 +135,10 @@ TString RooStreamParser::readToken()
   Int_t bufptr(0) ;
 
   // Check for end of file
-   if (_is->eof() || _is->fail()) {
-     _atEOF = kTRUE ;
-     return TString("") ;
-   }
+  if (_is->eof() || _is->fail()) {
+    _atEOF = kTRUE ;
+    return TString("") ;
+  }
 
   //Ignore leading newline
   if (_is->peek()=='\n') {
@@ -155,9 +154,9 @@ TString RooStreamParser::readToken()
   while(1) {
     // Buffer overflow protection
     if (bufptr >= 63999) {
-       oocoutW((TObject *)0, InputArguments)
-          << "RooStreamParser::readToken: token length exceeds buffer capacity, terminating token early" << endl;
-       break;
+      oocoutW((TObject *)0, InputArguments)
+              << "RooStreamParser::readToken: token length exceeds buffer capacity, terminating token early" << endl;
+      break;
     }
 
     // Read next char
@@ -171,11 +170,11 @@ TString RooStreamParser::readToken()
     // Terminate as SPACE, unless we haven't seen any non-SPACE yet
     if (isspace(c)) {
       if (first)
-	continue ;
+        continue ;
       else
-	if (!quotedString) {
-	  break ;
-	}
+        if (!quotedString) {
+          break ;
+        }
     }
 
     // If '-' or '/' see what the next character is
@@ -184,14 +183,14 @@ TString RooStreamParser::readToken()
 
 
       if (cnext=='I' || cnext=='i') {
-	char tmp1,tmp2 ;
-	_is->get(tmp1) ;
-	_is->get(tmp2) ;
-	_is->putback(tmp2) ;
-	_is->putback(tmp1) ;
-	haveINF = ((cnext=='I' && tmp1 == 'N' && tmp2 == 'F') || (cnext=='i' && tmp1 == 'n' && tmp2 == 'f')) ;
+        char tmp1,tmp2 ;
+        _is->get(tmp1) ;
+        _is->get(tmp2) ;
+        _is->putback(tmp2) ;
+        _is->putback(tmp1) ;
+        haveINF = ((cnext=='I' && tmp1 == 'N' && tmp2 == 'F') || (cnext=='i' && tmp1 == 'n' && tmp2 == 'f')) ;
       } else {
-	haveINF = kFALSE ;
+        haveINF = kFALSE ;
       }
 
       _is->putback(cnext) ;
@@ -216,38 +215,38 @@ TString RooStreamParser::readToken()
     // Special handling of quoted strings
     if (c=='"') {
       if (first) {
-	quotedString=kTRUE ;
+        quotedString=kTRUE ;
       } else if (!quotedString) {
-	// Terminate current token. Next token will be quoted string
-	_is->putback('"') ;
-	break ;
+        // Terminate current token. Next token will be quoted string
+        _is->putback('"') ;
+        break ;
       }
     }
 
     if (!quotedString) {
       // Decide if next char is punctuation (exempt - and . that are part of floating point numbers, or +/- preceding INF)
       if (isPunctChar(c) && !(c=='.' && (isdigit(cnext)||isdigit(cprev)))
-       && !((c=='-'||c=='+') && isdigit(cnext) && cprev=='e')
-	     && (!first || !((c=='-'||c=='+') && (isdigit(cnext)||cnext=='.'||haveINF)))) {
+          && !((c=='-'||c=='+') && isdigit(cnext) && (cprev == 'e' || cprev == 'E'))
+          && (!first || !((c=='-'||c=='+') && (isdigit(cnext)||cnext=='.'||haveINF)))) {
 
-	if (first) {
-	  // Make this a one-char punctuation token
-	  buffer[bufptr++]=c ;
-	  break ;
-	} else {
-	  // Put back punct. char and terminate current alphanum token
-	  _is->putback(c) ;
-	  break ;
-	}
+        if (first) {
+          // Make this a one-char punctuation token
+          buffer[bufptr++]=c ;
+          break ;
+        } else {
+          // Put back punct. char and terminate current alphanum token
+          _is->putback(c) ;
+          break ;
+        }
       }
     } else {
       // Inside quoted string conventional tokenizing rules do not apply
 
       // Terminate token on closing quote
       if (c=='"' && !first) {
-	buffer[bufptr++]=c ;
-	quotedString=kFALSE ;
-	break ;
+        buffer[bufptr++]=c ;
+        quotedString=kFALSE ;
+        break ;
       }
     }
 
@@ -276,16 +275,16 @@ TString RooStreamParser::readToken()
 
     while ((isspace(c) || c=='/') && c != '\n') {
       if (c=='/') {
-	_is->get(c) ;
-	if (_is->peek()=='/') {
-	  zapToEnd(kFALSE) ;
-	} else {
-	  _is->putback('/') ;
-	}
-	break ;
+        _is->get(c) ;
+        if (_is->peek()=='/') {
+          zapToEnd(kFALSE) ;
+        } else {
+          _is->putback('/') ;
+        }
+        break ;
       } else {
-	_is->get(c) ;
-	c = _is->peek() ;
+        _is->get(c) ;
+        c = _is->peek() ;
       }
     }
   }

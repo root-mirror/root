@@ -18,11 +18,7 @@
 
 #include "TArrayD.h"
 
-#include "TObjArray.h"
-
 #include "TAxis.h"
-
-#include "TMath.h"
 
 class TH1;
 class TH1D;
@@ -30,8 +26,6 @@ class TH2D;
 class TH3D;
 class THnSparse;
 class TF1;
-
-
 
 class THn: public THnBase {
 private:

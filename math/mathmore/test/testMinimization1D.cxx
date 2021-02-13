@@ -1,10 +1,7 @@
 #include "Math/Polynomial.h"
 #include "Math/GSLMinimizer1D.h"
 #include "Math/Functor.h"
-//#include "TF1.h"
 #include <iostream>
-
-
 
 
 void testMinimization1D() {

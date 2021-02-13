@@ -16,7 +16,6 @@
 #ifndef ROO_TABLE
 #define ROO_TABLE
 
-#include <assert.h>
 #include "TNamed.h"
 #include "RooAbsCategory.h"
 #include "RooPrintable.h"

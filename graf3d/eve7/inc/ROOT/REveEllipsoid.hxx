@@ -29,8 +29,8 @@ class REveEllipsoid : public REveStraightLineSet
    friend class REveEllipsoidProjected;
 
 private:
-   REveEllipsoid(const REveEllipsoid &);            // Not implemented
-   REveEllipsoid &operator=(const REveEllipsoid &); // Not implemented
+   REveEllipsoid(const REveEllipsoid &) = delete;
+   REveEllipsoid &operator=(const REveEllipsoid &) = delete;
 
 protected:
    REveVector fV0;
@@ -60,8 +60,8 @@ public:
 class REveEllipsoidProjected :  public REveStraightLineSetProjected
 {
 private:
-   REveEllipsoidProjected(const REveEllipsoidProjected &);            // Not implemented
-   REveEllipsoidProjected &operator=(const REveEllipsoidProjected &); // Not implemented
+   REveEllipsoidProjected(const REveEllipsoidProjected &) = delete;
+   REveEllipsoidProjected &operator=(const REveEllipsoidProjected &) = delete;
 
    void DrawArchProjected(float phiStart, float phiEnd, float phiStep, REveVector& v0,  REveVector& v1, REveVector& v2);
    void GetSurfaceSize(REveVector& p1, REveVector& p2);

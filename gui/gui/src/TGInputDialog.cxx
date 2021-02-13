@@ -119,8 +119,8 @@ TGInputDialog::TGInputDialog(const TGWindow *p, const TGWindow *main,
    MapWindow();
    fTE->SetFocus();
 
-   if (retstr == 0)
-      retstr = new char[256];
+   if (!retstr)
+      retstr = fOwnBuf = new char[256];
 
    fRetStr = retstr;
 
@@ -133,6 +133,7 @@ TGInputDialog::TGInputDialog(const TGWindow *p, const TGWindow *main,
 TGInputDialog::~TGInputDialog()
 {
    Cleanup();
+   delete [] fOwnBuf;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

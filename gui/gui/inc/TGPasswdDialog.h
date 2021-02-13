@@ -9,8 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#ifndef ROOT_TPasswdDialog
-#define ROOT_TPasswdDialog
+#ifndef ROOT_TGPasswdDialog
+#define ROOT_TGPasswdDialog
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,8 +40,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TTime.h"
-#include "TString.h"
+#include "Rtypes.h"
 
 class TGTransientFrame;
 class TGTextButton;

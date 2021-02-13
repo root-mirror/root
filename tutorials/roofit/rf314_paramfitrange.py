@@ -1,17 +1,17 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
+## Multidimensional models: working with parameterized ranges in a fit.
+## This an example of a fit with an acceptance that changes per-event
 ##
-## Multidimensional models: working with parameterized ranges in a fit. ROOT.This an example of a fit with an acceptance that changes per-event
+## `pdf = exp(-t/tau)` with `t[tmin,5]`
 ##
-## pdf = exp(-t/tau) with t[tmin,5]
-##
-## where t and tmin are both observables in the dataset
+## where `t` and `tmin` are both observables in the dataset
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 

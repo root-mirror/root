@@ -30,7 +30,8 @@
 //_____________________________batch only_____________________
 #ifndef __CINT__
 
-#include "Riostream.h"
+#include <iostream>
+#include "snprintf.h"
 #include "TFile.h"
 #include "TMatrixD.h"
 #include "TMatrixDSym.h"

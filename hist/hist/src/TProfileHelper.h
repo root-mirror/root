@@ -23,9 +23,9 @@
 
 #include "TH1.h"
 #include "TError.h"
-#include "TCollection.h"
 #include "THashList.h"
 #include "TMath.h"
+#include "TH1Merger.h"
 
 class TProfileHelper {
 
@@ -106,18 +106,18 @@ Bool_t TProfileHelper::Add(T* p, const TH1 *h1,  const TH1 *h2, Double_t c1, Dou
    }
    p->PutStats(s0);
 
-// Make the loop over the bins to calculate the Addition
-   Int_t bin;
+   // create sumw2 per bin if not set
+   if (p->fBinSumw2.fN == 0 && (p1->fBinSumw2.fN != 0 || p2->fBinSumw2.fN != 0)) p->Sumw2();
+
+   // Make the loop over the bins to calculate the Addition
    Double_t *cu1 = p1->GetW();    Double_t *cu2 = p2->GetW();
    Double_t *er1 = p1->GetW2();   Double_t *er2 = p2->GetW2();
    Double_t *en1 = p1->GetB();    Double_t *en2 = p2->GetB();
    Double_t *ew1 = p1->GetB2();   Double_t *ew2 = p2->GetB2();
-   // create sumw2 per bin if not set
-   if (p->fBinSumw2.fN == 0 && (p1->fBinSumw2.fN != 0 || p2->fBinSumw2.fN != 0) ) p->Sumw2();
    // if p1 has not the sum of weight squared/bin stored use just the sum of weights
-   if (ew1 == 0) ew1 = en1;
-   if (ew2 == 0) ew2 = en2;
-   for (bin =0;bin< p->fN;bin++) {
+   if (ew1 == nullptr) ew1 = en1;
+   if (ew2 == nullptr) ew2 = en2;
+   for (Int_t bin = 0; bin < p->fN; bin++) {
       p->fArray[bin]             = c1*cu1[bin] + c2*cu2[bin];
       p->fSumw2.fArray[bin]      = ac1*er1[bin] + ac2*er2[bin];
       p->fBinEntries.fArray[bin] = ac1*en1[bin] + ac2*en2[bin];
@@ -183,6 +183,14 @@ Long64_t TProfileHelper::Merge(T* p, TCollection *li) {
 
    TList inlist;
    inlist.AddAll(li);
+
+   // use TH1Merger class
+   TH1Merger merger(*p, *li, "");
+   Bool_t ret = merger();
+
+   return (ret) ? p->GetEntries() : -1;
+
+#ifdef OLD_PROFILE_MERGE
 
    TAxis newXAxis;
    TAxis newYAxis;
@@ -415,6 +423,7 @@ Long64_t TProfileHelper::Merge(T* p, TCollection *li) {
       delete hclone;
    }
    return (Long64_t)nentries;
+#endif
 }
 
 template <typename T>
@@ -433,6 +442,9 @@ T* TProfileHelper::ExtendAxis(T* p, Double_t x, TAxis *axis)
    if (!axis->CanExtend()) return 0;
    if (axis->GetXmin() >= axis->GetXmax()) return 0;
    if (axis->GetNbins() <= 0) return 0;
+   if (TMath::IsNaN(x)) { // x may be a NaN
+      return 0;
+   }
 
    Double_t xmin, xmax;
    if (!p->FindNewAxisLimits(axis, x, xmin, xmax))
@@ -443,30 +455,48 @@ T* TProfileHelper::ExtendAxis(T* p, Double_t x, TAxis *axis)
    R__ASSERT(hold);
    hold->SetDirectory(0);
    p->Copy(*hold);
-   //set new axis limits
+   //set new axis limits but keep same number of bins
    axis->SetLimits(xmin,xmax);
    if (p->fBinSumw2.fN) hold->Sumw2();
 
-   Int_t  nbinsx = p->fXaxis.GetNbins();
-   Int_t  nbinsy = p->fYaxis.GetNbins();
-   Int_t  nbinsz = p->fZaxis.GetNbins();
+   // total bins (inclusing underflow /overflow)
+   Int_t  nx = p->fXaxis.GetNbins() + 2;
+   Int_t  ny = (p->GetDimension() > 1) ? p->fYaxis.GetNbins() + 2 : 1;
+   Int_t  nz = (p->GetDimension() > 2) ? p->fZaxis.GetNbins() + 2 : 1;
+
+   Int_t iaxis = 0;
+   if (axis == p->GetXaxis()) iaxis = 1;
+   if (axis == p->GetYaxis()) iaxis = 2;
+   if (axis == p->GetZaxis()) iaxis = 3;
+   Bool_t firstw = kTRUE;
 
    //now loop on all bins and refill
    p->Reset("ICE"); //reset only Integral, contents and Errors
 
-   Double_t bx,by,bz;
+   // need to consider also underflow/overflow in the non-extending axes
+   Double_t xc,yc,zc;
    Int_t ix, iy, iz, binx, biny, binz;
-   for (binz=1;binz<=nbinsz;binz++) {
-      bz  = hold->GetZaxis()->GetBinCenter(binz);
-      iz  = p->fZaxis.FindFixBin(bz);
-      for (biny=1;biny<=nbinsy;biny++) {
-         by  = hold->GetYaxis()->GetBinCenter(biny);
-         iy  = p->fYaxis.FindFixBin(by);
-         for (binx=1;binx<=nbinsx;binx++) {
-            bx = hold->GetXaxis()->GetBinCenter(binx);
-            ix  = p->fXaxis.FindFixBin(bx);
-
+   for (binz=0;binz< nz;binz++) {
+      zc  = hold->GetZaxis()->GetBinCenter(binz);
+      iz  = p->fZaxis.FindFixBin(zc);
+      for (biny=0;biny<ny;biny++) {
+         yc  = hold->GetYaxis()->GetBinCenter(biny);
+         iy  = p->fYaxis.FindFixBin(yc);
+         for (binx=0;binx<nx;binx++) {
+            xc = hold->GetXaxis()->GetBinCenter(binx);
+            ix  = p->fXaxis.FindFixBin(xc);
             Int_t sourceBin = hold->GetBin(binx,biny,binz);
+            // skip empty bins
+            if (hold->fBinEntries.fArray[sourceBin] == 0) continue;
+            if (hold->IsBinUnderflow(sourceBin, iaxis) || hold->IsBinOverflow(sourceBin, iaxis)) {
+               if (firstw) {
+                  Warning("ExtendAxis",
+                          "Histogram %s has underflow or overflow in the %s that is extendable"
+                          " their content will be lost",p->GetName(),axis->GetName());
+                  firstw = kFALSE;
+               }
+               continue;
+            }
             Int_t destinationBin = p->GetBin(ix,iy,iz);
             p->AddBinContent(destinationBin, hold->fArray[sourceBin]);
             p->fBinEntries.fArray[destinationBin] += hold->fBinEntries.fArray[sourceBin];
@@ -600,9 +630,17 @@ void TProfileHelper::LabelsInflate(T* p, Option_t *ax)
 // This function is called by TAxis::FindBin(const char *label)
 // Works only for the given axis
 
+   if (gDebug) Info("LabelsInflate","Inflate label for axis %s of profile %s",ax,p->GetName());
 
-   TAxis *axis = p->GetXaxis();
-   if (ax[0] == 'y' || ax[0] == 'Y') axis = p->GetYaxis();
+   Int_t iaxis = p->AxisChoice(ax);
+   TAxis *axis = 0;
+   if (iaxis == 1) axis = p->GetXaxis();
+   if (iaxis == 2) axis = p->GetYaxis();
+   if (iaxis == 3) axis = p->GetZaxis();
+   if (!axis) return;
+   // TAxis *axis = p->GetXaxis();
+   // if (ax[0] == 'y' || ax[0] == 'Y') axis = p->GetYaxis();
+
    T *hold = (T*)p->IsA()->New();;
    hold->SetDirectory(0);
    p->Copy(*hold);
@@ -625,23 +663,27 @@ void TProfileHelper::LabelsInflate(T* p, Option_t *ax)
    p->fSumw2.Set(ncells);
    if (p->fBinSumw2.fN)  p->fBinSumw2.Set(ncells);
 
-   //now loop on all bins and refill
-   for (Int_t ibin =0; ibin < p->fN; ibin++)
-   {
-      Int_t binx, biny, binz;
-      p->GetBinXYZ(ibin, binx, biny, binz);
-      Int_t bin = hold->GetBin(binx, biny, binz);
+   p->Reset("ICE");  // reset content and error
 
-      if (p->IsBinUnderflow(ibin) || p->IsBinOverflow(ibin)) {
-         p->UpdateBinContent(ibin, 0.0);
-         p->fBinEntries.fArray[ibin] = 0.0;
-         p->fSumw2.fArray[ibin] = 0.0;
-         if (p->fBinSumw2.fN) p->fBinSumw2.fArray[ibin] = 0.0;
-      } else {
-         p->fArray[ibin] = hold->fArray[bin];
-         p->fBinEntries.fArray[ibin] = hold->fBinEntries.fArray[bin];
-         p->fSumw2.fArray[ibin] = hold->fSumw2.fArray[bin];
-         if (p->fBinSumw2.fN) p->fBinSumw2.fArray[ibin] = hold->fBinSumw2.fArray[bin];
+   //now loop on all old bins and refill excluding underflow/overflow in
+   // the axis that has the bin doubled
+   Int_t binx, biny, binz = 0;
+   for (Int_t ibin =0; ibin < hold->fNcells; ibin++) {
+      // get the binx,y,z values . The x-y-z (axis) bin values will stay the same between new-old after the expanding
+      hold->GetBinXYZ(ibin,binx,biny,binz);
+      Int_t bin = p->GetBin(binx,biny,binz);
+
+      // underflow and overflow will be cleaned up because their meaning has been altered
+      if (hold->IsBinUnderflow(ibin,iaxis) || hold->IsBinOverflow(ibin,iaxis)) {
+         if (gDebug && hold->fBinEntries.fArray[ibin] > 0) Info("LabelsInflate","Content for underflow/overflow of bin (%d,%d,%d) will be lost",binx,biny,binz);
+         continue;
+      }
+      else {
+         p->fArray[bin] = hold->fArray[ibin];
+         p->fBinEntries.fArray[bin] = hold->fBinEntries.fArray[ibin];
+         p->fSumw2.fArray[bin] = hold->fSumw2.fArray[ibin];
+         if (p->fBinSumw2.fN) p->fBinSumw2.fArray[bin] = hold->fBinSumw2.fArray[ibin];
+         if (gDebug) Info("LabelsInflate","Copy Content from bin (%d,%d,%d) from %d in %d (%f,%f)",binx,biny,binz, ibin, bin, hold->fArray[ibin],hold->fBinEntries.fArray[ibin] );
       }
    }
    delete hold;
@@ -693,7 +735,7 @@ Double_t TProfileHelper::GetBinError(T* p, Int_t bin)
    if (err2 != 0 && neff < 5) test = eprim2*sum/err2;
    //Int_t cellLimit = (p->GetDimension() == 3)?1000404:10404;
    if (p->fgApproximate && (test < 1.e-4 || eprim2 <= 0)) {
-      Double_t stats[TH1::kNstat];
+      Double_t stats[TH1::kNstat] = {0};
       p->GetStats(stats);
       Double_t ssum = stats[0];
       // for 1D profile

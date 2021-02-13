@@ -13,21 +13,21 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
+double mnddot(unsigned int, const double *, int, const double *, int);
 
-double mnddot(unsigned int, const double*, int, const double*, int);
-
-double similarity(const LAVector& avec, const LASymMatrix& mat) {
+double similarity(const LAVector &avec, const LASymMatrix &mat)
+{
    // calculate the similarity vector-matrix product: V^T M V
    // use matrix product and then dot function (using mnddot)
 
-   LAVector tmp = mat*avec;
+   LAVector tmp = mat * avec;
 
    double value = mnddot(avec.size(), avec.Data(), 1, tmp.Data(), 1);
    return value;
 }
 
-   }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT

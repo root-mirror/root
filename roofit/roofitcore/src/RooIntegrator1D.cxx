@@ -394,7 +394,7 @@ Double_t RooIntegrator1D::addTrapezoids(Int_t n)
   else {
     // break the range down into several trapezoids using 2**(n-2)
     // equally-spaced interior points
-    const int nInt = std::pow(2, n-2);
+    const int nInt = 1 << (n-2);
     const double del = _range/nInt;
     const double xmin = _xmin;
 

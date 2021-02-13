@@ -5,7 +5,9 @@
 ///
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -36,12 +38,12 @@ void rf602_chi2fit()
    RooGaussian sig1("sig1", "Signal component 1", x, mean, sigma1);
    RooGaussian sig2("sig2", "Signal component 2", x, mean, sigma2);
 
-   // Build Chebychev polynomial p.d.f.
+   // Build Chebychev polynomial pdf
    RooRealVar a0("a0", "a0", 0.5, 0., 1.);
    RooRealVar a1("a1", "a1", 0.2, 0., 1.);
    RooChebychev bkg("bkg", "Background", x, RooArgSet(a0, a1));
 
-   // Sum the signal components into a composite signal p.d.f.
+   // Sum the signal components into a composite signal pdf
    RooRealVar sig1frac("sig1frac", "fraction of component 1 in signal", 0.8, 0., 1.);
    RooAddPdf sig("sig", "Signal", RooArgList(sig1, sig2), sig1frac);
 
@@ -56,9 +58,9 @@ void rf602_chi2fit()
    RooDataHist *dh = d->binnedClone();
 
    // Construct a chi^2 of the data and the model.
-   // When a p.d.f. is used in a chi^2 fit, the probability density scaled
+   // When a pdf is used in a chi^2 fit, the probability density scaled
    // by the number of events in the dataset to obtain the fit function
-   // If model is an extended p.d.f, the expected number events is used
+   // If model is an extended pdf, the expected number events is used
    // instead of the observed number of events.
    model.chi2FitTo(*dh);
 

@@ -245,7 +245,8 @@ neurons, hidden layers and inputs/outputs that does not apply to TMultiLayerPerc
 #include "TMultiGraph.h"
 #include "TDirectory.h"
 #include "TSystem.h"
-#include "Riostream.h"
+#include <iostream>
+#include <fstream>
 #include "TMath.h"
 #include "TTreeFormula.h"
 #include "TTreeFormulaManager.h"
@@ -253,7 +254,7 @@ neurons, hidden layers and inputs/outputs that does not apply to TMultiLayerPerc
 #include "TLine.h"
 #include "TText.h"
 #include "TObjString.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 ClassImp(TMultiLayerPerceptron);
 

@@ -11,7 +11,6 @@
 
 #include "TEveEventManager.h"
 
-#include "TObjString.h"
 #include "TInterpreter.h"
 
 /** \class TEveEventManager

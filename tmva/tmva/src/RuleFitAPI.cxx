@@ -39,9 +39,7 @@ J Friedman's RuleFit method
 #include "TMVA/Types.h"
 #include "TMVA/VariableInfo.h"
 
-#include "TROOT.h"
 #include "TSystem.h"
-#include "TMath.h"
 
 #include <algorithm>
 

@@ -253,7 +253,7 @@ following will enumerate some of the highlights.
 When **`THtml`** generates documentation for classes it recognizes all
 class names known to ROOT. If **`THtml`** does not have sources for a
 class it determines the class's library name. This has to be set by
-means of `rootmap` files, see Library Autoloading of this User's Guide.
+means of `rootmap` files, see Library AutoLoading of this User's Guide.
 Given the library name, **`THtml`** searches for an entry in its map of
 libraries to documentation URLs. If it finds it, it will create a link
 to the documentation at that URL for all occurrences of a given class

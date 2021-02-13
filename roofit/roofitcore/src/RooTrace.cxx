@@ -34,7 +34,7 @@ each object.
 #include "RooMsgService.h"
 
 #include <iomanip>
-
+#include "TClass.h"
 
 
 using namespace std;

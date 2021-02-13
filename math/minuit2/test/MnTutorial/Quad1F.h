@@ -9,44 +9,45 @@
 
 #include "Minuit2/FCNGradientBase.h"
 
+#include <vector>
+
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class Quad1F : public FCNGradientBase {
 
 public:
+   Quad1F() : fErrorDef(1.) {}
 
-  Quad1F() : fErrorDef(1.) {}
+   ~Quad1F() {}
 
-  ~Quad1F() {}
+   double operator()(const std::vector<double> &par) const
+   {
 
-  double operator()(const std::vector<double>& par) const {
+      double x = par[0];
 
-    double x = par[0];
+      return (x * x);
+   }
 
-    return ( x*x );
-  }
+   std::vector<double> Gradient(const std::vector<double> &par) const
+   {
 
-  std::vector<double> Gradient(const std::vector<double>& par) const {
+      double x = par[0];
 
-    double x = par[0];
+      return (std::vector<double>(1, 2. * x));
+   }
 
-    return ( std::vector<double>(1, 2.*x) );
-  }
+   void SetErrorDef(double up) { fErrorDef = up; }
 
-  void SetErrorDef(double up) {fErrorDef = up;}
+   double Up() const { return fErrorDef; }
 
-  double Up() const {return fErrorDef;}
-
-  const FCNBase* Base() const {return this;}
+   const FCNBase *Base() const { return this; }
 
 private:
-  double fErrorDef;
+   double fErrorDef;
 };
 
+} // namespace Minuit2
 
-  }  // namespace Minuit2
-
-}  // namespace ROOT
+} // namespace ROOT

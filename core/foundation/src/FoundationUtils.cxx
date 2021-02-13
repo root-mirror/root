@@ -1,4 +1,4 @@
-/// \file FoundationUtils.hxx
+/// \file FoundationUtils.cxx
 ///
 /// \brief The file contains utilities which are foundational and could be used
 /// across the core component of ROOT.
@@ -21,6 +21,7 @@
 #include <RConfigure.h>
 
 #include <algorithm>
+#include <cassert>
 
 #include <errno.h>
 #include <string.h>
@@ -176,6 +177,33 @@ const std::string& GetEtcDir() {
    const static std::string rootetcdir =
       GetRootSys() + GetPathSeparator() + "etc" + GetPathSeparator();;
    return rootetcdir;
+}
+
+static std::string str_tolower(std::string s) {
+   std::transform(s.begin(), s.end(), s.begin(),
+                  [](unsigned char c){ return std::tolower(c); });
+   return s;
+}
+
+bool CanConvertEnvValueToBool(const std::string& value) {
+   std::string lowercase = str_tolower(value);
+   if (lowercase == "1" || lowercase == "on" || lowercase == "true")
+      return true;
+   if (lowercase == "0" || lowercase == "off" || lowercase == "false")
+      return true;
+
+   return false;
+}
+
+bool ConvertEnvValueToBool(const std::string& value) {
+   assert(CanConvertEnvValueToBool(value));
+   std::string lowercase = str_tolower(value);
+   if (lowercase == "1" || lowercase == "on" || lowercase == "true")
+      return true;
+   if (lowercase == "0" || lowercase == "off" || lowercase == "false")
+      return false;
+   // FIXME: Implement a wrapper around __builtin_unreachable() and use it here
+   return false;
 }
 
 } // namespace FoundationUtils

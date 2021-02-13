@@ -40,3 +40,6 @@ include(${dir}/test/CTestCustom.cmake OPTIONAL)
 include(${dir}/roottest/CTestCustom.cmake OPTIONAL)
 include(${dir}/rootbench/CTestCustom.cmake OPTIONAL)
 include(${dir}/tutorials/CTestCustom.cmake OPTIONAL)
+
+#---Load custom environment variables for test configurations at runtime------
+include(${dir}/CTestEnvVars.cmake OPTIONAL)

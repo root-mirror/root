@@ -33,6 +33,7 @@
 #@usecxxmodules@ R__USE_CXXMODULES   /**/
 #@uselibc++@ R__USE_LIBCXX    /**/
 #@hasstdstringview@ R__HAS_STD_STRING_VIEW   /**/
+#@cudahasstdstringview@ R__CUDA_HAS_STD_STRING_VIEW   /**/
 #@hasstdexpstringview@ R__HAS_STD_EXPERIMENTAL_STRING_VIEW   /**/
 #@hasstodstringview@ R__HAS_STOD_STRING_VIEW /**/
 #@hasopplusequalstringview@ R__HAS_OP_EQUAL_PLUS_STRING_VIEW /**/
@@ -47,6 +48,7 @@
 #@hasqt5webengine@ R__HAS_QT5WEB  /**/
 #@hasdavix@ R__HAS_DAVIX  /**/
 #@hasdataframe@ R__HAS_DATAFRAME /**/
+#@use_less_includes@ R__LESS_INCLUDES /**/
 
 #if defined(R__HAS_VECCORE) && defined(R__HAS_VC)
 #ifndef VECCORE_ENABLE_VC
@@ -62,6 +64,10 @@
 
 #@hastmvacpu@ R__HAS_TMVACPU /**/
 #@hastmvagpu@ R__HAS_TMVAGPU /**/
+#@hastmvacudnn@ R__HAS_CUDNN /**/
+#@haspymva@ R__HAS_PYMVA /**/
+#@hasrmva@ R__HAS_RMVA /**/
 
+#@hasuring@ R__HAS_URING /**/
 
 #endif

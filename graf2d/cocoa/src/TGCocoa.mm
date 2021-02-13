@@ -3441,6 +3441,8 @@ void TGCocoa::SetDoubleBufferON()
 
    NSObject<X11Window> * const window = fPimpl->GetWindow(fSelectedDrawable);
 
+   if (!window) return;
+
    assert(window.fIsPixmap == NO &&
           "SetDoubleBufferON, selected drawable is a pixmap, can not attach pixmap to pixmap");
 
@@ -3466,7 +3468,17 @@ void TGCocoa::SetDrawMode(EDrawMode mode)
 {
    // Sets the drawing mode.
    //
-   //EDrawMode{kCopy, kXor};
+   //EDrawMode{kCopy, kXor, kInvert};
+   if (fDrawMode == kInvert && mode != kInvert) {
+       // Remove previously added CrosshairWindow.
+       auto windows = NSApplication.sharedApplication.windows;
+       for (NSWindow *candidate : windows) {
+           if ([candidate isKindOfClass:QuartzWindow.class])
+               [(QuartzWindow *)candidate removeCrosshairWindow];
+       }
+       fPimpl->fX11CommandBuffer.ClearXOROperations();
+   }
+
    fDrawMode = mode;
 }
 

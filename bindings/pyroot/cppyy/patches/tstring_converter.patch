@@ -1,0 +1,45 @@
+diff --git a/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx b/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
+index a8d8bf6..a7db91e 100644
+--- a/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
++++ b/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
+@@ -1638,6 +1638,7 @@ bool CPyCppyy::name##Converter::ToMemory(PyObject* value, void* address)     \
+     return InstancePtrConverter::ToMemory(value, address);                   \
+ }
+ 
++CPPYY_IMPL_STRING_AS_PRIMITIVE_CONVERTER(TString, TString, Data, Length)
+ CPPYY_IMPL_STRING_AS_PRIMITIVE_CONVERTER(STLString, std::string, c_str, size)
+ CPPYY_IMPL_STRING_AS_PRIMITIVE_CONVERTER(STLStringViewBase, std::string_view, data, size)
+ bool CPyCppyy::STLStringViewConverter::SetArg(
+@@ -3014,6 +3015,9 @@ public:
+         gf["const Double32_t&"] =           gf["const double&"];
+ 
+     // factories for special cases
++        gf["TString"] =                     (cf_t)+[](dims_t) { return new TStringConverter{}; };
++        gf["TString&"] =                    gf["TString"];
++        gf["const TString&"] =              gf["TString"];
+         gf["nullptr_t"] =                   (cf_t)+[](dims_t) { static NullptrConverter c{};        return &c;};
+         gf["const char*"] =                 (cf_t)+[](dims_t) { return new CStringConverter{}; };
+         gf["const signed char*"] =          gf["const char*"];
+diff --git a/bindings/pyroot/cppyy/CPyCppyy/src/DeclareConverters.h b/bindings/pyroot/cppyy/CPyCppyy/src/DeclareConverters.h
+index 47d2a83..e98f5e7 100644
+--- a/bindings/pyroot/cppyy/CPyCppyy/src/DeclareConverters.h
++++ b/bindings/pyroot/cppyy/CPyCppyy/src/DeclareConverters.h
+@@ -7,7 +7,10 @@
+ // Standard
+ #include <complex>
+ #include <string>
++
++// ROOT
+ #include "ROOT/RStringView.hxx"
++#include "TString.h"
+ 
+ 
+ namespace CPyCppyy {
+@@ -354,6 +357,7 @@ protected:                                                                   \
+     strtype fBuffer;                                                         \
+ }
+ 
++CPPYY_DECLARE_STRING_CONVERTER(TString, TString);
+ CPPYY_DECLARE_STRING_CONVERTER(STLString, std::string);
+ CPPYY_DECLARE_STRING_CONVERTER(STLStringViewBase, std::string_view);
+ class STLStringViewConverter : public STLStringViewBaseConverter {

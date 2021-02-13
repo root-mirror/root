@@ -29,6 +29,7 @@ Set of tools to analyse the performance tree
 #include "TKey.h"
 #include "TList.h"
 #include "TSortedList.h"
+#include "TObjString.h"
 #include "TPerfStats.h"
 #include "TRegexp.h"
 #include "TStyle.h"

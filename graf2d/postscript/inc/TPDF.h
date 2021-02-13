@@ -51,6 +51,7 @@ protected:
    Bool_t             fRange;           ///< True when a range has been defined
 
    static Int_t       fgLineJoin;       ///< Appearance of joining lines
+   static Int_t       fgLineCap;        ///< Appearance of line caps
 
 public:
    TPDF();
@@ -92,6 +93,7 @@ public:
    void     SetFillPatterns(Int_t ipat, Int_t color);
    void     SetLineColor( Color_t cindex=1);
    void     SetLineJoin(Int_t linejoin=0);
+   void     SetLineCap(Int_t linecap=0);
    void     SetLineScale(Float_t scale=1) {fLineScale = scale;}
    void     SetLineStyle(Style_t linestyle = 1);
    void     SetLineWidth(Width_t linewidth = 1);

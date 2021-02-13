@@ -79,6 +79,7 @@
 #include "TRandom.h"
 #include "TDirectory.h"
 #include "TProcessID.h"
+#include "snprintf.h"
 
 #include "Event.h"
 

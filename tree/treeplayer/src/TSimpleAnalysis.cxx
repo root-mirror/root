@@ -23,10 +23,8 @@
 #include "TROOT.h"
 
 #include <string>
-#include <fstream>
 #include <vector>
 #include <map>
-#include <iostream>
 
 /** \class TSimpleAnalysis
 

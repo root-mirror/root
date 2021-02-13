@@ -22,15 +22,16 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+
+#include "TObject.h"
+#include "TAttLine.h"
+#include "TAttFill.h"
 #include "TAttPad.h"
-
-#include "TVirtualX.h"
-
-#include "TString.h"
-
-#include "Buttons.h"
-
 #include "TQObject.h"
+
+#include "GuiTypes.h"
+#include "TString.h"
+#include "Buttons.h"
 
 // forward declarations
 class TAxis;
@@ -52,7 +53,7 @@ class TVirtualPad : public TObject, public TAttLine, public TAttFill,
 protected:
    Bool_t         fResizing;         //!true when resizing the pad
 
-   virtual void  *GetSender() { return this; }  //used to set gTQSender
+   void  *GetSender() override { return this; }  //used to set gTQSender
 
 public:
    TVirtualPad();
@@ -66,14 +67,14 @@ public:
    virtual void     AddExec(const char *name, const char *command) = 0;
    virtual TLegend *BuildLegend(Double_t x1=0.3, Double_t y1=0.21, Double_t x2=0.3, Double_t y2=0.21, const char *title="", Option_t *option = "") = 0;
    virtual TVirtualPad* cd(Int_t subpadnumber=0) = 0;
-   virtual void     Clear(Option_t *option="") = 0;
+           void     Clear(Option_t *option="") override = 0;
    virtual Int_t    Clip(Double_t *x, Double_t *y, Double_t xclipl, Double_t yclipb, Double_t xclipr, Double_t yclipt) = 0;
    virtual void     Close(Option_t *option="") = 0;
    virtual void     CopyPixmap() = 0;
    virtual void     CopyPixmaps() = 0;
    virtual void     DeleteExec(const char *name) = 0;
    virtual void     Divide(Int_t nx=1, Int_t ny=1, Float_t xmargin=0.01, Float_t ymargin=0.01, Int_t color=0) = 0;
-   virtual void     Draw(Option_t *option="") = 0;
+           void     Draw(Option_t *option="") override = 0;
    virtual void     DrawClassObject(const TObject *obj, Option_t *option="") = 0;
    virtual TH1F    *DrawFrame(Double_t xmin, Double_t ymin, Double_t xmax, Double_t ymax, const char *title="") = 0;
    virtual void     ExecuteEventAxis(Int_t event, Int_t px, Int_t py, TAxis *axis) = 0;
@@ -131,8 +132,8 @@ public:
    virtual Int_t    GetLogy() const = 0;
    virtual Int_t    GetLogz() const = 0;
    virtual TVirtualPad  *GetMother() const = 0;
-   virtual const char *GetName() const = 0;
-   virtual const char *GetTitle() const = 0;
+           const char *GetName() const override = 0;
+           const char *GetTitle() const override = 0;
    virtual Int_t    GetPadPaint() const = 0;
    virtual Int_t    GetPixmapID() const = 0;
    virtual TObject *GetView3D() const = 0;
@@ -145,13 +146,13 @@ public:
    virtual Bool_t   IsModified() const = 0;
    virtual Bool_t   IsRetained() const = 0;
    virtual Bool_t   IsVertical() const = 0;
-   virtual void     ls(Option_t *option="") const = 0;
+           void     ls(Option_t *option="") const override = 0;
    virtual void     Modified(Bool_t flag=1) = 0;
    virtual Bool_t   OpaqueMoving() const = 0;
    virtual Bool_t   OpaqueResizing() const = 0;
    virtual Double_t PadtoX(Double_t x) const = 0;
    virtual Double_t PadtoY(Double_t y) const = 0;
-   virtual void     Paint(Option_t *option="") = 0;
+           void     Paint(Option_t *option="") override = 0;
    virtual void     PaintBorderPS(Double_t xl,Double_t yl,Double_t xt,Double_t yt,Int_t bmode,Int_t bsize,Int_t dark,Int_t light) = 0;
    virtual void     PaintBox(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Option_t *option="") = 0;
    virtual void     PaintFillArea(Int_t n, Float_t *x, Float_t *y, Option_t *option="") = 0;
@@ -175,16 +176,16 @@ public:
    virtual void     PaintTextNDC(Double_t u, Double_t v, const wchar_t *text) = 0;
    virtual Double_t PixeltoX(Int_t px) = 0;
    virtual Double_t PixeltoY(Int_t py) = 0;
-   virtual void     Pop() = 0;
-   virtual void     Print(const char *filename="") const = 0;
+           void     Pop() override = 0;
+           void     Print(const char *filename="") const override = 0;
    virtual void     Print(const char *filename, Option_t *option) = 0;
    virtual void     Range(Double_t x1, Double_t y1, Double_t x2, Double_t y2) = 0;
    virtual void     RangeAxis(Double_t xmin, Double_t ymin, Double_t xmax, Double_t ymax) = 0;
-   virtual void     RecursiveRemove(TObject *obj) = 0;
+           void     RecursiveRemove(TObject *obj) override = 0;
    virtual void     RedrawAxis(Option_t *option="") = 0;
    virtual void     ResetView3D(TObject *view=0) = 0;
    virtual void     ResizePad(Option_t *option="") = 0;
-   virtual void     SaveAs(const char *filename="",Option_t *option="") const = 0;
+           void     SaveAs(const char *filename="",Option_t *option="") const override = 0;
    virtual void     SetBatch(Bool_t batch=kTRUE) = 0;
    virtual void     SetBorderMode(Short_t bordermode) = 0;
    virtual void     SetBorderSize(Short_t bordersize) = 0;
@@ -263,7 +264,7 @@ public:
 
    static TVirtualPad *&Pad();
 
-   ClassDef(TVirtualPad,3)  //Abstract base class for Pads and Canvases
+   ClassDefOverride(TVirtualPad,3)  //Abstract base class for Pads and Canvases
 };
 
 //
@@ -277,8 +278,8 @@ public:
    ~TPickerStackGuard();
 
 private:
-   TPickerStackGuard(const TPickerStackGuard &rhs);
-   TPickerStackGuard &operator = (const TPickerStackGuard &rhs);
+   TPickerStackGuard(const TPickerStackGuard &rhs) = delete;
+   TPickerStackGuard &operator = (const TPickerStackGuard &rhs) = delete;
 };
 
 

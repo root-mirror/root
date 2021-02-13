@@ -34,8 +34,8 @@ public:
   virtual RooAbsBinning* clone(const char* name=0) const = 0 ;
   virtual ~RooAbsBinning() ;
 
+  /// Return number of bins.
   Int_t numBins() const { 
-    // Return number of bins 
     return numBoundaries()-1 ; 
   }
   virtual Int_t numBoundaries() const = 0 ;
@@ -48,12 +48,12 @@ public:
   virtual Bool_t isUniform() const { return kFALSE ; }
 
   virtual void setRange(Double_t xlo, Double_t xhi) = 0 ;
+  /// Change lower bound to xlo.
   virtual void setMin(Double_t xlo) { 
-    // Change lower bound to xlo
     setRange(xlo,highBound()) ; 
   }
+  /// Change upper bound to xhi.
   virtual void setMax(Double_t xhi) { 
-    // Change upper bound to xhi
     setRange(lowBound(),xhi) ; 
   }
 
@@ -75,29 +75,28 @@ public:
   virtual void printArgs(std::ostream& os) const ;
   virtual void printValue(std::ostream& os) const ;
   
-
+  /// Interface function. If true, min/max of binning is parameterized by external RooAbsReals.
+  /// Default to `false`, unless overridden by a sub class.
   virtual Bool_t isParameterized() const { 
-    // Interface function. If true, min/max of binning is parameterized by external RooAbsReals
     return kFALSE ; 
   }
+  /// Return pointer to RooAbsReal parameterized lower bound, if any.
   virtual RooAbsReal* lowBoundFunc() const { 
-    // Return pointer to RooAbsReal parameterized lower bound, if any
     return 0 ; 
   }
+  /// Return pointer to RooAbsReal parameterized upper bound, if any.
   virtual RooAbsReal* highBoundFunc() const { 
-    // Return pointer to RooAbsReal parameterized upper bound, if any
     return 0 ; 
   }
+  /// If true (default), the range definition can be shared across clones of a RooRealVar.
   virtual Bool_t isShareable() const { 
-    // If true (default) range definition can be shared across clones of a RooRealVar
     return kTRUE ; 
   }
-  virtual void insertHook(RooAbsRealLValue&) const {
-    // Hook interface function to execute code upon insertion into a RooAbsRealLValue
-  } ;
-  virtual void removeHook(RooAbsRealLValue&) const {
-    // Hook interface functionto execute code upon removal from a RooAbsRealLValue
-  } ;
+  /// Hook interface function to execute code upon insertion into a RooAbsRealLValue.
+  virtual void insertHook(RooAbsRealLValue&) const {  }
+  /// Hook interface function to execute code upon removal from a RooAbsRealLValue.
+  virtual void removeHook(RooAbsRealLValue&) const {  }
+
 
 protected:  
 

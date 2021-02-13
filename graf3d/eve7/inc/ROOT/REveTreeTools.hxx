@@ -25,8 +25,8 @@ namespace Experimental {
 
 class REveSelectorToEventList : public TSelectorDraw
 {
-   REveSelectorToEventList(const REveSelectorToEventList &);            // Not implemented
-   REveSelectorToEventList &operator=(const REveSelectorToEventList &); // Not implemented
+   REveSelectorToEventList(const REveSelectorToEventList &) = delete;
+   REveSelectorToEventList &operator=(const REveSelectorToEventList &) = delete;
 
 protected:
    TEventList *fEvList{nullptr};
@@ -75,8 +75,8 @@ public:
 
 class REvePointSelector : public TSelectorDraw
 {
-   REvePointSelector(const REvePointSelector &);            // Not implemented
-   REvePointSelector &operator=(const REvePointSelector &); // Not implemented
+   REvePointSelector(const REvePointSelector &) = delete;
+   REvePointSelector &operator=(const REvePointSelector &) = delete;
 
 protected:
    TTree *fTree{nullptr};

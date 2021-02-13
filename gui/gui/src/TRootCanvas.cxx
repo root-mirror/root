@@ -34,7 +34,6 @@
 #include "TClass.h"
 #include "TSystem.h"
 #include "TCanvas.h"
-#include "TPadPainter.h"
 #include "TBrowser.h"
 #include "TClassTree.h"
 #include "TMarker.h"
@@ -46,7 +45,7 @@
 #include "TInterpreter.h"
 #include "TEnv.h"
 #include "TMath.h"
-#include "Riostream.h"
+#include <iostream>
 #include "TGDockableFrame.h"
 
 #include "TG3DLine.h"
@@ -54,7 +53,6 @@
 #include "TGToolTip.h"
 #include "TVirtualPadEditor.h"
 #include "TRootControlBar.h"
-#include "TGLabel.h"
 #include "TGuiBuilder.h"
 #include "TImage.h"
 #include "TError.h"

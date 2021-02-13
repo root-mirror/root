@@ -22,15 +22,6 @@
 
 #include "TObjArray.h"
 
-#include <vector>
-
-#ifdef R__OLDHPACC
-namespace std {
-   using ::string;
-   using ::vector;
-}
-#endif
-
 class TBranch;
 class TTree;
 class TFileCacheRead;

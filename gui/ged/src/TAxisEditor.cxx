@@ -42,7 +42,6 @@
 #include "TGComboBox.h"
 #include "TGNumberEntry.h"
 #include "TGTextEntry.h"
-#include "TGToolTip.h"
 #include "TGLabel.h"
 #include "TColor.h"
 #include "TVirtualPad.h"

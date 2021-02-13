@@ -1,6 +1,5 @@
 #pragma once
 
-//#include "TApplication.h"
 #include "TCanvas.h"
 #include "TSystem.h"
 #include "TStyle.h"
@@ -12,6 +11,7 @@
 // MsgLogger!
 #include <iostream> // for std::cout
 #include <map>
+#include <string>
 
 namespace TMVA
 {

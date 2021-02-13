@@ -279,12 +279,13 @@ openbsd)
    ;;
 macosx)
    # MacOS X with gcc (GNU cc v3.1) and possible fink (fink.sf.net)
+   macosx_major=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1 | sed -e 's/^[[:space:]]*//'`
    macosx_minor=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2`
    # cannot find the one linked to libGraf if relocated after built
-   if [ $macosx_minor -le 4 ]; then
+   if [ $macosx_major -eq 10 -a $macosx_minor -le 4 ]; then
       rootlibs="$rootlibs -lfreetype"
    fi
-   if [ $macosx_minor -le 3 ]; then
+   if [ $macosx_major -eq 10 -a $macosx_minor -le 3 ]; then
       finkdir=`which fink 2>&1 | sed -ne "s/\/bin\/fink//p"`
       auxcflags=`[ -d ${finkdir}/include ] && echo -I${finkdir}/include`
       auxcflags="-Wno-long-double $auxcflags"
@@ -300,19 +301,21 @@ macosx)
    ;;
 macosxicc)
    # MacOS X with Intel icc compiler
+   macosx_major=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1 | sed -e 's/^[[:space:]]*//'`
    macosx_minor=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2`
    # cannot find the one linked to libGraf if relocated after built
-   if [ $macosx_minor -le 4 ]; then
+   if [ $macosx_major -eq 10 -a $macosx_minor -le 4 ]; then
       rootlibs="$rootlibs -lfreetype"
    fi
    auxcflags="${cxxversionflag}"
    auxlibs="-lm -ldl"
    ;;
-macosx64)
+macosx64|macosxarm64)
    # MacOS X with gcc (GNU cc v4.x) in 64 bit mode
+   macosx_major=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1 | sed -e 's/^[[:space:]]*//'`
    macosx_minor=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2`
    # cannot find the one linked to libGraf if relocated after built
-   if [ $macosx_minor -le 4 ]; then
+   if [ $macosx_major -eq 10 -a $macosx_minor -le 4 ]; then
       rootlibs="$rootlibs -lfreetype"
    fi
    auxcflags="${cxxversionflag} -m64"
@@ -375,7 +378,7 @@ freebsd* | openbsd* | linux*)
    done
    ;;
 macosx*)
-   if [ $macosx_minor -ge 5 ]; then
+   if [ \( $macosx_major -eq 10 -a $macosx_minor -ge 5 \) -o $macosx_major -gt 10  ]; then
       auxcflags="-pthread $auxcflags"
       auxlibs="-lpthread $auxlibs"
    else
@@ -384,7 +387,7 @@ macosx*)
    fi
    for f in $features ; do
       if test "x$f" = "xrpath" ; then
-         if [ $macosx_minor -ge 5 ]; then
+         if [ \( $macosx_major -eq 10 -a $macosx_minor -ge 5 \) -o $macosx_major -gt 10  ]; then
             auxlibs="-Wl,-rpath,$libdir $auxlibs"
          fi
       fi
@@ -439,7 +442,8 @@ Usage: root-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version]\
  [--evelibs] [--bindir] [--libdir] [--incdir] [--etcdir] [--tutdir] [--srcdir]\
  [--noauxcflags] [--noauxlibs] [--noldflags] [--has-<feature>] [--arch]\
  [--platform] [--config] [--features] [--ncpu] [--git-revision]\
- [--python-version] [--cc] [--cxx] [--f77] [--ld ] [--help]"
+ [--python-version] [--python2-version] [--python3-version]\
+ [--cc] [--cxx] [--f77] [--ld ] [--help]"
 
 if test $# -eq 0; then
    echo "${usage}" 1>&2
@@ -547,6 +551,12 @@ while test $# -gt 0; do
       ;;
     --python-version)
       out="$out @pythonvers@"
+      ;;
+    --python2-version)
+      out="$out @python2vers@"
+      ;;
+    --python3-version)
+      out="$out @python3vers@"
       ;;
     --cflags)
       ### Output the compiler flags
@@ -819,6 +829,8 @@ while test $# -gt 0; do
       echo "  --version             Print the ROOT version"
       echo "  --git-revision        Print the ROOT git revision number"
       echo "  --python-version      Print the Python version used by ROOT"
+      echo "  --python2-version     Print the Python2 version used by PyROOT"
+      echo "  --python3-version     Print the Python3 version used by PyROOT"
       echo "  --ncpu                Print number of available (hyperthreaded) cores"
       echo "  --cc                  Print alternative C compiler specified when ROOT was built"
       echo "  --cxx                 Print alternative C++ compiler specified when ROOT was built"

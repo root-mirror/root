@@ -54,6 +54,9 @@
 //
 //****************************************************************************//
 
+#ifndef ROOT_MemCheck
+#define ROOT_MemCheck
+
 #include "TROOT.h"
 
 
@@ -174,3 +177,5 @@ inline TStackInfo *TStackInfo::Next()
    //return (TStackInfo*)((char*)(&this[1])+fSize*sizeof(void*));
    return (TStackInfo*)((char*)(this)+fSize*sizeof(void*)+sizeof(TStackInfo));
 }
+
+#endif

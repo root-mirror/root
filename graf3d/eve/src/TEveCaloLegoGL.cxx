@@ -10,7 +10,6 @@
  *************************************************************************/
 
 #include "TAxis.h"
-#include "TH2.h"
 #include "THLimitsFinder.h"
 
 #include "TGLViewer.h"

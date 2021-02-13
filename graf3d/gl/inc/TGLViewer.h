@@ -31,8 +31,6 @@
 #include "GuiTypes.h"
 #include "TQObject.h"
 
-#include <vector>
-
 class TGLSceneBase;
 class TGLRedrawTimer;
 class TGLViewerEditor;
@@ -70,8 +68,8 @@ public:
    };
 
 private:
-   TGLViewer(const TGLViewer &);             // Not implemented
-   TGLViewer & operator=(const TGLViewer &); // Not implemented
+   TGLViewer(const TGLViewer &) = delete;
+   TGLViewer & operator=(const TGLViewer &) = delete;
 
    void InitSecondaryObjects();
 

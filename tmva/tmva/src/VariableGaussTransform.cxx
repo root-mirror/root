@@ -41,8 +41,6 @@ Gaussian Transformation of input variables.
 #include "TMVA/Types.h"
 #include "TMVA/Version.h"
 
-#include "TCanvas.h"
-#include "TGraph.h"
 #include "TH1F.h"
 #include "TMath.h"
 #include "TVectorF.h"
@@ -50,7 +48,6 @@ Gaussian Transformation of input variables.
 
 #include <exception>
 #include <iostream>
-#include <iomanip>
 #include <list>
 #include <limits>
 #include <stdexcept>

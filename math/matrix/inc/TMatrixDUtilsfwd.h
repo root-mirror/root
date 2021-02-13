@@ -30,7 +30,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 template<class Element> class TMatrixTRow_const;
 template<class Element> class TMatrixTColumn_const;

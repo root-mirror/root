@@ -35,7 +35,6 @@ RooRealVar objects and will recycle them as appropriate.
 #include <math.h>
 #include <sstream>
 #include "RooRealConstant.h"
-#include "RooRealConstant.h"
 #include "RooConstVar.h"
 #include "RooArgList.h"
 

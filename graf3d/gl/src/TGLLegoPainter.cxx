@@ -17,7 +17,6 @@
 #include "TString.h"
 #include "TColor.h"
 #include "TROOT.h"
-#include "TClass.h"
 #include "TStyle.h"
 #include "TAxis.h"
 #include "TMath.h"

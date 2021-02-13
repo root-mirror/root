@@ -18,8 +18,6 @@
 #include "TGeoMatrix.h"
 #include "TClass.h"
 #include "TMath.h"
-
-#include "TStyle.h"
 #include "TColor.h"
 
 #include "TROOT.h"
@@ -28,8 +26,6 @@
 
 #include "TGClient.h"
 #include "TGMimeTypes.h"
-
-#include "Riostream.h"
 
 #include <list>
 #include <algorithm>

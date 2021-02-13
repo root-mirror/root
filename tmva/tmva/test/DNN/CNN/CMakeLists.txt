@@ -9,10 +9,8 @@
 # @author Vladimir Ilievski
 ############################################################################
 
-project(tmva-tests)
-find_package(ROOT REQUIRED)
 
-set(Libraries Core MathCore Matrix TMVA)
+set(Libraries TMVA)
 
 #--- CUDA tests. ---------------------------
 if (CUDA_FOUND AND tmva-gpu)
@@ -39,7 +37,6 @@ CUDA_ADD_EXECUTABLE(testForwardPassCuda TestForwardPassCuda.cxx)
 target_link_libraries(testForwardPassCuda ${Libraries} ${DNN_CUDA_LIBRARIES})
 ROOT_ADD_TEST(TMVA-DNN-CNN-ForwardCuda COMMAND testForwardPassCuda)
 
-
 CUDA_ADD_EXECUTABLE(testRotateWeightsCuda TestRotateWeightsCuda.cxx)
 target_link_libraries(testRotateWeightsCuda ${Libraries} ${DNN_CUDA_LIBRARIES})
 ROOT_ADD_TEST(TMVA-DNN-CNN-RotateWeightsCuda COMMAND testRotateWeightsCuda)
@@ -47,6 +44,12 @@ ROOT_ADD_TEST(TMVA-DNN-CNN-RotateWeightsCuda COMMAND testRotateWeightsCuda)
 CUDA_ADD_EXECUTABLE(testConvBackpropagationCuda TestConvBackpropagationCuda.cxx)
 target_link_libraries(testConvBackpropagationCuda ${Libraries} ${DNN_CUDA_LIBRARIES})
 ROOT_ADD_TEST(TMVA-DNN-CNN-ConvBackpropagationCuda COMMAND testConvBackpropagationCuda)
+
+if (tmva-cudnn)
+
+CUDA_ADD_EXECUTABLE(testForwardPassCudnn TestForwardPassCudnn.cxx)
+target_link_libraries(testForwardPassCudnn ${Libraries} ${DNN_CUDA_LIBRARIES})
+ROOT_ADD_TEST(TMVA-DNN-CNN-ForwardCudnn COMMAND testForwardPassCudnn)
 
 CUDA_ADD_EXECUTABLE(testConvBackpropagationCudnn TestConvBackpropagationCudnn.cxx)
 target_link_libraries(testConvBackpropagationCudnn ${Libraries} ${DNN_CUDA_LIBRARIES})
@@ -60,14 +63,15 @@ CUDA_ADD_EXECUTABLE(testPoolingLayerCudnn TestPoolingLayerCudnn.cxx)
 target_link_libraries(testPoolingLayerCudnn ${Libraries} ${DNN_CUDA_LIBRARIES})
 ROOT_ADD_TEST(TMVA-DNN-CNN-PoolingLayerCudnn COMMAND testPoolingLayerCudnn)
 
+# test mixed architecture Cudnn Cpu
 CUDA_ADD_EXECUTABLE(testMixedArchitectures TestMixedArchitectures.cxx)
 target_link_libraries(testMixedArchitectures ${Libraries} ${DNN_CUDA_LIBRARIES})
 ROOT_ADD_TEST(TMVA-DNN-CNN-MixedArchitectures COMMAND testMixedArchitectures)
 
-include_directories(${ROOT_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
+endif()
 
-else()
-include_directories(${ROOT_INCLUDE_DIRS})
+include_directories(${CUDA_INCLUDE_DIRS})
+
 endif()
 
 #-- -test of reference architecture
@@ -106,7 +110,7 @@ endif()
 #--- CPU tests. ----------------------------
 if ((BLAS_FOUND OR mathmore) AND imt AND tmva-cpu)
 
-include_directories(${TBB_INCLUDE_DIRS})
+include_directories(SYSTEM ${TBB_INCLUDE_DIRS})
 
 ROOT_EXECUTABLE(testIm2ColCpu TestIm2ColCpu.cxx LIBRARIES ${Libraries})
 ROOT_ADD_TEST(TMVA-DNN-CNN-Im2Col-CPU COMMAND testIm2ColCpu)

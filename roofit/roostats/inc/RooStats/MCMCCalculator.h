@@ -14,7 +14,7 @@
 
 #include "Rtypes.h"
 
-#include "TObject.h"
+#include "TNamed.h"
 #include "RooAbsPdf.h"
 #include "RooAbsData.h"
 #include "RooArgSet.h"

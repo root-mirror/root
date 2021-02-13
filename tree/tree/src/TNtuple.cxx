@@ -15,9 +15,8 @@
 #include "TBranch.h"
 #include "TLeaf.h"
 #include "TBrowser.h"
-#include "Riostream.h"
-#include "TClass.h"
 #include "TreeUtils.h"
+#include "strlcpy.h"
 
 #include <string>
 

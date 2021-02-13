@@ -12,6 +12,9 @@
 // Helper clas implementing some of the TH1 functionality
 
 #include "TH1.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
+#include "TProfile3D.h"
 #include "TList.h"
 
 class TH1Merger {
@@ -31,8 +34,8 @@ public:
 
    static Int_t FindFixBinNumber(Int_t ibin, const TAxis & inAxis, const TAxis & outAxis) {
       // should I ceck in case of underflow/overflow if underflow/overflow values of input axis
-      // outside  output axis ?  
-      if (ibin == 0 ) return 0;   // return underflow 
+      // outside  output axis ?
+      if (ibin == 0 ) return 0;   // return underflow
       if (ibin == inAxis.GetNbins()+1 ) return outAxis.GetNbins()+1; // return overflow
       return outAxis.FindFixBin(inAxis.GetBinCenter(ibin));
    }
@@ -40,8 +43,8 @@ public:
    // find bin number estending the axis
    static Int_t FindBinNumber(Int_t ibin, const TAxis & inAxis, TAxis & outAxis) {
       // should I ceck in case of underflow/overflow if underflow/overflow values of input axis
-      // outside  output axis ?  
-      if (ibin == 0 ) return 0;   // return underflow 
+      // outside  output axis ?
+      if (ibin == 0 ) return 0;   // return underflow
       if (ibin == inAxis.GetNbins()+1 ) return outAxis.GetNbins()+1; // return overflow
       return outAxis.FindBin(inAxis.GetBinCenter(ibin));
    }
@@ -51,8 +54,12 @@ public:
 
     // check if histogram has duplicate labels
    static Int_t CheckForDuplicateLabels(const TH1 * hist);
-   
-   
+
+    // function to check if histogram bin is empty
+   static Bool_t IsBinEmpty(const TH1 *hist, Int_t bin);
+
+
+
    TH1Merger(TH1 & h, TCollection & l, Option_t * opt = "") :
       fH0(&h),
       fHClone(nullptr),
@@ -60,12 +67,23 @@ public:
    {
       fInputList.AddAll(&l);
       TString option(opt);
-      if (!option.IsNull() ) { 
+      if (!option.IsNull() ) {
          option.ToUpper();
-         if (option.Contains("NOL") ) 
+         if (option.Contains("NOL") )
             fNoLabelMerge = true;
-          if (option.Contains("NOCHECK") ) 
-            fNoCheck = true; 
+          if (option.Contains("NOCHECK") )
+            fNoCheck = true;
+      }
+      TClass *classType = h.IsA();
+      if (classType == TProfile::Class()) {
+         fIsProfileMerge = kTRUE;
+         fIsProfile1D = kTRUE;
+      } else if (classType == TProfile2D::Class()) {
+         fIsProfileMerge = kTRUE;
+         fIsProfile2D = kTRUE;
+      } else if (classType == TProfile3D::Class()) {
+         fIsProfileMerge = kTRUE;
+         fIsProfile3D = kTRUE;
       }
    }
 
@@ -74,10 +92,10 @@ public:
       // accessing deleted memory later [we 'could' have just removed
       // fHClone from the list]
       fInputList.Clear();
-      if (fHClone) delete fHClone; 
+      if (fHClone) delete fHClone;
    }
 
-   // function douing the actual merge
+   // function doing the actual merge
    Bool_t operator() ();
 
 private:
@@ -101,14 +119,27 @@ private:
 
    Bool_t LabelMerge();
 
+   template <class TProfileType>
+   void MergeProfileBin(const TProfileType *p, Int_t ibin, Int_t outbin);
+
+   // function doing the bin merge for histograms and profiles
+   void MergeBin(const TH1 *hist, Int_t inbin, Int_t outbin);
+
+   void MergeBin(const TProfile *hist, Int_t inbin, Int_t outbin) { MergeProfileBin<TProfile>(hist, inbin, outbin); }
+   void MergeBin(const TProfile2D *hist, Int_t inbin, Int_t outbin) { MergeProfileBin<TProfile2D>(hist, inbin, outbin); }
+   void MergeBin(const TProfile3D *hist, Int_t inbin, Int_t outbin) { MergeProfileBin<TProfile3D>(hist, inbin, outbin); }
 
    Bool_t fNoLabelMerge = kFALSE; // force merger to not use labels and do bin center by bin center
-   Bool_t fNoCheck = kFALSE;     // skip check on duplicate labels 
-   TH1 * fH0;  //! histogram on which the list is merged
-   TH1 * fHClone;  //! copy of fH0 - managed by this class
-   TList fInputList; // input histogram List
-   TAxis fNewXAxis; 
-   TAxis fNewYAxis; 
-   TAxis fNewZAxis; 
+   Bool_t fNoCheck = kFALSE;      // skip check on duplicate labels
+   Bool_t fIsProfileMerge = kFALSE; // flag to indicate if is a merge of TProfiles
+   Bool_t fIsProfile1D = kFALSE;
+   Bool_t fIsProfile2D = kFALSE;
+   Bool_t fIsProfile3D = kFALSE;
+   TH1 *fH0;                      //! histogram on which the list is merged
+   TH1 *fHClone;                  //! copy of fH0 - managed by this class
+   TList fInputList;              // input histogram List
+   TAxis fNewXAxis;
+   TAxis fNewYAxis;
+   TAxis fNewZAxis;
    UInt_t fNewAxisFlag;
 };

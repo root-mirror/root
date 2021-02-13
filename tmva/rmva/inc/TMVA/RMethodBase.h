@@ -26,6 +26,9 @@
 
 #include <TRInterface.h>
 
+#include <vector>
+#include <string>
+
 class TGraph;
 class TTree;
 class TDirectory;

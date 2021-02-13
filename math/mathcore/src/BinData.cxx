@@ -104,7 +104,7 @@ namespace ROOT {
 
       fpTmpCoordErrorVector = new double [ fDim ];
 
-      ComputeSums(); 
+      ComputeSums();
     }
 
     /**
@@ -142,7 +142,7 @@ namespace ROOT {
       }
 
       fpTmpCoordErrorVector = new double [ fDim ];
-      ComputeSums(); 
+      ComputeSums();
     }
 
     /**
@@ -181,7 +181,7 @@ namespace ROOT {
       }
 
       fpTmpCoordErrorVector = new double [ fDim ];
-      ComputeSums(); 
+      ComputeSums();
     }
 
     /**
@@ -220,8 +220,11 @@ namespace ROOT {
     /**
       copy constructors
     */
-    BinData::BinData (const BinData & rhs) :
-      FitData()
+    BinData::BinData(const BinData &rhs)
+      : FitData(rhs),
+      fDataPtr(nullptr),
+      fDataErrorPtr(nullptr), fDataErrorHighPtr(nullptr), fDataErrorLowPtr(nullptr),
+      fpTmpCoordErrorVector(nullptr), fpTmpBinEdgeVector(nullptr)
     {
       *this = rhs;
     }
@@ -267,44 +270,35 @@ namespace ROOT {
       }
       else
       {
+        // copy data vector and set correct pointer
         fData = rhs.fData;
-
         if ( !fData.empty() )
           fDataPtr = &fData.front();
 
+         // copy coordinate erro and set correct pointers
         fCoordErrors = rhs.fCoordErrors;
+        if (!fCoordErrors.empty()) {
+           assert(kCoordError == fErrorType || kAsymError == fErrorType);
+           fCoordErrorsPtr.resize(fDim);
+           for (unsigned int i = 0; i < fDim; i++) {
+              fCoordErrorsPtr[i] = fCoordErrors[i].empty() ? nullptr : &fCoordErrors[i].front();
+           }
+        }
+        // copy data error
         fDataError = rhs.fDataError;
+        if (!fDataError.empty()) {
+           assert(kValueError == fErrorType || kCoordError == fErrorType);
+           fDataErrorPtr = &fDataError.front();
+        }
+        // copy the asymmetric data error
         fDataErrorHigh = rhs.fDataErrorHigh;
         fDataErrorLow = rhs.fDataErrorLow;
-
-        if( ! fCoordErrors.empty() )
-        {
-          assert( kCoordError == fErrorType || kAsymError == fErrorType );
-          fCoordErrorsPtr.resize( fDim );
-
-          for ( unsigned int i=0; i<fDim; i++ )
-          {
-            fCoordErrorsPtr[i] = fCoordErrors[i].empty() ? nullptr : &fCoordErrors[i].front();
-          }
-        }
-
-        fDataError = rhs.fDataError;
-        fDataErrorHigh = rhs.fDataErrorHigh;
-        fDataErrorLow = rhs.fDataErrorLow;
-
-        assert( fDataErrorLow.empty() == fDataErrorHigh.empty() );
-        assert( fDataErrorLow.empty() != fDataError.empty() || kNoError == fErrorType );
-
-        if ( !fDataError.empty() )
-        {
-          assert( kValueError == fErrorType || kCoordError == fErrorType );
-          fDataErrorPtr = &fDataError.front();
-        }
-        else if ( !fDataErrorHigh.empty() && !fDataErrorLow.empty() )
-        {
-          assert( kAsymError == fErrorType );
-          fDataErrorHighPtr = &fDataErrorHigh.front();
-          fDataErrorLowPtr = &fDataErrorLow.front();
+        // both error low and high should be empty or not
+        assert( fDataErrorLow.empty() == fDataErrorHigh.empty()) ;
+        if (!fDataErrorHigh.empty() && !fDataErrorLow.empty()) {
+           assert(kAsymError == fErrorType);
+           fDataErrorHighPtr = &fDataErrorHigh.front();
+           fDataErrorLowPtr = &fDataErrorLow.front();
         }
       }
 
@@ -454,9 +448,9 @@ namespace ROOT {
       FitData::Add( x );
       fSumContent += y;
       if (y != 0 || ey != 1.0)  fSumError2 += ey*ey;
-      // set the weight flag checking if error^2 != y 
-      if (!fIsWeighted) 
-         if (y != 0 && std::abs( ey*ey/y - 1.0) > 1.E-12) fIsWeighted = true; 
+      // set the weight flag checking if error^2 != y
+      if (!fIsWeighted)
+         if (y != 0 && std::abs( ey*ey/y - 1.0) > 1.E-12) fIsWeighted = true;
     }
 
     /**
@@ -481,9 +475,9 @@ namespace ROOT {
       FitData::Add( x );
       fSumContent += y;
       if (y != 0 || ey != 1.0)  fSumError2 += ey*ey;
-       // set the weight flag checking if error^2 != y 
-      if (!fIsWeighted) 
-         if (y != 0 && std::abs( ey*ey/y - 1.0) > 1.E-12) fIsWeighted = true; 
+       // set the weight flag checking if error^2 != y
+      if (!fIsWeighted)
+         if (y != 0 && std::abs( ey*ey/y - 1.0) > 1.E-12) fIsWeighted = true;
     }
 
     /**
@@ -509,7 +503,7 @@ namespace ROOT {
       FitData::Add( x );
       fSumContent += y;
       if (y != 0 || eyl != 1.0 || eyh != 1.0)  fSumError2  += (eyl+eyh)*(eyl+eyh)/4;
-      
+
     }
 
     /**
@@ -550,7 +544,7 @@ namespace ROOT {
       FitData::Add( x );
       fSumContent += val;
       if (val != 0 || eval != 1.0) fSumError2  += eval*eval;
-      if (!fIsWeighted) 
+      if (!fIsWeighted)
          if (val != 0 && std::abs( eval*eval/val - 1.0) > 1.E-12) fIsWeighted = true;
     }
 
@@ -581,7 +575,7 @@ namespace ROOT {
       FitData::Add( x );
       fSumContent += val;
       if (val != 0 || eval != 1.0) fSumError2  += eval*eval;
-      if (!fIsWeighted) 
+      if (!fIsWeighted)
          if (val != 0 && std::abs( eval*eval/val - 1.0) > 1.E-12) fIsWeighted = true;
     }
 
@@ -828,7 +822,7 @@ namespace ROOT {
     void BinData::ComputeSums() {
        unsigned int n = Size();
        fSumContent = 0;
-       fSumError2 = 0; 
+       fSumError2 = 0;
        if (fErrorType != kAsymError) {
           for (unsigned int i = 0; i < n; ++i)  {
              double y = Value(i);
@@ -839,16 +833,16 @@ namespace ROOT {
        }
        else {
           for (unsigned int i = 0; i < n; ++i)  {
-             double y = Value(i); 
+             double y = Value(i);
              fSumContent += y;
              double elval,ehval = 0;
              GetAsymError(i,elval,ehval);
-             if (y != 0 || elval != 1.0 || ehval != 1.0) 
+             if (y != 0 || elval != 1.0 || ehval != 1.0)
                 fSumError2 += (elval+ehval)*(elval+ehval)/4;
           }
        }
        // set the weight flag
-       fIsWeighted =  (fSumContent != fSumError2); 
+       fIsWeighted =  (fSumContent != fSumError2);
     }
 
   } // end namespace Fit

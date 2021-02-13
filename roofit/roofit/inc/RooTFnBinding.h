@@ -9,7 +9,6 @@
 
 #include "RooAbsReal.h"
 #include "RooListProxy.h"
-#include "RooAbsReal.h"
 class TF1 ;
 class TF2 ;
 class TF3 ;

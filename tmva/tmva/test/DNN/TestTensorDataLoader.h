@@ -16,6 +16,7 @@
 #include "TMVA/DNN/Net.h"
 #include "TMVA/DNN/TensorDataLoader.h"
 #include "Utility.h"
+#include <vector>
 
 namespace TMVA
 {

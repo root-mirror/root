@@ -1,4 +1,6 @@
 module "std" [system] {
+  requires !windows
+
   export *
   module "algorithm" {
     export *

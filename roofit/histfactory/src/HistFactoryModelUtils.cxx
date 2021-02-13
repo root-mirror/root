@@ -92,7 +92,7 @@ namespace HistFactory{
          RooAbsCategoryLValue *cat = (RooAbsCategoryLValue *) sim->indexCat().Clone();
          for (int ic = 0, nc = cat->numBins((const char *)0); ic < nc; ++ic) {
             cat->setBin(ic);
-            FactorizeHistFactoryPdf(observables, *sim->getPdf(cat->getLabel()), obsTerms, constraints);
+            FactorizeHistFactoryPdf(observables, *sim->getPdf(cat->getCurrentLabel()), obsTerms, constraints);
          }
          delete cat;
       } else if (pdf.dependsOn(observables)) {
@@ -251,18 +251,16 @@ namespace HistFactory{
 
     // loop over channels
     RooCategory* channelCat = (RooCategory*) (&simPdf->indexCat());
-    TIterator* iter = channelCat->typeIterator() ;
-    RooCatType* tt = NULL;
-    while((tt=(RooCatType*) iter->Next())) {
+    for (const auto& nameIdx : *channelCat) {
 
       // Get pdf associated with state from simpdf
-      RooAbsPdf* pdftmp = simPdf->getPdf(tt->GetName()) ;
+      RooAbsPdf* pdftmp = simPdf->getPdf(nameIdx.first.c_str());
 
       std::string ChannelName = pdftmp->GetName(); //tt->GetName();
       if(verbose) std::cout << "Getting data for channel: " << ChannelName << std::endl;
       ChannelBinDataMap[ ChannelName ] = std::vector<double>();
 
-      RooAbsData* dataForChan = (RooAbsData*) dataByCategory->FindObject(tt->GetName());
+      RooAbsData* dataForChan = (RooAbsData*) dataByCategory->FindObject(nameIdx.first.c_str());
       if(verbose) dataForChan->Print();
 
       // Generate observables defined by the pdf associated with this state
@@ -292,7 +290,6 @@ namespace HistFactory{
     
     } // End Loop Over Categories
     
-    delete iter;
     return;
 
   }

@@ -20,71 +20,65 @@
 
 using namespace ROOT::Minuit2;
 
-int main() {
+int main()
+{
 
-  // generate the data (100 data points)
-  GaussDataGen gdg(100);
+   // generate the data (100 data points)
+   GaussDataGen gdg(100);
 
-  std::vector<double> pos = gdg.Positions();
-  std::vector<double> meas = gdg.Measurements();
-  std::vector<double> var = gdg.Variances();
+   std::vector<double> pos = gdg.Positions();
+   std::vector<double> meas = gdg.Measurements();
+   std::vector<double> var = gdg.Variances();
 
+   // Estimate initial starting values for parameters
+   double x = 0.;
+   double x2 = 0.;
+   double norm = 0.;
+   double dx = pos[1] - pos[0];
+   double area = 0.;
+   for (unsigned int i = 0; i < meas.size(); i++) {
+      norm += meas[i];
+      x += (meas[i] * pos[i]);
+      x2 += (meas[i] * pos[i] * pos[i]);
+      area += dx * meas[i];
+   }
+   double mean = x / norm;
+   double rms2 = x2 / norm - mean * mean;
+   double rms = rms2 > 0. ? std::sqrt(rms2) : 1.;
 
+   // create parameters
+   MnUserParameters upar;
+   upar.Add("mean", mean, 0.1);
+   upar.Add("sigma", rms, 0.1);
+   upar.Add("area", area, 0.1);
 
-  // Estimate initial starting values for parameters
-  double x = 0.;
-  double x2 = 0.;
-  double norm = 0.;
-  double dx = pos[1]-pos[0];
-  double area = 0.;
-  for(unsigned int i = 0; i < meas.size(); i++) {
-    norm += meas[i];
-    x += (meas[i]*pos[i]);
-    x2 += (meas[i]*pos[i]*pos[i]);
-    area += dx*meas[i];
-  }
-  double mean = x/norm;
-  double rms2 = x2/norm - mean*mean;
-  double rms = rms2 > 0. ? sqrt(rms2) : 1.;
+   // create FCN function for Fumili using model function
+   GaussianModelFunction modelFunction;
+   FumiliStandardChi2FCN fFCN(modelFunction, meas, pos, var);
 
+   {
 
-  // create parameters
-  MnUserParameters upar;
-  upar.Add("mean", mean, 0.1);
-  upar.Add("sigma", rms, 0.1);
-  upar.Add("area", area, 0.1);
+      std::cout << "Minimize using FUMILI : \n" << std::endl;
+      MnFumiliMinimize fumili(fFCN, upar);
 
+      // Minimize
+      FunctionMinimum min = fumili();
 
+      // output
+      std::cout << "minimum: " << min << std::endl;
+   }
 
-  // create FCN function for Fumili using model function
-  GaussianModelFunction modelFunction;
-  FumiliStandardChi2FCN fFCN(modelFunction, meas, pos, var);
+   {
 
-  {
+      std::cout << "Minimize using MIGRAD : \n" << std::endl;
+      MnMigrad migrad(fFCN, upar);
 
-    std::cout << "Minimize using FUMILI : \n" << std::endl;
-    MnFumiliMinimize fumili(fFCN, upar);
+      // Minimize
+      FunctionMinimum min = migrad();
 
+      // output
+      std::cout << "minimum: " << min << std::endl;
+   }
 
-    // Minimize
-    FunctionMinimum min = fumili();
-
-    // output
-    std::cout<<"minimum: "<<min<<std::endl;
-  }
-
-  {
-
-    std::cout << "Minimize using MIGRAD : \n" << std::endl;
-    MnMigrad migrad(fFCN, upar);
-
-    // Minimize
-    FunctionMinimum min = migrad();
-
-    // output
-    std::cout<<"minimum: "<<min<<std::endl;
-  }
-
-
-  return 0;
+   return 0;
 }

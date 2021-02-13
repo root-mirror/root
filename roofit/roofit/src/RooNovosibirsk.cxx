@@ -28,8 +28,7 @@ Function taken from H. Ikeda et al. NIM A441 (2000), p. 401 (Belle Collaboration
 #include "RooNovosibirsk.h"
 #include "RooFit.h"
 #include "RooRealVar.h"
-#include "BatchHelpers.h"
-#include "RooVDTHeaders.h"
+#include "RooBatchCompute.h"
 
 #include "TMath.h"
 
@@ -89,68 +88,10 @@ Double_t RooNovosibirsk::evaluate() const
 
   return TMath::Exp(exponent) ;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
-namespace {
-//Author: Emmanouil Michalainas, CERN 10 September 2019
-
-/* TMath::ASinH(x) needs to be replaced with ln( x + sqrt(x^2+1))
- * argasinh -> the argument of TMath::ASinH()
- * argln -> the argument of the logarithm that replaces AsinH
- * asinh -> the value that the function evaluates to
- * 
- * ln is the logarithm that was solely present in the initial
- * formula, that is before the asinh replacement
- */
-template<class Tx, class Twidth, class Tpeak, class Ttail>
-void compute(	size_t batchSize, double * __restrict output,
-              Tx X, Tpeak P, Twidth W, Ttail T)
-{
-  constexpr double xi = 2.3548200450309494; // 2 Sqrt( Ln(4) )
-  for (size_t i=0; i<batchSize; i++) {
-    double argasinh = 0.5*xi*T[i];
-    double argln = argasinh + 1/_rf_fast_isqrt(argasinh*argasinh +1);
-    double asinh = _rf_fast_log(argln);
-    
-    double argln2 = 1 -(X[i]-P[i])*T[i]/W[i];
-    double ln    = _rf_fast_log(argln2);
-    output[i] = ln/asinh;
-    output[i] *= -0.125*xi*xi*output[i];
-    output[i] -= 2.0/xi/xi*asinh*asinh;
-  }
-  
-  //faster if you exponentiate in a seperate loop (dark magic!)
-  for (size_t i=0; i<batchSize; i++) {
-    output[i] = _rf_fast_exp(output[i]);
-  }
-}
-};
-
-RooSpan<double> RooNovosibirsk::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  using namespace BatchHelpers;
-
-  EvaluateInfo info = getInfo( {&x, &peak, &width, &tail}, begin, batchSize );
-  if (info.nBatches == 0) {
-    return {};
-  }
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-  auto xData = x.getValBatch(begin, info.size);
-
-  if (info.nBatches==1 && !xData.empty()) {
-    compute(info.size, output.data(), xData.data(),
-    BracketAdapter<double> (peak),
-    BracketAdapter<double> (width),
-    BracketAdapter<double> (tail));
-  }
-  else {
-    compute(info.size, output.data(),
-    BracketAdapterWithMask (x,x.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (peak,peak.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (width,width.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (tail,tail.getValBatch(begin,info.size)));
-  }
-  return output;
+/// Compute multiple values of Novosibirsk distribution.  
+RooSpan<double> RooNovosibirsk::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  return RooBatchCompute::dispatch->computeNovosibirsk(this, evalData, x->getValues(evalData, normSet), peak->getValues(evalData, normSet), width->getValues(evalData, normSet), tail->getValues(evalData, normSet));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

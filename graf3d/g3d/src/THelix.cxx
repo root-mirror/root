@@ -67,11 +67,10 @@ End_Macro
 This initializes a helix with its axis in Z direction (rtype=kHelixZ).
 */
 
-#include "Riostream.h"
+#include <iostream>
+#include "TBuffer.h"
 #include "TROOT.h"
-#include "TVirtualPad.h"
 #include "THelix.h"
-#include "TClass.h"
 #include "TMath.h"
 
 Int_t THelix::fgMinNSeg=5;        // at least 5 line segments in TPolyLine3D
@@ -81,9 +80,9 @@ ClassImp(THelix);
 ////////////////////////////////////////////////////////////////////////////////
 /// Set all helix parameters.
 
-void  THelix::SetHelix(Double_t *p,  Double_t *v,  Double_t w,
-                       Double_t *range, EHelixRangeType rType,
-                       Double_t *axis )
+void  THelix::SetHelix(Double_t const* xyz,  Double_t const* v,  Double_t w,
+                       Double_t const* range, EHelixRangeType rType,
+                       Double_t const* axis )
 {
    // Define the helix frame by setting the helix axis and rotation matrix
    SetAxis(axis);
@@ -98,9 +97,9 @@ void  THelix::SetHelix(Double_t *p,  Double_t *v,  Double_t w,
    fVt   = TMath::Sqrt(vx0*vx0 + vy0*vy0);
    fPhi0 = TMath::ATan2(vy0,vx0);
    fVz   = vz0;
-   fX0   = p[0] * m[0] +  p[1] * m[1] +  p[2] * m[2];
-   fY0   = p[0] * m[3] +  p[1] * m[4] +  p[2] * m[5];
-   fZ0   = p[0] * m[6] +  p[1] * m[7] +  p[2] * m[8];
+   fX0   = xyz[0] * m[0] +  xyz[1] * m[1] +  xyz[2] * m[2];
+   fY0   = xyz[0] * m[3] +  xyz[1] * m[4] +  xyz[2] * m[5];
+   fZ0   = xyz[0] * m[6] +  xyz[1] * m[7] +  xyz[2] * m[8];
    if (fW != 0) {
       fX0 += fVt / fW * TMath::Sin(fPhi0);
       fY0 -= fVt / fW * TMath::Cos(fPhi0);
@@ -154,8 +153,8 @@ THelix::THelix(Double_t x,  Double_t y,  Double_t z,
 ////////////////////////////////////////////////////////////////////////////////
 /// Helix normal constructor.
 
-THelix::THelix(Double_t * p, Double_t * v, Double_t w,
-               Double_t * range, EHelixRangeType rType, Double_t * axis)
+THelix::THelix(Double_t const* xyz, Double_t const* v, Double_t w,
+               Double_t const* range, EHelixRangeType rType, Double_t const* axis)
         : TPolyLine3D()
 {
    Double_t r[2];
@@ -167,9 +166,9 @@ THelix::THelix(Double_t * p, Double_t * v, Double_t w,
 
    fRotMat   = 0;
    if ( axis ) {                        // specify axis
-      SetHelix(p, v, w, r, rType, axis);
+      SetHelix(xyz, v, w, r, rType, axis);
    } else {                             // default axis
-      SetHelix(p, v, w, r, rType);
+      SetHelix(xyz, v, w, r, rType);
    }
 
    fOption = "";
@@ -319,7 +318,7 @@ void THelix::SavePrimitive(std::ostream &out, Option_t * /*= ""*/)
 ////////////////////////////////////////////////////////////////////////////////
 /// Set a new axis for the helix.  This will make a new rotation matrix.
 
-void THelix::SetAxis(Double_t * axis)
+void THelix::SetAxis(Double_t const* axis)
 {
    if (axis) {
       Double_t len = TMath::Sqrt(axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2]);

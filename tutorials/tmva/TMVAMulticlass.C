@@ -51,9 +51,16 @@ void TMVAMulticlass( TString myMethodList = "" )
    std::map<std::string,int> Use;
    Use["MLP"]             = 1;
    Use["BDTG"]            = 1;
-   Use["DNN_CPU"] = 0;
+#ifdef R__HAS_TMVAGPU
+   Use["DL_CPU"]          = 1;
+   Use["DL_GPU"]          = 1;
+#else
+   Use["DL_CPU"]          = 1;
+   Use["DL_GPU"]          = 0;
+#endif
    Use["FDA_GA"]          = 0;
-   Use["PDEFoam"]         = 0;
+   Use["PDEFoam"]         = 1;
+
    //---------------------------------------------------------------
 
    std::cout << std::endl;
@@ -90,24 +97,19 @@ void TMVAMulticlass( TString myMethodList = "" )
    dataloader->AddVariable( "var4", "Variable 4", "units", 'F' );
 
    TFile *input(0);
-   TString fname = "./tmva_example_multiple_background.root";
+   TString fname = "./tmva_example_multiclass.root";
    if (!gSystem->AccessPathName( fname )) {
-      // first we try to find the file in the local directory
-      std::cout << "--- TMVAMulticlass   : Accessing " << fname << std::endl;
-      input = TFile::Open( fname );
+      input = TFile::Open( fname ); // check if file in local directory exists
    }
    else {
-      std::cout << "Creating testdata...." << std::endl;
-      TString createDataMacro = gROOT->GetTutorialDir() + "/tmva/createData.C";
-      gROOT->ProcessLine(TString::Format(".L %s",createDataMacro.Data()));
-      gROOT->ProcessLine("create_MultipleBackground(2000)");
-      std::cout << " created tmva_example_multiple_background.root for tests of the multiclass features"<<std::endl;
-      input = TFile::Open( fname );
+      TFile::SetCacheFileDir(".");
+      input = TFile::Open("http://root.cern.ch/files/tmva_multiclass_example.root", "CACHEREAD");
    }
    if (!input) {
       std::cout << "ERROR: could not open data file" << std::endl;
       exit(1);
    }
+   std::cout << "--- TMVAMulticlass: Using input file: " << input->GetName() << std::endl;
 
    TTree *signalTree  = (TTree*)input->Get("TreeS");
    TTree *background0 = (TTree*)input->Get("TreeB0");
@@ -131,22 +133,32 @@ void TMVAMulticlass( TString myMethodList = "" )
    if (Use["PDEFoam"]) // PDE-Foam approach
       factory->BookMethod( dataloader,  TMVA::Types::kPDEFoam, "PDEFoam", "!H:!V:TailCut=0.001:VolFrac=0.0666:nActiveCells=500:nSampl=2000:nBin=5:Nmin=100:Kernel=None:Compress=T" );
 
-   if (Use["DNN_CPU"]) {
+
+   if (Use["DL_CPU"]) {
       TString layoutString("Layout=TANH|100,TANH|50,TANH|10,LINEAR");
-      TString training0("LearningRate=1e-1, Momentum=0.5, Repetitions=1, ConvergenceSteps=10,"
-                        " BatchSize=256, TestRepetitions=10, Multithreading=True");
-      TString training1("LearningRate=1e-2, Momentum=0.0, Repetitions=1, ConvergenceSteps=10,"
-                        " BatchSize=256, TestRepetitions=7, Multithreading=True");
-      TString trainingStrategyString("TrainingStrategy=");
-      trainingStrategyString += training0 + "|" + training1;
+      TString trainingStrategyString("TrainingStrategy=Optimizer=ADAM,LearningRate=1e-3,"
+                                     "TestRepetitions=1,ConvergenceSteps=10,BatchSize=100");
       TString nnOptions("!H:V:ErrorStrategy=CROSSENTROPY:VarTransform=N:"
-                        "WeightInitialization=XAVIERUNIFORM:Architecture=CPU");
+                        "WeightInitialization=XAVIERUNIFORM:Architecture=GPU");
       nnOptions.Append(":");
       nnOptions.Append(layoutString);
       nnOptions.Append(":");
       nnOptions.Append(trainingStrategyString);
-      factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_CPU", nnOptions);
+      factory->BookMethod(dataloader, TMVA::Types::kDL, "DL_CPU", nnOptions);
    }
+   if (Use["DL_GPU"]) {
+      TString layoutString("Layout=TANH|100,TANH|50,TANH|10,LINEAR");
+      TString trainingStrategyString("TrainingStrategy=Optimizer=ADAM,LearningRate=1e-3,"
+                                     "TestRepetitions=1,ConvergenceSteps=10,BatchSize=100");
+      TString nnOptions("!H:V:ErrorStrategy=CROSSENTROPY:VarTransform=N:"
+                        "WeightInitialization=XAVIERUNIFORM:Architecture=GPU");
+      nnOptions.Append(":");
+      nnOptions.Append(layoutString);
+      nnOptions.Append(":");
+      nnOptions.Append(trainingStrategyString);
+      factory->BookMethod(dataloader, TMVA::Types::kDL, "DL_GPU", nnOptions);
+   }
+
 
    // Train MVAs using the set of training events
    factory->TrainAllMethods();

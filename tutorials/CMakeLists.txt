@@ -6,33 +6,24 @@
 
 # CMakeLists.txt for the ROOT tutorials programs.
 # Author: Pere Mato, 25/10/2010
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 project(tutorials)
+
+# Sergey: make no sence while CMakeLists.txt file cannot be used separately from ROOT
+# but variables like ROOT_asimage_FOUND used here and produced in ROOTConfig.cmake
 find_package(ROOT REQUIRED)
 
 if(DEFINED ROOT_SOURCE_DIR)  # Testing using the binary tree
   set(ROOT_root_CMD root.exe)
-  if(pyroot_experimental)
-    if(NOT MSVC)  # Ignore environment on Windows
-      set(ROOT_environ PATH=${CMAKE_BINARY_DIR}/bin:$ENV{PATH}
-                       ${ld_library_path}=${CMAKE_BINARY_DIR}/lib:${CMAKE_BINARY_DIR}/lib/${python_dir}:$ENV{${ld_library_path}}
-                       ROOTSYS=${CMAKE_BINARY_DIR}
-                       PYTHONPATH=${CMAKE_BINARY_DIR}/lib:${CMAKE_BINARY_DIR}/lib/${python_dir}:$ENV{PYTHONPATH})
-    else()
-      set(ROOT_environ ROOTSYS=${CMAKE_BINARY_DIR}
-                       PYTHONPATH=${CMAKE_BINARY_DIR}/bin;${CMAKE_BINARY_DIR}/lib/${python_dir};$ENV{PYTHONPATH})
-    endif()
+  if(NOT MSVC)  # Ignore environment on Windows
+    set(ROOT_environ PATH=${CMAKE_BINARY_DIR}/bin:$ENV{PATH}
+                     ${ld_library_path}=${CMAKE_BINARY_DIR}/lib:$ENV{${ld_library_path}}
+                     ROOTSYS=${CMAKE_BINARY_DIR}
+                     PYTHONPATH=${CMAKE_BINARY_DIR}/lib:$ENV{PYTHONPATH})
   else()
-    if(NOT MSVC)  # Ignore environment on Windows
-      set(ROOT_environ PATH=${CMAKE_BINARY_DIR}/bin:$ENV{PATH}
-                       ${ld_library_path}=${CMAKE_BINARY_DIR}/lib:$ENV{${ld_library_path}}
-                       ROOTSYS=${CMAKE_BINARY_DIR}
-                       PYTHONPATH=${CMAKE_BINARY_DIR}/lib:$ENV{PYTHONPATH})
-    else()
-      set(ROOT_environ ROOTSYS=${CMAKE_BINARY_DIR}
-                       PYTHONPATH=${CMAKE_BINARY_DIR}/bin;$ENV{PYTHONPATH})
-    endif()
+    set(ROOT_environ ROOTSYS=${CMAKE_BINARY_DIR}
+                     PYTHONPATH=${CMAKE_BINARY_DIR}/bin;$ENV{PYTHONPATH})
   endif()
 else()                       # testing using an installation
   include(${ROOT_USE_FILE})
@@ -86,11 +77,22 @@ endif()
 
 if (NOT dataframe)
     # RDataFrame
-    list(APPEND dataframe_veto dataframe/*.C)
+    list(APPEND dataframe_veto dataframe/*.C dataframe/*.py)
     # RDataFrame tutorial in graphs
     list(APPEND dataframe_veto graphs/timeSeriesFromCSV_TDF.C)
     # TMVA tutorials dependent on RDataFrame
     list(APPEND dataframe_veto tmva/tmva*.C)
+elseif(MSVC AND NOT win_broken_tests)
+    list(APPEND dataframe_veto dataframe/*.py)
+endif()
+
+if(NOT sqlite)
+    # RDF+SQlite tutorials
+    list(APPEND dataframe_veto dataframe/*SQlite*)
+endif()
+
+if(MACOSX_VERSION VERSION_EQUAL 10.13)
+   list(APPEND dataframe_veto dataframe/df103_NanoAODHiggsAnalysis.*)
 endif()
 
 if(NOT ROOT_mlp_FOUND)
@@ -105,6 +107,14 @@ if(NOT ROOT_roofit_FOUND)
   set(roofit_veto  fit/RoofitDemo.C
                    roofit/*.C roostats/*.C histfactory/*.C
                    roofit/*.py)
+else()
+  if(MSVC AND NOT win_broken_tests)
+    set(roofit_veto roofit/rf104_classfactory.C
+                    roofit/rf104_classfactory.py
+                    roofit/rf401_importttreethx.C
+                    roofit/rf512_wsfactory_oper.C
+    )
+  endif()
 endif()
 
 if(NOT ROOT_unuran_FOUND)
@@ -122,20 +132,23 @@ if(NOT ROOT_mpi_FOUND)
   set(mpi_veto io/testTMPIFile.C)
 endif()
 
-if(NOT XROOTD_FOUND)
+if(NOT xrootd)
   set(xrootd_veto dataframe/df101_h1Analysis.C
                   dataframe/df102_NanoAODDimuonAnalysis.C
-                  dataframe/df103_NanoAODHiggsAnalysis.C)
+                  dataframe/df103_NanoAODHiggsAnalysis.C
+                  tmva/tmva103_Application.C
+                  dataframe/df102_NanoAODDimuonAnalysis.py
+                  dataframe/df103_NanoAODHiggsAnalysis.py
+                  dataframe/df104_HiggsToTwoPhotons.py
+                  dataframe/df105_WBosonAnalysis.py
+                  dataframe/df106_HiggsToFourLeptons.py
+                  dataframe/df107_SingleTopAnalysis.py
+                  )
 endif()
 
 # variables identifying the package must have the package name  in lower case (it corresponds to the CMake option name)
 if(NOT ROOT_r_FOUND)
   set(r_veto  r/*.C)
-endif()
-
-# FIXME: Temporary workaround for runtime_cxxmodule
-if (FIXME_TEMPORARILY_EXCLUDED_FOR_RUNTIME_CXXMODULES)
-  set(runtime_cxxmodules_veto r/Function.C)
 endif()
 
 if(WIN32)
@@ -159,7 +172,11 @@ if(NOT ROOT_mathmore_FOUND)
       math/Legendre.C
       math/mathmoreIntegration.C
       math/tStudent.C
-      math/normalDist.C)
+      math/normalDist.C
+      roostats/TestNonCentral.C
+      math/Legendre.py
+      math/Bessel.py
+      math/tStudent.py)
 endif()
 
 if(NOT ROOT_fftw3_FOUND)
@@ -216,7 +233,7 @@ set(gui_veto fit/fitpanel_playback.C
              webgui/panel/server.cxx webgui/webwindow/server.cxx)
 
 if (NOT ROOT_tmva_FOUND)
-  list(APPEND tmva_veto tmva/*.C tmva/*.py tmva/envelope/*.C tmva/keras/*.C tmva/keras/*.py)
+  list(APPEND tmva_veto tmva/*.C tmva/*.py tmva/envelope/*.C tmva/keras/*.C tmva/keras/*.py tmva/pytorch/*.py )
 else()
   #---These do not need to run for TMVA
   list(APPEND tmva_veto tmva/createData.C)
@@ -247,18 +264,16 @@ if(root7)
                  v7/fitpanel.cxx
                  v7/fitpanel6.cxx
       )
-  if(MSVC AND NOT win_broken_tests)
-    list(APPEND root7_veto v7/box.cxx v7/draw*.cxx )
+  if(NOT davix)
+    list(APPEND root7_veto v7/ntuple/ntpl003_lhcbOpenData.C)
+    list(APPEND root7_veto v7/ntuple/ntpl004_dimuon.C)
   endif()
-endif()
-
-if(NOT root7)
-  set(root7_veto v7/ntuple/ntpl001_staff.C
-                 v7/ntuple/ntpl002_vector.C
-                 v7/ntuple/ntpl003_lhcbOpenData.C
-                 v7/ntuple/ntpl004_dimuon.C)
-elseif(NOT dataframe)
-  set(root7_veto v7/ntuple/ntpl004_dimuon.C)
+  if(NOT dataframe)
+    list(APPEND root7_veto v7/ntuple/ntpl004_dimuon.C)
+  endif()
+else()
+  file(GLOB v7_veto_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/ v7/*.cxx v7/*/*.cxx v7/*.C v7/*/*.C)
+  list(APPEND root7_veto ${v7_veto_files})
 endif()
 
 if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
@@ -331,11 +346,11 @@ if(root7 AND webgui)
 endif()
 file(GLOB tutorials_veto RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${all_veto})
 
-list(LENGTH tutorials total)
-list(LENGTH tutorials_veto veto)
-message(STATUS "${veto}/${total} tutorials have been vetoed for various reasons")
-
+list(LENGTH tutorials nTotal)
 list(REMOVE_ITEM tutorials ${tutorials_veto})
+list(LENGTH tutorials nAfterVeto)
+message(STATUS "${nAfterVeto}/${nTotal} C++ tutorials have been activated.")
+
 
 if(mpi)
   set (temp_list ${tutorials})
@@ -375,6 +390,7 @@ set(unfold-testUnfold5b-depends tutorial-unfold-testUnfold5a)
 set(unfold-testUnfold7d-depends tutorial-unfold-testUnfold7c)
 set(unfold-testUnfold7c-depends tutorial-unfold-testUnfold7b)
 set(unfold-testUnfold7b-depends tutorial-unfold-testUnfold7a)
+set(xml-xmlmodifyfile-depends tutorial-xml-xmlnewfile)
 set(xml-xmlreadfile-depends tutorial-xml-xmlnewfile)
 set(roofit-rf503_wspaceread-depends tutorial-roofit-rf502_wspacewrite)
 set(histfactory-example-depends tutorial-roostats-CreateExampleFile)
@@ -418,7 +434,21 @@ set (tmva-TMVAMulticlassApplication-depends tutorial-tmva-TMVAMulticlass)
 set (tmva-TMVARegressionApplication-depends tutorial-tmva-TMVARegression)
 set (tmva-tmva101_Training-depends tutorial-tmva-tmva100_DataPreparation-py)
 set (tmva-tmva102_Testing-depends tutorial-tmva-tmva101_Training-py)
+set (tmva-pytorch-ApplicationClassificationPyTorch-depends tutorial-tmva-pytorch-ClassificationPyTorch-py)
+set (tmva-pytorch-ApplicationRegressionPyTorch-depends tutorial-tmva-pytorch-RegressionPyTorch-py)
 
+#--List long-running tutorials to label them as "longtest"
+set (long_running
+     dataframe/df10[2-7]*
+     multicore/mp103*)
+file(GLOB long_running RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${long_running})
+#--List multithreaded tutorials to run them serially
+set (multithreaded
+     dataframe/df10[2-7]*
+     multicore/mp103*
+     tmva/TMVA_CNN_Classification.C
+     tmva/TMVA_RNN_Classification.C)
+file(GLOB multithreaded RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${multithreaded})
 
 #---Loop over all tutorials and define the corresponding test---------
 
@@ -439,8 +469,16 @@ foreach(t ${tutorials})
   string(REPLACE ".C" "" tname ${t})
   string(REPLACE "/" "-" tname ${tname})
 
+  set(labels tutorial)
+  if(${t} IN_LIST long_running)
+    list(APPEND labels longtest)
+  endif()
+  if(${t} IN_LIST multithreaded)
+    list(APPEND labels multithreaded)
+  endif()
+
    # These tests on ARM64 need much more than 20 minutes - increase the timeout
-   if(ROOT_ARCHITECTURE MATCHES arm64)
+   if(ROOT_ARCHITECTURE MATCHES arm64 OR ROOT_ARCHITECTURE MATCHES ppc64)
      set(thisTestTimeout 2400) # 40m
    else()
      set(thisTestTimeout 1200) # 20m
@@ -449,10 +487,17 @@ foreach(t ${tutorials})
   ROOT_ADD_TEST(tutorial-${tname}
                 COMMAND ${ROOT_root_CMD} -b -l -q ${CMAKE_CURRENT_SOURCE_DIR}/${t}${${tname}-aclic}
                 PASSRC ${rc} FAILREGEX "Error in <" ": error:" "segmentation violation" "FROM HESSE     STATUS=FAILED"
-                LABELS tutorial
+                LABELS ${labels}
                 DEPENDS tutorial-hsimple ${${tname}-depends}
                 ENVIRONMENT ${ROOT_environ}
                 TIMEOUT ${thisTestTimeout})
+
+  if(${t} IN_LIST multithreaded)
+    # Makes sure that this doesn't run in parallel with other multithreaded tutorials, and that cmake doesn't start too
+    # many other tests. That we use 4 processors is actually a lie, because IMT takes whatever it finds.
+    # However, even this poor indication of MT behaviour is a good hint for cmake to reduce congestion.
+    set_tests_properties(tutorial-${tname} PROPERTIES RESOURCE_LOCK multithreaded PROCESSORS 4)
+  endif()
 endforeach()
 
 #---Loop over all MPI tutorials and define the corresponding test---------
@@ -467,7 +512,7 @@ foreach(t ${mpi_tutorials})
   string(REPLACE "/" "-" tname ${tname})
 
    # These tests on ARM64 need much more than 20 minutes - increase the timeout
-   if(ROOT_ARCHITECTURE MATCHES arm64)
+   if(ROOT_ARCHITECTURE MATCHES arm64 OR ROOT_ARCHITECTURE MATCHES ppc64)
      set(thisTestTimeout 2400) # 40m
    else()
      set(thisTestTimeout 1200) # 20m
@@ -483,12 +528,11 @@ foreach(t ${mpi_tutorials})
 endforeach()
 
 #---Python tutorials-----------------------------------------------------
-if(ROOT_python_FOUND)
-  if(NOT PYTHON_EXECUTABLE)
-    find_package(PythonInterp REQUIRED)
-  endif()
+if(ROOT_pyroot_FOUND)
 
-  file(GLOB pytutorials RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */*.py)
+  file(GLOB_RECURSE pytutorials RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
+
+  # Now python-specific vetos:
   set(pyveto pyroot/demo.py         # requires GUI
              pyroot/fit1_py.py      # not a tutorial
              pyroot/gui_ex.py       # requires GUI
@@ -497,39 +541,67 @@ if(ROOT_python_FOUND)
              pyroot/na49visible.py  # ????
              pyroot/parse_CSV_file_with_TTree_ReadStream.py # not a tutorial
              pyroot/numberEntry.py  # requires GUI
+             legacy/pyroot/*py      # legacy ...
              histfactory/example.py # not a tutorial
              histfactory/makeQuickModel.py # not a tutorial
              eve/lineset.py         # requires GUI
              sql/sqlcreatedb.py     # same as the C++ case
              sql/sqlfilldb.py       # same as the C++ case
              sql/sqlselect.py       # same as the C++ case
+             launcher.py            # Not a tutorial
              )
-  if(NOT ROOT_mathmore_FOUND)
-    list(APPEND pyveto math/Legendre.py)
-    list(APPEND pyveto math/Bessel.py)
-    list(APPEND pyveto math/tStudent.py)
+
+  if(pyroot_legacy)
+    # Disable in old PyROOT, which lacks Import pythonization
+    list(APPEND pyveto
+        roofit/rf502_wspacewrite.py
+        roofit/rf504_simwstool.py
+        roofit/rf509_wsinteractive.py
+        roofit/rf511_wsfactory_basic.py)
   endif()
 
- if(NOT XROOTD_FOUND)
-   list(APPEND pyveto
-       dataframe/df102_NanoAODDimuonAnalysis.py
-       dataframe/df103_NanoAODHiggsAnalysis.py)
- endif()
-
-  list(REMOVE_ITEM pytutorials ${pyveto})
-
   if(NOT dataframe)
-    set(dataframe_veto_py dataframe/*.py)
-    file(GLOB dataframe_veto_py RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} dataframe/*.py tmva/tmva*.py)
-    list(REMOVE_ITEM pytutorials ${dataframe_veto_py})
-    list(REMOVE_ITEM pytutorials pyroot/pyroot002_TTreeAsMatrix.py)
+    list(APPEND pyveto pyroot/pyroot002_TTreeAsMatrix.py)
+  endif()
+
+  if(NOT dataframe
+     OR ${PYTHON_VERSION_STRING_Development_Main} VERSION_LESS_EQUAL 2.7.5
+     OR (DEFINED ENV{ROOTTEST_IGNORE_NUMBA_PY2} AND PYTHON_VERSION_MAJOR_Development_Main EQUAL 2)
+     OR (DEFINED ENV{ROOTTEST_IGNORE_NUMBA_PY3} AND PYTHON_VERSION_MAJOR_Development_Main EQUAL 3)
+     OR (MSVC AND NOT win_broken_tests))
+    list(APPEND pyveto pyroot/pyroot004_NumbaDeclare.py)
   endif()
 
   find_python_module(xgboost QUIET)
-  if (NOT PY_XGBOOST_FOUND OR NOT dataframe)
-    file(GLOB tmva_veto_py RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} dataframe/*.py tmva/tmva10*.py)
-    list(REMOVE_ITEM pytutorials ${tmva_veto_py})
+  if(NOT PY_XGBOOST_FOUND OR NOT dataframe)
+    file(GLOB tmva_veto_py RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tmva/tmva10*.py)
+    list(APPEND pyveto ${tmva_veto_py})
   endif()
+
+  find_python_module(keras QUIET)
+  if(NOT PY_KERAS_FOUND)
+    file(GLOB tmva_veto_py RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tmva/keras/*.py)
+    list(APPEND pyveto ${tmva_veto_py})
+  endif()
+
+  find_python_module(torch QUIET)
+  if(NOT PY_TORCH_FOUND)
+    file(GLOB tmva_veto_py RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tmva/pytorch/*.py)
+    list(APPEND pyveto ${tmva_veto_py})
+  endif()
+  # disable PyTorch model file used by TMVA_CNN_Classification.C
+  list(APPEND pyveto tmva/PyTorch_Generate_CNN_Model.py)
+
+  # Now glob all vetos for pyroot
+  file(GLOB pyveto RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${pyveto})
+
+  list(LENGTH pytutorials nTotal)
+  # Apply global .C/.py veto from above:
+  list(REMOVE_ITEM pytutorials ${tutorials_veto})
+  list(REMOVE_ITEM pytutorials ${pyveto})
+  list(LENGTH pytutorials nAfterVeto)
+
+  message(STATUS "${nAfterVeto}/${nTotal} python tutorials have been activated.")
 
   #---Python tutorials dependencies--------------------------------------
   set(pyroot-ntuple1-depends tutorial-pyroot-hsimple-py)
@@ -543,12 +615,32 @@ if(ROOT_python_FOUND)
   set(pyroot-na49view-depends tutorial-pyroot-geometry-py)
   set(roofit-rf104_classfactory-depends tutorial-roofit-rf104_classfactory) #Race condition
 
+  #----------------------------------------------------------------------
+  # List requirements for python tutorials.
+  # To add a new requirement, add a glob expression that's named requires_<packageName>,
+  # and add it to the list "fixtureLists" below.
+  file(GLOB requires_numpy   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} dataframe/df026_AsNumpyArrays.py)
+  file(GLOB requires_numba   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} pyroot/pyroot004_NumbaDeclare.py)
+  file(GLOB requires_pandas  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} dataframe/df026_AsNumpyArrays.py)
+  file(GLOB requires_keras   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tmva/keras/*.py)
+  file(GLOB requires_torch   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tmva/pytorch/*.py)
+  file(GLOB requires_xgboost RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tmva/tmva10*.py)
+  set(fixtureLists requires_numpy requires_numba requires_pandas requires_keras requires_xgboost requires_torch)
+
+  # Now set up all the tests
   foreach(t ${pytutorials})
-    list(FIND returncode_1 ${t} index)
-    if(index EQUAL -1)
-      set(rc 0)
-    else()
+    if (${t} IN_LIST returncode_1)
       set(rc 255)
+    else()
+      set(rc 0)
+    endif()
+
+    set(labels tutorial)
+    if(${t} IN_LIST long_running)
+      list(APPEND labels longtest)
+    endif()
+    if(${t} IN_LIST multithreaded)
+      list(APPEND labels multithreaded)
     endif()
 
     string(REPLACE ".py" "" tname ${t})
@@ -563,12 +655,30 @@ if(ROOT_python_FOUND)
       set(py_will_fail ${PYTESTS_WILLFAIL})
     endif()
 
+    # Test if this tutorial is requiring any fixture
+    unset(python_deps)
+    foreach(fixtureList ${fixtureLists})
+      if(${t} IN_LIST ${fixtureList})
+        string(REPLACE "requires_" "" fixture ${fixtureList})
+        list(APPEND python_deps ${fixture})
+        list(APPEND labels python_runtime_deps)
+      endif()
+    endforeach()
+
     ROOT_ADD_TEST(${tutorial_name}
-                COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${t} -b
+                COMMAND ${PYTHON_EXECUTABLE_Development_Main} ${CMAKE_CURRENT_SOURCE_DIR}/launcher.py ${CMAKE_CURRENT_SOURCE_DIR}/${t}
                 PASSRC ${rc} FAILREGEX "Error in" ": error:" "segmentation violation"
-                LABELS tutorial
+                LABELS ${labels}
                 DEPENDS ${${tname}-depends}
                 ENVIRONMENT ${ROOT_environ}
+                PYTHON_DEPS ${python_deps}
                 ${py_will_fail})
+
+    if(${t} IN_LIST multithreaded)
+      # Makes sure that this doesn't run in parallel with other multithreaded tutorials, and that cmake doesn't start too
+      # many other tests. That we use 4 processors is actually a lie, because IMT takes whatever it finds.
+      # However, even this poor indication of MT behaviour is a good hint for cmake to reduce congestion.
+      set_tests_properties(${tutorial_name} PROPERTIES RESOURCE_LOCK multithreaded PROCESSORS 4)
+    endif()
   endforeach()
 endif()

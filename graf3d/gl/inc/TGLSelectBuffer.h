@@ -17,6 +17,7 @@
 class TGLSelectRecordBase;
 
 #include <vector>
+#include <utility>
 
 /**************************************************************************/
 // TGLSelectBuffer

@@ -1,15 +1,10 @@
 #include "TMVA/BDT.h"
 #include <iostream>
-#include <iomanip>
 #include <fstream>
-
-
 
 #include "RQ_OBJECT.h"
 
 #include "TROOT.h"
-#include "TStyle.h"
-#include "TPad.h"
 #include "TCanvas.h"
 #include "TLine.h"
 #include "TFile.h"
@@ -30,19 +25,18 @@
 std::vector<TControlBar*> TMVA::BDT_Global__cbar;
 
 TMVA::StatDialogBDT* TMVA::StatDialogBDT::fThis = 0;
-bool TMVA::DecisionTreeNode::fgIsTraining = false;
 
-void TMVA::StatDialogBDT::SetItree() 
+void TMVA::StatDialogBDT::SetItree()
 {
    fItree = Int_t(fInput->GetNumber());
 }
 
-void TMVA::StatDialogBDT::Redraw() 
+void TMVA::StatDialogBDT::Redraw()
 {
    UpdateCanvases();
 }
 
-void TMVA::StatDialogBDT::Close() 
+void TMVA::StatDialogBDT::Close()
 {
    delete this;
 }
@@ -58,14 +52,14 @@ TMVA::StatDialogBDT::StatDialogBDT(TString dataset, const TGWindow* p, TString w
      fCloseButton(0),
      fWfile( wfile ),
      fMethName( methName ),
-     fDataset(dataset)     
+     fDataset(dataset)
 {
    UInt_t totalWidth  = 500;
    UInt_t totalHeight = 200;
 
    fThis = this;
 
-   TMVA::DecisionTreeNode::fgIsTraining=true;
+   TMVA::DecisionTreeNode::SetIsTraining(true);
 
    // read number of decision trees from weight file
    GetNtrees();
@@ -88,7 +82,7 @@ TMVA::StatDialogBDT::StatDialogBDT(TString dataset, const TGWindow* p, TString w
 
    fDrawButton = new TGTextButton(fButtons,"&Draw");
    fButtons->AddFrame(fDrawButton, new TGLayoutHints(kLHintsRight | kLHintsTop,15));
-  
+
    fMain->AddFrame(fButtons,new TGLayoutHints(kLHintsLeft | kLHintsBottom,5,5,5,5));
 
    fMain->SetWindowName("Decision tree");
@@ -101,12 +95,12 @@ TMVA::StatDialogBDT::StatDialogBDT(TString dataset, const TGWindow* p, TString w
 
    // doesn't seem to exist .. gives an 'error message' and seems to work just fine without ... :)
    //   fDrawButton->Connect("ValueSet(Long_t)","TGNumberEntry",fInput, "Clicked()");
-   fDrawButton->Connect("Clicked()", "TMVA::StatDialogBDT", this, "Redraw()");   
+   fDrawButton->Connect("Clicked()", "TMVA::StatDialogBDT", this, "Redraw()");
 
    fCloseButton->Connect("Clicked()", "TMVA::StatDialogBDT", this, "Close()");
 }
 
-void TMVA::StatDialogBDT::UpdateCanvases() 
+void TMVA::StatDialogBDT::UpdateCanvases()
 {
    DrawTree(fItree );
 }
@@ -119,24 +113,24 @@ void TMVA::StatDialogBDT::GetNtrees()
          cout << "*** ERROR: Weight file: " << fWfile << " does not exist" << endl;
          return;
       }
-   
+
       TString dummy = "";
-      
+
       // read total number of trees, and check whether requested tree is in range
       Int_t nc = 0;
-      while (!dummy.Contains("NTrees")) { 
-         fin >> dummy; 
-         nc++; 
+      while (!dummy.Contains("NTrees")) {
+         fin >> dummy;
+         nc++;
          if (nc > 200) {
             cout << endl;
-            cout << "*** Huge problem: could not locate term \"NTrees\" in BDT weight file: " 
+            cout << "*** Huge problem: could not locate term \"NTrees\" in BDT weight file: "
                  << fWfile << endl;
             cout << "==> panic abort (please contact the TMVA authors)" << endl;
             cout << endl;
             exit(1);
          }
       }
-      fin >> dummy; 
+      fin >> dummy;
       fNtrees = dummy.ReplaceAll("\"","").Atoi();
       fin.close();
    }
@@ -161,9 +155,9 @@ void TMVA::StatDialogBDT::GetNtrees()
 /// recursively puts an entries in the histogram for the node and its daughters
 ///
 
-void TMVA::StatDialogBDT::DrawNode( TMVA::DecisionTreeNode *n, 
-                                    Double_t x, Double_t y, 
-                                    Double_t xscale,  Double_t yscale, TString * vars) 
+void TMVA::StatDialogBDT::DrawNode( TMVA::DecisionTreeNode *n,
+                                    Double_t x, Double_t y,
+                                    Double_t xscale,  Double_t yscale, TString * vars)
 {
    Float_t xsize=xscale*1.5;
    Float_t ysize=yscale/3;
@@ -222,25 +216,25 @@ TMVA::DecisionTree* TMVA::StatDialogBDT::ReadTree( TString* &vars, Int_t itree )
          d = nullptr;
          return 0;
       }
-      
+
       TString dummy = "";
-      
+
       if (itree >= fNtrees) {
-         cout << "*** ERROR: requested decision tree: " << itree 
+         cout << "*** ERROR: requested decision tree: " << itree
               << ", but number of trained trees only: " << fNtrees << endl;
          delete d;
          d = nullptr;
          return 0;
       }
-      
+
       // file header with name
       while (!dummy.Contains("#VAR")) fin >> dummy;
       fin >> dummy >> dummy >> dummy; // the rest of header line
-      
+
       // number of variables
       Int_t nVars;
       fin >> dummy >> nVars;
-      
+
       // variable mins and maxes
       vars = new TString[nVars+1]; // last one is if "fisher cut criterium"
       for (Int_t i = 0; i < nVars; i++) fin >> vars[i] >> dummy >> dummy >> dummy >> dummy;
@@ -256,12 +250,12 @@ TMVA::DecisionTree* TMVA::StatDialogBDT::ReadTree( TString* &vars, Int_t itree )
       }
 
       d->Read(fin);
-      
+
       fin.close();
    }
    else{
       if (itree >= fNtrees) {
-         cout << "*** ERROR: requested decision tree: " << itree 
+         cout << "*** ERROR: requested decision tree: " << itree
               << ", but number of trained trees only: " << fNtrees << endl;
          delete d;
          d = nullptr;
@@ -275,7 +269,7 @@ TMVA::DecisionTree* TMVA::StatDialogBDT::ReadTree( TString* &vars, Int_t itree )
          TString nodeName = TString( TMVA::gTools().xmlengine().GetNodeName(ch) );
          if(nodeName=="Variables"){
             TMVA::gTools().ReadAttr( ch, "NVar", nVars);
-            vars = new TString[nVars+1]; 
+            vars = new TString[nVars+1];
             void* varnode =  TMVA::gTools().xmlengine().GetChild(ch);
             for (Int_t i = 0; i < nVars; i++){
                TMVA::gTools().ReadAttr( varnode, "Expression", vars[i]);
@@ -297,7 +291,7 @@ TMVA::DecisionTree* TMVA::StatDialogBDT::ReadTree( TString* &vars, Int_t itree )
 
 void TMVA::StatDialogBDT::DrawTree( Int_t itree )
 {
-   TString *vars;   
+   TString *vars;
    TMVA::DecisionTree* d = ReadTree( vars, itree );
    if (d == 0) return;
 
@@ -319,24 +313,24 @@ void TMVA::StatDialogBDT::DrawTree( Int_t itree )
    Int_t MyPalette[100];
    for (int i=0;i<100;i++) MyPalette[i] = fColorOffset+i;
    TMVAStyle->SetPalette(100, MyPalette);
-   
+
 
 
    Int_t   canvasColor = TMVAStyle->GetCanvasColor(); // backup
 
    TString cbuffer = Form( "Reading weight file: %s", fWfile.Data() );
    TString tbuffer = Form( "Decision Tree no.: %d", itree );
-   if (!fCanvas) fCanvas = new TCanvas( "c1", cbuffer, 200, 0, 1000, 600 ); 
+   if (!fCanvas) fCanvas = new TCanvas( "c1", cbuffer, 200, 0, 1000, 600 );
    else          fCanvas->Clear();
-   fCanvas->Draw();   
+   fCanvas->Draw();
 
    DrawNode( (TMVA::DecisionTreeNode*)d->GetRoot(), 0.5, 1.-0.5*ystep, 0.25, ystep ,vars);
-  
+
    // make the legend
    Double_t yup=0.99;
    Double_t ydown=yup-ystep/2.5;
    Double_t dy= ystep/2.5 * 0.2;
- 
+
    TPaveText *whichTree = new TPaveText(0.85,ydown,0.98,yup, "NDC");
    whichTree->SetBorderSize(1);
    whichTree->SetFillStyle(1001);
@@ -367,11 +361,11 @@ void TMVA::StatDialogBDT::DrawTree( Int_t itree )
    fCanvas->Update();
    TString fname = fDataset+Form("/plots/%s_%i", fMethName.Data(), itree );
    cout << "--- Creating image: " << fname << endl;
-   TMVAGlob::imgconv( fCanvas, fname );   
+   TMVAGlob::imgconv( fCanvas, fname );
 
    TMVAStyle->SetCanvasColor( canvasColor );
-}   
-      
+}
+
 // ========================================================================================
 
 
@@ -381,10 +375,10 @@ void TMVA::BDT(TString dataset, const TString& fin  )
    // --- read the available BDT weight files
 
    // destroy all open cavases
-   TMVAGlob::DestroyCanvases(); 
+   TMVAGlob::DestroyCanvases();
 
    // checks if file with name "fin" is already open, and if not opens one
-   TFile* file = TMVAGlob::OpenFile( fin );  
+   TFile* file = TMVAGlob::OpenFile( fin );
 
    TDirectory* dir = file->GetDirectory(dataset.Data())->GetDirectory( "Method_BDT" );
    if (!dir) {
@@ -394,14 +388,14 @@ void TMVA::BDT(TString dataset, const TString& fin  )
 
    // read all directories
    TIter next( dir->GetListOfKeys() );
-   TKey *key(0);   
-   std::vector<TString> methname;   
-   std::vector<TString> path;   
-   std::vector<TString> wfile;   
+   TKey *key(0);
+   std::vector<TString> methname;
+   std::vector<TString> path;
+   std::vector<TString> wfile;
    while ((key = (TKey*)next())) {
       TDirectory* mdir = dir->GetDirectory( key->GetName() );
       if (!mdir) {
-         cout << "*** Error in macro \"BDT.C\": cannot find sub-directory: " << key->GetName() 
+         cout << "*** Error in macro \"BDT.C\": cannot find sub-directory: " << key->GetName()
               << " in directory: " << dir->GetName() << endl;
          return;
       }
@@ -432,11 +426,11 @@ void TMVA::BDT(TString dataset, const TString& fin  )
       cbar->AddButton( fname, macro, "Plot decision trees from this weight file", "button" );
    }
 
-   // set the style 
+   // set the style
    cbar->SetTextColor("blue");
 
    // draw
-   cbar->Show();   
+   cbar->Show();
 }
 
 void TMVA::BDT_DeleteTBar(int i)
@@ -451,11 +445,11 @@ void TMVA::BDT_DeleteTBar(int i)
 
 // input: - No. of tree
 //        - the weight file from which the tree is read
-void TMVA::BDT(TString dataset, Int_t itree, TString wfile , TString methName , Bool_t useTMVAStyle  ) 
+void TMVA::BDT(TString dataset, Int_t itree, TString wfile , TString methName , Bool_t useTMVAStyle  )
 {
    // destroy possibly existing dialog windows and/or canvases
    StatDialogBDT::Delete();
-   TMVAGlob::DestroyCanvases(); 
+   TMVAGlob::DestroyCanvases();
    if(wfile=="")
       wfile = dataset+"/weights/TMVAnalysis_test_BDT.weights.txt";
    // quick check if weight file exist
@@ -476,4 +470,3 @@ void TMVA::BDT(TString dataset, Int_t itree, TString wfile , TString methName , 
 
    gGui->RaiseDialog();
 }
-

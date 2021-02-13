@@ -31,15 +31,14 @@
 #include "TPieEditor.h"
 #include "TGTextEntry.h"
 #include "TGNumberEntry.h"
-#include "TGToolTip.h"
-#include "TGLabel.h"
 #include "TPie.h"
 #include "TVirtualPad.h"
 #include "TGColorSelect.h"
-#include "TGComboBox.h"
 #include "TColor.h"
 #include "TBox.h"
 #include "TPaveLabel.h"
+#include "TVirtualX.h"
+#include "snprintf.h"
 
 ClassImp(TPieEditor);
 

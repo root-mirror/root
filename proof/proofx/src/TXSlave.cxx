@@ -21,7 +21,6 @@ See TSlave and TXSocket for details.
 #include "TProof.h"
 #include "TProofServ.h"
 #include "TSystem.h"
-#include "TEnv.h"
 #include "TROOT.h"
 #include "TUrl.h"
 #include "TMessage.h"
@@ -428,12 +427,14 @@ void TXSlave::Interrupt(Int_t type)
 
          // Attach to the monitor instance, if any
          TMonitor *mon = fProof->fCurrentMonitor;
-         if (mon && fSocket && mon->GetListOfActives()->FindObject(fSocket)) {
+         TList *al = mon ? mon->GetListOfActives() : nullptr;
+         if (mon && fSocket && al && al->FindObject(fSocket)) {
             // Synchronous collection in TProof
             if (gDebug > 2)
                Info("Interrupt", "%p: deactivating from monitor %p", this, mon);
             mon->DeActivate(fSocket);
          }
+         delete al;
       } else {
          Warning("Interrupt", "%p: reference to PROOF missing", this);
       }

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Geom help</title>
-    <script src="jsrootsys/scripts/JSRootCore.js" type="text/javascript"></script>
+    <script src="jsrootsys/scripts/JSRoot.core.js" type="text/javascript"></script>
   </head>
 
     <style>
@@ -19,7 +19,7 @@
 
      var conn_handle = null;
 
-     JSROOT.ConnectWebWindow({
+     JSROOT.connectWebWindow({
        receiver: {
           // method called when connection to server is established
           OnWebsocketOpened: function(handle) {

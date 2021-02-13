@@ -2,105 +2,150 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
                'sap/m/Link',
                'sap/ui/core/Fragment',
                'rootui5/browser/model/BrowserModel',
+               'sap/ui/Device',
                'sap/ui/model/json/JSONModel',
-               'sap/ui/core/util/File',
                'sap/ui/table/Column',
                'sap/ui/layout/HorizontalLayout',
                'sap/m/TabContainerItem',
                'sap/m/MessageToast',
                'sap/m/MessageBox',
                'sap/m/Text',
+               'sap/m/Page',
                'sap/ui/core/mvc/XMLView',
                'sap/ui/core/Icon',
-               'sap/ui/layout/Splitter',
-               'sap/m/Toolbar',
-               'sap/ui/unified/FileUploader',
                'sap/m/Button',
-               'sap/ui/layout/SplitterLayoutData',
                'sap/ui/codeeditor/CodeEditor',
-               'sap/m/HBox',
                'sap/m/Image',
                'sap/tnt/ToolHeader',
                'sap/m/ToolbarSpacer',
                'sap/m/OverflowToolbarLayoutData',
-               'sap/m/Dialog',
                'rootui5/browser/controller/FileDialog.controller'
 ],function(Controller,
            Link,
            Fragment,
            BrowserModel,
+           uiDevice,
            JSONModel,
-           File,
            tableColumn,
            HorizontalLayout,
            TabContainerItem,
            MessageToast,
            MessageBox,
            mText,
+           mPage,
            XMLView,
            CoreIcon,
-           Splitter,
-           Toolbar,
-           FileUploader,
            Button,
-           SplitterLayoutData,
            CodeEditor,
-           HBox,
            Image,
            ToolHeader,
            ToolbarSpacer,
            OverflowToolbarLayoutData,
-           Dialog,
            FileDialogController) {
-
 
    "use strict";
 
-   /** Central ROOT RBrowser controller
-    * All Browser functionality is loaded after main ui5 rendering is performed */
+   /** @summary Central ROOT RBrowser controller
+     * @desc All Browser functionality is loaded after main ui5 rendering is performed */
 
    return Controller.extend("rootui5.browser.controller.Browser", {
       onInit: async function () {
 
-         let pthis = this;
-         let burgerMenu = pthis.getView().byId("burgerMenu");
+        uiDevice.orientation.attachHandler(mParams => this.handleChangeOrientation(mParams.landscape));
 
-         sap.ui.Device.orientation.attachHandler((mParams) => {
-            burgerMenu.detachPress(pthis.onFullScreenPressLandscape, pthis);
-            burgerMenu.detachPress(pthis.onFullScreenPressPortrait, pthis);
+        this.handleChangeOrientation(uiDevice.orientation.landscape);
 
-            if (mParams.landscape) {
-               burgerMenu.attachPress(pthis.onFullScreenPressLandscape, pthis);
-               this.getView().byId('expandMaster').setVisible(true);
-            } else {
-               burgerMenu.attachPress(pthis.onFullScreenPressPortrait, pthis);
-
-               this.getView().byId('masterPage').getParent().removeStyleClass('masterExpanded');
-               this.getView().byId('expandMaster').setVisible(false);
-               this.getView().byId('shrinkMaster').setVisible(false);
-            }
+        this._oSettingsModel = new JSONModel({
+            SortMethods: [
+               { name: "name", value: "name" },
+               { name: "size", value: "size" },
+               { name: "none", value: "" }
+            ],
+            SortMethod: "name",
+            ReverseOrder: false,
+            ShowHiddenFiles: false,
+            DBLCLKRun: false,
+            TH1: [
+               {name: "hist"},
+               {name: "P"},
+               {name: "P0"},
+               {name: "E"},
+               {name: "E1"},
+               {name: "E2"},
+               {name: "E3"},
+               {name: "E4"},
+               {name: "E1X0"},
+               {name: "L"},
+               {name: "LF2"},
+               {name: "B"},
+               {name: "B1"},
+               {name: "A"},
+               {name: "TEXT"},
+               {name: "LEGO"},
+               {name: "same"}
+            ],
+            TH2: [
+               {name: "COL"},
+               {name: "COLZ"},
+               {name: "COL0"},
+               {name: "COL1"},
+               {name: "COL0Z"},
+               {name: "COL1Z"},
+               {name: "COLA"},
+               {name: "BOX"},
+               {name: "BOX1"},
+               {name: "PROJ"},
+               {name: "PROJX1"},
+               {name: "PROJX2"},
+               {name: "PROJX3"},
+               {name: "PROJY1"},
+               {name: "PROJY2"},
+               {name: "PROJY3"},
+               {name: "SCAT"},
+               {name: "TEXT"},
+               {name: "TEXTE"},
+               {name: "TEXTE0"},
+               {name: "CONT"},
+               {name: "CONT1"},
+               {name: "CONT2"},
+               {name: "CONT3"},
+               {name: "CONT4"},
+               {name: "ARR"},
+               {name: "SURF"},
+               {name: "SURF1"},
+               {name: "SURF2"},
+               {name: "SURF4"},
+               {name: "SURF6"},
+               {name: "E"},
+               {name: "A"},
+               {name: "LEGO"},
+               {name: "LEGO0"},
+               {name: "LEGO1"},
+               {name: "LEGO2"},
+               {name: "LEGO3"},
+               {name: "LEGO4"},
+               {name: "same"}
+            ],
+            TProfile: [
+               {name: "E0"},
+               {name: "E1"},
+               {name: "E2"},
+               {name: "p"},
+               {name: "AH"},
+               {name: "hist"}
+            ]
          });
 
-         if(sap.ui.Device.orientation.landscape) {
-            burgerMenu.attachPress(pthis.onFullScreenPressLandscape, pthis);
-         } else {
-            burgerMenu.attachPress(pthis.onFullScreenPressPortrait, pthis);
-            this.getView().byId('expandMaster').setVisible(false);
-         }
-
-        this.globalId = 1;
-        this.nextElem = "";
-
-         this.websocket = this.getView().getViewData().conn_handle;
+        this.websocket = this.getView().getViewData().conn_handle;
 
          // this is code for the Components.js
          // this.websocket = Component.getOwnerComponentFor(this.getView()).getComponentData().conn_handle;
 
-         this.websocket.SetReceiver(this);
-         this.websocket.Connect();
+         this.websocket.setReceiver(this);
+         this.websocket.connect();
 
          // if true, most operations are performed locally without involving server
-         this.standalone = this.websocket.kind == "file";
+         this.standalone = (this.websocket.kind == "file");
 
          // create model only for browser - no need for anybody else
          this.model = new BrowserModel();
@@ -114,10 +159,11 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             node.ftype = elem.ftype;
             node.fuid = elem.fuid;
             node.fgid = elem.fgid;
-            node.className = elem.className
+            node.className = elem.className;
+            node.title = elem.title;
          };
 
-         var t = this.getView().byId("treeTable");
+         let t = this.getView().byId("treeTable");
          t.setModel(this.model);
 
          this.model.assignTreeTable(t);
@@ -127,8 +173,8 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             visible: true,
             template: new HorizontalLayout({
                content: [
-                         new CoreIcon({src:"{icon}"}),
-                         new mText({text:" {name}", renderWhitespace: true, wrapping: false })
+                         new CoreIcon({src:"{icon}", tooltip: "{className}" }),
+                         new mText({text:" {name}", tooltip: "{title}", renderWhitespace: true, wrapping: false })
                          ]
             })
          }));
@@ -137,9 +183,7 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             autoResizable: true,
             visible: true,
             template: new HorizontalLayout({
-               content: [
-                         new mText({text:"{fsize}", wrapping: false })
-                         ]
+               content: [ new mText({text:"{fsize}", wrapping: false }) ]
             })
          }));
          t.addColumn(new tableColumn({
@@ -147,9 +191,7 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             autoResizable: true,
             visible: false,
             template: new HorizontalLayout({
-               content: [
-                         new mText({text:"{mtime}", wrapping: false })
-                         ]
+               content: [ new mText({text:"{mtime}", wrapping: false }) ]
             })
          }));
          t.addColumn(new tableColumn({
@@ -157,9 +199,7 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             autoResizable: true,
             visible: false,
             template: new HorizontalLayout({
-               content: [
-                         new mText({text:"{ftype}", wrapping: false })
-                         ]
+               content: [ new mText({text:"{ftype}", wrapping: false }) ]
             })
          }));
          t.addColumn(new tableColumn({
@@ -167,9 +207,7 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             autoResizable: true,
             visible: false,
             template: new HorizontalLayout({
-               content: [
-                         new mText({text:"{fuid}", wrapping: false })
-                         ]
+               content: [ new mText({text:"{fuid}", wrapping: false }) ]
             })
          }));
          t.addColumn(new tableColumn({
@@ -177,9 +215,7 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             autoResizable: true,
             visible: false,
             template: new HorizontalLayout({
-               content: [
-                         new mText({text:"{fgid}", wrapping: false })
-                         ]
+               content: [ new mText({text:"{fgid}", wrapping: false }) ]
             })
          }));
          t.addColumn(new tableColumn({
@@ -187,9 +223,7 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             autoResizable: true,
             visible: false,
             template: new HorizontalLayout({
-               content: [
-                         new mText({text:"{className}", wrapping: false })
-                         ]
+               content: [ new mText({text:"{className}", wrapping: false }) ]
             })
          }));
 
@@ -198,199 +232,225 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             onAfterRendering: function() { this.assignRowHandlers(); }
          }, this);
 
-         this.newCodeEditor();
-
          this.drawingOptions = { TH1: 'hist', TH2: 'COL', TProfile: 'E0'};
       },
 
-      /* ========================================================= */
-      /* =============== Generic factory functions =============== */
-      /* ========================================================= */
+      createImageViewer: function (dummy_url, name, title) {
+         let oTabContainer = this.getView().byId("tabContainer");
 
-      getElementFromCurrentTab: function (element) {
-         const currentTabID = this.getView().byId("myTabContainer").getSelectedItem();
-         return sap.ui.getCore().byId(currentTabID + element);
+         let image = new Image({ src: "", densityAware: false });
+         image.addStyleClass("imageViewer");
+
+         let item = new TabContainerItem(name, {
+            icon: "sap-icon://background",
+            name: "Image Viewer",
+            key: name,
+            additionalText: title,
+            content: new mPage({
+               showNavButton: false,
+               showFooter: false,
+               showSubHeader: false,
+               showHeader: false,
+               content: image
+            })
+         });
+
+         item.setModel(new JSONModel({
+            can_close: true  // always can close image viewer
+         }));
+
+         oTabContainer.addItem(item);
+         // oTabContainer.setSelectedItem(item);
       },
-
-      /* ========================================================= */
-      /* =============== Generic factory functions =============== */
-      /* ========================================================= */
 
       /* =========================================== */
       /* =============== Code Editor =============== */
       /* =========================================== */
 
-      newCodeEditor: async function () {
-         const oTabContainer = this.getView().byId("myTabContainer");
+      createCodeEditor: function(dummy_url, name, editor_title) {
+         const oTabContainer = this.getView().byId("tabContainer");
 
-         const ID = "CodeEditor" + this.globalId;
-         this.globalId++;
-
-         const oTabContainerItem = new TabContainerItem(ID, {
+         let item = new TabContainerItem(name, {
             icon: "sap-icon://write-new-document",
             name: "Code Editor",
-            additionalText: "untitled",
-            content: this.newCodeEditorFragment(ID)
+            key: name,
+            additionalText: "{/title}"
          });
 
-         oTabContainer.addItem(oTabContainerItem);
-         oTabContainer.setSelectedItem(oTabContainerItem);
-      },
-
-      newCodeEditorFragment: function (ID) {
-         return [
-               new ToolHeader({
-                  height: "40px",
-                  content: [
-                     new Button(ID + "Run", {
-                        text: "Run",
-                        tooltip: "Run Current Macro",
-                        icon: "sap-icon://play",
-                        type: "Transparent",
-                        enabled: false,
-                        press: [this.onRunMacro, this]
-                     }),
-                     new ToolbarSpacer({
-                        layoutData: new OverflowToolbarLayoutData({
-                           priority:"NeverOverflow",
-                           minWidth: "16px"
-                        })
-                     }),
-                     new Button(ID + "SaveAs", {
-                        text: "Save as...",
-                        tooltip: "Save current file as...",
-                        type: "Transparent",
-                        press: [this.onSaveAs, this]
-                     }),
-                     new Button(ID + "Save", {
-                        text: "Save",
-                        tooltip: "Save current file",
-                        type: "Transparent",
-                        press: [this.onSaveFile, this]
-                     })
-                  ]
+         item.addContent(new ToolHeader({
+            height: "40px",
+            content: [
+               new Button({
+                  text: "Run",
+                  tooltip: "Run Current Macro",
+                  icon: "sap-icon://play",
+                  type: "Transparent",
+                  enabled: "{/runEnabled}",
+                  press: () => this.onRunMacro(item)
                }),
-               new CodeEditor(ID + "Editor", {
-                  // height: 'auto',
-                  colorTheme: "default",
-                  type: "c_cpp",
-                  value: "{/code}",
-                  height: "calc(100% - 40px)",
-                  change: function () {
-                     this.getModel().setProperty("/modified", true);
-                  }
-               }).setModel(new JSONModel({
-                  code: "",
-                  ext: "",
-                  filename: "",
-                  fullpath: "",
-                  modified: false
-               }))
-            ];
+               new ToolbarSpacer({
+                  layoutData: new OverflowToolbarLayoutData({
+                     priority:"NeverOverflow",
+                     minWidth: "16px"
+                  })
+               }),
+               new Button({
+                  text: "Sync",
+                  tooltip: "Sync editor content on server side",
+                  type: "Transparent",
+                  enabled: "{/modified}",
+                  press: () => this.syncEditor(item)
+               }),
+               new Button({
+                  text: "Save as...",
+                  tooltip: "Save current file as...",
+                  type: "Transparent",
+                  press: () => this.onSaveAsFile(item)
+               }),
+               new Button({
+                  text: "Save",
+                  tooltip: "Save current file",
+                  type: "Transparent",
+                  enabled: "{/saveEnabled}",
+                  press: () => this.onSaveFile(item)
+               })
+            ]
+         }));
+         item.addContent( new CodeEditor({
+            // height: 'auto',
+            colorTheme: "default",
+            type: "c_cpp",
+            value: "{/code}",
+            height: "calc(100% - 40px)",
+            liveChange: function() {
+               const model = this.getModel();
+               if (model.getProperty("/first_change")) {
+                  model.setProperty("/first_change", false);
+               } else {
+                  model.setProperty("/modified", true);
+                  model.setProperty("/can_close", false);
+               }
+            }
+         }));
+
+         item.setModel(new JSONModel({
+            code: "",
+            ext: "",
+            title: editor_title,
+            filename: "",  // only set when really exists
+            modified: false, // if content modified compared to server side
+            can_close: true,  // if file is stored, one can close without confirmation
+            runEnabled: false,
+            saveEnabled: false
+         }));
+
+         oTabContainer.addItem(item);
+         // oTabContainer.setSelectedItem(item);
       },
 
       /** @brief Invoke dialog with server side code */
-      onSaveAs: function() {
+      onSaveAsFile: function(tab) {
 
-         const oEditor = this.getSelectedCodeEditor();
-
+         const oModel = tab.getModel();
          FileDialogController.SaveAs({
             websocket: this.websocket,
-            filename: oEditor.getModel().getProperty("/fullpath"),
+            filename: oModel.getProperty("/filename") || oModel.getProperty("/title"),
             title: "Select file name to save",
             filter: "Any files",
             filters: ["Text files (*.txt)", "C++ files (*.cxx *.cpp *.c)", "Any files (*)"],
-            onOk: function(fname) {
-               this.setFileNameType(oEditor, fname);
-               const sText = oEditor.getModel().getProperty("/code");
-               oEditor.getModel().setProperty("/modified", false);
-               this.websocket.Send("SAVEFILE:" + JSON.stringify([fname, sText]));
-            }.bind(this),
+            onOk: fname => {
+               let p = Math.max(fname.lastIndexOf("/"), fname.lastIndexOf("\\"));
+               let title = (p > 0) ? fname.substr(p+1) : fname;
+               this.setEditorFileKind(tab, title);
+               oModel.setProperty("/title", title);
+               oModel.setProperty("/filename", fname);
+               this.syncEditor(tab, "SAVE");
+               this.doReload(true); // while new file appears, one should reload items on server
+            },
             onCancel: function() { },
             onFailure: function() { }
          });
       },
 
-      /** @brief Handle the "Save" button press event */
-      onSaveFile: function () {
-         const oEditor = this.getSelectedCodeEditor();
-         const oModel = oEditor.getModel();
-         const sText = oModel.getProperty("/code");
-         const fullpath = oModel.getProperty("/fullpath");
-         if (!fullpath)
-            return onSaveAs();
+      /** @summary send editor content to server (if was changed) */
+      syncEditor: function(tab, cmd) {
+         const oModel = tab.getModel();
+         let modified = oModel.getProperty("/modified");
+         if ((modified === false) && !cmd) return;
+         let data = [ tab.getKey(),
+                      oModel.getProperty("/title") || "",
+                      oModel.getProperty("/filename") || "",
+                      modified ? "changed" : "",
+                      modified ? oModel.getProperty("/code") : ""];
+         if (cmd) data.push(cmd);
          oModel.setProperty("/modified", false);
-         return this.websocket.Send("SAVEFILE:" + JSON.stringify([fullpath, sText]));
+         if (cmd) oModel.setProperty("/can_close", true); // any command means file will be stored
+         return this.websocket.send("SYNCEDITOR:" + JSON.stringify(data));
       },
 
-      reallyRunMacro: function () {
-         const oEditor = this.getSelectedCodeEditor();
-         const oModel = oEditor.getModel();
-         const fullpath = oModel.getProperty("/fullpath");
-         if (fullpath === undefined)
-            return this.onSaveAs();
-         return this.websocket.Send("RUNMACRO:" + fullpath);
+      /** @brief Handle the "Save" button press event */
+      onSaveFile: function (tab) {
+         if (!tab.getModel().getProperty("/filename"))
+            return this.onSaveAsFile(tab);
+         this.syncEditor(tab, "SAVE");
       },
 
       /** @brief Handle the "Run" button press event */
-      onRunMacro: function () {
-         this.saveCheck(this.reallyRunMacro.bind(this));
+      onRunMacro: function (tab) {
+         if (!tab.getModel().getProperty("/filename"))
+            return this.onSaveAsFile(tab);
+         this.syncEditor(tab, "RUN");
       },
 
-      saveCheck: function(functionToRunAfter) {
-         const oEditor = this.getSelectedCodeEditor();
-         const oModel = oEditor.getModel();
-         if (oModel.getProperty("/modified") === true) {
-            MessageBox.confirm('The text has been modified! Do you want to save it?', {
-               title: 'Unsaved file',
-               icon: sap.m.MessageBox.Icon.QUESTION,
-               onClose: (oAction) => {
-                  if (oAction === MessageBox.Action.YES) {
-                     this.onSaveFile();
-                  } else if (oAction === MessageBox.Action.CANCEL) {
-                     return;
-                  }
-                  return functionToRunAfter();
-               },
-               actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO, sap.m.MessageBox.Action.CANCEL]
-            });
-         } else {
-            return functionToRunAfter();
-         }
+      /** @summary Search TabContainerItem by key value */
+      findTab: function(name, set_active) {
+         let oTabContainer = this.byId("tabContainer"),
+             items = oTabContainer.getItems();
+         for(let i = 0; i< items.length; i++)
+            if (items[i].getKey() === name) {
+               if (set_active) oTabContainer.setSelectedItem(items[i]);
+               return items[i];
+            }
       },
 
-      getSelectedCodeEditor: function (no_warning) {
-         let oTabItemString = this.getView().byId("myTabContainer").getSelectedItem();
-
-         if (oTabItemString.indexOf("CodeEditor") !== -1) {
-            return sap.ui.getCore().byId(oTabItemString + "Editor");
-         } else {
-            if (!no_warning) MessageToast.show("Sorry, you need to select a code editor tab", {duration: 1500});
-         }
+      /** @summary Retuns current selected tab, instance of TabContainerItem */
+      getSelectedTab: function() {
+         let oTabContainer = this.byId("tabContainer");
+         let items = oTabContainer.getItems();
+         for(let i = 0; i< items.length; i++)
+            if (items[i].getId() === oTabContainer.getSelectedItem())
+               return items[i];
       },
 
-      /** @brief Extract the file name and extension
-       * @desc Used to set the editor's model properties and display the file name on the tab element  */
-      setFileNameType: function (oEditor, fullname) {
-         let oModel = oEditor.getModel();
-         let oTabElement = oEditor.getParent();
+      /** @summary Retuns code editor from the tab */
+      getCodeEditor: function(tab) {
+         let items = tab ? tab.getContent() : [];
+         for (let n = 0; n < items.length; ++n)
+            if (items[n].isA("sap.ui.codeeditor.CodeEditor"))
+               return items[n];
+      },
+
+      /** @summary Extract the file name and extension
+        * @desc Used to set the editor's model properties and display the file name on the tab element */
+      setEditorFileKind: function (oTabElement, title) {
+         let oEditor = this.getCodeEditor(oTabElement);
+         if (!oEditor) return;
+         let oModel = oTabElement.getModel();
          let ext = "txt";
-         let runButton = this.getElementFromCurrentTab("Run");
-         runButton.setEnabled(false);
 
-         let filename = fullname;
-         let p = Math.max(filename.lastIndexOf("/"), filename.lastIndexOf("\\"));
-         if (p>0) filename = filename.substr(p+1);
+         oModel.setProperty("/runEnabled", false);
+         oModel.setProperty("/saveEnabled", true);
 
-         if (filename.lastIndexOf('.') > 0)
-            ext = filename.substr(filename.lastIndexOf('.') + 1);
+         if (title.lastIndexOf('.') > 0)
+            ext = title.substr(title.lastIndexOf('.') + 1);
 
          switch (ext.toLowerCase()) {
             case "c":
             case "cc":
             case "cpp":
             case "cxx":
-               runButton.setEnabled(true);
+               oModel.setProperty("/runEnabled", true);
+               // runButton.setEnabled(true);
                oEditor.setType('c_cpp');
                break;
             case "h":
@@ -436,90 +496,16 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
                oEditor.setType('xml');
                break;
             default: // unsupported type
-               if (filename.lastIndexOf('README') >= 0)
+               if (title.indexOf('README') >= 0)
                   oEditor.setType('plain_text');
                else
                   return false;
                break;
 
          }
-         oTabElement.setAdditionalText(filename);
-
-         if (filename.lastIndexOf('.') > 0)
-            filename = filename.substr(0, filename.lastIndexOf('.'));
-
-         oModel.setProperty("/fullpath", fullname);
-         oModel.setProperty("/filename", filename);
          oModel.setProperty("/ext", ext);
          return true;
       },
-
-      /** @brief Handle the "Browse..." button press event */
-      onChangeFile: function (oEvent) {
-         let oEditor = this.getSelectedCodeEditor();
-         if (!oEditor) return;
-
-         let oReader = new FileReader();
-         oReader.onload = function () {
-            oEditor.getModel().setProperty("/code", oReader.result);
-         };
-         let file = oEvent.getParameter("files")[0];
-         if (this.setFileNameType(oEditor, file.name))
-            oReader.readAsText(file);
-      },
-
-      /* =========================================== */
-      /* =============== Code Editor =============== */
-      /* =========================================== */
-
-      /* ============================================ */
-      /* =============== Image viewer =============== */
-      /* ============================================ */
-
-      newImageViewerFragment: function (ID) {
-         return new sap.m.Page({
-            showNavButton: false,
-            showFooter: false,
-            showSubHeader: false,
-            showHeader: false,
-            content: new Image(ID + "Image", {
-               src: "",
-               densityAware: false
-            })
-         });
-      },
-
-      newImageViewer: async function () {
-         let oTabContainer = this.getView().byId("myTabContainer");
-
-         const ID = "ImageViewer" + this.globalId;
-         this.globalId++;
-
-         let tabContainerItem = new TabContainerItem(ID, {
-            icon: "sap-icon://background",
-            name: "Image Viewer",
-            additionalText: "untitled",
-            content: this.newImageViewerFragment(ID)
-         });
-
-         oTabContainer.addItem(tabContainerItem);
-         oTabContainer.setSelectedItem(tabContainerItem);
-
-         sap.ui.getCore().byId(ID + 'Image').addStyleClass("imageViewer");
-      },
-
-      getSelectedImageViewer: function (no_warning) {
-         let oTabItemString = this.getView().byId("myTabContainer").getSelectedItem();
-
-         if (oTabItemString.indexOf("ImageViewer") !== -1)
-            return sap.ui.getCore().byId(oTabItemString + "Image");
-
-         if (!no_warning) MessageToast.show("Sorry, you need to select an image viewer tab", {duration: 1500});
-      },
-
-      /* ============================================ */
-      /* =============== Image viewer =============== */
-      /* ============================================ */
 
       /* ============================================= */
       /* =============== Settings menu =============== */
@@ -527,93 +513,21 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
 
       _getSettingsMenu: async function () {
          if (!this._oSettingsMenu) {
-            let fragment;
-            await Fragment.load({name: "rootui5.browser.view.settingsmenu", controller: this}).then(function (oSettingsMenu) {
-               fragment = oSettingsMenu;
-            });
-            if (fragment) {
-               let oModel = new JSONModel({
-                  "TH1": [
-                     {"name": "hist"},
-                     {"name": "P"},
-                     {"name": "P0"},
-                     {"name": "E"},
-                     {"name": "E1"},
-                     {"name": "E2"},
-                     {"name": "E3"},
-                     {"name": "E4"},
-                     {"name": "E1X0"},
-                     {"name": "L"},
-                     {"name": "LF2"},
-                     {"name": "B"},
-                     {"name": "B1"},
-                     {"name": "A"},
-                     {"name": "TEXT"},
-                     {"name": "LEGO"},
-                     {"name": "same"}
-                  ],
-                  "TH2": [
-                     {"name": "COL"},
-                     {"name": "COLZ"},
-                     {"name": "COL0"},
-                     {"name": "COL1"},
-                     {"name": "COL0Z"},
-                     {"name": "COL1Z"},
-                     {"name": "COLA"},
-                     {"name": "BOX"},
-                     {"name": "BOX1"},
-                     {"name": "PROJ"},
-                     {"name": "PROJX1"},
-                     {"name": "PROJX2"},
-                     {"name": "PROJX3"},
-                     {"name": "PROJY1"},
-                     {"name": "PROJY2"},
-                     {"name": "PROJY3"},
-                     {"name": "SCAT"},
-                     {"name": "TEXT"},
-                     {"name": "TEXTE"},
-                     {"name": "TEXTE0"},
-                     {"name": "CONT"},
-                     {"name": "CONT1"},
-                     {"name": "CONT2"},
-                     {"name": "CONT3"},
-                     {"name": "CONT4"},
-                     {"name": "ARR"},
-                     {"name": "SURF"},
-                     {"name": "SURF1"},
-                     {"name": "SURF2"},
-                     {"name": "SURF4"},
-                     {"name": "SURF6"},
-                     {"name": "E"},
-                     {"name": "A"},
-                     {"name": "LEGO"},
-                     {"name": "LEGO0"},
-                     {"name": "LEGO1"},
-                     {"name": "LEGO2"},
-                     {"name": "LEGO3"},
-                     {"name": "LEGO4"},
-                     {"name": "same"}
-                  ],
-                  "TProfile": [
-                     {"name": "E0"},
-                     {"name": "E1"},
-                     {"name": "E2"},
-                     {"name": "p"},
-                     {"name": "AH"},
-                     {"name": "hist"}
-                  ]
-               });
-               fragment.setModel(oModel);
-               this.getView().addDependent(fragment);
-               this._oSettingsMenu = fragment;
-            }
+            this._oSettingsMenu = await Fragment.load({ name: "rootui5.browser.view.settingsmenu", controller: this });
+            this._oSettingsMenu.setModel(this._oSettingsModel);
+            this.getView().addDependent(this._oSettingsMenu);
          }
          return this._oSettingsMenu;
       },
 
       onSettingPress: async function () {
-         await this._getSettingsMenu();
-         this._oSettingsMenu.open();
+         let menu = await this._getSettingsMenu();
+
+         this._oSettingsModel.setProperty("/ShowHiddenFiles", this.model.isShowHidden());
+         this._oSettingsModel.setProperty("/SortMethod", this.model.getSortMethod());
+         this._oSettingsModel.setProperty("/ReverseOrder", this.model.isReverseOrder());
+
+         menu.open();
       },
 
       handleSettingsChange: function (oEvent) {
@@ -621,48 +535,66 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
          this.drawingOptions[graphType] = oEvent.getSource().mProperties.value;
       },
 
-      /* ============================================= */
-      /* =============== Settings menu =============== */
-      /* ============================================= */
+      handleSeetingsConfirm: function() {
+         let hidden = this._oSettingsModel.getProperty("/ShowHiddenFiles"),
+             sort = this._oSettingsModel.getProperty("/SortMethod"),
+             reverse = this._oSettingsModel.getProperty("/ReverseOrder"),
+             changed = false;
 
-      /* ========================================= */
-      /* =============== Tabs menu =============== */
-      /* ========================================= */
+         if (hidden != this.model.isShowHidden()) {
+            changed = true;
+            this.model.setShowHidden(hiden);
+         }
 
-      /** @brief Add Tab event handler */
-      addNewButtonPressHandler: async function (oEvent) {
-         //TODO: Change to some UI5 function (unknown for now)
+         if (reverse != this.model.isReverseOrder()) {
+            changed = true;
+            this.model.setReverseOrder(reverse);
+         }
+
+         if (sort != this.model.getSortMethod()) {
+            changed = true;
+            this.model.setSortMethod(sort);
+         }
+
+         if (changed) {
+            this.doReload();
+         }
+      },
+
+      /** @summary Add Tab event handler */
+      handlePressAddTab: async function (oEvent) {
+         //TODO: Change to some UI5 function (unknown for now), not know how to get
          let oButton = oEvent.getSource().mAggregations._tabStrip.mAggregations.addButton;
 
          // create action sheet only once
          if (!this._tabMenu) {
-            let fragment;
-            await Fragment.load({name: "rootui5.browser.view.tabsmenu", controller: this}).then(function (oFragment) {
-               fragment = oFragment;
+            this._tabMenu = await Fragment.load({
+               name: "rootui5.browser.view.tabsmenu",
+               controller: this
             });
-            if (fragment) {
-               this.getView().addDependent(fragment);
-               this._tabMenu = fragment;
-            }
+            this.getView().addDependent(this._tabMenu);
          }
          this._tabMenu.openBy(oButton);
       },
 
-      newRootXCanvas: function (oEvent) {
-         let msg;
-         if (oEvent.getSource().getText().indexOf("6") !== -1) {
-            msg = "NEWTCANVAS";
-         } else {
-            msg = "NEWRCANVAS";
-         }
-         if (this.isConnected) {
-            this.websocket.Send(msg);
-         }
-      },
+      /** @summary handle creation of new tab */
+      handleNewTab: function (oEvent) {
+         let msg, txt = oEvent.getSource().getText();
 
-      /* ========================================= */
-      /* =============== Tabs menu =============== */
-      /* ========================================= */
+         if (txt.indexOf("editor") >= 0)
+            msg = "NEWWIDGET:editor";
+         else if (txt.indexOf("Image") >= 0)
+            msg = "NEWWIDGET:image";
+         else if (txt.indexOf("Geometry") >= 0)
+            msg = "NEWWIDGET:geom";
+         else if (txt.indexOf("Root 6") >= 0)
+            msg = "NEWWIDGET:tcanvas";
+         else if (txt.indexOf("Root 7") >= 0)
+            msg = "NEWWIDGET:rcanvas";
+
+         if (this.isConnected && msg)
+            this.websocket.send(msg);
+      },
 
       /* =========================================== */
       /* =============== Breadcrumbs =============== */
@@ -693,68 +625,42 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
             if (i>0) path.push(oLinks[i].getText());
             if (oLinks[i].getId() === sId ) break;
          }
-         this.websocket.Send('CHPATH:' + JSON.stringify(path));
-         this.doReload(true);
+         // after CHPATH will be replied, client also start reload
+         this.websocket.send('CHPATH:' + JSON.stringify(path));
       },
 
-      /* =========================================== */
-      /* =============== Breadcrumbs =============== */
-      /* =========================================== */
-
-      /* ============================================ */
-      /* =============== TabContainer =============== */
-      /* ============================================ */
-
       tabSelectItem: function(oEvent) {
-         var oItemSelected = oEvent.getParameter('item');
-
-         if (oItemSelected.getName() !== "ROOT Canvas") return;
-
-         console.log("Canvas selected:", oItemSelected.getAdditionalText());
-
-         this.websocket.Send("SELECT_CANVAS:" + oItemSelected.getAdditionalText());
-
+         let item = oEvent.getParameter('item');
+         if (item && item.getKey())
+            this.websocket.send("WIDGET_SELECTED:" + item.getKey());
       },
 
       /** @brief Close Tab event handler */
-      tabCloseHandler: function(oEvent) {
+      handleTabClose: function(oEvent) {
          // prevent the tab being closed by default
          oEvent.preventDefault();
 
-         let oTabContainer = this.byId("myTabContainer");
+         let oTabContainer = this.byId("tabContainer");
          let oItemToClose = oEvent.getParameter('item');
+         let oModel = oItemToClose.getModel();
 
-
-         if (oItemToClose.getName() === "Code Editor") {
-
-            let count = 0;
-            const items = oTabContainer.getItems();
-            for (let i=0; i< items.length; i++) {
-               if (items[i].getId().indexOf("CodeEditor") !== -1) {
-                  count++
-               }
-            }
-            if (count <= 1) {
-               MessageToast.show("Sorry, you cannot close the Code Editor", {duration: 1500});
-            } else {
-               this.saveCheck(function ()  {oTabContainer.removeItem(oItemToClose);});
-            }
-         } else {
-            let pthis = this;
-            MessageBox.confirm('Do you really want to close the "' + oItemToClose.getName() + '" tab?', {
-               onClose: function (oAction) {
-                  if (oAction === MessageBox.Action.OK) {
-                     if (oItemToClose.getName() === "ROOT Canvas")
-                        pthis.websocket.Send("CLOSE_CANVAS:" + oItemToClose.getAdditionalText());
-
-                     oTabContainer.removeItem(oItemToClose);
-
-                     MessageToast.show('Closed the "' + oItemToClose.getName() + '" tab', {duration: 1500});
-                  }
-               }
-            });
-
+         let closeItem = () => {
+            if (oItemToClose.getKey())
+               this.websocket.send("CLOSE_TAB:" + oItemToClose.getKey());
+            oTabContainer.removeItem(oItemToClose);
          }
+
+         if (oModel && oModel.getProperty("/can_close"))
+            return closeItem();
+
+         MessageBox.confirm('Do you really want to close the "' + oItemToClose.getName() + '" tab?', {
+            onClose: oAction => {
+               if (oAction === MessageBox.Action.OK) {
+                   closeItem();
+                   MessageToast.show('Closed the "' + oItemToClose.getName() + '" tab', { duration: 1500 });
+                }
+            }
+         });
       },
 
       /* ============================================ */
@@ -767,144 +673,94 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
 
       onTerminalSubmit: function(oEvent) {
          let command = oEvent.getSource().getValue();
-         let url = '/ProcessLine/cmd.json?arg1="' + command + '"';
-         console.log(command);
-         this.websocket.Send("CMD:" + command);
+         this.websocket.send("CMD:" + command);
          oEvent.getSource().setValue("");
          this.requestRootHist();
          this.requestLogs();
       },
 
       requestRootHist: function() {
-         return this.websocket.Send("ROOTHIST:");
+         return this.websocket.send("GETHISTORY:");
       },
 
-      updateRootHist: function (hist) {
-         let pos = hist.lastIndexOf(',');
-         hist = hist.substring(0,pos) + "" + hist.substring(pos+1);
-         hist = hist.split(",");
-         let json = {hist:[]};
-
-         for(let i=0; i<hist.length; i++) {
-            json.hist.push({name: hist[i] });
-
-         }
+      updateRootHist: function(entries) {
+         let json = { hist:[] };
+         entries.forEach(entry => json.hist.push({ name: entry }));
          this.getView().byId("terminal-input").setModel(new JSONModel(json));
       },
 
       requestLogs: function() {
-         return this.websocket.Send("LOGS:");
+         return this.websocket.send("GETLOGS:");
       },
 
       updateLogs: function(logs) {
-         this.getView().byId("output_log").setValue(logs);
+         let str = "";
+         logs.forEach(line => str += line+"\n");
+         this.getView().byId("output_log").setValue(str);
       },
 
-      /* ======================================== */
-      /* =============== Terminal =============== */
-      /* ======================================== */
-
-      /* ========================================== */
-      /* =============== ToolHeader =============== */
-      /* ========================================== */
-
-      onFullScreenPressLandscape: function () {
+      onFullScreen: function() {
          let splitApp = this.getView().byId("SplitAppBrowser");
-         let mode = splitApp.getMode();
-         if(mode === "ShowHideMode") {
-            splitApp.setMode("HideMode");
+         if (uiDevice.orientation.landscape) {
+            if(splitApp.getMode() === "ShowHideMode") {
+               splitApp.setMode("HideMode");
+            } else {
+               splitApp.setMode("ShowHideMode");
+            }
          } else {
-            splitApp.setMode("ShowHideMode");
+            if(splitApp.isMasterShown()) {
+               splitApp.hideMaster();
+            } else {
+               splitApp.showMaster();
+            }
          }
       },
 
-      onFullScreenPressPortrait: function () {
-         let splitApp = this.getView().byId("SplitAppBrowser");
-         if(splitApp.isMasterShown()) {
-            splitApp.hideMaster();
-         } else {
-            splitApp.showMaster();
-         }
-      },
-
-      onExpandMaster: function () {
-         this.getView().byId('expandMaster').setVisible(false);
-         this.getView().byId('shrinkMaster').setVisible(true);
-         this.getView().byId('masterPage').getParent().addStyleClass('masterExpanded');
-      },
-
-      onShrinkMaster: function () {
-         this.getView().byId('expandMaster').setVisible(true);
-         this.getView().byId('shrinkMaster').setVisible(false);
+      handleChangeOrientation: function(is_landscape) {
+         let btn = this.getView().byId('expandMaster');
+         btn.setVisible(is_landscape);
+         btn.setIcon("sap-icon://open-command-field");
          this.getView().byId('masterPage').getParent().removeStyleClass('masterExpanded');
       },
 
+      onExpandMaster: function () {
+         const master = this.getView().byId('masterPage').getParent();
+         master.toggleStyleClass('masterExpanded');
+         const expanded = master.hasStyleClass('masterExpanded');
+         const btn = this.getView().byId('expandMaster');
+         btn.setIcon(expanded ? "sap-icon://close-command-field" : "sap-icon://open-command-field");
+      },
+
       /* ========================================== */
       /* =============== ToolHeader =============== */
       /* ========================================== */
 
-      /** @brief Assign the "double click" event handler to each row */
+      /** @summary Assign the "double click" event handler to each row */
       assignRowHandlers: function () {
-         var rows = this.byId("treeTable").getRows();
-         for (var k = 0; k < rows.length; ++k) {
+         let rows = this.byId("treeTable").getRows();
+         for (let k = 0; k < rows.length; ++k) {
             rows[k].$().dblclick(this.onRowDblClick.bind(this, rows[k]));
          }
       },
 
-      sendDblClick: function (fullpath, opt) {
-         this.websocket.Send('DBLCLK: ["' + fullpath + '","' + (opt || "") + '"]');
-      },
-
-      /** @brief Double-click event handler */
+      /** @summary Double-click event handler */
       onRowDblClick: function (row) {
          let ctxt = row.getBindingContext(),
-            prop = ctxt ? ctxt.getProperty(ctxt.getPath()) : null,
-            fullpath = (prop && prop.fullpath) ? prop.fullpath.substr(1, prop.fullpath.length - 2) : "";
+            prop = ctxt ? ctxt.getProperty(ctxt.getPath()) : null;
 
-         if (!fullpath) return;
+         if (!prop || !prop.path) return;
 
-         // do not use row._bHasChildren while it is not documented member of m.Row object
-         if (!prop.isLeaf) {
-            if (!prop.fullpath.endsWith(".root/")) {
+         let className = this.getBaseClass(prop.className),
+             opt = className ? this.drawingOptions[className] : "",
+             exec = "";
 
-               let oBreadcrumbs = this.getView().byId("breadcrumbs");
-               let links = oBreadcrumbs.getLinks();
-               let currentText = oBreadcrumbs.getCurrentLocationText();
+         if (this._oSettingsModel.getProperty("/DBLCLKRun")) exec = "exec";
+         if (!opt) opt = "";
 
-               let path = "";
-               if ((currentText == "/") || (links.length < 1)) {
-                  path = prop.fullpath;
-               } else {
-                  path = "/";
-                  for (let i = 1; i < links.length; i++)
-                     path += links[i].getText() + "/";
-                  path += currentText + prop.fullpath;
-               }
+         let args = prop.path.slice(); // make copy of array
+         args.push(opt, exec);
 
-               // TODO: use plain array also here to avoid any possible confusion
-               this.websocket.Send('CHDIR:' + path);
-               return this.doReload(true);
-            }
-         }
-
-         // first try to activate editor
-         let codeEditor = this.getSelectedCodeEditor(true);
-         if (codeEditor) {
-            if (this.setFileNameType(codeEditor, fullpath))
-               return this.sendDblClick(fullpath, "$$$editor$$$");
-         }
-
-         let viewerTab = this.getSelectedImageViewer(true);
-         if (viewerTab) {
-            return this.sendDblClick(fullpath, "$$$image$$$");
-         }
-
-         let className = this.getBaseClass(prop ? prop.className : "");
-         let drawingOptions = "";
-         if (className && this.drawingOptions[className])
-            drawingOptions = this.drawingOptions[className];
-
-         return this.sendDblClick(fullpath, drawingOptions);
+         this.websocket.send("DBLCLK:" + JSON.stringify(args));
       },
 
       getBaseClass: function(className) {
@@ -918,15 +774,14 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
          return className;
       },
 
-      OnWebsocketOpened: function(handle) {
+      onWebsocketOpened: function(handle) {
          this.isConnected = true;
 
          if (this.model)
             this.model.sendFirstRequest(this.websocket);
-
       },
 
-      OnWebsocketClosed: function() {
+      onWebsocketClosed: function() {
          // when connection closed, close panel as well
          console.log('CLOSE WINDOW WHEN CONNECTION CLOSED');
 
@@ -935,8 +790,8 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
          this.isConnected = false;
       },
 
-     /** Entry point for all data from server */
-     OnWebsocketMsg: function(handle, msg, offset) {
+     /** @summary Entry point for all data from server */
+     onWebsocketMsg: function(handle, msg, offset) {
 
          if (typeof msg != "string")
             return console.error("Browser do not uses binary messages len = " + mgs.byteLength);
@@ -948,82 +803,72 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
          case "INMSG":
             this.processInitMsg(msg);
             break;
-         case "FREAD":  // text file read
-            var oEditor = this.getSelectedCodeEditor();
+         case "EDITOR": { // update code editor
+            let arr = JSON.parse(msg);
+            let tab = this.findTab(arr[0]);
 
-            if (oEditor) {
-               var arr = JSON.parse(msg);
-
-               this.setFileNameType(oEditor, arr[0]);
-
-               oEditor.getModel().setProperty("/code", arr[1]);
-
-               this.getElementFromCurrentTab("Save").setEnabled(true);
+            if (tab) {
+               this.setEditorFileKind(tab, arr[1]);
+               tab.getModel().setProperty("/title", arr[1]);
+               tab.getModel().setProperty("/filename", arr[2]);
+               tab.getModel().setProperty("/code", arr[3]);
+               tab.getModel().setProperty("/modified", false);
+               tab.getModel().setProperty("/can_close", true);
+               tab.getModel().setProperty("/first_change", true);
             }
             break;
-         case "FIMG":  // image file read
-            const oViewer = this.getSelectedImageViewer(true);
-            if(oViewer) {
-               var arr = JSON.parse(msg);
-               var filename = arr[0];
-               let p = Math.max(filename.lastIndexOf("/"), filename.lastIndexOf("\\"));
-               if (p>0) filename = filename.substr(p+1);
-               oViewer.getParent().getParent().setAdditionalText(filename);
-               oViewer.setSrc(arr[1]);
+         }
+         case "IMAGE": { // update image viewer
+            let arr = JSON.parse(msg);
+            let tab = this.findTab(arr[0]);
+
+            if (tab) {
+               tab.setAdditionalText(arr[1]);
+               // let filename = arr[2];
+               let oViewer = tab.getContent()[0].getContent()[0];
+               oViewer.setSrc(arr[3]);
             }
             break;
-         case "CANVS":  // canvas created by server, need to establish connection
-            var arr = JSON.parse(msg);
-            this.createCanvas(arr[0], arr[1], arr[2]);
+         }
+         case "NEWWIDGET": {  // widget created by server, need to establish connection
+            let arr = JSON.parse(msg);
+            this.createElement(arr[0], arr[1], arr[2], arr[3]);
+            this.findTab(arr[2], true); // set active
             break;
+         }
          case "WORKPATH":
             this.updateBReadcrumbs(JSON.parse(msg));
+            this.doReload();
             break;
-         case "SLCTCANV": // Selected the back selected canvas
-           let oTabContainer = this.byId("myTabContainer");
-           let oTabContainerItems = oTabContainer.getItems();
-           for(let i=0; i<oTabContainerItems.length; i++) {
-             if (oTabContainerItems[i].getAdditionalText() === msg) {
-               oTabContainer.setSelectedItem(oTabContainerItems[i]);
-               break;
-             }
-           }
+         case "SELECT_WIDGET":
+           this.findTab(msg, true); // set active
            break;
          case "BREPL":   // browser reply
             if (this.model) {
-               var bresp = JSON.parse(msg);
+               let bresp = JSON.parse(msg);
                this.model.processResponse(bresp);
 
-               if (bresp.path === '/') {
-                  var tt = this.getView().byId("treeTable");
-                  var cols = tt.getColumns();
+               if (bresp.path.length == 0) {
+                  let tt = this.getView().byId("treeTable");
                   tt.autoResizeColumn(2);
                   tt.autoResizeColumn(1);
-                  // for (var k=0;k<cols.length;++k)
-                  //    tt.autoResizeColumn(k);
                }
             }
             break;
-            case "HIST":
-               this.updateRootHist(msg);
-               break;
-            case "LOGS":
-               this.updateLogs(msg);
-               break;
+         case "HISTORY":
+            this.updateRootHist(JSON.parse(msg));
+            break;
+         case "LOGS":
+            this.updateLogs(JSON.parse(msg));
+            break;
          default:
             console.error('Non recognized msg ' + mhdr + ' len=' + msg.length);
          }
       },
 
-      /** Get the ID of the currently selected tab of given tab container */
-      getSelectedtabFromtabContainer: function(divid) {
-         var  tabContainer = this.getView().byId('myTabContainer').getSelectedItem();
-         return tabContainer.slice(6, tabContainer.length);
-      },
-
-      /** Show special message instead of nodes hierarchy */
+      /** @summary Show special message instead of nodes hierarchy */
       showTextInBrowser: function(text) {
-         var br = this.byId("treeTable");
+         let br = this.byId("treeTable");
          br.collapseAll();
          if (!text || (text === "RESET")) {
             br.setNoData("");
@@ -1048,35 +893,35 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
          this.renderingDone = true;
 
          // this is how master width can be changed, may be extra control can be provided
-         // var oSplitApp = this.getView().byId("SplitAppBrowser");
+         // let oSplitApp = this.getView().byId("SplitAppBrowser");
          // oSplitApp.getAggregation("_navMaster").$().css("width", "400px");
       },
 
-      /** Reload (refresh) file tree browser */
-      onRealoadPress: function (oEvent) {
-         this.doReload(true);
+      /** @summary Reload (refresh) file tree browser */
+      onRealoadPress: function() {
+         this.doReload(true); // force also update of items on server
       },
 
-      doReload: function(force) {
+      doReload: function(force_reload) {
          if (this.standalone) {
             this.showTextInBrowser();
             this.paintFoundNodes(null);
             this.model.setFullModel(this.fullModel);
          } else {
-            this.model.reloadMainModel(force);
+            this.model.reloadMainModel(true, force_reload);
          }
       },
 
-      /** Quit ROOT session */
-      onQuitRootPress: function(oEvent) {
-         this.websocket.Send("QUIT_ROOT");
+      /** @summary Quit ROOT session */
+      onQuitRootPress: function() {
+         this.websocket.send("QUIT_ROOT");
       },
 
       onSearch : function(oEvt) {
          this.changeItemsFilter(oEvt.getSource().getValue());
       },
 
-      /** Submit node search query to server, ignore in offline case */
+      /** @summary Submit node search query to server, ignore in offline case */
       changeItemsFilter: function(query, from_handler) {
 
          if (!from_handler) {
@@ -1092,71 +937,92 @@ sap.ui.define(['sap/ui/core/mvc/Controller',
          this.model.changeItemsFilter(query);
       },
 
-      /** process initial message, now it is list of existing canvases */
+      /** @summary process initial message, now it is list of existing canvases */
       processInitMsg: function(msg) {
-         var arr = JSROOT.parse(msg);
+         let arr = JSROOT.parse(msg);
          if (!arr) return;
 
          this.updateBReadcrumbs(arr[0]);
-         this.requestRootHist();
-         this.requestLogs();
 
-         for (var k=1; k<arr.length; ++k)
-            this.createCanvas(arr[k][0], arr[k][1], arr[k][2]);
+         for (let k = 1; k < arr.length; ++k) {
+            let kind = arr[k][0];
+            if (kind == "active") {
+               this.findTab(arr[k][1], true); // set active
+            } else if (kind == "history") {
+               arr[k].shift();
+               this.updateRootHist(arr[k]);
+            } else if (kind == "logs") {
+               arr[k].shift();
+               this.updateLogs(arr[k]);
+            } else {
+               this.createElement(kind, arr[k][1], arr[k][2], arr[k][3]);
+            }
+         }
       },
 
-      createCanvas: function(kind, url, name) {
-         console.log("Create canvas ", url, name);
-         if (!url || !name) return;
+      createElement: function(kind, par1, par2, par3) {
+         switch(kind) {
+            case "editor": this.createCodeEditor(par1, par2, par3); break;
+            case "image": this.createImageViewer(par1, par2, par3); break;
+            case "geom": this.createGeomViewer(par1, par2, par3); break;
+            default: this.createCanvas(kind, par1, par2, par3);
+         }
+      },
 
-         var oTabContainer = this.byId("myTabContainer");
-         var oTabContainerItem = new TabContainerItem({
-            name: "ROOT Canvas",
+      createGeomViewer: function(url, name, title) {
+         let oTabContainer = this.byId("tabContainer");
+         let item = new TabContainerItem({
+            name: "Geom viewer",
+            key: name,
+            additionalText: name,
             icon: "sap-icon://column-chart-dual-axis"
          });
 
-         oTabContainerItem.setAdditionalText(name); // name can be used to set active canvas or close canvas
+         oTabContainer.addItem(item);
+         // oTabContainer.setSelectedItem(item);
 
-         oTabContainer.addItem(oTabContainerItem);
+         JSROOT.connectWebWindow({
+            kind: this.websocket.kind,
+            href: this.websocket.getHRef(url),
+            user_args: { nobrowser: true }
+         }).then(handle => XMLView.create({
+            viewName: "rootui5.eve7.view.GeomViewer",
+            viewData: { conn_handle: handle, embeded: true }
+         })).then(oView => item.addContent(oView));
+      },
 
-         // Change the selected tabs, only if it is new one, not the basic one
-         if(name !== "rcanv1") {
-           oTabContainer.setSelectedItem(oTabContainerItem);
-         }
+      createCanvas: async function(kind, url, name) {
+         if (!url || !name || (kind != "tcanvas" && kind != "rcanvas")) return;
 
-         var conn = new JSROOT.WebWindowHandle(this.websocket.kind);
+         let item = new TabContainerItem({
+            name: "ROOT Canvas",
+            key: name,
+            additionalText: name,
+            icon: "sap-icon://column-chart-dual-axis"
+         });
 
-         // this is producing
-         var addr = this.websocket.href, relative_path = url;
-         if (relative_path.indexOf("../")==0) {
-            var ddd = addr.lastIndexOf("/",addr.length-2);
-            addr = addr.substr(0,ddd) + relative_path.substr(2);
-         } else {
-            addr += relative_path;
-         }
+         this.byId("tabContainer").addItem(item);
 
-         var painter = null;
+         let conn = new JSROOT.WebWindowHandle(this.websocket.kind);
+         conn.setHRef(this.websocket.getHRef(url)); // argument for connect, makes relative path
 
-         if (kind == "root7") {
-            painter = new JSROOT.v7.TCanvasPainter(null);
-         } else {
-            painter = new JSROOT.TCanvasPainter(null);
-         }
+         let painter = await ((kind == "rcanvas")
+                ? JSROOT.require("v7").then(() => new JSROOT.v7.RCanvasPainter(null, null))
+                : JSROOT.require("v6").then(() => new JSROOT.TCanvasPainter(null, null)));
 
-         painter.online_canvas = true;
+         painter.online_canvas = true; // indicates that canvas gets data from running server
+         painter.embed_canvas = true;  // use to indicate that canvas ui should not close complete window when closing
          painter.use_openui = true;
          painter.batch_mode = false;
          painter._window_handle = conn;
-         painter._window_handle_href = addr; // argument for connect
 
-         XMLView.create({
+         let oView = await XMLView.create({
             viewName: "rootui5.canv.view.Canvas",
             viewData: { canvas_painter: painter },
             height: "100%"
-         }).then(function(oView) {
-            oTabContainerItem.addContent(oView);
-            // JSROOT.CallBack(call_back, true);
          });
+
+         item.addContent(oView);
       },
 
    });

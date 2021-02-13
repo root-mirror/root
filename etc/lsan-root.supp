@@ -1,0 +1,26 @@
+#Suppression for known memory leaks reported by leak sanitizer
+
+#llvm memory hoggers
+leak:llvm::SmallVectorBase::grow_pod
+leak:llvm::BumpPtrAllocatorImpl
+leak:llvm::DenseMap*grow
+leak:llvm::StringMapImpl
+leak:llvm::TinyPtr
+leak:llvm::FoldingSetBase
+leak:llvm::MemoryBuffer
+leak:llvm::CodeGenDAG
+leak:llvm::EmitFastISel
+leak:llvm-tblgen
+
+#clang
+leak:clang::FileManager::getFile
+leak:clang::LineTableInfo
+leak:clang::HeaderSearch
+leak:clang::Diag
+leak:clang::Preprocessor::
+leak:clang::TextDiagnosticPrinter
+leak:clang-tblgen
+
+#cling macro execution
+leak:cling::IncrementalExecutor
+

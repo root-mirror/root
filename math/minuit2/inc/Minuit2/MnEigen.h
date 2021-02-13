@@ -15,8 +15,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MnUserCovariance;
 
@@ -27,20 +26,18 @@ class MnUserCovariance;
 class MnEigen {
 
 public:
+   MnEigen() {}
 
-  MnEigen() {}
+   ~MnEigen() {}
 
-  ~MnEigen() {}
-
-  /// calculate the eigenvalues
-  std::vector<double> operator()(const MnUserCovariance&) const;
+   /// calculate the eigenvalues
+   std::vector<double> operator()(const MnUserCovariance &) const;
 
 private:
-
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnEigen
+#endif // ROOT_Minuit2_MnEigen

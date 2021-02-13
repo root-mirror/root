@@ -13,61 +13,62 @@
 */
 
 #include "Minuit2/MnConfig.h"
-#include <iostream>
+#include "Minuit2/MnPrint.h"
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 /* Table of constant values */
 
 // static integer c__1 = 1;
 
-int mnxerbla(const char* srname, int info) {
-    /* Format strings */
-//     static char fmt_9999[] = "(\002 ** On entry to \002,a6,\002 Parameter nu\// mber \002,i2,\002 had \002,\002an illegal Value\002)";
+int mnxerbla(const char *srname, int info)
+{
+   /* Format strings */
+   //     static char fmt_9999[] = "(\002 ** On entry to \002,a6,\002 Parameter nu\// mber \002,i2,\002 had \002,\002an
+   //     illegal Value\002)";
 
-/*  -- LAPACK auxiliary routine (version 3.0) -- */
-/*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd., */
-/*     Courant Institute, Argonne National Lab, and Rice University */
-/*     September 30, 1994 */
+   /*  -- LAPACK auxiliary routine (version 3.0) -- */
+   /*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd., */
+   /*     Courant Institute, Argonne National Lab, and Rice University */
+   /*     September 30, 1994 */
 
-/*     .. Scalar Arguments .. */
-/*     .. */
+   /*     .. Scalar Arguments .. */
+   /*     .. */
 
-/*  Purpose */
-/*  ======= */
+   /*  Purpose */
+   /*  ======= */
 
-/*  XERBLA  is an Error handler for the LAPACK routines. */
-/*  It is called by an LAPACK routine if an input Parameter has an */
-/*  invalid Value.  A message is printed and execution stops. */
+   /*  XERBLA  is an Error handler for the LAPACK routines. */
+   /*  It is called by an LAPACK routine if an input Parameter has an */
+   /*  invalid Value.  A message is printed and execution stops. */
 
-/*  Installers may consider modifying the STOP statement in order to */
-/*  call system-specific exception-handling facilities. */
+   /*  Installers may consider modifying the STOP statement in order to */
+   /*  call system-specific exception-handling facilities. */
 
-/*  Arguments */
-/*  ========= */
+   /*  Arguments */
+   /*  ========= */
 
-/*  SRNAME  (input) CHARACTER*6 */
-/*          The Name of the routine which called XERBLA. */
+   /*  SRNAME  (input) CHARACTER*6 */
+   /*          The Name of the routine which called XERBLA. */
 
-/*  INFO    (input) INTEGER */
-/*          The position of the invalid Parameter in the Parameter list */
-/*          of the calling routine. */
+   /*  INFO    (input) INTEGER */
+   /*          The position of the invalid Parameter in the Parameter list */
+   /*          of the calling routine. */
 
-/* ===================================================================== */
+   /* ===================================================================== */
 
-/*     .. Executable Statements .. */
+   /*     .. Executable Statements .. */
 
-   std::cout<<" ** On entry to "<<srname<<" Parameter number "<<info<<" had an illegal Value"<<std::endl;
+   MnPrint print("mnxerbla");
+   print.Warn("On entry to", srname, "Parameter number", info, "had an illegal Value");
 
    /*     End of XERBLA */
 
    return 0;
 } /* xerbla_ */
 
+} // namespace Minuit2
 
-   }  // namespace Minuit2
-
-}  // namespace ROOT
+} // namespace ROOT

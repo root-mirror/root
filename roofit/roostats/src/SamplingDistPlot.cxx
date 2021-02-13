@@ -311,9 +311,9 @@ void SamplingDistPlot::Draw(Option_t * /*options */) {
 
    bool dirStatus = RooPlot::addDirectoryStatus();
    // make the RooPlot managed by this class
-   if (dirStatus) RooPlot::setAddDirectoryStatus(false);
+   RooPlot::setAddDirectoryStatus(false);
    fRooPlot = xaxis.frame();
-   if (dirStatus) RooPlot::setAddDirectoryStatus(true);
+   RooPlot::setAddDirectoryStatus(dirStatus);
    if (!fRooPlot) {
      oocoutE(this,InputArguments) << "invalid variable to plot" << std::endl;
      return;

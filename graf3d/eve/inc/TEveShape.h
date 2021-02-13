@@ -18,6 +18,7 @@
 #include "TAtt3D.h"
 #include "TAttBBox.h"
 #include "TColor.h"
+#include <vector>
 
 class TEveShape : public TEveElementList,
                   public TAtt3D,
@@ -26,8 +27,8 @@ class TEveShape : public TEveElementList,
    friend class TEveShapeEditor;
 
 private:
-   TEveShape(const TEveShape&);            // Not implemented
-   TEveShape& operator=(const TEveShape&); // Not implemented
+   TEveShape(const TEveShape&) = delete;
+   TEveShape& operator=(const TEveShape&) = delete;
 
 public:
    typedef std::vector<TEveVector2>           vVector2_t;

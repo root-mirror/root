@@ -14,7 +14,7 @@
 
 Class describing a PROOF worker server. It contains information like the
 workers host name, ordinal number, performance index, socket, etc.
-Objects of this class can only be created via TProof member functions. 
+Objects of this class can only be created via TProof member functions.
 
 */
 
@@ -26,7 +26,6 @@ Objects of this class can only be created via TProof member functions.
 #include "TSlaveLite.h"
 #include "TProof.h"
 #include "TSystem.h"
-#include "TEnv.h"
 #include "TROOT.h"
 #include "TUrl.h"
 #include "TMessage.h"

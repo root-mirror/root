@@ -26,30 +26,13 @@ namespace DNN  {
 
 // Static members.
 //____________________________________________________________________________
-/*template<typename AFloat>
-size_t                   TCudaTensor<AFloat>::fInstances        = 0;*/
-/*template<typename AFloat>
-cublasHandle_t           TCudaTensor<AFloat>::fCublasHandle     = nullptr;*/
-/*template<typename AFloat>
-cudnnHandle_t            TCudaTensor<AFloat>::fCudnnHandle      = nullptr;*/
+#ifdef R__HAS_CUDNN
 template<typename AFloat>
 std::vector<cudnnHandle_t> TCudaTensor<AFloat>::fCudnnHandle(1);
-/*template<typename AFloat>
-cudnnTensorDescriptor_t  TCudaTensor<AFloat>::fTensorDescriptor = nullptr;*/
 template<typename AFloat>
 cudnnDataType_t          TCudaTensor<AFloat>::fDataType         = CUDNN_DATA_FLOAT;
-/*template<typename AFloat>
-AFloat                   * TCudaTensor<AFloat>::fDeviceReturn   = nullptr;*/
-/*template<typename AFloat>
-AFloat                   * TCudaTensor<AFloat>::fOnes           = nullptr;*/
-/*template<typename AFloat>
-curandState_t            * TCudaTensor<AFloat>::fCurandStates   = nullptr;*/
-/*template<typename AFloat>
-size_t                   TCudaTensor<AFloat>::fNCurandStates    = 0;*/
-/*template<typename AFloat>
-size_t                   TCudaTensor<AFloat>::fNOnes            = 0;*/
-/*template<typename AFloat>
-std::vector<std::vector<int> >         TCudaTensor<AFloat>::fStreamIndxs(std:vector<int>(), std::vector<int>());*/
+#endif
+
 template<typename AFloat>
 std::vector<int>         TCudaTensor<AFloat>::fInstances(1,0);
 
@@ -186,36 +169,14 @@ TCudaTensor<AFloat>::TCudaTensor(const TCudaMatrix<AFloat>& matrix, size_t dim) 
    }
 }
 
-//____________________________________________________________________________
-template <typename AFloat>
-TCudaTensor<AFloat>::~TCudaTensor()
-{
-   if (fTensorDescriptor && fTensorDescriptor.use_count() == 1 ) {
-      // //std::cout << "Destroy tensor descriptor for shape ";
-      // for (int ii = 0; ii < fNDim; ++ii)
-      //    std::cout << fShape[ii] << ",";
-      // std::cout << std::endl;
-      CUDNNCHECK(cudnnDestroyTensorDescriptor(fTensorDescriptor->fCudnnDesc));
 
-      fInstances[fStreamIndx]--;
-
-         // When all tensors in a streamIndx are destroyed, release cudnn resources
-      if (fInstances[fStreamIndx] <= 0) {
-         std::cout << "All Cuda tensors are -released - destroy cudnn handle " << fInstances[fStreamIndx] << std::endl;
-         CUDNNCHECK(cudnnDestroy(fCudnnHandle[fStreamIndx]));
-      }
-
-   }
-
-   //std::cout << "Tensor descriptor destroyed - instances are " << fInstances[fStreamIndx] << std::endl;
-
-}
 
 template<typename AFloat>
 TCudaTensor<AFloat>::operator TMatrixT<AFloat>() const
 {
    // this should work only for size 2 or 4 tensors
-   if (fNDim == 2 || (fNDim == 3 && GetFirstSize() == 1)) {
+   if (GetLayout() == MemoryLayout::ColumnMajor &&
+       (fNDim == 2 || (fNDim == 3 && GetFirstSize() == 1)) ) {
 //         return TCudaMatrix<AFloat>(fElementBuffer, GetHSize(), GetWSize());
       TCudaMatrix<AFloat> temp = GetMatrix();
       return temp;
@@ -243,9 +204,33 @@ TCudaTensor<AFloat>::operator TMatrixT<AFloat>() const
    return hostMatrix.T();  // return transpose matrix
 
 }
+#ifdef R__HAS_CUDNN
 //____________________________________________________________________________
 template <typename AFloat>
-inline void TCudaTensor<AFloat>::InitializeCuda()
+TCudaTensor<AFloat>::~TCudaTensor()
+{
+   if (fTensorDescriptor && fTensorDescriptor.use_count() == 1 ) {
+      // //std::cout << "Destroy tensor descriptor for shape ";
+      // for (int ii = 0; ii < fNDim; ++ii)
+      //    std::cout << fShape[ii] << ",";
+      // std::cout << std::endl;
+      CUDNNCHECK(cudnnDestroyTensorDescriptor(fTensorDescriptor->fCudnnDesc));
+
+      fInstances[fStreamIndx]--;
+
+         // When all tensors in a streamIndx are destroyed, release cudnn resources
+      if (fInstances[fStreamIndx] <= 0) {
+         std::cout << "All Cuda tensors are -released - destroy cudnn handle " << fInstances[fStreamIndx] << std::endl;
+         CUDNNCHECK(cudnnDestroy(fCudnnHandle[fStreamIndx]));
+      }
+
+   }
+   //std::cout << "Tensor descriptor destroyed - instances are " << fInstances[fStreamIndx] << std::endl;
+
+}
+//____________________________________________________________________________
+template <typename AFloat>
+void TCudaTensor<AFloat>::InitializeCuda()
 {
    // descriptor is needed for Cuddn tensor that are rowmajor
    if (!fTensorDescriptor && fSize > 0 && fNDim >= 2) {
@@ -307,49 +292,53 @@ void TCudaTensor<AFloat>::SetTensorDescriptor() {
 
       // cuDNN NdTensor format has a minsize of 4 tensor dimensions
       // 4D tensor is more performant on lower dimensions and supports all folowing operations
-      //if (fNDim == 4) {
-      Shape_t shape = fShape;
-      if (fNDim < 4 && fNDim > 1 ) {
-         // add 1 to tensor
-         if (fMemoryLayout == MemoryLayout::RowMajor)
-            shape.insert(shape.end(),4-fNDim, 1);
-         else
-            shape.insert(shape.begin(),4-fNDim,1);
-      } else if (fNDim > 4) {
-         std::cout << "Error : Dim = "<< fNDim
-         <<". Currently only 4D tensors are supported for the TMVA cuDNN backend."
-         << std::endl;
-      }
-      if (fMemoryLayout == MemoryLayout::RowMajor)  {
+      // is this really true ???
+      if (fNDim == 4 || fNDim > 1 && fMemoryLayout == MemoryLayout::ColumnMajor || fNDim == 2) {
+         // pad cudnn tensor column major with extra elements (these are used in the convolutions)
+         Shape_t shape = fShape;
+
+         if (fNDim < 4 && fNDim > 1) {
+            //    // add 1 to tensor
+            if (fMemoryLayout == MemoryLayout::RowMajor)
+               shape.insert(shape.end(), 4 - fNDim, 1);
+            else
+               shape.insert(shape.begin(), 4 - fNDim, 1);
+         }
+
+         if (fMemoryLayout == MemoryLayout::RowMajor) {
             auto status = cudnnSetTensor4dDescriptor(fTensorDescriptor->fCudnnDesc,
-                                               CUDNN_TENSOR_NCHW,// Layout of the tensor in memory
-                                               fDataType,
-                                               (int)shape[0],   // batch size
-                                               (int)shape[1],   // no. channels
-                                               (int)shape[2],   // image height
-                                               (int)shape[3]); // image width
+                                                     CUDNN_TENSOR_NCHW, // Layout of the tensor in memory
+                                                     fDataType,
+                                                     (int)shape[0],  // batch size
+                                                     (int)shape[1],  // no. channels
+                                                     (int)shape[2],  // image height
+                                                     (int)shape[3]); // image width
             assert(status == CUDNN_STATUS_SUCCESS);
             CUDNNCHECK(status);
-      }
-      else {
+         } else {
             CUDNNCHECK(cudnnSetTensor4dDescriptor(fTensorDescriptor->fCudnnDesc,
-                       CUDNN_TENSOR_NCHW,// Layout of the tensor in memory
-                       fDataType,
-                       (int)shape[3],   // batch size
-                       (int)shape[2],   // no. channels
-                       (int)shape[1],   // image height
-                       (int)shape[0])); // image width
+                                                  CUDNN_TENSOR_NCHW, // Layout of the tensor in memory
+                                                  fDataType,
+                                                  (int)shape[3],   // batch size
+                                                  (int)shape[2],   // no. channels
+                                                  (int)shape[1],   // image height
+                                                  (int)shape[0])); // image width
+         }
+
+         // Some operations in cudnn may not work with this tensor description
+         // do not support tensors with dims < 1
+      } else if (fNDim >2  || fNDim > 4) {
+         // these are used in the RNN layers
+
+         // seems to work for 3d tensor with row major (case of RNN tensors)
+         // rnn wnats 3d tensors but it does not work for 2d tensors
+         std::vector<int> shape(fShape.begin(), fShape.end());
+         std::vector<int> strides(fStrides.begin(), fStrides.end());
+         auto status = cudnnSetTensorNdDescriptor(fTensorDescriptor->fCudnnDesc, fDataType, (int)fNDim, shape.data(),
+                                                  strides.data());
+         assert(status == CUDNN_STATUS_SUCCESS);
+         CUDNNCHECK(status);
       }
-
-      // Some operations in cudnn may not work with this tensor description
-      //else if
-
-        /*CUDNNCHECK(cudnnSetTensorNdDescriptor(fTensorDescriptor,
-                                              fDataType,
-                                              (int)fNDim,
-                                              (int *)fShape.data(),
-                                              (int *)fStrides.data()));*/
-      //}
 
 #ifdef NDEBUG
       size_t tensorSize;
@@ -366,7 +355,22 @@ void TCudaTensor<AFloat>::SetTensorDescriptor() {
 #endif
 
 
-   }
+}
+#else // case ROOT has not Cudnn (add dummy implementations)
+//____________________________________________________________________________
+template <typename AFloat>
+TCudaTensor<AFloat>::~TCudaTensor()
+{}
+//____________________________________________________________________________
+template <typename AFloat>
+void TCudaTensor<AFloat>::InitializeCuda()
+{}
+//____________________________________________________________________________
+template<typename AFloat>
+void TCudaTensor<AFloat>::SetTensorDescriptor()
+{}
+
+#endif
 
 //____________________________________________________________________________
 template<typename AFloat>

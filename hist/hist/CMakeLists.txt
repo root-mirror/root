@@ -29,6 +29,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Hist
     TFitResultPtr.h
     TFormula.h
     TFractionFitter.h
+    THistRange.h
     TGraph2DErrors.h
     TGraph2D.h
     TGraphAsymmErrors.h
@@ -84,6 +85,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Hist
     TVirtualFitter.h
     TVirtualGraphPainter.h
     TVirtualHistPainter.h
+    TVirtualPaveStats.h
     Math/WrappedMultiTF1.h
     Math/WrappedTF1.h
     v5/TF1Data.h
@@ -115,6 +117,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Hist
     TFormulaPrimitive_v5.cxx
     TFormula_v5.cxx
     TFractionFitter.cxx
+    THistRange.cxx
     TGraph2D.cxx
     TGraph2DErrors.cxx
     TGraphAsymmErrors.cxx

@@ -40,14 +40,14 @@ namespace TMVA {
 
       // Set the accumulated weight, for sorted signal/background events
       /**
-       * @param fType - true for signal, false for background
+       * @param type - true for signal, false for background
        * @param weight - the total weight
        */
       void SetCumulativeWeight( Bool_t type, Double_t weight );
 
       // Get the accumulated weight
       /**
-       * @param fType - true for signal, false for background
+       * @param type - true for signal, false for background
        * @return the cumulative weight for sorted signal/background events
        */
       Double_t GetCumulativeWeight( Bool_t type ) const;

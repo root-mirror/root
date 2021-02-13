@@ -17,11 +17,10 @@ Base class describing materials.
 \image html geom_material.jpg
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include "TMath.h"
 #include "TObjArray.h"
-#include "TStyle.h"
-#include "TList.h"
+#include "TGeoElement.h"
 #include "TGeoManager.h"
 #include "TGeoExtension.h"
 #include "TGeoMaterial.h"
@@ -53,7 +52,7 @@ TGeoMaterial::TGeoMaterial()
               fUserExtension(0),
               fFWExtension(0)
 {
-   TGeoUnit::setUnitType(TGeoUnit::unitType()); // Ensure nobody changes the units afterwards
+   TGeoManager::SetDefaultUnits(TGeoManager::GetDefaultUnits()); // Ensure nobody changes the units afterwards
    SetUsed(kFALSE);
    fIndex    = -1;
    fTemperature = STP_temperature;
@@ -81,7 +80,7 @@ TGeoMaterial::TGeoMaterial(const char *name)
               fUserExtension(0),
               fFWExtension(0)
 {
-   TGeoUnit::setUnitType(TGeoUnit::unitType()); // Ensure nobody changes the units afterwards
+   TGeoManager::SetDefaultUnits(TGeoManager::GetDefaultUnits()); // Ensure nobody changes the units afterwards
    fName = fName.Strip();
    SetUsed(kFALSE);
    fIndex    = -1;
@@ -116,7 +115,7 @@ TGeoMaterial::TGeoMaterial(const char *name, Double_t a, Double_t z,
               fUserExtension(0),
               fFWExtension(0)
 {
-   TGeoUnit::setUnitType(TGeoUnit::unitType()); // Ensure nobody changes the units afterwards
+   TGeoManager::SetDefaultUnits(TGeoManager::GetDefaultUnits()); // Ensure nobody changes the units afterwards
    fName = fName.Strip();
    SetUsed(kFALSE);
    fIndex    = -1;
@@ -157,7 +156,7 @@ TGeoMaterial::TGeoMaterial(const char *name, Double_t a, Double_t z, Double_t rh
               fUserExtension(0),
               fFWExtension(0)
 {
-   TGeoUnit::setUnitType(TGeoUnit::unitType()); // Ensure nobody changes the units afterwards
+   TGeoManager::SetDefaultUnits(TGeoManager::GetDefaultUnits()); // Ensure nobody changes the units afterwards
    fName = fName.Strip();
    SetUsed(kFALSE);
    fIndex    = -1;
@@ -191,7 +190,7 @@ TGeoMaterial::TGeoMaterial(const char *name, TGeoElement *elem, Double_t rho)
               fUserExtension(0),
               fFWExtension(0)
 {
-   TGeoUnit::setUnitType(TGeoUnit::unitType()); // Ensure nobody changes the units afterwards
+   TGeoManager::SetDefaultUnits(TGeoManager::GetDefaultUnits()); // Ensure nobody changes the units afterwards
    fName = fName.Strip();
    SetUsed(kFALSE);
    fIndex    = -1;
@@ -232,7 +231,7 @@ TGeoMaterial::TGeoMaterial(const TGeoMaterial& gm) :
 
 {
    //copy constructor
-   TGeoUnit::setUnitType(TGeoUnit::unitType()); // Ensure nobody changes the units afterwards
+   TGeoManager::SetDefaultUnits(TGeoManager::GetDefaultUnits()); // Ensure nobody changes the units afterwards
    fProperties.SetOwner();
    TIter next(&fProperties);
    TNamed *property;
@@ -443,9 +442,9 @@ void TGeoMaterial::SetRadLen(Double_t radlen, Double_t intlen)
       if (intlen>=0) fIntLen = 1.E30;
       return;
    }
-   TGeoUnit::UnitType typ = TGeoUnit::unitType();
+   TGeoManager::EDefaultUnits typ = TGeoManager::GetDefaultUnits();
    // compute radlen systematically with G3 formula for a valid material
-   if ( typ == TGeoUnit::kTGeoUnits && radlen>=0 ) {
+   if ( typ == TGeoManager::kRootUnits && radlen>=0 ) {
       //taken grom Geant3 routine GSMATE
       constexpr Double_t alr2av = 1.39621E-03*TGeoUnit::cm2;
       constexpr Double_t al183  = 5.20948;
@@ -453,7 +452,7 @@ void TGeoMaterial::SetRadLen(Double_t radlen, Double_t intlen)
                    (al183-TMath::Log(fZ)/3-TGeoMaterial::Coulomb(fZ)));
       fRadLen *= TGeoUnit::cm;
    }
-   else if ( typ == TGeoUnit::kTGeant4Units && radlen>=0 ) {
+   else if ( typ == TGeoManager::kG4Units && radlen>=0 ) {
       //taken grom Geant3 routine GSMATE
       constexpr Double_t alr2av = 1.39621E-03*TGeant4Unit::cm2;
       constexpr Double_t al183  = 5.20948;
@@ -462,7 +461,7 @@ void TGeoMaterial::SetRadLen(Double_t radlen, Double_t intlen)
       fRadLen *= TGeant4Unit::cm;
    }
    // Compute interaction length using the same formula as in GEANT4
-   if ( typ == TGeoUnit::kTGeoUnits && intlen>=0 ) {
+   if ( typ == TGeoManager::kRootUnits && intlen>=0 ) {
       constexpr Double_t lambda0 = 35.*TGeoUnit::g/TGeoUnit::cm2;  // [g/cm^2]
       Double_t nilinv = 0.0;
       TGeoElement *elem = GetElement();
@@ -475,7 +474,7 @@ void TGeoMaterial::SetRadLen(Double_t radlen, Double_t intlen)
       nilinv *= TGeoUnit::amu/lambda0;
       fIntLen = (nilinv<=0) ? TGeoShape::Big() : (TGeoUnit::cm/nilinv);
    }
-   else if ( typ == TGeoUnit::kTGeant4Units && intlen>=0 ) {
+   else if ( typ == TGeoManager::kG4Units && intlen>=0 ) {
       constexpr Double_t lambda0 = 35.*TGeant4Unit::g/TGeant4Unit::cm2;  // [g/cm^2]
       Double_t nilinv = 0.0;
       TGeoElement *elem = GetElement();
@@ -498,7 +497,7 @@ void TGeoMaterial::SetRadLen(Double_t radlen, Double_t intlen)
 
 Double_t TGeoMaterial::Coulomb(Double_t z)
 {
-   Double_t az    = TGeoUnit::unitType() == TGeoUnit::kTGeoUnits
+   Double_t az    = TGeoManager::kRootUnits == TGeoManager::GetDefaultUnits()
      ? TGeoUnit::fine_structure_const*z : TGeant4Unit::fine_structure_const*z;
    Double_t az2   = az*az;
    Double_t az4   = az2 * az2;
@@ -562,6 +561,18 @@ Int_t TGeoMaterial::GetDefaultColor() const
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Get a pointer to the element this material is made of.
+/// This second call is to avaoid warnings to not call a virtual
+/// method from the constructor
+
+TGeoElement *TGeoMaterial::GetElement() const
+{
+   if (fElement) return fElement;
+   TGeoElementTable *table = gGeoManager->GetElementTable();
+   return table->GetElement(Int_t(fZ));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Get a pointer to the element this material is made of.
 
 TGeoElement *TGeoMaterial::GetElement(Int_t) const
 {
@@ -569,6 +580,7 @@ TGeoElement *TGeoMaterial::GetElement(Int_t) const
    TGeoElementTable *table = gGeoManager->GetElementTable();
    return table->GetElement(Int_t(fZ));
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Single interface to get element properties.
 
@@ -727,39 +739,6 @@ TGeoMixture::TGeoMixture(const char *name, Int_t /*nel*/, Double_t rho)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///copy constructor
-
-TGeoMixture::TGeoMixture(const TGeoMixture& gm) :
-  TGeoMaterial(gm),
-  fNelements(gm.fNelements),
-  fZmixture(gm.fZmixture),
-  fAmixture(gm.fAmixture),
-  fWeights(gm.fWeights),
-  fNatoms(gm.fNatoms),
-  fVecNbOfAtomsPerVolume(gm.fVecNbOfAtomsPerVolume),
-  fElements(gm.fElements)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///assignment operator
-
-TGeoMixture& TGeoMixture::operator=(const TGeoMixture& gm)
-{
-   if(this!=&gm) {
-      TGeoMaterial::operator=(gm);
-      fNelements=gm.fNelements;
-      fZmixture=gm.fZmixture;
-      fAmixture=gm.fAmixture;
-      fWeights=gm.fWeights;
-      fNatoms = gm.fNatoms;
-      fVecNbOfAtomsPerVolume = gm.fVecNbOfAtomsPerVolume;
-      fElements = gm.fElements;
-   }
-   return *this;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Destructor
 
 TGeoMixture::~TGeoMixture()
@@ -777,12 +756,12 @@ TGeoMixture::~TGeoMixture()
 
 void TGeoMixture::AverageProperties()
 {
-   TGeoUnit::UnitType typ = TGeoUnit::unitType();
-   const Double_t cm   = (typ==TGeoUnit::kTGeoUnits) ? TGeoUnit::cm   : TGeant4Unit::cm;
-   const Double_t cm2  = (typ==TGeoUnit::kTGeoUnits) ? TGeoUnit::cm2  : TGeant4Unit::cm2;
-   const Double_t amu  = (typ==TGeoUnit::kTGeoUnits) ? TGeoUnit::amu  : TGeant4Unit::amu; // [MeV/c^2]
-   const Double_t gram = (typ==TGeoUnit::kTGeoUnits) ? TGeoUnit::gram : TGeant4Unit::gram;
-   const Double_t na   = (typ==TGeoUnit::kTGeoUnits) ? TGeoUnit::Avogadro : TGeant4Unit::Avogadro;
+   TGeoManager::EDefaultUnits typ = TGeoManager::GetDefaultUnits();
+   const Double_t cm   = (typ==TGeoManager::kRootUnits) ? TGeoUnit::cm   : TGeant4Unit::cm;
+   const Double_t cm2  = (typ==TGeoManager::kRootUnits) ? TGeoUnit::cm2  : TGeant4Unit::cm2;
+   const Double_t amu  = (typ==TGeoManager::kRootUnits) ? TGeoUnit::amu  : TGeant4Unit::amu; // [MeV/c^2]
+   const Double_t gram = (typ==TGeoManager::kRootUnits) ? TGeoUnit::gram : TGeant4Unit::gram;
+   const Double_t na   = (typ==TGeoManager::kRootUnits) ? TGeoUnit::Avogadro : TGeant4Unit::Avogadro;
    const Double_t alr2av  = 1.39621E-03 * cm2;
    const Double_t al183   = 5.20948;
    const Double_t lambda0 = 35.*gram/cm2;  // [g/cm^2]
@@ -1226,7 +1205,7 @@ Double_t TGeoMaterial::ScreenFactor(Double_t z)
 
 void TGeoMixture::ComputeDerivedQuantities()
 {
-   const Double_t Na = (TGeoUnit::unitType()==TGeoUnit::kTGeoUnits)
+   const Double_t Na = (TGeoManager::GetDefaultUnits()==TGeoManager::kRootUnits)
      ? TGeoUnit::Avogadro : TGeant4Unit::Avogadro;
 
    if ( fVecNbOfAtomsPerVolume ) delete [] fVecNbOfAtomsPerVolume;
@@ -1248,7 +1227,7 @@ void TGeoMixture::ComputeDerivedQuantities()
 void TGeoMixture::ComputeRadiationLength()
 {
    // Formula taken from G4Material.cxx L556
-   const Double_t cm = (TGeoUnit::unitType()==TGeoUnit::kTGeoUnits) ? TGeoUnit::cm : TGeant4Unit::cm;
+   const Double_t cm = (TGeoManager::GetDefaultUnits()==TGeoManager::kRootUnits) ? TGeoUnit::cm : TGeant4Unit::cm;
    Double_t radinv = 0.0 ;
    for (Int_t i=0;i<fNelements;++i) {
      radinv += fVecNbOfAtomsPerVolume[i]*((TGeoElement*)fElements->At(i))->GetfRadTsai();
@@ -1261,10 +1240,10 @@ void TGeoMixture::ComputeRadiationLength()
 void TGeoMixture::ComputeNuclearInterLength()
 {
    // Formula taken from G4Material.cxx L567
-   TGeoUnit::UnitType typ = TGeoUnit::unitType();
-   const Double_t g   = (typ==TGeoUnit::kTGeoUnits) ? TGeoUnit::g   : TGeant4Unit::g;
-   const Double_t cm  = (typ==TGeoUnit::kTGeoUnits) ? TGeoUnit::cm  : TGeant4Unit::cm;
-   const Double_t amu = (typ==TGeoUnit::kTGeoUnits) ? TGeoUnit::amu : TGeant4Unit::amu;
+   TGeoManager::EDefaultUnits typ = TGeoManager::GetDefaultUnits();
+   const Double_t g   = (typ==TGeoManager::kRootUnits) ? TGeoUnit::g   : TGeant4Unit::g;
+   const Double_t cm  = (typ==TGeoManager::kRootUnits) ? TGeoUnit::cm  : TGeant4Unit::cm;
+   const Double_t amu = (typ==TGeoManager::kRootUnits) ? TGeoUnit::amu : TGeant4Unit::amu;
    const Double_t lambda0  = 35*g/(cm*cm);
    const Double_t twothird = 2.0/3.0;
    Double_t NILinv = 0.0;

@@ -29,8 +29,8 @@ protected:
    static TGeoBuilder    *fgInstance;            //! static pointer to singleton
 
    TGeoBuilder();
-   TGeoBuilder(const TGeoBuilder&);
-   TGeoBuilder& operator=(const TGeoBuilder&);
+   TGeoBuilder(const TGeoBuilder&) = delete;
+   TGeoBuilder& operator=(const TGeoBuilder&) = delete;
 
 private :
    TGeoManager           *fGeometry;             //! current geometry

@@ -1,12 +1,14 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -nodraw
-/// Organization and simultaneous fits: operator expressions and expression-based basic p.d.f.s in the workspace factory
-/// syntax
+/// Organization and simultaneous fits: operator expressions and expression-based basic
+/// pdfs in the workspace factory syntax
 ///
 /// \macro_output
 /// \macro_code
-/// \author 04/2009 - Wouter Verkerke
+///
+/// \date July 2009
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -40,14 +42,14 @@ void rf512_wsfactory_oper()
    // PDF multiplication is done with PROD ( pdf1, pdf2 )
    w->factory("PROD::gxz( gx, Gaussian::gz(z[-10,10],0,1) )");
 
-   // Conditional p.d.f multiplication is done with PROD ( pdf1|obs, pdf2 )
+   // Conditional pdf multiplication is done with PROD ( pdf1|obs, pdf2 )
    w->factory("Gaussian::gy( y[-10,10], x, 1.0 )");
    w->factory("PROD::gxycond( gy|x, gx )");
 
    // Convolution (numeric/ fft) is done with NCONV/FCONV (obs,pdf1,pdf2)
    w->factory("FCONV::lxg( x, Gaussian::g(x,mg[0],1), Landau::lc(x,0,1) )");
 
-   // Simultaneous p.d.f.s are constructed with SIMUL( index, state1=pdf1, state2=pdf2,...)
+   // Simultaneous pdfs are constructed with SIMUL( index, state1=pdf1, state2=pdf2,...)
    w->factory("SIMUL::smodel( c[A=0,B=1], A=Gaussian::gs(x,m,s[1]), B=Landau::ls(x,0,1) )");
 
    // O p e r a t o r   f u n c t i o n   e x a m p l e s
@@ -62,14 +64,14 @@ void rf512_wsfactory_oper()
    // I n t e r p r e t e d   a n d   c o m p i l e d   e x p r e s s i o n   b a s e d   p . d . f . s .
    // ---------------------------------------------------------------------------------------------------
 
-   // Create a RooGenericPdf interpreted p.d.f. You can use single quotes to pass the expression string argument
+   // Create a RooGenericPdf interpreted pdf You can use single quotes to pass the expression string argument
    w->factory("EXPR::G('x*x+1',x)");
 
-   // Create a custom compiled p.d.f similar to the above interpreted p.d.f.
-   // The code required to make this p.d.f. is automatically embedded in the workspace
+   // Create a custom compiled pdf similar to the above interpreted pdf
+   // The code required to make this pdf is automatically embedded in the workspace
    w->factory("CEXPR::GC('x*x+a',{x,a[1]})");
 
-   // Compiled and interpreted functions (rather than p.d.f.s) can be made with the lower case
+   // Compiled and interpreted functions (rather than pdfs) can be made with the lower case
    // 'expr' and 'cexpr' types
 
    // Print workspace contents

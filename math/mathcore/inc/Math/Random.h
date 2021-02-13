@@ -23,6 +23,9 @@
 
 #include "Math/RandomFunctions.h"
 
+#include <string>
+#include <vector>
+
 
 namespace ROOT {
 namespace Math {

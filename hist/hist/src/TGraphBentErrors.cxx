@@ -9,19 +9,15 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <string.h>
+#include <cstring>
+#include <iostream>
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TGraphBentErrors.h"
-#include "TStyle.h"
 #include "TMath.h"
-#include "TArrow.h"
-#include "TBox.h"
 #include "TVirtualPad.h"
 #include "TH1.h"
 #include "TF1.h"
-#include "TClass.h"
 
 ClassImp(TGraphBentErrors);
 

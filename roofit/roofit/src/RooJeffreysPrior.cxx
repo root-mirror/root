@@ -20,7 +20,6 @@ Check the tutorial rs302_JeffreysPriorDemo.C for a demonstration with a simple P
 #include "RooFitResult.h"
 #include "TMatrixDSym.h"
 #include "RooDataHist.h"
-#include "RooFitResult.h"
 #include "RooNumIntConfig.h"
 #include "RooRealVar.h"
 #include "RooHelpers.h"

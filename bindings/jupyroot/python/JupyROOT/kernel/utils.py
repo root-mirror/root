@@ -1,26 +1,32 @@
 # -*- coding:utf-8 -*-
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2015, ROOT Team.
 #  Authors: Omar Zapata <Omar.Zapata@cern.ch> http://oproject.org
 #           Danilo Piparo <Danilo.Piparo@cern.ch> CERN
 #           Enric Tejedor enric.tejedor.saavedra@cern.ch> CERN
-#  website: http://oproject.org/ROOT+Jupyter+Kernel (information only for ROOT kernel)
-#  Distributed under the terms of the Modified LGPLv3 License.
-#
-#  The full license is in the file COPYING.rst, distributed with this software.
 #-----------------------------------------------------------------------------
+
+################################################################################
+# Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.                      #
+# All rights reserved.                                                         #
+#                                                                              #
+# For the licensing terms see $ROOTSYS/LICENSE.                                #
+# For the list of contributors see $ROOTSYS/README/CREDITS.                    #
+################################################################################
+
 import os
 from glob import glob
 
 import importlib
 
-from JupyROOT.helpers.handlers import IOHandler, JupyROOTDeclarer, JupyROOTExecutor
+from JupyROOT.helpers.handlers import IOHandler, Poller, JupyROOTDeclarer, JupyROOTExecutor, JupyROOTDisplayer
 
 import ROOT
 
 _ioHandler = None
+_Poller    = None
 _Executor  = None
 _Declarer  = None
+_Displayer = None
 
 def GetIOHandler():
     global _ioHandler
@@ -28,17 +34,30 @@ def GetIOHandler():
         _ioHandler = IOHandler()
     return _ioHandler
 
-def GetExecutor():
+def GetPoller():
+    global _Poller
+    if not _Poller:
+        _Poller = Poller()
+        _Poller.start()
+    return _Poller
+
+def GetExecutor(poller):
     global _Executor
     if not _Executor:
-        _Executor = JupyROOTExecutor()
+        _Executor = JupyROOTExecutor(poller)
     return _Executor
 
-def GetDeclarer():
+def GetDeclarer(poller):
     global _Declarer
     if not _Declarer:
-        _Declarer = JupyROOTDeclarer()
+        _Declarer = JupyROOTDeclarer(poller)
     return _Declarer
+
+def GetDisplayer(poller):
+    global _Displayer
+    if not _Displayer:
+        _Displayer = JupyROOTDisplayer(poller)
+    return _Displayer
 
 class MagicLoader(object):
     '''Class to load JupyROOT Magics'''

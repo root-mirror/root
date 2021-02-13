@@ -17,7 +17,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 template<class Element> class TVectorT;
 typedef TVectorT<Double_t> TVectorD;

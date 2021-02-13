@@ -241,17 +241,6 @@ const RooRealVar& RooResolutionModel::basisConvVar() const
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return the convolution variable of the resolution model
-
-RooRealVar& RooResolutionModel::convVar() const 
-{
-  return (RooRealVar&) x.arg() ;
-}
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Modified version of RooAbsPdf::getValF(). If used as regular PDF, 
 /// call RooAbsPdf::getValF(), otherwise return unnormalized value

@@ -13,6 +13,7 @@
 #include "TGWin32VirtualGLProxy.h"
 #include "TGWin32.h"
 #include "TROOT.h"
+#include "TList.h"
 
 static TGLManager *gManager = 0;
 

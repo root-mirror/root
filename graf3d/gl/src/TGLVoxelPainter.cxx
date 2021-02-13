@@ -5,8 +5,7 @@
 #include "Buttons.h"
 #include "TString.h"
 #include "TROOT.h"
-#include "TClass.h"
-#include "TColor.h"
+#include "TList.h"
 #include "TStyle.h"
 #include "TH3.h"
 #include "TF1.h"
@@ -272,9 +271,13 @@ void TGLVoxelPainter::DrawPlot()const
 
    Float_t rgba[4] = {};
 
+   Double_t wmin = TMath::Max(fHist->GetMinimum(),0.);
+   Double_t wmax = TMath::Max(TMath::Abs(fHist->GetMaximum()),
+                              TMath::Abs(fHist->GetMinimum()));
+   Double_t binContent;
+
    for(Int_t ir = irInit, i = iInit; addI > 0 ? i < nX : i >= 0; ir += addI, i += addI) {
       for(Int_t jr = jrInit, j = jInit; addJ > 0 ? j < nY : j >= 0; jr += addJ, j += addJ) {
-//         for(Int_t kr = krInit, k = kInit; addK > 0 ? k < nZ : k >= 0; kr += addK, k += addK) {
          for(Int_t kr = krInit, k = kInit; addK > 0 ? k < nZ : k >= 0; kr += addK, k += addK) {
             const Double_t xMin = xScale * xA->GetBinLowEdge(ir);
             const Double_t xMax = xScale * xA->GetBinUpEdge(ir);
@@ -286,7 +289,11 @@ void TGLVoxelPainter::DrawPlot()const
             if (fBoxCut.IsActive() && fBoxCut.IsInCut(xMin, xMax, yMin, yMax, zMin, zMax))
                continue;
 
-            FindVoxelColor(fHist->GetBinContent(ir, jr, kr), rgba);
+            binContent = fHist->GetBinContent(ir, jr, kr);
+            if (binContent < wmin) continue;
+            if (binContent > wmax) binContent = wmax;
+
+            FindVoxelColor(binContent, rgba);
 
             if (rgba[3] < 0.01f)
                continue;

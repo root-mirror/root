@@ -27,8 +27,8 @@ class REveCompound : public REveElement,
                      public REveProjectable
 {
 private:
-   REveCompound(const REveCompound &);            // Not implemented
-   REveCompound &operator=(const REveCompound &); // Not implemented
+   REveCompound(const REveCompound &) = delete;
+   REveCompound &operator=(const REveCompound &) = delete;
 
 protected:
    Short_t fCompoundOpen{0}; // If more than zero, tag new children as compound members.
@@ -65,8 +65,8 @@ class REveCompoundProjected : public REveCompound,
                               public REveProjected
 {
 private:
-   REveCompoundProjected(const REveCompoundProjected &);            // Not implemented
-   REveCompoundProjected &operator=(const REveCompoundProjected &); // Not implemented
+   REveCompoundProjected(const REveCompoundProjected &) = delete;
+   REveCompoundProjected &operator=(const REveCompoundProjected &) = delete;
 
 public:
    REveCompoundProjected();

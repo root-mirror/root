@@ -6,11 +6,11 @@
 
 
 #include "TObject.h"
-
 #include "TString.h"
 
+#include <vector>
+
 class TH1D;
-class TRefArray;
 class TMethodCall;
 class TRandom;
 class TFoamIntegrand;
@@ -47,7 +47,7 @@ protected:
 
    TFoamMaxwt   *fMCMonit;    ///< Monitor of the MC weight for measuring MC efficiency
    Double_t   fMaxWtRej;      ///< Maximum weight in rejection for getting wt=1 events
-   TRefArray *fCellsAct;      ///< Array of pointers to active cells, constructed at the end of foam build-up
+   std::vector<Long_t> fCellsAct; ///< Index of active cells, constructed at the end of foam build-up
    Double_t  *fPrimAcu;       ///< [fNoAct] Array of cumulative probability of all active cells
    TObjArray *fHistEdg;       ///< Histograms of wt, one for each cell edge
    TObjArray *fHistDbg;       ///< Histograms of wt, for debug
@@ -139,7 +139,7 @@ public:
 private:
    Double_t Sqr(Double_t x) const { return x*x;}      // Square function
 
-   ClassDef(TFoam,1);   // General purpose self-adapting Monte Carlo event generator
+   ClassDef(TFoam,2);   // General purpose self-adapting Monte Carlo event generator
 };
 
 #endif

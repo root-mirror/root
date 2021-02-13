@@ -15,6 +15,7 @@
 #include "TMVA/VariableTransformBase.h"
 #include "TMVA/Tools.h"
 #include "TMVA/Timer.h"
+#include "TSystem.h"
 
 using namespace TMVA;
 
@@ -80,6 +81,7 @@ void MethodPyKeras::DeclareOptions() {
    DeclareOptionRef(fNumEpochs, "NumEpochs", "Number of training epochs");
    DeclareOptionRef(fNumThreads, "NumThreads", "Number of CPU threads (only for Tensorflow backend)");
    DeclareOptionRef(fGpuOptions, "GpuOptions", "GPU options for tensorflow, such as allow_growth");
+   DeclareOptionRef(fUseTFKeras, "tf.keras", "Use tensorflow from Keras");
    DeclareOptionRef(fVerbose, "Verbose", "Keras verbosity during training");
    DeclareOptionRef(fContinueTraining, "ContinueTraining", "Load weights from previous training");
    DeclareOptionRef(fSaveBestOnly, "SaveBestOnly", "Store only weights with smallest validation loss");
@@ -87,15 +89,13 @@ void MethodPyKeras::DeclareOptions() {
    DeclareOptionRef(fLearningRateSchedule, "LearningRateSchedule", "Set new learning rate during training at specific epochs, e.g., \"50,0.01;70,0.005\"");
    DeclareOptionRef(fTensorBoard, "TensorBoard",
                     "Write a log during training to visualize and monitor the training performance with TensorBoard");
-   DeclareOptionRef(fTensorBoard, "TensorBoard",
-                    "Write a log during training to visualize and monitor the training performance with TensorBoard");
 
    DeclareOptionRef(fNumValidationString = "20%", "ValidationSize", "Part of the training data to use for validation. "
                     "Specify as 0.2 or 20% to use a fifth of the data set as validation set. "
                     "Specify as 100 to use exactly 100 events. (Default: 20%)");
-
+   DeclareOptionRef(fUserCodeName = "", "UserCode",
+                    "Optional python code provided by the user to be executed before loading the Keras model");
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Validation of the ValidationSize option. Allowed formats are 20%, 0.2 and
@@ -156,50 +156,15 @@ UInt_t TMVA::MethodPyKeras::GetNumValidationSamples()
    return nValidationSamples;
 }
 
+/// Function processing the options
+/// This is called only when creating the method before training not when
+/// readinf from XML file. Called from MethodBase::ProcessSetup
+/// that is called from Factory::BookMethod
 void MethodPyKeras::ProcessOptions() {
+
    // Set default filename for trained model if option is not used
    if (fFilenameTrainedModel.IsNull()) {
       fFilenameTrainedModel = GetWeightFileDir() + "/TrainedModel_" + GetName() + ".h5";
-   }
-
-   // set here some specific options for Tensorflow backend
-   //  -  when using tensorflow gpu set option to allow memory growth to avoid allocating all memory
-   //  -  set up number of threads for CPU if NumThreads option was specified
-
-   // check first if using tensorflow backend
-   if (GetKerasBackend() == kTensorFlow) {
-      Log() << kINFO << "Using TensorFlow backend - setting special configuration options "  << Endl;
-      PyRunString("import tensorflow as tf");
-      PyRunString("from keras.backend import tensorflow_backend as K");
-      // in case specify number of threads
-      int num_threads = fNumThreads;
-      if (num_threads > 0) {
-         Log() << kINFO << "Setting the CPU number of threads =  "  << num_threads << Endl;
-         PyRunString(TString::Format("session_conf = tf.ConfigProto(intra_op_parallelism_threads=%d,inter_op_parallelism_threads=%d)",
-                                     num_threads,num_threads));
-      }
-      else
-         PyRunString("session_conf = tf.ConfigProto()");
-
-      // applying GPU options such as allow_growth=True to avoid allocating all memory on GPU
-      // that prevents running later TMVA-GPU
-      // Also new Nvidia RTX cards (e.g. RTX 2070)  require this option
-      if (!fGpuOptions.IsNull() ) {
-         TObjArray * optlist = fGpuOptions.Tokenize(",");
-         for (int item = 0; item < optlist->GetEntries(); ++item) {
-            Log() << kINFO << "Applying GPU option:  gpu_options." << optlist->At(item)->GetName() << Endl;
-            PyRunString(TString::Format("session_conf.gpu_options.%s", optlist->At(item)->GetName()));
-         }
-      }
-      PyRunString("sess = tf.Session(config=session_conf)");
-      PyRunString("K.set_session(sess)");
-   }
-   else {
-      if (fNumThreads > 0)
-         Log() << kWARNING << "Cannot set the given " << fNumThreads << " threads when not using tensorflow as  backend"  << Endl;
-      if (!fGpuOptions.IsNull() ) {
-         Log() << kWARNING << "Cannot set the given GPU option " << fGpuOptions << " when not using tensorflow as  backend"  << Endl;
-      }
    }
 
    // Setup model, either the initial model from `fFilenameModel` or
@@ -209,9 +174,167 @@ void MethodPyKeras::ProcessOptions() {
 }
 
 void MethodPyKeras::SetupKerasModel(bool loadTrainedModel) {
+
+   // initialize first Keras. This is done only here when class has
+   // all state variable set from options or read from XML file
+   // Import Keras
+
+   if (fUseTFKeras)
+      Log() << kINFO << "Setting up tf.keras" << Endl;
+   else
+      Log() << kINFO << "Setting up keras with " << gSystem->Getenv("KERAS_BACKEND") << " backend" << Endl;
+
+   bool useTFBackend = kFALSE;
+   bool kerasIsCompatible = kTRUE;
+   bool kerasIsPresent = kFALSE;
+
+   if (!fUseTFKeras) {
+      auto ret  = PyRun_String("import keras", Py_single_input, fGlobalNS, fLocalNS);
+      // need importing also in global namespace
+      if (ret != nullptr) ret = PyRun_String("import keras", Py_single_input, fGlobalNS, fGlobalNS);
+      if (ret != nullptr)
+         kerasIsPresent = kTRUE;
+      if (kerasIsPresent) {
+         // check compatibility with tensorflow
+         if (GetKerasBackend() == kTensorFlow ) {
+            useTFBackend = kTRUE;
+
+            PyRunString("keras_major_version = int(keras.__version__.split('.')[0])");
+            PyRunString("keras_minor_version = int(keras.__version__.split('.')[1])");
+            PyObject *pyKerasMajorVersion = PyDict_GetItemString(fLocalNS, "keras_major_version");
+            PyObject *pyKerasMinorVersion = PyDict_GetItemString(fLocalNS, "keras_minor_version");
+            int kerasMajorVersion = PyLong_AsLong(pyKerasMajorVersion);
+            int kerasMinorVersion = PyLong_AsLong(pyKerasMinorVersion);
+            Log() << kINFO << "Using Keras version " << kerasMajorVersion << "." << kerasMinorVersion << Endl;
+            // only version 2.3 is latest multi-backend version.
+            // version 2.4 is just tf.keras and should not be used in standalone and will not work in this workflow
+            // see https://github.com/keras-team/keras/releases/tag/2.4.0
+            // for example variable  keras.backend.tensorflow_backend will not exist anymore in keras 2.4
+            kerasIsCompatible = (kerasMajorVersion >= 2 && kerasMinorVersion == 3);
+
+         }
+      } else {
+         // Keras is not found. try tyo use tf.keras
+         Log() << kINFO << "Keras is not found. Trying using tf.keras" << Endl;
+         fUseTFKeras = 1;
+      }
+   }
+
+   // import Tensoprflow (if requested or because is keras backend)
+   if (fUseTFKeras || useTFBackend) {
+      auto ret = PyRun_String("import tensorflow as tf", Py_single_input, fGlobalNS, fLocalNS);
+      if (ret != nullptr) ret = PyRun_String("import tensorflow as tf", Py_single_input, fGlobalNS, fGlobalNS);
+      if (ret == nullptr) {
+         Log() << kFATAL << "Importing TensorFlow failed" << Endl;
+      }
+      // check tensorflow version
+      PyRunString("tf_major_version = int(tf.__version__.split('.')[0])");
+      PyObject *pyTfVersion = PyDict_GetItemString(fLocalNS, "tf_major_version");
+      int tfVersion = PyLong_AsLong(pyTfVersion);
+      Log() << kINFO << "Using TensorFlow version " << tfVersion << Endl;
+
+      if (tfVersion < 2) {
+         if (fUseTFKeras == 1) {
+            Log() << kWARNING << "Using TensorFlow version 1.x which does not contain tf.keras - use then TensorFlow as Keras backend" << Endl;
+            fUseTFKeras = kFALSE;
+            // case when Keras was not found
+            if (!kerasIsPresent) {
+               Log() << kFATAL << "Keras is not present and not a suitable TensorFlow version is found " << Endl;
+               return;
+            }
+         }
+      }
+      else {
+         // using version larger than 2.0 - can use tf.keras
+         if (!kerasIsCompatible) {
+            Log() << kWARNING << "The Keras version is not compatible with TensorFlow 2. Use instead tf.keras" << Endl;
+            fUseTFKeras = 1;
+         }
+      }
+
+      // if keras 2.3 and tensorflow 2 are found. Use tf.keras or keras ?
+      // at the moment default is tf.keras=false to keep compatibility
+      // but this might change in future releases
+      if (fUseTFKeras) {
+         Log() << kINFO << "Use Keras version from TensorFlow : tf.keras" << Endl;
+         fKerasString = "tf.keras";
+         PyRunString("K = tf.keras.backend");
+         PyRun_String("K = tf.keras.backend", Py_single_input, fGlobalNS, fGlobalNS);
+      }
+      else {
+         Log() << kINFO << "Use TensorFlow as Keras backend" << Endl;
+         fKerasString = "keras";
+         PyRunString("from keras.backend import tensorflow_backend as K");
+         PyRun_String("from keras.backend import tensorflow_backend as K", Py_single_input, fGlobalNS, fGlobalNS);
+      }
+
+      // extra options for tensorflow
+      // use different naming in tf2 for ConfigProto and Session
+      TString configProto = (tfVersion >= 2) ? "tf.compat.v1.ConfigProto" : "tf.ConfigProto";
+      TString session = (tfVersion >= 2) ? "tf.compat.v1.Session" : "tf.Session";
+
+      // in case specify number of threads
+      int num_threads = fNumThreads;
+      if (num_threads > 0) {
+         Log() << kINFO << "Setting the CPU number of threads =  " << num_threads << Endl;
+
+         PyRunString(
+            TString::Format("session_conf = %s(intra_op_parallelism_threads=%d,inter_op_parallelism_threads=%d)",
+                            configProto.Data(), num_threads, num_threads));
+      } else
+         PyRunString(TString::Format("session_conf = %s()", configProto.Data()));
+
+      // applying GPU options such as allow_growth=True to avoid allocating all memory on GPU
+      // that prevents running later TMVA-GPU
+      // Also new Nvidia RTX cards (e.g. RTX 2070)  require this option
+      if (!fGpuOptions.IsNull()) {
+         TObjArray *optlist = fGpuOptions.Tokenize(",");
+         for (int item = 0; item < optlist->GetEntries(); ++item) {
+            Log() << kINFO << "Applying GPU option:  gpu_options." << optlist->At(item)->GetName() << Endl;
+            PyRunString(TString::Format("session_conf.gpu_options.%s", optlist->At(item)->GetName()));
+         }
+      }
+      PyRunString(TString::Format("sess = %s(config=session_conf)", session.Data()));
+
+      if (tfVersion < 2) {
+         PyRunString("K.set_session(sess)");
+      } else {
+         PyRunString("tf.compat.v1.keras.backend.set_session(sess)");
+      }
+   }
+   // case not using a Tensorflow backend
+   else {
+      fKerasString = "keras";
+      if (fNumThreads > 0)
+         Log() << kWARNING << "Cannot set the given " << fNumThreads << " threads when not using tensorflow as  backend"
+               << Endl;
+      if (!fGpuOptions.IsNull()) {
+         Log() << kWARNING << "Cannot set the given GPU option " << fGpuOptions
+               << " when not using tensorflow as  backend" << Endl;
+      }
+   }
+
    /*
     * Load Keras model from file
     */
+
+   Log() << kINFO << " Loading Keras Model " << Endl;
+
+   PyRunString("load_model_custom_objects=None");
+
+
+
+   if (!fUserCodeName.IsNull()) {
+      Log() << kINFO << " Executing user initialization code from  " << fUserCodeName << Endl;
+
+
+      // run some python code provided by user for model initialization if needed
+      TString cmd = "exec(open('" + fUserCodeName + "').read())";
+      TString errmsg = "Error executing the provided user code";
+      PyRunString(cmd, errmsg);
+
+      PyRunString("print('custom objects for loading model : ',load_model_custom_objects)");
+   }
 
    // Load initial model or already trained model
    TString filenameLoadModel;
@@ -221,9 +344,11 @@ void MethodPyKeras::SetupKerasModel(bool loadTrainedModel) {
    else {
       filenameLoadModel = fFilenameModel;
    }
-   PyRunString("model = keras.models.load_model('"+filenameLoadModel+"')",
-               "Failed to load Keras model from file: "+filenameLoadModel);
-   Log() << kINFO << "Load model from file: " << filenameLoadModel << Endl;
+
+   PyRunString("model = " + fKerasString + ".models.load_model('" + filenameLoadModel +
+                     "', custom_objects=load_model_custom_objects)", "Failed to load Keras model from file: " + filenameLoadModel);
+
+   Log() << kINFO << "Loaded model from file: " << filenameLoadModel << Endl;
 
 
    /*
@@ -251,6 +376,9 @@ void MethodPyKeras::SetupKerasModel(bool loadTrainedModel) {
    fModelIsSetup = true;
 }
 
+/// Initialization function called from MethodBase::SetupMethod()
+/// Note that option string are not yet filled with their values.
+/// This is done before ProcessOption method or after reading from XML file
 void MethodPyKeras::Init() {
 
    TMVA::Internal::PyGILRAII raii;
@@ -260,16 +388,15 @@ void MethodPyKeras::Init() {
    }
    _import_array(); // required to use numpy arrays
 
-   // Import Keras
    // NOTE: sys.argv has to be cleared because otherwise TensorFlow breaks
    PyRunString("import sys; sys.argv = ['']", "Set sys.argv failed");
-   PyRunString("import keras", "Import Keras failed");
 
    // Set flag that model is not setup
    fModelIsSetup = false;
 }
 
 void MethodPyKeras::Train() {
+
    if(!fModelIsSetup) Log() << kFATAL << "Model is not setup for training" << Endl;
 
    /*
@@ -388,7 +515,7 @@ void MethodPyKeras::Train() {
 
    // Callback: Save only weights with smallest validation loss
    if (fSaveBestOnly) {
-      PyRunString("callbacks.append(keras.callbacks.ModelCheckpoint('"+fFilenameTrainedModel+"', monitor='val_loss', verbose=verbose, save_best_only=True, mode='auto'))", "Failed to setup training callback: SaveBestOnly");
+      PyRunString("callbacks.append(" + fKerasString +".callbacks.ModelCheckpoint('"+fFilenameTrainedModel+"', monitor='val_loss', verbose=verbose, save_best_only=True, mode='auto'))", "Failed to setup training callback: SaveBestOnly");
       Log() << kINFO << "Option SaveBestOnly: Only model weights with smallest validation loss will be stored" << Endl;
    }
 
@@ -396,7 +523,7 @@ void MethodPyKeras::Train() {
    if (fTriesEarlyStopping>=0) {
       TString tries;
       tries.Form("%i", fTriesEarlyStopping);
-      PyRunString("callbacks.append(keras.callbacks.EarlyStopping(monitor='val_loss', patience="+tries+", verbose=verbose, mode='auto'))", "Failed to setup training callback: TriesEarlyStopping");
+      PyRunString("callbacks.append(" + fKerasString + ".callbacks.EarlyStopping(monitor='val_loss', patience="+tries+", verbose=verbose, mode='auto'))", "Failed to setup training callback: TriesEarlyStopping");
       Log() << kINFO << "Option TriesEarlyStopping: Training will stop after " << tries << " number of epochs with no improvement of validation loss" << Endl;
    }
 
@@ -417,7 +544,7 @@ void MethodPyKeras::Train() {
                   "Failed to setup scheduler function with string: "+fLearningRateSchedule,
                   Py_file_input);
       // Setup callback
-      PyRunString("callbacks.append(keras.callbacks.LearningRateScheduler(schedule))",
+      PyRunString("callbacks.append(" + fKerasString + ".callbacks.LearningRateScheduler(schedule))",
                   "Failed to setup training callback: LearningRateSchedule");
       Log() << kINFO << "Option LearningRateSchedule: Set learning rate during training: " << fLearningRateSchedule << Endl;
    }
@@ -426,7 +553,7 @@ void MethodPyKeras::Train() {
    if (fTensorBoard != "") {
       TString logdir = TString("'") + fTensorBoard + TString("'");
       PyRunString(
-         "callbacks.append(keras.callbacks.TensorBoard(log_dir=" + logdir +
+         "callbacks.append(" + fKerasString + ".callbacks.TensorBoard(log_dir=" + logdir +
             ", histogram_freq=0, batch_size=batchSize, write_graph=True, write_grads=False, write_images=False))",
          "Failed to setup training callback: TensorBoard");
       Log() << kINFO << "Option TensorBoard: Log files for training monitoring are stored in: " << logdir << Endl;
@@ -451,14 +578,13 @@ void MethodPyKeras::Train() {
    for (iHis=0; iHis<nkeys; iHis++) {
 
       PyRunString(TString::Format("copy_string=str(list(history.history.keys())[%d])",iHis));
-      //PyRunString("print (copy_string)");
       PyObject* stra=PyDict_GetItemString(fLocalNS, "copy_string");
       if(!stra) break;
 #if PY_MAJOR_VERSION < 3   // for Python2
       const char *stra_name = PyBytes_AsString(stra);
       // need to add string delimiter for Python2
       TString sname = TString::Format("'%s'",stra_name);
-      const char * name = sname.Data(); 
+      const char * name = sname.Data();
 #else   // for Python3
       PyObject* repr = PyObject_Repr(stra);
       PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
@@ -645,6 +771,10 @@ void MethodPyKeras::GetHelpMessage() const {
 
 MethodPyKeras::EBackendType MethodPyKeras::GetKerasBackend()  {
    // get the keras backend
+
+   // in case we use tf.keras backend is tensorflow
+   if (UseTFKeras())  return kTensorFlow;
+
    // check first if using tensorflow backend
    PyRunString("keras_backend_is_set =  keras.backend.backend() == \"tensorflow\"");
    PyObject * keras_backend = PyDict_GetItemString(fLocalNS,"keras_backend_is_set");

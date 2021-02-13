@@ -32,8 +32,6 @@
 #include "TMVA/LDA.h"
 
 // C/C++
-#include <iostream>
-
 #include "TDecompSVD.h"
 #include "TMatrixF.h"
 #include "TMath.h"

@@ -109,8 +109,6 @@ Any tool which implements the interface should provide two modes for tree prunin
       S(0),
       B(0)
          {}
-   inline IPruneTool::~IPruneTool( ) {}
-
 }
 
 #endif

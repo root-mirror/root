@@ -74,7 +74,7 @@ public:
    {}
    ~RPage() = default;
 
-   ColumnId_t GetColumnId() { return fColumnId; }
+   ColumnId_t GetColumnId() const { return fColumnId; }
    /// The total space available in the page
    ClusterSize_t::ValueType GetCapacity() const { return fCapacity; }
    /// The space taken by column elements in the buffer

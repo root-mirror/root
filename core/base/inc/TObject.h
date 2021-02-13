@@ -13,7 +13,7 @@
 #define ROOT_TObject
 
 
-#include "RConfigure.h"
+// #include "RConfigure.h"  // included via Rtypes.h
 #include "Rtypes.h"
 #include "TStorage.h"
 #include "TVersionCheck.h"

@@ -3,7 +3,10 @@
 
 // test program for the class TComplex
 
-#include <Riostream.h>
+#include <iostream>
+#include <cstdio>
+
+#include <strlcpy.h>
 #include <TRandom.h>
 #include <TComplex.h>
 

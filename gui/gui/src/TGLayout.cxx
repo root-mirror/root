@@ -53,7 +53,8 @@
 #include "TGLayout.h"
 #include "TGFrame.h"
 #include "TList.h"
-#include "Riostream.h"
+
+#include <iostream>
 
 
 ClassImp(TGLayoutHints);

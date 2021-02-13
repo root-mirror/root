@@ -15,7 +15,7 @@
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 
-#include <assert.h>
+#include <cassert>
 
 /** \class TViewer3DPad
 \ingroup gpad
@@ -166,14 +166,14 @@ Int_t TViewer3DPad::AddObject(UInt_t /*placedID*/, const TBuffer3D & buffer, Boo
 Bool_t TViewer3DPad::OpenComposite(const TBuffer3D & /*buffer*/, Bool_t * /*addChildren*/)
 {
    return kTRUE;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void TViewer3DPad::CloseComposite()
-{};
+{}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void TViewer3DPad::AddCompositeOp(UInt_t /*operation*/)
-{};
+{}

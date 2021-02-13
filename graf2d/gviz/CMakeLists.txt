@@ -9,8 +9,6 @@
 # @author Pere Mato, CERN
 ############################################################################
 
-include_directories(${GRAPHVIZ_INCLUDE_DIR}/graphviz)
-
 ROOT_STANDARD_LIBRARY_PACKAGE(Gviz
   HEADERS
     TGraphEdge.h
@@ -28,3 +26,5 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Gviz
     Hist
     Graf
 )
+
+target_include_directories(Gviz PRIVATE ${GRAPHVIZ_INCLUDE_DIR}/graphviz)

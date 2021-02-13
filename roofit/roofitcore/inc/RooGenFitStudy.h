@@ -30,7 +30,7 @@ class RooAbsGenContext ;
 #include "RooArgSet.h"
 #include "RooLinkedList.h"
 #include "RooAbsPdf.h"
-
+#include <string>
 
 class RooGenFitStudy : public RooAbsStudy {
 public:

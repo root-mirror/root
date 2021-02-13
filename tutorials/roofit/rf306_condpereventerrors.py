@@ -1,12 +1,12 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-## Multidimensional models: complete example with use of conditional p.d.f. with per-event errors
+## Multidimensional models: complete example with use of conditional pdf with per-event errors
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -33,7 +33,7 @@ decay_gm = ROOT.RooDecay("decay_gm", "decay", dt,
 # Construct fake 'external' data with per-event error
 # ------------------------------------------------------------------------------------------------------
 
-# Use landau p.d.f to get somewhat realistic distribution with long tail
+# Use landau pdf to get somewhat realistic distribution with long tail
 pdfDtErr = ROOT.RooLandau("pdfDtErr", "pdfDtErr", dterr, ROOT.RooFit.RooConst(
     1), ROOT.RooFit.RooConst(0.25))
 expDataDterr = pdfDtErr.generate(ROOT.RooArgSet(dterr), 10000)
@@ -42,7 +42,7 @@ expDataDterr = pdfDtErr.generate(ROOT.RooArgSet(dterr), 10000)
 # ---------------------------------------------------------------------------------------------
 
 # Specify external dataset with dterr values to use decay_dm as
-# conditional p.d.f.
+# conditional pdf
 data = decay_gm.generate(ROOT.RooArgSet(
     dt), ROOT.RooFit.ProtoData(expDataDterr))
 
@@ -56,7 +56,7 @@ decay_gm.fitTo(data, ROOT.RooFit.ConditionalObservables(
 # Plot conditional decay_dm(dt|dterr)
 # ---------------------------------------------------------------------
 
-# Make two-dimensional plot of conditional p.d.f in (dt,dterr)
+# Make two-dimensional plot of conditional pdf in (dt,dterr)
 hh_decay = decay_gm.createHistogram("hh_decay", dt, ROOT.RooFit.Binning(
     50), ROOT.RooFit.YVar(dterr, ROOT.RooFit.Binning(50)))
 hh_decay.SetLineColor(ROOT.kBlue)

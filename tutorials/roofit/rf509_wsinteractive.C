@@ -1,12 +1,15 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Organization and simultaneous fits: easy interactive access to workspace contents - CINT to CLING code migration
+/// Organization and simultaneous fits: easy interactive access to workspace contents - CINT
+/// to CLING code migration
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 04/2009 - Wouter Verkerke
+///
+/// \date April 2009
+/// \author Wouter Verkerke
 
 using namespace RooFit;
 
@@ -25,7 +28,7 @@ void rf509_wsinteractive()
    // change the code
    RooWorkspace *w1 = new RooWorkspace("w", kTRUE);
 
-   // Fill workspace with p.d.f. and data in a separate function
+   // Fill workspace with pdf and data in a separate function
    fillWorkspace(*w1);
 
    // Print workspace contents
@@ -91,12 +94,12 @@ void fillWorkspace(RooWorkspace &w)
    RooGaussian sig1("sig1", "Signal component 1", x, mean, sigma1);
    RooGaussian sig2("sig2", "Signal component 2", x, mean, sigma2);
 
-   // Build Chebychev polynomial p.d.f.
+   // Build Chebychev polynomial pdf
    RooRealVar a0("a0", "a0", 0.5, 0., 1.);
    RooRealVar a1("a1", "a1", 0.2, 0., 1.);
    RooChebychev bkg("bkg", "Background", x, RooArgSet(a0, a1));
 
-   // Sum the signal components into a composite signal p.d.f.
+   // Sum the signal components into a composite signal pdf
    RooRealVar sig1frac("sig1frac", "fraction of component 1 in signal", 0.8, 0., 1.);
    RooAddPdf sig("sig", "Signal", RooArgList(sig1, sig2), sig1frac);
 

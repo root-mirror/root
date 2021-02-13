@@ -26,7 +26,6 @@ class TExMap;
 class TVirtualStreamerInfo;
 class TStreamerInfo;
 class TStreamerElement;
-class TObjArray;
 class TMemberStreamer;
 class TXMLFile;
 class TXMLStackObj;

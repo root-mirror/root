@@ -1,13 +1,13 @@
 // @(#)root/test:$Id$
 // Author: Fons Rademakers   19/08/96
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
 
-#include "Riostream.h"
 #include "TString.h"
 #include "TRegexp.h"
 #include "TPRegexp.h"
-#include "TSystem.h"
 
 
 void Ok(int i, int b)

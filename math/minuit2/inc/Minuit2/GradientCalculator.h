@@ -12,12 +12,10 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MinimumParameters;
 class FunctionGradient;
-
 
 /**
    interface class for gradient calculators
@@ -25,17 +23,15 @@ class FunctionGradient;
 class GradientCalculator {
 
 public:
+   virtual ~GradientCalculator() {}
 
-  virtual ~GradientCalculator() {}
+   virtual FunctionGradient operator()(const MinimumParameters &) const = 0;
 
-  virtual FunctionGradient operator()(const MinimumParameters&) const = 0;
-
-  virtual FunctionGradient operator()(const MinimumParameters&,
-                                      const FunctionGradient&) const = 0;
+   virtual FunctionGradient operator()(const MinimumParameters &, const FunctionGradient &) const = 0;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_GradientCalculator
+#endif // ROOT_Minuit2_GradientCalculator

@@ -15,6 +15,7 @@
 #include <ROOT/REveVector.hxx>
 
 #include <vector>
+#include <string>
 
 namespace ROOT {
 namespace Experimental {

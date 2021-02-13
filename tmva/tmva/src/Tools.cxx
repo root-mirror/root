@@ -58,10 +58,10 @@ Global auxiliary applications and data treatment routines.
 #include "TTreeFormula.h"
 #include "TXMLEngine.h"
 #include "TROOT.h"
-#include "TMatrixDSymEigen.h"
 
 #include <algorithm>
 #include <cstdlib>
+#include <iomanip>
 
 using namespace std;
 

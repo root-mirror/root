@@ -24,6 +24,12 @@
 #include "RooObjCacheManager.h"
 #include "RooCmdArg.h"
 #include <vector>
+#include <list>
+#include <string>
+
+namespace RooBatchCompute {
+struct RunContext;
+}
 
 typedef RooArgList* pRooArgList ;
 typedef RooLinkedList* pRooLinkedList ;
@@ -53,7 +59,6 @@ public:
   virtual TObject* clone(const char* newname) const { return new RooProdPdf(*this,newname) ; }
   virtual ~RooProdPdf() ;
 
-  virtual Double_t getValV(const RooArgSet* set=0) const ;
   virtual Bool_t checkObservables(const RooArgSet* nset) const ;	
 
   virtual Bool_t forceAnalyticalInt(const RooAbsArg& dep) const ; 
@@ -98,7 +103,7 @@ public:
 private:
 
   Double_t evaluate() const ;
-  virtual RooSpan<double> evaluateBatch(std::size_t begin, std::size_t size) const;
+  virtual RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
 
   RooAbsReal* makeCondPdfRatioCorr(RooAbsReal& term, const RooArgSet& termNset, const RooArgSet& termImpSet, const char* normRange, const char* refRange) const ;
 
@@ -162,7 +167,6 @@ private:
 
   mutable RooAICRegistry _genCode ; //! Registry of composite direct generator codes
 
-  mutable RooArgSet* _curNormSet = nullptr; //!
   Double_t _cutOff ;       //  Cutoff parameter for running product
   RooListProxy _pdfList ;  //  List of PDF components
   RooLinkedList _pdfNSetList ; // List of PDF component normalization sets

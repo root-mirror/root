@@ -21,6 +21,8 @@
 //////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include <vector>
+
 #include "TMVA/DNN/Functions.h"
 #include "TMVA/DNN/Net.h"
 #include "Utility.h"

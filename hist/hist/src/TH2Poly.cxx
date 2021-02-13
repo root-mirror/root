@@ -13,7 +13,7 @@
 #include "TH2Poly.h"
 #include "TMultiGraph.h"
 #include "TGraph.h"
-#include "TClass.h"
+#include "Riostream.h"
 #include "TList.h"
 #include "TMath.h"
 #include <cassert>
@@ -727,23 +727,27 @@ Double_t TH2Poly::Integral(Option_t* option) const
    TString opt = option;
    opt.ToLower();
 
+   Double_t w;
+   Double_t integral = 0.;
+
+   TIter next(fBins);
+   TObject *obj;
+   TH2PolyBin *bin;
    if ((opt.Contains("width")) || (opt.Contains("area"))) {
-      Double_t w;
-      Double_t integral = 0.;
-
-      TIter    next(fBins);
-      TObject *obj;
-      TH2PolyBin *bin;
-      while ((obj=next())) {
-         bin       = (TH2PolyBin*) obj;
-         w         = bin->GetArea();
-         integral += w*(bin->GetContent());
+      while ((obj = next())) {
+         bin = (TH2PolyBin *)obj;
+         w = bin->GetArea();
+         integral += w * (bin->GetContent());
       }
-
-      return integral;
    } else {
-      return fTsumw;
+      // need to recompute integral in case somebith called SetBinContent and
+      // cannot use fTsumw since it is not updated in that case
+      while ((obj = next())) {
+         bin = (TH2PolyBin *)obj;
+         integral += (bin->GetContent());
+      }
    }
+   return integral;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

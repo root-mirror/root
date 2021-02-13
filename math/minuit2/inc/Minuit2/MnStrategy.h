@@ -12,7 +12,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
 //_________________________________________________________________________
 /**
@@ -27,50 +27,49 @@ namespace ROOT {
 class MnStrategy {
 
 public:
-
-   //default strategy
+   // default strategy
    MnStrategy();
 
-   //user defined strategy (0, 1, >=2)
+   // user defined strategy (0, 1, >=2)
    explicit MnStrategy(unsigned int);
 
    ~MnStrategy() {}
 
-   unsigned int Strategy() const {return fStrategy;}
+   unsigned int Strategy() const { return fStrategy; }
 
-   unsigned int GradientNCycles() const {return fGradNCyc;}
-   double GradientStepTolerance() const {return fGradTlrStp;}
-   double GradientTolerance() const {return fGradTlr;}
+   unsigned int GradientNCycles() const { return fGradNCyc; }
+   double GradientStepTolerance() const { return fGradTlrStp; }
+   double GradientTolerance() const { return fGradTlr; }
 
-   unsigned int HessianNCycles() const {return fHessNCyc;}
-   double HessianStepTolerance() const {return fHessTlrStp;}
-   double HessianG2Tolerance() const {return fHessTlrG2;}
-   unsigned int HessianGradientNCycles() const {return fHessGradNCyc;}
+   unsigned int HessianNCycles() const { return fHessNCyc; }
+   double HessianStepTolerance() const { return fHessTlrStp; }
+   double HessianG2Tolerance() const { return fHessTlrG2; }
+   unsigned int HessianGradientNCycles() const { return fHessGradNCyc; }
 
    int StorageLevel() const { return fStoreLevel; }
 
-   bool IsLow() const {return fStrategy == 0;}
-   bool IsMedium() const {return fStrategy == 1;}
-   bool IsHigh() const {return fStrategy >= 2;}
+   bool IsLow() const { return fStrategy == 0; }
+   bool IsMedium() const { return fStrategy == 1; }
+   bool IsHigh() const { return fStrategy >= 2; }
 
    void SetLowStrategy();
    void SetMediumStrategy();
    void SetHighStrategy();
 
-   void SetGradientNCycles(unsigned int n) {fGradNCyc = n;}
-   void SetGradientStepTolerance(double stp) {fGradTlrStp = stp;}
-   void SetGradientTolerance(double toler) {fGradTlr = toler;}
+   void SetGradientNCycles(unsigned int n) { fGradNCyc = n; }
+   void SetGradientStepTolerance(double stp) { fGradTlrStp = stp; }
+   void SetGradientTolerance(double toler) { fGradTlr = toler; }
 
-   void SetHessianNCycles(unsigned int n) {fHessNCyc = n;}
-   void SetHessianStepTolerance(double stp) {fHessTlrStp = stp;}
-   void SetHessianG2Tolerance(double toler) {fHessTlrG2 = toler;}
-   void SetHessianGradientNCycles(unsigned int n) {fHessGradNCyc = n;}
+   void SetHessianNCycles(unsigned int n) { fHessNCyc = n; }
+   void SetHessianStepTolerance(double stp) { fHessTlrStp = stp; }
+   void SetHessianG2Tolerance(double toler) { fHessTlrG2 = toler; }
+   void SetHessianGradientNCycles(unsigned int n) { fHessGradNCyc = n; }
 
    // set storage level of iteration quantities
    // 0 = store only last iterations 1 = full storage (default)
    void SetStorageLevel(unsigned int level) { fStoreLevel = level; }
-private:
 
+private:
    unsigned int fStrategy;
 
    unsigned int fGradNCyc;
@@ -83,8 +82,8 @@ private:
    int fStoreLevel;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnStrategy
+#endif // ROOT_Minuit2_MnStrategy

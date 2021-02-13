@@ -80,12 +80,10 @@ credible interval from the given function.
 #include "TF1.h"
 #include "TH1.h"
 #include "TMath.h"
-#include "TCanvas.h"
 
 #include <map>
 #include <cmath>
 
-//#include "TRandom.h"
 #include "RConfigure.h"
 
 ClassImp(RooStats::BayesianCalculator);

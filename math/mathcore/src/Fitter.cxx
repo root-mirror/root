@@ -362,7 +362,7 @@ bool Fitter::EvalFCN()
    return true;
 }
 
-bool Fitter::DoLeastSquareFit(const ROOT::Fit::ExecutionPolicy &executionPolicy)
+bool Fitter::DoLeastSquareFit(const ROOT::EExecutionPolicy &executionPolicy)
 {
 
    // perform a chi2 fit on a set of binned data
@@ -421,7 +421,7 @@ bool Fitter::DoLeastSquareFit(const ROOT::Fit::ExecutionPolicy &executionPolicy)
    return false;
 }
 
-bool Fitter::DoBinnedLikelihoodFit(bool extended, const ROOT::Fit::ExecutionPolicy &executionPolicy)
+bool Fitter::DoBinnedLikelihoodFit(bool extended, const ROOT::EExecutionPolicy &executionPolicy)
 {
    // perform a likelihood fit on a set of binned data
    // The fit is extended (Poisson logl_ by default
@@ -530,7 +530,7 @@ bool Fitter::DoBinnedLikelihoodFit(bool extended, const ROOT::Fit::ExecutionPoli
    return true;
 }
 
-bool Fitter::DoUnbinnedLikelihoodFit(bool extended, const ROOT::Fit::ExecutionPolicy &executionPolicy) {
+bool Fitter::DoUnbinnedLikelihoodFit(bool extended, const ROOT::EExecutionPolicy &executionPolicy) {
    // perform a likelihood fit on a set of unbinned data
 
    std::shared_ptr<UnBinData> data = std::dynamic_pointer_cast<UnBinData>(fData);
@@ -764,15 +764,34 @@ bool Fitter::CalculateMinosErrors() {
    const std::vector<unsigned int> & ipars = fConfig.MinosParams();
    unsigned int n = (ipars.size() > 0) ? ipars.size() : fResult->Parameters().size();
    bool ok = false;
-   for (unsigned int i = 0; i < n; ++i) {
-      double elow, eup;
-      unsigned int index = (ipars.size() > 0) ? ipars[i] : i;
-      bool ret = fMinimizer->GetMinosError(index, elow, eup);
-      if (ret) fResult->SetMinosError(index, elow, eup);
-      ok |= ret;
+  
+   int iparNewMin = 0; 
+   int iparMax = n; 
+   int iter = 0; 
+   // rerun minos for the parameters run before a new Minimum has been found
+   do {
+      if (iparNewMin > 0) 
+         MATH_INFO_MSG("Fitter::CalculateMinosErrors","Run again Minos for some parameters because a new Minimum has been found");
+      iparNewMin = 0; 
+      for (int i = 0; i < iparMax; ++i) {
+         double elow, eup;
+         unsigned int index = (ipars.size() > 0) ? ipars[i] : i;
+         bool ret = fMinimizer->GetMinosError(index, elow, eup);
+         // flags case when a new minimum has been found
+         if ((fMinimizer->MinosStatus() & 8) != 0) {
+            iparNewMin = i;
+         }
+         if (ret)
+            fResult->SetMinosError(index, elow, eup);
+         ok |= ret;
+      }
+
+      iparMax = iparNewMin;
+      iter++;  // to avoid infinite looping 
    }
+   while( iparNewMin > 0 && iter < 10);
    if (!ok) {
-       MATH_ERROR_MSG("Fitter::CalculateMinosErrors","Minos error calculation failed for all parameters");
+       MATH_ERROR_MSG("Fitter::CalculateMinosErrors","Minos error calculation failed for all the selected parameters");
    }
 
    // re-give a minimizer instance in case it has been changed

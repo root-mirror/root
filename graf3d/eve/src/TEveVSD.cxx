@@ -10,7 +10,6 @@
  *************************************************************************/
 
 #include "TEveVSD.h"
-#include "TFile.h"
 
 /** \class TEveVSD
 \ingroup TEve

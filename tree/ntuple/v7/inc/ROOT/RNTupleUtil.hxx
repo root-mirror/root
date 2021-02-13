@@ -6,7 +6,7 @@
 /// is welcome!
 
 /*************************************************************************
- * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -19,15 +19,27 @@
 #include <cstdint>
 
 #include <string>
-#include <vector>
+
+#include <ROOT/RLogger.hxx>
 
 namespace ROOT {
 namespace Experimental {
 
+class RLogChannel;
+/// Log channel for RNTuple diagnostics.
+RLogChannel &NTupleLog();
+
+struct RNTuple;
+
+namespace Internal {
+
+void PrintRNTuple(const RNTuple& ntuple, std::ostream& output);
+
+} // namespace Internal
 
 /**
  * The fields in the ntuple model tree can carry different structural information about the type system.
- * Leaf fields contain just data, collection fields resolve to offset columns, record root fields have no
+ * Leaf fields contain just data, collection fields resolve to offset columns, record fields have no
  * materialization on the primitive column layer.
  */
 enum ENTupleStructure {
@@ -35,8 +47,8 @@ enum ENTupleStructure {
   kCollection,
   kRecord,
   kVariant,
-  // unimplemented so far
-  kReference,
+  kReference, // unimplemented so far
+  kInvalid,
 };
 
 /// Integer type long enough to hold the maximum number of entries in a column

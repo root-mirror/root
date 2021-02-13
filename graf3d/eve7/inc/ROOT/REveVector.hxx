@@ -42,13 +42,13 @@ public:
 #ifdef R__WIN32
    const TT *Arr() const
    {
-      if (offsetof(REveVectorT, fZ) == offsetof(REveVectorT, fX) + 2 * sizeof(TT))
+      if (offsetof(REveVectorT, fZ) != offsetof(REveVectorT, fX) + 2 * sizeof(TT))
          Error("REveVectorT", "Subsequent members cannot be accessed as array!");
       return &fX;
    }
    TT *Arr()
    {
-      if (offsetof(REveVectorT, fZ) == offsetof(REveVectorT, fX) + 2 * sizeof(TT))
+      if (offsetof(REveVectorT, fZ) != offsetof(REveVectorT, fX) + 2 * sizeof(TT))
          Error("REveVectorT", "Subsequent members cannot be accessed as array!");
       return &fX;
    }

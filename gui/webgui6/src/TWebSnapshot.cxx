@@ -1,4 +1,4 @@
-/// Author:  Sergey Linev, GSI  6/04/2017
+// Author:  Sergey Linev, GSI  6/04/2017
 
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
@@ -13,6 +13,13 @@
 #include "TString.h"
 
 #include <ROOT/RMakeUnique.hxx>
+
+/** \class TWebSnapshot
+\ingroup webgui6
+
+Paint state of object to transfer to JavaScript side
+
+*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// destructor

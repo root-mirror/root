@@ -16,6 +16,7 @@ NamespaceImp(RooStats)
 #endif
 
 #include "TTree.h"
+#include "TBranch.h"
 
 #include "RooUniform.h"
 #include "RooProdPdf.h"
@@ -90,7 +91,7 @@ namespace RooStats {
          RooAbsCategoryLValue *cat = (RooAbsCategoryLValue *) sim->indexCat().clone(sim->indexCat().GetName());
          for (int ic = 0, nc = cat->numBins((const char *)0); ic < nc; ++ic) {
             cat->setBin(ic);
-            RooAbsPdf* catPdf = sim->getPdf(cat->getLabel());
+            RooAbsPdf* catPdf = sim->getPdf(cat->getCurrentLabel());
             // it is possible that a pdf is not defined for every category
             if (catPdf != 0) FactorizePdf(observables, *catPdf, obsTerms, constraints);
          }
@@ -121,9 +122,7 @@ namespace RooStats {
       if(constraints.getSize() == 0) {
          oocoutW((TObject *)0, Eval) << "RooStatsUtils::MakeNuisancePdf - no constraints found on nuisance parameters in the input model" << endl;
          return 0;
-      } else if(constraints.getSize() == 1) {
-         return dynamic_cast<RooAbsPdf *>(constraints.first()->clone(name));
-      }
+      } 
       return new RooProdPdf(name,"", constraints);
    }
 
@@ -179,7 +178,7 @@ namespace RooStats {
 
          for (int ic = 0, nc = cat->numBins((const char *)NULL); ic < nc; ++ic) {
             cat->setBin(ic);
-            RooAbsPdf* catPdf = sim->getPdf(cat->getLabel());
+            RooAbsPdf* catPdf = sim->getPdf(cat->getCurrentLabel());
             RooAbsPdf* newPdf = NULL;
             // it is possible that a pdf is not defined for every category
             if (catPdf != NULL) newPdf = StripConstraints(*catPdf, observables);

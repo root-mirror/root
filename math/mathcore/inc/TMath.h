@@ -12,7 +12,6 @@
 #ifndef ROOT_TMath
 #define ROOT_TMath
 
-#include "Rtypes.h"
 #include "TMathBase.h"
 
 #include "TError.h"
@@ -138,35 +137,39 @@ constexpr Double_t CUncertainty()
 /// Gravitational constant in: \f$ m^{3} kg^{-1} s^{-2} \f$
 constexpr Double_t G()
 {
-   return 6.673e-11;
+   // use 2018 value from NIST  (https://physics.nist.gov/cgi-bin/cuu/Value?bg|search_for=G)
+   return 6.67430e-11;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \f$ cm^{3} g^{-1} s^{-2} \f$
 constexpr Double_t Gcgs()
 {
-   return G() / 1000.0;
+   return G() * 1000.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Gravitational constant uncertainty.
 constexpr Double_t GUncertainty()
 {
-   return 0.010e-11;
+   // use 2018 value from NIST
+   return 0.00015e-11;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \f$ \frac{G}{\hbar C} \f$ in \f$ (GeV/c^{2})^{-2} \f$
 constexpr Double_t GhbarC()
 {
-   return 6.707e-39;
+   // use new value from NIST (2018)
+   return 6.70883e-39;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \f$ \frac{G}{\hbar C} \f$ uncertainty.
 constexpr Double_t GhbarCUncertainty()
 {
-   return 0.010e-39;
+   // use new value from NIST (2018)
+   return 0.00015e-39;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,7 +191,7 @@ constexpr Double_t GnUncertainty()
 /// \f[ h \f]
 constexpr Double_t H()
 {
-   return 6.62606876e-34;
+   return 6.62607015e-34;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +205,9 @@ constexpr Double_t Hcgs()
 /// Planck's constant uncertainty.
 constexpr Double_t HUncertainty()
 {
-   return 0.00000052e-34;
+   // Planck constant is exact according to 2019 redefinition 
+   // (https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units)
+   return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,7 +215,7 @@ constexpr Double_t HUncertainty()
 /// \f[ \hbar = \frac{h}{2\pi} \f]
 constexpr Double_t Hbar()
 {
-   return 1.054571596e-34;
+   return 1.054571817e-34;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +229,8 @@ constexpr Double_t Hbarcgs()
 /// \f$ \hbar \f$ uncertainty.
 constexpr Double_t HbarUncertainty()
 {
-   return 0.000000082e-34;
+   // hbar is an exact constant
+   return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +252,7 @@ constexpr Double_t HCcgs()
 /// \f[ k \f]
 constexpr Double_t K()
 {
-   return 1.3806503e-23;
+   return 1.380649e-23;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -260,7 +266,9 @@ constexpr Double_t Kcgs()
 /// Boltzmann's constant uncertainty.
 constexpr Double_t KUncertainty()
 {
-   return 0.0000024e-23;
+   // constant is exact according to 2019 redefinition 
+   // (https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units)
+   return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -268,28 +276,30 @@ constexpr Double_t KUncertainty()
 /// \f[ \sigma \f]
 constexpr Double_t Sigma()
 {
-   return 5.6704e-8;
+   return 5.670373e-8;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Stefan-Boltzmann constant uncertainty.
 constexpr Double_t SigmaUncertainty()
 {
-   return 0.000040e-8;
+   return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Avogadro constant (Avogadro's Number) in \f$ mol^{-1} \f$
 constexpr Double_t Na()
 {
-   return 6.02214199e+23;
+   return 6.02214076e+23;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Avogadro constant (Avogadro's Number) uncertainty.
 constexpr Double_t NaUncertainty()
 {
-   return 0.00000047e+23;
+   // constant is exact according to 2019 redefinition 
+   // (https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units)
+   return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -335,14 +345,16 @@ constexpr Double_t EulerGamma()
 /// Elementary charge in \f$ C \f$ .
 constexpr Double_t Qe()
 {
-   return 1.602176462e-19;
+   return 1.602176634e-19;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Elementary charge uncertainty.
 constexpr Double_t QeUncertainty()
 {
-   return 0.000000063e-19;
+   // constant is exact according to 2019 redefinition 
+   // (https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units)
+   return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -649,15 +661,13 @@ inline Double_t TMath::TanH(Double_t x)
 
 ////////////////////////////////////////////////////////////////////////////////
 inline Double_t TMath::ASin(Double_t x)
-   { if (x < -1.) return -TMath::Pi()/2;
-     if (x >  1.) return  TMath::Pi()/2;
+   { 
      return asin(x);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
 inline Double_t TMath::ACos(Double_t x)
-   { if (x < -1.) return TMath::Pi();
-     if (x >  1.) return 0;
+   { 
      return acos(x);
    }
 

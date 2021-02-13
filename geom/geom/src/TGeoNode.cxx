@@ -68,7 +68,7 @@ painting a node on a pad will take the corresponding volume attributes.
 \image html geom_t_node.png
 */
 
-#include "Riostream.h"
+#include <iostream>
 
 #include "TBrowser.h"
 #include "TObjArray.h"
@@ -743,6 +743,7 @@ TGeoNode *TGeoNodeMatrix::MakeCopyNode() const
 {
    TGeoNodeMatrix *node = new TGeoNodeMatrix(fVolume, fMatrix);
    node->SetName(GetName());
+   node->SetTitle(GetTitle());
    // set the mother
    node->SetMotherVolume(fMother);
    // set the copy number
@@ -821,6 +822,7 @@ TGeoNode *TGeoNodeOffset::MakeCopyNode() const
 {
    TGeoNodeOffset *node = new TGeoNodeOffset(fVolume, GetIndex(), fOffset);
    node->SetName(GetName());
+   node->SetTitle(GetTitle());
    // set the mother
    node->SetMotherVolume(fMother);
    // set the copy number

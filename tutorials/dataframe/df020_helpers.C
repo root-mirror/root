@@ -1,12 +1,12 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook
-/// This tutorial shows usage of the RDF helper tools, contained in ROOT/RDFHelpers.hxx
+/// Show usage of RDataFrame's helper tools, contained in ROOT/RDFHelpers.hxx.
 ///
 /// \macro_code
 ///
 /// \date July 2018
-/// \author Enrico Guiraud
+/// \author Enrico Guiraud (CERN)
 
 void df020_helpers()
 {

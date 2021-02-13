@@ -33,14 +33,17 @@
 #include "TFrame.h"
 #include "TMarker.h"
 #include "TVirtualPadEditor.h"
+#include "TVirtualX.h"
 #include "TRegexp.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 Double_t *gxwork, *gywork, *gxworkl, *gyworkl;
 Int_t TGraphPainter::fgMaxPointsPerLine = 50;
 
-static Int_t    gHighlightPoint  = -1;   // highlight point of graph
-static TGraph  *gHighlightGraph  = 0;    // pointer to graph with highlight point
-static TMarker *gHighlightMarker = 0;    // highlight marker
+static Int_t    gHighlightPoint  = -1;         // highlight point of graph
+static TGraph  *gHighlightGraph  = nullptr;    // pointer to graph with highlight point
+static TMarker *gHighlightMarker = nullptr;    // highlight marker
 
 ClassImp(TGraphPainter);
 
@@ -1858,7 +1861,7 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
                if (xj1 < xj) {
                   if (j != last) Error(where, "X must be in increasing order");
                   else           Error(where, "X must have N+1 values with option N");
-                  return;
+                  goto do_cleanup;
                }
                gxwork[npt-1] = x[j-1];       gxwork[npt] = x[j];
             }
@@ -1928,7 +1931,8 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
    if ((optionHist) || !chopt[0]) {
       if (!optionRot) {
          gxwork[0] = wmin;
-         gywork[0] = gPad->GetUymin();
+         gywork[0] = TMath::Min(TMath::Max((Double_t)0,gPad->GetUymin())
+                                           ,gPad->GetUymax());
          ywmin    = gywork[0];
          npt      = 2;
          for (i=first; i<=last;i++) {
@@ -1940,7 +1944,7 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
                if (xi1 < xi) {
                   if (i != last) Error(where, "X must be in increasing order");
                   else           Error(where, "X must have N+1 values with option N");
-                  return;
+                  goto do_cleanup;
                }
                gxwork[npt-1] = x[i-1];      gxwork[npt] = x[i];
             }
@@ -2006,7 +2010,7 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
                if (yi1 < yi) {
                   if (i != last) Error(where, "Y must be in increasing order");
                   else           Error(where, "Y must have N+1 values with option N");
-                  return;
+                  goto do_cleanup;
                }
                gywork[npt-1] = y[i-1];      gywork[npt] = y[i];
             }
@@ -2045,7 +2049,7 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
                if (xi1 < xi) {
                   if (i != last) Error(where, "X must be in increasing order");
                   else           Error(where, "X must have N+1 values with option N");
-                  return;
+                  goto do_cleanup;
                }
                gxwork[npt-1] = x[i-1] + 0.5*(x[i]-x[i-1]);
             }
@@ -2192,7 +2196,7 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
                if (yi1 < yi) {
                   if (i != last) Error(where, "Y must be in increasing order");
                   else           Error(where, "Y must have N+1 values with option N");
-                  return;
+                  goto do_cleanup;
                }
                gywork[npt-1] = y[i-1] + 0.5*(y[i]-y[i-1]);
             }
@@ -2266,7 +2270,7 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
                   xi1 = x[i];      xi = x[i-1];
                   if (xi1 < xi) {
                      Error(where, "X must be in increasing order");
-                     return;
+                     goto do_cleanup;
                   }
                   offset  = (x[i+1]-x[i])*baroffset;
                   dbar    = (x[i+1]-x[i])*barwidth;
@@ -2297,7 +2301,7 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
                   yi1 = y[i];      yi = y[i-1];
                   if (yi1 < yi) {
                      Error(where, "Y must be in increasing order");
-                     return;
+                     goto do_cleanup;
                   }
                   offset  = (y[i+1]-y[i])*baroffset;
                   dbar    = (y[i+1]-y[i])*barwidth;
@@ -2380,6 +2384,7 @@ void TGraphPainter::PaintGrapHist(TGraph *theGraph, Int_t npoints, const Double_
 
    gPad->ResetBit(TGraph::kClipFrame);
 
+do_cleanup:
    delete [] gxwork;
    delete [] gywork;
    delete [] gxworkl;

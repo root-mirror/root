@@ -19,11 +19,7 @@
 
 #include <cassert>
 
-#include "json.hpp"
-
-
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveJetCone
 \ingroup REve

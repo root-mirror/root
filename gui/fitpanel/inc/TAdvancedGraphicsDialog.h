@@ -22,7 +22,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TGFrame.h"
-#include "TTreeInput.h"
 #include "TGButton.h"
 #include "TGComboBox.h"
 #include "TGLabel.h"

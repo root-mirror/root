@@ -11,13 +11,30 @@
 
 #include "ROOT/RPadBase.hxx"
 #include "ROOT/RVirtualCanvasPainter.hxx"
+#include "ROOT/RDrawableRequest.hxx"
 
 #include <memory>
 #include <string>
 #include <vector>
+#include <list>
 
 namespace ROOT {
 namespace Experimental {
+
+class RChangeAttrRequest : public RDrawableRequest {
+   std::vector<std::string> ids;                           ///< array of ids
+   std::vector<std::string> names;                         ///< array of attribute names
+   std::vector<std::unique_ptr<RAttrMap::Value_t>> values; ///< array of values
+   bool update{true};                                      ///< update canvas at the end
+   bool fNeedUpdate{false};       ///<! is canvas update required
+   RChangeAttrRequest(const RChangeAttrRequest &) = delete;
+   RChangeAttrRequest& operator=(const RChangeAttrRequest &) = delete;
+public:
+   RChangeAttrRequest() = default; // for I/O
+   virtual ~RChangeAttrRequest() = default;
+   std::unique_ptr<RDrawableReply> Process() override;
+   bool NeedCanvasUpdate() const override { return fNeedUpdate; }
+};
 
 /** \class RCanvas
 \ingroup GpadROOT7
@@ -30,6 +47,7 @@ namespace Experimental {
 class RCanvas: public RPadBase {
 friend class RPadBase;  /// use for ID generation
 friend class RCanvasPainter; /// used for primitives drawing
+friend class RChangeAttrRequest; /// to apply attributes changes
 private:
    /// Title of the canvas.
    std::string fTitle;
@@ -38,7 +56,7 @@ private:
    std::array<RPadLength::Pixel, 2> fSize;
 
    /// Modify counter, incremented every time canvas is changed
-   uint64_t fModified{0}; ///<!
+   Version_t fModified{1}; ///<!
 
    /// The painter of this canvas, bootstrapping the graphics connection.
    /// Unmapped canvases (those that never had `Draw()` invoked) might not have
@@ -50,6 +68,9 @@ private:
 
    /// Disable assignment for now.
    RCanvas &operator=(const RCanvas &) = delete;
+
+   // Increment modify counter
+   uint64_t IncModified() { return ++fModified; }
 
 public:
    static std::shared_ptr<RCanvas> Create(const std::string &title);
@@ -102,8 +123,11 @@ public:
       return fPainter->AddPanel(panel->GetWindow());
    }
 
-   // Indicates that primitives list was changed or any primitive was modified
-   void Modified() { fModified++; }
+   // Get modify counter
+   uint64_t GetModified() const { return fModified; }
+
+   // Set newest version to all primitives
+   void Modified() { SetDrawableVersion(IncModified()); }
 
    // Return if canvas was modified and not yet updated
    bool IsModified() const;
@@ -136,6 +160,8 @@ public:
    }
 
    static const std::vector<std::shared_ptr<RCanvas>> GetCanvases();
+
+   static void ReleaseHeldCanvases();
 };
 
 } // namespace Experimental

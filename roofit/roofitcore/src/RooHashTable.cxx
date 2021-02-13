@@ -17,7 +17,6 @@
 #include "RooFit.h"
 
 #include "TMath.h"
-#include "TMath.h"
 #include "TCollection.h"
 #include "RooHashTable.h"
 #include "RooLinkedList.h"

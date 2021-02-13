@@ -13,16 +13,13 @@
 #define ROOT_TEveGeoNode
 
 #include "TEveElement.h"
+#include <list>
 
 class TGeoVolume;
 class TGeoNode;
 class TGeoHMatrix;
 class TGeoManager;
-
-// Added here to ease transition - forward declaration should be used.
-// This include will be removed for 5.24.
-#include <TEveGeoShape.h>
-// class TGeoShape;
+class TGeoShape;
 
 class TEveGeoShapeExtract;
 

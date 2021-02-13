@@ -7,18 +7,22 @@
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
- 
+
 #ifndef HISTFACTORY_CHANNEL_H
 #define HISTFACTORY_CHANNEL_H
-
-#include <string>
-#include <fstream>
-#include <iostream>
-
 
 #include "RooStats/HistFactory/Data.h"
 #include "RooStats/HistFactory/Sample.h"
 #include "RooStats/HistFactory/Systematics.h"
+
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <vector>
+
+class TFile;
 
 namespace RooStats{
 namespace HistFactory {
@@ -36,15 +40,15 @@ public:
   /// set name of channel
   void SetName( const std::string& Name ) { fName = Name; }
   /// get name of channel
-  std::string GetName() { return fName; }
+  std::string GetName() const { return fName; }
   /// set name of input file containing histograms
   void SetInputFile( const std::string& file ) { fInputFile = file; }
   /// get name of input file
-  std::string GetInputFile() { return fInputFile; }
+  std::string GetInputFile() const { return fInputFile; }
   /// set path for histograms in input file
   void SetHistoPath( const std::string& file ) { fHistoPath = file; }
   /// get path to histograms in input file
-  std::string GetHistoPath() { return fHistoPath; }
+  std::string GetHistoPath() const { return fHistoPath; }
 
   /// set data object
   void SetData( const RooStats::HistFactory::Data& data ) { fData = data; }
@@ -65,16 +69,18 @@ public:
   void SetStatErrorConfig( RooStats::HistFactory::StatErrorConfig Config ) { fStatErrorConfig = Config; }
   /// get information about threshold for statistical uncertainties and constraint term
   HistFactory::StatErrorConfig& GetStatErrorConfig() { return fStatErrorConfig; }
+  const HistFactory::StatErrorConfig& GetStatErrorConfig() const { return fStatErrorConfig; }  
 
   void AddSample( RooStats::HistFactory::Sample sample );
   /// get vector of samples for this channel
   std::vector< RooStats::HistFactory::Sample >& GetSamples() { return fSamples; }
+  const std::vector< RooStats::HistFactory::Sample >& GetSamples() const { return fSamples; }
 
   void Print(std::ostream& = std::cout);  
   void PrintXML( std::string Directory, std::string Prefix="" );
-
+  
   void CollectHistograms();
-  bool CheckHistograms();
+  bool CheckHistograms() const;
 
 protected:
   
@@ -92,10 +98,7 @@ protected:
 
   std::vector< RooStats::HistFactory::Sample > fSamples;
 
-  /// Open a file and copy a histogram
-  TH1* GetHistogram( std::string InputFile, std::string HistoPath, std::string HistoName );
-
-
+  TH1* GetHistogram( std::string InputFile, std::string HistoPath, std::string HistoName, std::map<std::string, std::unique_ptr<TFile>>& lsof);
 };
 
   extern Channel BadChannel;

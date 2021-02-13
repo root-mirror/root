@@ -73,7 +73,7 @@ inline std::vector<std::size_t> ComputeStridesFromShape(const T &shape, MemoryLa
 }
 
 /// \brief Compute indices from global index
-/// \param[in] Shape vector
+/// \param[in] shape Shape vector
 /// \param[in] idx Global index
 /// \param[in] layout Memory layout
 /// \return Indice vector
@@ -112,7 +112,7 @@ struct and_types : std::true_type {
 };
 
 template <class T0, class... Ts>
-struct and_types<T0, Ts...> : std::integral_constant<bool, T0{} && and_types<Ts...>{}> {
+struct and_types<T0, Ts...> : std::integral_constant<bool, T0() && and_types<Ts...>()> {
 };
 
 /// \brief Copy slice of a tensor recursively from here to there
@@ -126,7 +126,7 @@ struct and_types<T0, Ts...> : std::integral_constant<bool, T0{} && and_types<Ts.
 /// Copy the content of a slice of a tensor from source to target. This is done
 /// by recursively iterating over the ranges of the slice for each dimension.
 template <typename T>
-void RecursiveCopy(T &here, T &there,
+void RecursiveCopy(const T &here, T &there,
                    const std::vector<std::size_t> &mins, const std::vector<std::size_t> &maxs,
                    std::vector<std::size_t> idx, std::size_t active)
 {
@@ -250,14 +250,14 @@ public:
    bool IsOwner() const { return !IsView(); }
 
    // Copy
-   RTensor<Value_t, Container_t> Copy(MemoryLayout layout = MemoryLayout::RowMajor);
+   RTensor<Value_t, Container_t> Copy(MemoryLayout layout = MemoryLayout::RowMajor) const;
 
    // Transformations
-   RTensor<Value_t, Container_t> Transpose();
-   RTensor<Value_t, Container_t> Squeeze();
-   RTensor<Value_t, Container_t> ExpandDims(int idx);
-   RTensor<Value_t, Container_t> Reshape(const Shape_t &shape);
-   RTensor<Value_t, Container_t> Slice(const Slice_t &slice);
+   RTensor<Value_t, Container_t> Transpose() const;
+   RTensor<Value_t, Container_t> Squeeze() const;
+   RTensor<Value_t, Container_t> ExpandDims(int idx) const;
+   RTensor<Value_t, Container_t> Reshape(const Shape_t &shape) const;
+   RTensor<Value_t, Container_t> Slice(const Slice_t &slice); 
 
    // Iterator class
    class Iterator : public std::iterator<std::random_access_iterator_tag, Value_t> {
@@ -382,19 +382,20 @@ const Value_t &RTensor<Value_t, Container_t>::operator() (Idx... idx) const
 /// major to column-major and vice versa. Therefore, the underlying data is not
 /// touched.
 template <typename Value_t, typename Container_t>
-inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Transpose()
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Transpose() const
 {
+   MemoryLayout layout;
    // Transpose by inverting memory layout
    if (fLayout == MemoryLayout::RowMajor) {
-      fLayout = MemoryLayout::ColumnMajor;
+      layout = MemoryLayout::ColumnMajor;
    } else if (fLayout == MemoryLayout::ColumnMajor) {
-      fLayout = MemoryLayout::RowMajor;
+      layout = MemoryLayout::RowMajor;
    } else {
       throw std::runtime_error("Memory layout is not known.");
    }
 
    // Create copy of container
-   RTensor<Value_t, Container_t> x(*this);
+   RTensor<Value_t, Container_t> x(fData, fShape, fStrides, layout);
 
    // Reverse shape
    std::reverse(x.fShape.begin(), x.fShape.end());
@@ -409,7 +410,7 @@ inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Transpose()
 /// \returns New RTensor
 /// Squeeze removes the dimensions of size one from the shape.
 template <typename Value_t, typename Container_t>
-inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Squeeze()
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Squeeze() const
 {
    // Remove dimensions of one and associated strides
    Shape_t shape;
@@ -441,7 +442,7 @@ inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Squeeze()
 /// \returns New RTensor
 /// Inserts a dimension of one into the shape.
 template <typename Value_t, typename Container_t>
-inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::ExpandDims(int idx)
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::ExpandDims(int idx) const
 {
    // Compose shape vector with additional dimensions and adjust strides
    const int len = fShape.size();
@@ -473,7 +474,7 @@ inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::ExpandDims(i
 /// \returns New RTensor
 /// Reshape tensor without changing the overall size
 template <typename Value_t, typename Container_t>
-inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Reshape(const Shape_t &shape)
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Reshape(const Shape_t &shape) const
 {
    // Create copy, replace and return
    RTensor<Value_t, Container_t> x(*this);
@@ -539,7 +540,7 @@ inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Slice(const 
 /// with the given layout contiguous in memory. Note that this copies by default
 /// to a row major memory layout.
 template <typename Value_t, typename Container_t>
-inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Copy(MemoryLayout layout)
+inline RTensor<Value_t, Container_t> RTensor<Value_t, Container_t>::Copy(MemoryLayout layout) const
 {
    // Create new tensor with zeros owning the memory
    RTensor<Value_t, Container_t> r(fShape, layout);

@@ -1,9 +1,6 @@
-/// \file rootwebview.cpp
-/// \ingroup WebGui
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \date 2017-06-29
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Author: Sergey Linev <S.Linev@gsi.de>
+// Date: 2017-06-29
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
@@ -20,6 +17,10 @@
 #include <QDragEnterEvent>
 #include <QDropEvent>
 
+/** \class RootWebView
+\ingroup qt5webdisplay
+*/
+
 RootWebView::RootWebView(QWidget *parent, unsigned width, unsigned height, int x, int y) :
    QWebEngineView(parent),
    fWidth(width),
@@ -29,7 +30,7 @@ RootWebView::RootWebView(QWidget *parent, unsigned width, unsigned height, int x
 {
    setObjectName("RootWebView");
 
-   setPage(new RootWebPage());
+   setPage(new RootWebPage(this));
 
    connect(page(), &QWebEnginePage::windowCloseRequested, this, &RootWebView::onWindowCloseRequested);
 
@@ -38,6 +39,9 @@ RootWebView::RootWebView(QWidget *parent, unsigned width, unsigned height, int x
    setAcceptDrops(true);
 
    if ((fX >= 0) || (fY >= 0)) move(fX > 0 ? fX : 0, fY > 0 ? fY : 0);
+
+   // do not destroy view on close, one require some time to handle close events
+   setAttribute( Qt::WA_DeleteOnClose, false );
 }
 
 QSize RootWebView::sizeHint() const

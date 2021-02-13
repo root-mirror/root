@@ -1,15 +1,17 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Speecial p.d.f.'s: unbinned maximum likelihood fit of an efficiency eff(x) function
+/// Special pdf's: unbinned maximum likelihood fit of an efficiency eff(x) function
 ///
-/// to a dataset D(x,cut), where cut is a category encoding a selection, of which the efficiency as function of x should
-/// be described by eff(x)
+/// to a dataset D(x,cut), where cut is a category encoding a selection, of which the
+/// efficiency as function of x should be described by eff(x)
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -43,17 +45,15 @@ void rf701_efficiencyfit()
    // ------------------------------------------------------------------------------------------
 
    // Acceptance state cut (1 or 0)
-   RooCategory cut("cut", "cutr");
-   cut.defineType("accept", 1);
-   cut.defineType("reject", 0);
+   RooCategory cut("cut", "cutr", { {"accept", 1}, {"reject", 0} });
 
-   // Construct efficiency p.d.f eff(cut|x)
+   // Construct efficiency pdf eff(cut|x)
    RooEfficiency effPdf("effPdf", "effPdf", effFunc, cut, "accept");
 
    // G e n e r a t e   d a t a   ( x ,   c u t )   f r o m   a   t o y   m o d e l
    // -----------------------------------------------------------------------------
 
-   // Construct global shape p.d.f shape(x) and product model(x,cut) = eff(cut|x)*shape(x)
+   // Construct global shape pdf shape(x) and product model(x,cut) = eff(cut|x)*shape(x)
    // (These are _only_ needed to generate some toy MC here to be used later)
    RooPolynomial shapePdf("shapePdf", "shapePdf", x, RooConst(-0.095));
    RooProdPdf model("model", "model", shapePdf, Conditional(effPdf, cut));
@@ -64,7 +64,7 @@ void rf701_efficiencyfit()
    // F i t   c o n d i t i o n a l   e f f i c i e n c y   p d f   t o   d a t a
    // --------------------------------------------------------------------------
 
-   // Fit conditional efficiency p.d.f to data
+   // Fit conditional efficiency pdf to data
    effPdf.fitTo(*data, ConditionalObservables(x));
 
    // P l o t   f i t t e d ,   d a t a   e f f i c i e n c y

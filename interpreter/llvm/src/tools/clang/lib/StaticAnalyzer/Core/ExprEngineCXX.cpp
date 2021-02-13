@@ -503,7 +503,7 @@ void ExprEngine::VisitCXXNewExpr(const CXXNewExpr *CNE, ExplodedNode *Pred,
   if (FD) {
     QualType Ty = FD->getType();
     if (const FunctionProtoType *ProtoType = Ty->getAs<FunctionProtoType>())
-      if (!ProtoType->isNothrow(getContext()))
+      if (!ProtoType->isNothrow())
         State = State->assume(symVal, true);
   }
 

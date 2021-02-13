@@ -16,19 +16,19 @@
 #ifndef ROO_ERROR_VAR
 #define ROO_ERROR_VAR
 
-#include <cmath>
-#include <float.h>
-
-#include "RooNumber.h"
 #include "RooAbsReal.h"
 #include "RooRealVar.h"
 #include "RooRealProxy.h"
-class RooVectorDataStore ;
+
+#include <list>
+#include <string>
+
+class RooVectorDataStore;
 
 class RooErrorVar : public RooAbsRealLValue {
 public:
   // Constructors, assignment etc.
-  inline RooErrorVar() { 
+  inline RooErrorVar() {
     // Default constructor
   }
   RooErrorVar(const char *name, const char *title, const RooRealVar& input) ;
@@ -74,10 +74,7 @@ public:
   void setMax(const char* name, Double_t value) ;
   void setRange(const char* name, Double_t min, Double_t max) ;
 
-  void setBins(Int_t nBins) { 
-    // Set default binning to nBins uniform bins
-    setBinning(RooUniformBinning(getMin(),getMax(),nBins)) ; 
-  }
+  void setBins(Int_t nBins);
   void setBinning(const RooAbsBinning& binning, const char* name=0) ;
   const RooAbsBinning& getBinning(const char* name=0, Bool_t verbose=kTRUE, Bool_t createOnTheFly=kFALSE) const ;
   RooAbsBinning& getBinning(const char* name=0, Bool_t verbose=kTRUE, Bool_t createOnTheFly=kFALSE) ;
@@ -85,19 +82,9 @@ public:
   std::list<std::string> getBinningNames() const ;
 
   // Set infinite fit range limits
-  inline void removeMin(const char* name=0) { 
-    // Remove lower bound from named binning, or default binning if name is null
-    getBinning(name).setMin(-RooNumber::infinity()) ; 
-  }
-  inline void removeMax(const char* name=0) { 
-    // Remove upper bound from named binning, or default binning if name is null
-    getBinning(name).setMax(RooNumber::infinity()) ; 
-  }
-  inline void removeRange(const char* name=0) { 
-    // Remove both upper and lower bounds from named binning, or
-    // default binning if name is null
-    getBinning(name).setRange(-RooNumber::infinity(),RooNumber::infinity()) ; 
-  }
+  void removeMin(const char* name=0);
+  void removeMax(const char* name=0);
+  void removeRange(const char* name=0);
 
   using RooAbsRealLValue::operator= ;
   using RooAbsRealLValue::setVal ;

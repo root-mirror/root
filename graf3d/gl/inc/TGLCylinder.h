@@ -36,7 +36,13 @@ public:
 
    // Cylinders support LOD (tesselation quality) adjustment along
    // X/Y axes (round the cylinder radius), but not along length (Z)
-   virtual ELODAxes SupportedLODAxes() const { return ELODAxes(kLODAxesX | kLODAxesY); }
+   virtual ELODAxes SupportedLODAxes() const
+   {
+      // return ELODAxes(kLODAxesX | kLODAxesY);
+      // MT 2020-06-05: There seems to be a problem with TGLPhysicalShape::CalculateShapeLOD()
+      // and LOD is set to Pixel way too early. Resetting this to kLODAxesAll.
+      return ELODAxes(kLODAxesAll);
+   }
    virtual Short_t  QuantizeShapeLOD(Short_t shapeLOD, Short_t combiLOD) const;
    virtual void     DirectDraw(TGLRnrCtx & rnrCtx) const;
 

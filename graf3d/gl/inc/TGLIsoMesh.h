@@ -14,7 +14,7 @@
 
 #include <vector>
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 #include "TAxis.h"
 
 class TGLBoxCut;

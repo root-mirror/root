@@ -11,7 +11,7 @@
 
 #include <stdlib.h>
 
-#include "Riostream.h"
+#include <iostream>
 #include "TBufferFile.h"
 #include "TROOT.h"
 #include "TDiamond.h"

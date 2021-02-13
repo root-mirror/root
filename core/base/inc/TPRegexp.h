@@ -97,7 +97,7 @@ public:
 class TPMERegexp : protected TPRegexp {
 
 private:
-   TPMERegexp& operator=(const TPMERegexp&);  // Not implemented
+   TPMERegexp& operator=(const TPMERegexp&) = delete;
 
 protected:
    Int_t    fNMaxMatches;         // maximum number of matches

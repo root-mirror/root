@@ -6,7 +6,9 @@
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 04/2009 - Wouter Verkerke
+///
+/// \date April 2009
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataHist.h"
@@ -24,7 +26,7 @@ void rf610_visualerror()
    // S e t u p   e x a m p l e   f i t
    // ---------------------------------------
 
-   // Create sum of two Gaussians p.d.f. with factory
+   // Create sum of two Gaussians pdf with factory
    RooRealVar x("x", "x", -10, 10);
 
    RooRealVar m("m", "m", 0, -10, 10);
@@ -74,7 +76,7 @@ void rf610_visualerror()
    // Calculate error using sampling method and visualize as dashed red line.
    //
    // In this method a number of curves is calculated with variations of the parameter values, as sampled
-   // from a multi-variate Gaussian p.d.f. that is constructed from the fit results covariance matrix.
+   // from a multi-variate Gaussian pdf that is constructed from the fit results covariance matrix.
    // The error(x) is determined by calculating a central interval that capture N% of the variations
    // for each value of x, where N% is controlled by Z (i.e. Z=1 gives N=68%). The number of sampling curves
    // is chosen to be such that at least 100 curves are expected to be outside the N% interval, and is minimally

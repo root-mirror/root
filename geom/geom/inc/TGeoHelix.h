@@ -30,10 +30,10 @@ private :
    Double_t           fDir[3];         // direction after a step
    Double_t           fB[3];           // normalized direction for magnetic field
    Int_t              fQ;              // right/left-handed (+/- 1) - "charge"
-   TGeoHMatrix       *fMatrix;         // transformation of local helix frame to MARS
+   TGeoHMatrix       *fMatrix{nullptr}; // transformation of local helix frame to MARS
 
-   TGeoHelix(const TGeoHelix&);             // Not implemented
-   TGeoHelix &operator=(const TGeoHelix&);  // Not implemented
+   TGeoHelix(const TGeoHelix&) = delete;
+   TGeoHelix &operator=(const TGeoHelix&) = delete;
 public:
    enum EGeoHelixTypes {
       kHelixNeedUpdate =   BIT(16),

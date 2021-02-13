@@ -16,6 +16,10 @@
 #define ROOT__RSCANNER_H__
 
 #include <stack>
+#include <vector>
+#include <string>
+#include <map>
+#include <set>
 
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTContext.h"

@@ -1,15 +1,38 @@
-/*
-
-  This program will add histograms (see note) and Trees from a list of root files and write them
-  to a target root file. The target file is newly created and must not be
+/**
+  \file hadd.cxx
+  \brief This program will add histograms (see note) and Trees from a list of root files and write them to a target root file.
+  The target file is newly created and must not be
   identical to one of the source files.
 
   Syntax:
-
+  ```{.cpp}
        hadd targetfile source1 source2 ...
-    or
+  ```
+  or
+  ```{.cpp}
        hadd -f targetfile source1 source2 ...
-         (targetfile is overwritten if it exists)
+  ```
+  (targetfile is overwritten if it exists)
+
+  \param -a   Append to the output
+  \param -f   Force overwriting of output file.
+  \param -f[0-9] Set target compression level. 0 = uncompressed, 6 = highly compressed.
+  \param -fk  Sets the target file to contain the baskets with the same compression
+              as the input files (unless -O is specified). Compresses the meta data
+              using the compression level specified in the first input or the
+              compression setting after fk (for example 206 when using -fk206)
+  \param -ff  The compression level used is the one specified in the first input
+
+  \param -k   Skip corrupt or non-existent files, do not exit
+  \param -O   Re-optimize basket size when merging TTree
+  \param -v   Explicitly set the verbosity level: 0 request no output, 99 is the default
+  \param -j   Parallelise the execution in multiple processes
+  \param -dbg  Parallelise the execution in multiple processes in debug mode (Does not delete  partial  files  stored
+              inside working directory)
+  \param -d   Carry out the partial multiprocess execution in the specified directory
+  \param -n   Open at most `n` at once (use 0 to request to use the system maximum)
+  \param -experimental-io-features `<feature>` Enables the corresponding experimental feature for output trees
+  \return hadd returns a status code: 0 if OK, -1 otherwise
 
   When the -f option is specified, one can also specify the compression
   level of the target file. By default the compression level is 1 (kDefaultZLIB), but
@@ -17,30 +40,39 @@
   if "-f6" is specified, the compression level 6 will be used.
 
   For example assume 3 files f1, f2, f3 containing histograms hn and Trees Tn
-    f1 with h1 h2 h3 T1
-    f2 with h1 h4 T1 T2
-    f3 with h5
-   the result of
-     hadd -f x.root f1.root f2.root f3.root
-   will be a file x.root with h1 h2 h3 h4 h5 T1 T2
-   where h1 will be the sum of the 2 histograms in f1 and f2
-         T1 will be the merge of the Trees in f1 and f2
+   - f1 with h1 h2 h3 T1
+   - f2 with h1 h4 T1 T2
+   - f3 with h5
+  the result of
+  ```
+    hadd -f x.root f1.root f2.root f3.root
+  ```
+  will be a file x.root with h1 h2 h3 h4 h5 T1 T2
+  where
+   - h1 will be the sum of the 2 histograms in f1 and f2
+   - T1 will be the merge of the Trees in f1 and f2
 
   The files may contain sub-directories.
 
-  if the source files contains histograms and Trees, one can skip
+  If the source files contains histograms and Trees, one can skip
   the Trees with
+  ```
        hadd -T targetfile source1 source2 ...
+  ```
 
   Wildcarding and indirect files are also supported
-    hadd result.root  myfil*.root
-   will merge all files in myfil*.root
-    hadd result.root file1.root @list.txt file2. root myfil*.root
-    will merge file1. root, file2. root, all files in myfil*.root
-    and all files in the indirect text file list.txt ("@" as the first
-    character of the file indicates an indirect file. An indirect file
-    is a text file containing a list of other files, including other
-    indirect files, one line per file).
+  ```
+      hadd result.root  myfil*.root
+  ```
+  will merge all files in myfil*.root
+  ```
+      hadd result.root file1.root @list.txt file2. root myfil*.root
+  ```
+  will merge file1.root, file2.root, all files in myfil*.root
+  and all files in the indirect text file list.txt ("@" as the first
+  character of the file indicates an indirect file. An indirect file
+  is a text file containing a list of other files, including other
+  indirect files, one line per file).
 
   If the sources and and target compression levels are identical (default),
   the program uses the TChain::Merge function with option "fast", ie
@@ -51,38 +83,35 @@
   If the option -cachesize is used, hadd will resize (or disable if 0) the
   prefetching cache use to speed up I/O operations.
 
-  For options that takes a size as argument, a decimal number of bytes is expected.
-  If the number ends with a ``k'', ``m'', ``g'', etc., the number is multiplied
+  For options that take a size as argument, a decimal number of bytes is expected.
+  If the number ends with a `k`, `m`, `g`, etc., the number is multiplied
   by 1000 (1K), 1000000 (1MB), 1000000000 (1G), etc.
-  If this prefix is followed by i, the number is multiplied by the traditional
+  If this prefix is followed by `i`, the number is multiplied by the traditional
   1024 (1KiB), 1048576 (1MiB), 1073741824 (1GiB), etc.
   The prefix can be optionally followed by B whose casing is ignored,
   eg. 1k, 1K, 1Kb and 1KB are the same.
 
-  NOTE1: By default histograms are added. However hadd does not support the case where
+  \note By default histograms are added. However hadd does not support the case where
          histograms have their bit TH1::kIsAverage set.
 
-  NOTE2: hadd returns a status code: 0 if OK, -1 otherwise
-
-  Authors: Rene Brun, Dirk Geppert, Sven A. Schmidt, sven.schmidt@cern.ch
-         : rewritten from scratch by Rene Brun (30 November 2005)
-            to support files with nested directories.
-           Toby Burnett implemented the possibility to use indirect files.
- */
+  \authors Rene Brun, Dirk Geppert, Sven A. Schmidt, Toby Burnett
+*/
 #include "Compression.h"
 #include <ROOT/RConfig.hxx>
 #include "ROOT/TIOFeatures.hxx"
-#include <string>
 #include "TFile.h"
 #include "THashList.h"
 #include "TKey.h"
-#include "TObjString.h"
-#include "Riostream.h"
 #include "TClass.h"
 #include "TSystem.h"
 #include "TUUID.h"
 #include "ROOT/StringConv.hxx"
-#include <stdlib.h>
+#include "snprintf.h"
+
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
 #include <climits>
 #include <sstream>
 #include "haddCommandLineOptionsHelp.h"
@@ -409,6 +438,10 @@ int main( int argc, char **argv )
 
    std::vector<std::string> partialFiles;
 
+#ifndef R__WIN32
+   // this is commented out only to try to prevent false positive detection
+   // from several anti-virus engines on Windows, and multiproc is not
+   // supported on Windows anyway
    if (multiproc) {
       auto uuid = TUUID();
       auto partialTail = uuid.AsString();
@@ -418,6 +451,7 @@ int main( int argc, char **argv )
          partialFiles.emplace_back(buffer.str());
       }
    }
+#endif
 
    auto mergeFiles = [&](TFileMerger &merger) {
       if (reoptimize) {

@@ -18,7 +18,6 @@
 #define ROO_CHI2_MCS_MODULE
 
 #include "RooAbsMCStudyModule.h"
-#include <string>
 
 class RooChi2MCSModule : public RooAbsMCStudyModule {
 public:

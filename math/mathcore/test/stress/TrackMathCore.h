@@ -6,13 +6,12 @@
 #include "Math/Point3D.h"
 #include "Math/Vector4D.h"
 #include "Math/SMatrix.h"
-#include "Rtypes.h" // for Double32_t
+#include "RtypesCore.h" // for Double32_t
 #include "TError.h"
 
 #include <vector>
 #include <string>
 #include <iostream>
-#include <cassert>
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>> Vector4D_t;
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<Double32_t>> Vector4D32_t;

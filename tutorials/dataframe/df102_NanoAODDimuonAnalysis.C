@@ -1,6 +1,8 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -js
+/// Show how NanoAOD files can be processed with RDataFrame.
+///
 /// This tutorial illustrates how NanoAOD files can be processed with ROOT
 /// dataframes. The NanoAOD-like input files are filled with 66 mio. events
 /// from CMS OpenData containing muon candidates part of 2012 dataset
@@ -10,9 +12,7 @@
 /// spectrum showing resonances up to the Z mass.
 /// Note that the bump at 30 GeV is not a resonance but a trigger effect.
 ///
-/// Some more details about the dataset:
-///   - It contains about 66 millions events (muon and electron collections, plus some other information, e.g. about primary vertices)
-///   - It spans two compressed ROOT files located on EOS for about a total size of 7.5 GB.
+/// More details about the dataset can be found on [the CERN Open Data portal](http://opendata.web.cern.ch/record/12341).
 ///
 /// \macro_image
 /// \macro_code
@@ -37,9 +37,7 @@ void df102_NanoAODDimuonAnalysis()
    ROOT::EnableImplicitMT();
 
    // Create dataframe from NanoAOD files
-   ROOT::RDataFrame df("Events",
-                      {"root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/Run2012B_DoubleMuParked.root",
-                       "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/Run2012C_DoubleMuParked.root"});
+   ROOT::RDataFrame df("Events", "root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/Run2012BC_DoubleMuParked_Muons.root");
 
    // For simplicity, select only events with exactly two muons and require opposite charge
    auto df_2mu = df.Filter("nMuon == 2", "Events with exactly two muons");

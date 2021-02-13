@@ -30,13 +30,12 @@ the network structure.
 #include "TProfile.h"
 #include "THStack.h"
 #include "TLegend.h"
-#include "TPad.h"
-#include "TCanvas.h"
-#include "TGaxis.h"
+#include "TVirtualPad.h"
 #include "TRegexp.h"
 #include "TMath.h"
-#include "Riostream.h"
-#include <stdlib.h>
+#include "snprintf.h"
+#include <iostream>
+#include <cstdlib>
 
 ClassImp(TMLPAnalyzer);
 

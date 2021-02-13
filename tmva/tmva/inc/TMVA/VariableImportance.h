@@ -7,7 +7,7 @@
 
 
 #include "TString.h"
-
+#include <vector>
 
 #include "TMVA/Configurable.h"
 #include "TMVA/Types.h"

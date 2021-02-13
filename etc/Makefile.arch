@@ -46,13 +46,14 @@ ROOTCFLAGS   := $(shell $(RC) --cflags)
 ROOTLDFLAGS  := $(shell $(RC) --ldflags)
 ROOTLIBS     := $(shell $(RC) --libs)
 ROOTGLIBS    := $(shell $(RC) --glibs)
-HASTHREAD    := $(shell $(RC) --has-thread)
 ROOTCLING    := rootcling
 
 ifeq ($(PLATFORM),macosx)
-MACOSX_MINOR := $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2)
+ROOTLIBDIR   := $(shell $(RC) --libdir)
+MACOSX_MAJOR := $(strip $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1))
+MACOSX_MINOR := $(strip $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2))
 ifeq ($(MACOSX_DEPLOYMENT_TARGET),)
-MACOSXTARGET := 10.$(MACOSX_MINOR)
+MACOSXTARGET := $(MACOSX_MAJOR).$(MACOSX_MINOR)
 else
 MACOSXTARGET := $(MACOSX_DEPLOYMENT_TARGET)
 endif
@@ -112,7 +113,7 @@ LD            = g++
 LDFLAGS       = $(OPT)
 SOFLAGS       = -shared
 DllSuf        = a
-EXPLLINKLIBS  = $(ROOTLIBS) $(ROOTGLIBS)
+EXPLLINKLIBS  = $(ROOTGLIBS)
 endif
 
 ifeq ($(ARCH),solaris)
@@ -291,7 +292,7 @@ CXX           = g++
 CXXFLAGS      = $(OPT2) -pipe -Wall -W -Woverloaded-virtual
 LD            = g++
 LDFLAGS       = $(OPT2) -mmacosx-version-min=$(MACOSXTARGET)
-EXPLLINKLIBS  = $(ROOTLIBS) $(ROOTGLIBS)
+EXPLLINKLIBS  = $(ROOTGLIBS)
 DllSuf        = so
 SOFLAGS       = -dynamiclib -single_module -install_name $(CURDIR)/
 endif
@@ -302,7 +303,7 @@ CXX           = icc
 CXXFLAGS      = $(OPT) -fPIC -wd1476
 LD            = icpc
 LDFLAGS       = $(OPT2) -mmacosx-version-min=$(MACOSXTARGET)
-EXPLLINKLIBS  = $(ROOTLIBS) $(ROOTGLIBS)
+EXPLLINKLIBS  = $(ROOTGLIBS)
 DllSuf        = so
 SOFLAGS       = -dynamiclib -single_module -install_name $(CURDIR)/
 endif
@@ -313,8 +314,19 @@ ifeq ($(ARCH),macosx64)
 CXX           = g++
 CXXFLAGS      = $(OPT2) -pipe -Wall -W -Woverloaded-virtual
 LD            = g++
-LDFLAGS       = $(OPT2) -mmacosx-version-min=$(MACOSXTARGET)
-EXPLLINKLIBS  = $(ROOTLIBS) $(ROOTGLIBS)
+LDFLAGS       = $(OPT2) -mmacosx-version-min=$(MACOSXTARGET) -Wl,-rpath,$(ROOTLIBDIR)
+EXPLLINKLIBS  = $(ROOTGLIBS)
+DllSuf        = so
+SOFLAGS       = -dynamiclib -single_module -install_name $(CURDIR)/
+endif
+
+ifeq ($(ARCH),macosxarm64)
+# Apple Silicon running macOS 11.x.
+CXX           = g++
+CXXFLAGS      = $(OPT2) -pipe -Wall -W -Woverloaded-virtual
+LD            = g++
+LDFLAGS       = $(OPT2) -mmacosx-version-min=$(MACOSXTARGET)  -Wl,-rpath,$(ROOTLIBDIR)
+EXPLLINKLIBS  = $(ROOTGLIBS)
 DllSuf        = so
 SOFLAGS       = -dynamiclib -single_module -install_name $(CURDIR)/
 endif
@@ -342,7 +354,7 @@ LD            = link
 LDFLAGS       = $(LDOPT) -nologo
 SOFLAGS       = -DLL
 
-EXPLLINKLIBS  = $(ROOTLIBS) $(ROOTGLIBS)
+EXPLLINKLIBS  = $(ROOTGLIBS)
 ifneq (,$(findstring $(VC_MAJOR),14 15))
 MT_EXE        = mt -nologo -manifest $@.manifest -outputresource:$@\;1; rm -f $@.manifest
 MT_DLL        = mt -nologo -manifest $@.manifest -outputresource:$@\;2; rm -f $@.manifest
@@ -364,7 +376,7 @@ LDFLAGS       = $(OPT) -Wl,--enable-auto-import \
 		-L/usr/X11R6/lib
 SOFLAGS       = -shared -Wl,--enable-auto-image-base \
                 -Wl,--export-all-symbols
-EXPLLINKLIBS  = $(ROOTLIBS) $(ROOTGLIBS)
+EXPLLINKLIBS  = $(ROOTGLIBS)
 endif
 
 ifeq ($(CXX),)

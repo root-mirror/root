@@ -203,7 +203,6 @@ BaseSelectionRule::EMatchType BaseSelectionRule::Match(const clang::NamedDecl *d
     *   isLinkdef - if the selection rules were generating from a linkdef.h file
     */
 
-
    const std::string& name_value = fName;
    const std::string& pattern_value = fPattern;
 

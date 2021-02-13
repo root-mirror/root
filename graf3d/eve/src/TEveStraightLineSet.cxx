@@ -11,7 +11,6 @@
 
 #include "TEveStraightLineSet.h"
 
-#include "TRandom.h"
 #include "TEveProjectionManager.h"
 
 /** \class TEveStraightLineSet

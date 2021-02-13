@@ -17,6 +17,11 @@ uncertainty or the functional form of constraints on nuisance parameters.
 */
 
 
+#include "RooStats/HistFactory/Measurement.h"
+#include "RooStats/HistFactory/HistFactoryException.h"
+
+#include "HFMsgService.h"
+
 #include <ctime>
 #include <iostream>
 #include <algorithm>
@@ -24,8 +29,6 @@ uncertainty or the functional form of constraints on nuisance parameters.
 #include "TSystem.h"
 #include "TTimeStamp.h"
 
-#include "RooStats/HistFactory/Measurement.h"
-#include "RooStats/HistFactory/HistFactoryException.h"
 
 using namespace std;
 
@@ -70,7 +73,7 @@ void RooStats::HistFactory::Measurement::AddConstantParam( const std::string& pa
 
 
   if( std::find(fConstantParams.begin(), fConstantParams.end(), param) != fConstantParams.end() ) {
-    std::cout << "Warning: Setting parameter: " << param 
+    cxcoutWHF << "Warning: Setting parameter: " << param
 	      << " to constant, but it is already listed as constant.  "
 	      << "You may ignore this warning."
 	      << std::endl;
@@ -90,14 +93,14 @@ void RooStats::HistFactory::Measurement::SetParamValue( const std::string& param
   // (Not sure if we want to throw an exception here, or
   // issue a warning and move along.  Thoughts?)
   if( fParamValues.find(param) != fParamValues.end() ) {
-    std::cout << "Warning: Chainging parameter: " << param
+    cxcoutWHF << "Warning: Chainging parameter: " << param
 	      << " value from: " << fParamValues[param]
 	      << " to: " << value 
 	      << std::endl;
   }
 
   // Store the parameter and its value
-  std::cout << "Setting parameter: " << param
+  cxcoutIHF << "Setting parameter: " << param
 	    << " value to " << value
 	    << std::endl;
 
@@ -118,7 +121,7 @@ void RooStats::HistFactory::Measurement::AddPreprocessFunction( std::string name
 }
 
 /// Returns a list of defined preprocess function expressions
-std::vector<std::string> RooStats::HistFactory::Measurement::GetPreprocessFunctions()
+std::vector<std::string> RooStats::HistFactory::Measurement::GetPreprocessFunctions() const
 {
 
   
@@ -188,7 +191,7 @@ RooStats::HistFactory::Channel& RooStats::HistFactory::Measurement::GetChannel( 
   
   // If we get here, we didn't find the channel
 
-  std::cout << "Error: Did not find channel: " << ChanName
+  cxcoutEHF << "Error: Did not find channel: " << ChanName
 	    << " in measurement: " << GetName() << std::endl;
   throw hf_exc();
 
@@ -247,7 +250,7 @@ void RooStats::HistFactory::Measurement::PrintTree( std::ostream& stream )
     }
   }
 
-  std::cout << "End Measurement: " << GetName() << std::endl;
+  cxcoutIHF << "End Measurement: " << GetName() << std::endl;
 
 }
 
@@ -272,14 +275,14 @@ void RooStats::HistFactory::Measurement::PrintXML( std::string directory, std::s
   if ( !directory.empty() && !testExists(directory) ) {
     int success = gSystem->MakeDirectory(directory.c_str() );    
     if( success != 0 ) {
-      std::cout << "Error: Failed to make directory: " << directory << std::endl;
+      cxcoutEHF << "Error: Failed to make directory: " << directory << std::endl;
       throw hf_exc();
     }
   }
 
   // If supplied new Prefix, use that one:
 
-  std::cout << "Printing XML Files for measurement: " << GetName() << std::endl;
+  cxcoutPHF << "Printing XML Files for measurement: " << GetName() << std::endl;
 
   std::string XMLName = std::string(GetName()) + ".xml";
   if( directory != "" ) XMLName = directory + "/" + XMLName;
@@ -287,7 +290,7 @@ void RooStats::HistFactory::Measurement::PrintXML( std::string directory, std::s
   ofstream xml( XMLName.c_str() );
 
   if( ! xml.is_open() ) {
-    std::cout << "Error opening xml file: " << XMLName << std::endl;
+    cxcoutEHF << "Error opening xml file: " << XMLName << std::endl;
     throw hf_exc();
   }
 
@@ -421,7 +424,7 @@ void RooStats::HistFactory::Measurement::PrintXML( std::string directory, std::s
   }
 
 
-  std::cout << "Finished printing XML files" << std::endl;
+  cxcoutPHF << "Finished printing XML files" << std::endl;
 
 }
 
@@ -461,7 +464,7 @@ void RooStats::HistFactory::Measurement::writeToFile( TFile* file )
 
     
     if( ! channel.CheckHistograms() ) {
-      std::cout << "Measurement.writeToFile(): Channel: " << chanName
+      cxcoutEHF << "Measurement.writeToFile(): Channel: " << chanName
 		<< " has uninitialized histogram pointers" << std::endl;
       throw hf_exc();
       return;
@@ -477,7 +480,7 @@ void RooStats::HistFactory::Measurement::writeToFile( TFile* file )
 
     TDirectory* chanDir = file->mkdir( (chanName + "_hists").c_str() );
     if( chanDir == NULL ) {
-      std::cout << "Error: Cannot create channel " << (chanName + "_hists")
+      cxcoutEHF << "Error: Cannot create channel " << (chanName + "_hists")
 		<< std::endl;
       throw hf_exc();
     }
@@ -486,7 +489,7 @@ void RooStats::HistFactory::Measurement::writeToFile( TFile* file )
     // Save the data:
     TDirectory* dataDir = chanDir->mkdir( "data" );
     if( dataDir == NULL ) {
-      std::cout << "Error: Cannot make directory " << chanDir << std::endl;
+      cxcoutEHF << "Error: Cannot make directory " << chanDir << std::endl;
       throw hf_exc();
     }
     dataDir->cd();
@@ -513,19 +516,19 @@ void RooStats::HistFactory::Measurement::writeToFile( TFile* file )
       RooStats::HistFactory::Sample& sample = channel.GetSamples().at( sampItr );
       std::string sampName = sample.GetName();
       
-      std::cout << "Writing sample: " << sampName << std::endl;
+      cxcoutPHF << "Writing sample: " << sampName << std::endl;
 
       file->cd();
       chanDir->cd();
       TDirectory* sampleDir = chanDir->mkdir( sampName.c_str() );
       if( sampleDir == NULL ) {
-	std::cout << "Error: Directory " << sampName << " not created properly" << std::endl;
+	cxcoutEHF << "Error: Directory " << sampName << " not created properly" << std::endl;
 	throw hf_exc();
       }
       std::string sampleDirPath = GetDirPath( sampleDir );
 
       if( ! sampleDir ) {
-	std::cout << "Error making directory: " << sampName 
+	cxcoutEHF << "Error making directory: " << sampName
 		  << " in directory: " << chanName
 		  << std::endl;
 	throw hf_exc();
@@ -596,12 +599,12 @@ void RooStats::HistFactory::Measurement::writeToFile( TFile* file )
   
   // Finally, write the measurement itself:
 
-  std::cout << "Saved all histograms" << std::endl;
+  cxcoutPHF << "Saved all histograms" << std::endl;
   
   file->cd();
   outMeas.Write();
 
-  std::cout << "Saved Measurement" << std::endl;
+  cxcoutPHF << "Saved Measurement" << std::endl;
 
 }
 
@@ -642,8 +645,7 @@ std::string RooStats::HistFactory::Measurement::GetDirPath( TDirectory* dir )
 /// right away. Instead, once all such histograms have been supplied,
 /// one should run this method to open all ROOT files and to copy and
 /// save all necessary histograms.
-void RooStats::HistFactory::Measurement::CollectHistograms()
-{
+void RooStats::HistFactory::Measurement::CollectHistograms() {
 
 
   for( unsigned int chanItr = 0; chanItr < fChannels.size(); ++chanItr) {

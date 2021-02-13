@@ -4,7 +4,15 @@
 # For the licensing terms see $ROOTSYS/LICENSE.
 # For the list of contributors see $ROOTSYS/README/CREDITS.
 
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+if(MSVC)
+  # required for the following feature & bug fix:
+  # 3.15: Added $<REMOVE_DUPLICATES:list> generator expression
+  # 3.16: Bug fix with CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS: the auto-generated exports
+  #       are now updated only when the object files providing the symbols are updated
+  cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+else()
+  cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+endif()
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR
@@ -91,9 +99,9 @@ else()
     # GIT_DESCRIBE_ALWAYS: v6-16-00-rc1
     # GIT_DESCRIBE_ALL: tags/v6-16-00-rc1
     # tag might end on "-rc1" or similar; parse version number in front.
-    string(REGEX REPLACE "v([0-9]+)-.*" "\\1" ROOT_MAJOR_VERSION ${GIT_DESCRIBE_ALWAYS})
-    string(REGEX REPLACE "v[0-9]+-([0-9]+).*" "\\1" ROOT_MINOR_VERSION ${GIT_DESCRIBE_ALWAYS})
-    string(REGEX REPLACE "v[0-9]+-[0-9]+-([0-9]+).*" "\\1" ROOT_PATCH_VERSION ${GIT_DESCRIBE_ALWAYS})
+    string(REGEX REPLACE "^tags/v([0-9]+)-.*" "\\1" ROOT_MAJOR_VERSION ${GIT_DESCRIBE_ALL})
+    string(REGEX REPLACE "^tags/v[0-9]+-([0-9]+).*" "\\1" ROOT_MINOR_VERSION ${GIT_DESCRIBE_ALL})
+    string(REGEX REPLACE "^tags/v[0-9]+-[0-9]+-([0-9]+).*" "\\1" ROOT_PATCH_VERSION ${GIT_DESCRIBE_ALL})
   elseif("${GIT_DESCRIBE_ALL}" MATCHES "/v[0-9]+-[0-9]+.*-patches$")
     # GIT_DESCRIBE_ALWAYS: v6-16-00-rc1-47-g9ba56ef4a3
     # GIT_DESCRIBE_ALL: heads/v6-16-00-patches
@@ -107,6 +115,7 @@ else()
     set(ROOT_FULL_VERSION "${ROOT_MAJOR_VERSION}.${ROOT_MINOR_VERSION}.${ROOT_PATCH_VERSION}")
   endif()
   set(ROOT_VERSION "${ROOT_MAJOR_VERSION}.${ROOT_MINOR_VERSION}.${ROOT_PATCH_VERSION}")
+  message(STATUS "Detected ROOT_VERSION ${ROOT_VERSION}")
 endif()
 
 
@@ -117,11 +126,18 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #---Load some basic macros which are needed later for the confiuration and build----------------
+include(SearchRootCoreDeps)
+include(CheckCompiler)
 include(RootBuildOptions)
 include(RootMacros)
-include(CheckCompiler)
 include(CheckAssembler)
 include(CheckIntrinsics)
+
+#---Enable asserts------------------------------------------------------------------------------
+if(NOT asserts)
+  set(CMAKE_CXX_FLAGS_${BUILD_TYPE} "${CMAKE_CXX_FLAGS_${BUILD_TYPE}} -DNDEBUG")
+  set(CMAKE_C_FLAGS_${BUILD_TYPE} "${CMAKE_C_FLAGS_${BUILD_TYPE}} -DNDEBUG")
+endif()
 
 #---Enable CCache ------------------------------------------------------------------------------
 if(ccache)
@@ -136,6 +152,27 @@ if(ccache)
   else()
     message(STATUS "Could NOT find ccache")
     set(ccache OFF CACHE BOOL "Use ccache (disabled since ccache was not found)" FORCE)
+  endif()
+endif()
+
+#---Enable distcc ------------------------------------------------------------------------------
+if(distcc)
+  find_program(DISTCC_COMMAND NAMES distcc)
+  mark_as_advanced(DISTCC_COMMAND ${DISTCC_COMMAND})
+  if(EXISTS ${DISTCC_COMMAND})
+    message(STATUS "Found distcc: ${DISTCC_COMMAND}")
+    if (ccache)
+        # If ccache is enabled, use distcc as CCACHE_PREFIX
+        message(STATUS "Because ccache is enabled, CCACHE_PREFIX is set to ${DISTCC_COMMAND}")
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "CCACHE_PREFIX=${DISTCC_COMMAND} ${CCACHE_COMMAND}")
+    else()
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${DISTCC_COMMAND})
+    endif()
+    execute_process(COMMAND ${DISTCC_COMMAND} "--version" OUTPUT_VARIABLE DISTCC_VERSION)
+    string(REGEX REPLACE "distcc ([0-9\\.]+).*" "\\1" DISTCC_VERSION ${DISTCC_VERSION})
+  else()
+    message(STATUS "Could NOT find distcc")
+    set(distcc OFF CACHE BOOL "Use distcc (disabled since distcc was not found)" FORCE)
   endif()
 endif()
 
@@ -155,6 +192,21 @@ if (build_timing)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "${CMAKE_COMMAND} -E time")
   #set_property(GLOBAL PROPERTY RULE_LAUNCH_CUSTOM "${CMAKE_COMMAND} -E time")
+endif()
+
+#--- Set up address sanitizer builds ----------------------------------------------------------
+if(asan)
+  if(NOT CMAKE_COMPILER_IS_GNUCXX AND NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    message(WARNING "Address sanitizer builds only tested with gcc and Clang")
+  endif()
+
+  set(ASAN_EXTRA_LD_PRELOAD "${CMAKE_BINARY_DIR}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}ROOTSanitizerConfig${CMAKE_SHARED_LIBRARY_SUFFIX}:${ASAN_RUNTIME_LIBRARY}")
+
+  foreach(item IN LISTS ASAN_EXTRA_CXX_FLAGS)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:${item}>)
+  endforeach()
+  #add_link_options() not available in our CMake version:
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ASAN_EXTRA_SHARED_LINKER_FLAGS}")
 endif()
 
 #---Enable CTest package -----------------------------------------------------------------------
@@ -370,7 +422,6 @@ if(runtime_cxxmodules)
     add_dependencies(onepcm ${target_dependency})
   endforeach()
   unset(ROOT_LIBRARY_TARGETS CACHE)
-  set(FIXME_TEMPORARILY_EXCLUDED_FOR_RUNTIME_CXXMODULES On)
 else()
   get_property(incdirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
 
@@ -399,11 +450,11 @@ else()
       etc/dictpch/allLinkDefs.h
     COMMAND
       ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build/unix/makepchinput.py
-      ${CMAKE_SOURCE_DIR} . ${pyroot_experimental} ${__cling_pch}
+      ${CMAKE_SOURCE_DIR} . ${pyroot_legacy} ${__cling_pch}
     COMMAND
       ${CMAKE_COMMAND} -E env ROOTIGNOREPREFIX=1 ${PYTHON_EXECUTABLE}
       ${CMAKE_SOURCE_DIR}/etc/dictpch/makepch.py etc/allDict.cxx.pch
-      ${__allIncludes} -I${CMAKE_BINARY_DIR}/include
+      ${__allIncludes} -I${CMAKE_BINARY_DIR}/include -I${CMAKE_SOURCE_DIR}/core
     DEPENDS
       rootcling ${__pch_dependencies} ${__pch_dictionaries}
       ${CMAKE_SOURCE_DIR}/build/unix/makepchinput.py
@@ -449,9 +500,8 @@ install(FILES ${CMAKE_BINARY_DIR}/tutorials/hsimple.root DESTINATION ${CMAKE_INS
 
 #---version--------------------------------------------------------------------------------------
 if(NOT WIN32)
-add_custom_target(version COMMAND ${CMAKE_SOURCE_DIR}/build/unix/makeversion.sh ${CMAKE_BINARY_DIR}
+add_custom_target(version COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build/unix/makeversion.py
                           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-#add_dependencies(version root.exe)
 endif()
 
 #---distribution commands------------------------------------------------------------------------
@@ -484,7 +534,12 @@ if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_INSTALL_PREFIX)
   if(webgui)
      install(DIRECTORY ui5/    DESTINATION ${CMAKE_INSTALL_OPENUI5DIR})
   endif()
-  install(DIRECTORY man/    DESTINATION ${CMAKE_INSTALL_MANDIR})
+  if(xproofd AND xrootd AND ssl)
+     set(MAN_PATT_EXCL)
+  else()
+     set(MAN_PATT_EXCL PATTERN xproofd.1 EXCLUDE)
+  endif()
+  install(DIRECTORY man/    DESTINATION ${CMAKE_INSTALL_MANDIR} ${MAN_PATT_EXCL})
   install(DIRECTORY tutorials/ DESTINATION ${CMAKE_INSTALL_TUTDIR} COMPONENT tests)
   install(FILES
     cmake/modules/RootMacros.cmake
@@ -492,8 +547,14 @@ if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_INSTALL_PREFIX)
     DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 endif()
 
-#---Make sure the Jupyter ROOT C++ kernel runs with the same Python version as ROOT-----
-set(root_kernel_dir  notebook/kernels/root)
+#---Add configuration files for kernel and jupyter----------------------------------------------
+# Make sure the Jupyter ROOT C++ kernel runs with the same Python version as ROOT
+set(root_jupyter_dir notebook)
+set(root_jupyter_config jupyter_notebook_config.py)
+configure_file(etc/${root_jupyter_dir}/${root_jupyter_config}.in etc/${root_jupyter_dir}/${root_jupyter_config})
+install(FILES ${CMAKE_BINARY_DIR}/etc/${root_jupyter_dir}/${root_jupyter_config} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${root_jupyter_dir})
+
+set(root_kernel_dir  ${root_jupyter_dir}/kernels/root)
 set(root_kernel_file kernel.json)
 configure_file(etc/${root_kernel_dir}/${root_kernel_file}.in etc/${root_kernel_dir}/${root_kernel_file})
 install(FILES ${CMAKE_BINARY_DIR}/etc/${root_kernel_dir}/${root_kernel_file} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${root_kernel_dir})
@@ -504,8 +565,8 @@ if(clad)
       DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/cling/plugins)
 endif()
 
-#---Set flag for PyROOT tests that are expected to fail in experimental
-if(pyroot_experimental)
+#---Set flag for PyROOT tests that are expected to fail
+if(pyroot)
   set(PYTESTS_WILLFAIL WILLFAIL)
 endif()
 
@@ -587,6 +648,27 @@ if(testing)
     endif()
   endif()
 endif()
+
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.10.0")
+  if (${CMAKE_MINIMUM_REQUIRED_VERSION} VERSION_GREATER_EQUAL "3.10.0")
+    message(FATAL_ERROR "Remove this condition")
+  endif()
+  cmake_host_system_information(RESULT PROCESSOR QUERY PROCESSOR_DESCRIPTION)
+endif()
+
+message(STATUS "ROOT Configuration \n
+System          ${CMAKE_SYSTEM}
+Processor       ${PROCESSOR} (${CMAKE_SYSTEM_PROCESSOR})
+Build type      ${CMAKE_BUILD_TYPE}
+Install path    ${CMAKE_INSTALL_PREFIX}
+Compiler        ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}
+Compiler flags:
+C               ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${BUILD_TYPE}}
+C++             ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE}}
+Linker flags:
+Executable      ${CMAKE_EXE_LINKER_FLAGS}
+Module          ${CMAKE_MODULE_LINKER_FLAGS}
+Shared          ${CMAKE_SHARED_LINKER_FLAGS}\n")
 
 ROOT_SHOW_ENABLED_OPTIONS()
 

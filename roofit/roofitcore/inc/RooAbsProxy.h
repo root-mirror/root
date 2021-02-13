@@ -16,7 +16,6 @@
 #ifndef ROO_ABS_PROXY
 #define ROO_ABS_PROXY
 
-#include "TObject.h"
 #include "RooAbsArg.h"
 
 #ifdef _WIN32

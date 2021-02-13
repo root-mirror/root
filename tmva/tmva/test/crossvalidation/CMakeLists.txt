@@ -10,7 +10,6 @@
 ############################################################################
 
 set(Libraries TMVA)
-include_directories(${ROOT_INCLUDE_DIRS})
 
 # Tests utilising google test
 ROOT_ADD_GTEST(testCrossValidationSplitting

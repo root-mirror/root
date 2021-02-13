@@ -14,12 +14,7 @@
 
 #include "TSQLResult.h"
 
-#if !defined(__CINT__)
-#include <sqlite3.h>
-#else
-struct sqlite3_stmt;
-#endif
-
+class sqlite3_stmt;
 
 class TSQLiteResult : public TSQLResult {
 

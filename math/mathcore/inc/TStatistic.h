@@ -24,13 +24,11 @@
 
 #include "TObject.h"
 
-#include "TCollection.h"
-
 #include "TMath.h"
 
 #include "TString.h"
 
-#include "TROOT.h"
+class TCollection;
 
 class TStatistic : public TObject {
 
@@ -41,13 +39,13 @@ private:
    Double_t    fW2;      ///< Sum of squared weights
    Double_t    fM;       ///< Sum of elements (i.e. sum of (val * weight) pairs
    Double_t    fM2;      ///< Second order momentum
-   Double_t    fMin;     ///< Minimum value in the Tstatistic object
+   Double_t    fMin;     ///< Minimum value in the TStatistic object
    Double_t    fMax;     ///< Maximum value in the TStatistic object
 
 public:
 
    TStatistic(const char *name = "") : fName(name), fN(0), fW(0.), fW2(0.), fM(0.), fM2(0.), fMin(TMath::Limits<Double_t>::Max()), fMax(TMath::Limits<Double_t>::Min()) { }
-   TStatistic(const char *name, Int_t n, const Double_t *val, const Double_t *w = 0);
+   TStatistic(const char *name, Int_t n, const Double_t *val, const Double_t *w = nullptr);
    ~TStatistic();
 
    // Getters

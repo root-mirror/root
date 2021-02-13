@@ -31,6 +31,7 @@ Implementation of the functionality provided by TProofMgr in the case of a xproo
 #endif
 
 #include "Getline.h"
+#include "snprintf.h"
 #include "TList.h"
 #include "TObjArray.h"
 #include "TObjString.h"
@@ -82,7 +83,7 @@ Bool_t TProofMgrInterruptHandler::Notify()
    return kTRUE;
 }
 
-// Autoloading hooks.
+// AutoLoading hooks.
 // These are needed to avoid using the plugin manager which may create
 // problems in multi-threaded environments.
 TProofMgr *GetTXProofMgr(const char *url, Int_t l, const char *al)

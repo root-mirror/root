@@ -30,7 +30,6 @@ arguments.
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include <math.h>
 
 #include "RooConstraintSum.h"
@@ -45,7 +44,7 @@ arguments.
 using namespace std;
 
 ClassImp(RooConstraintSum);
-;
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

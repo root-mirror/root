@@ -16,6 +16,10 @@
 namespace ROOT {
 namespace Experimental {
 
+class RLogChannel;
+/// Log channel for GPad diagnostics.
+RLogChannel &GPadLog();
+
 /** \class RAttrBase
 \ingroup GpadROOT7
 \author Sergey Linev <s.linev@gsi.de>
@@ -29,7 +33,7 @@ class RAttrBase {
    friend class RAttrMap;
 
    RDrawable *fDrawable{nullptr};      ///<! drawable used to store attributes
-   std::unique_ptr<RAttrMap> fOwnAttr; ///<! own instance when deep copy is created
+   std::unique_ptr<RAttrMap> fOwnAttr; ///<  own instance when deep copy is created, persistent for RColor and similar classes
    std::string fPrefix;                ///<! name prefix for all attributes values
    RAttrBase *fParent{nullptr};        ///<! parent attributes, prefix applied to it
 
@@ -76,6 +80,7 @@ protected:
       operator bool() const { return !!value; }
    };
 
+   /** Search value with given name in attributes */
    const Val_t AccessValue(const std::string &name, bool use_style = true) const
    {
       if (auto access = AccessAttr(name)) {
@@ -128,6 +133,8 @@ protected:
 
    void CopyTo(RAttrBase &tgt, bool use_style = true) const;
 
+   void MoveTo(RAttrBase &tgt);
+
    bool IsSame(const RAttrBase &src, bool use_style = true) const;
 
    RAttrBase(RDrawable *drawable, const std::string &prefix) { AssignDrawable(drawable, prefix); }
@@ -143,10 +150,12 @@ protected:
       return *this;
    }
 
+   void SetNoValue(const std::string &name);
    void SetValue(const std::string &name, bool value);
    void SetValue(const std::string &name, double value);
    void SetValue(const std::string &name, int value);
    void SetValue(const std::string &name, const std::string &value);
+   void SetValue(const std::string &name, const RPadLength &value);
 
    const std::string &GetPrefix() const { return fPrefix; }
 
@@ -157,7 +166,8 @@ protected:
    template <typename T = void>
    bool HasValue(const std::string &name, bool check_defaults = false) const
    {
-      return Eval<const RAttrMap::Value_t *, T>(name, check_defaults) != nullptr;
+      auto res = Eval<const RAttrMap::Value_t *, T>(name, check_defaults);
+      return res ? (res->Kind() != RAttrMap::kNoValue) : false;
    }
 
    template <typename T>
@@ -166,24 +176,29 @@ protected:
       return Eval<T>(name);
    }
 
+   virtual RAttrMap CollectDefaults() const;
+
+   virtual bool IsValue() const { return false; }
+
 public:
    RAttrBase() = default;
 
    virtual ~RAttrBase() = default;
 
-   friend bool operator==(const RAttrBase& lhs, const RAttrBase& rhs){ return lhs.IsSame(rhs) && rhs.IsSame(lhs); }
-   friend bool operator!=(const RAttrBase& lhs, const RAttrBase& rhs){ return !lhs.IsSame(rhs) || !rhs.IsSame(lhs); }
+   friend bool operator==(const RAttrBase& lhs, const RAttrBase& rhs) { return lhs.IsSame(rhs) && rhs.IsSame(lhs); }
+   friend bool operator!=(const RAttrBase& lhs, const RAttrBase& rhs) { return !lhs.IsSame(rhs) || !rhs.IsSame(lhs); }
+
 };
 
 
 } // namespace Experimental
 } // namespace ROOT
 
-#define R__ATTR_CLASS(ClassName,dflt_prefix,dflt_values) \
+#define R__ATTR_CLASS(ClassName,dflt_prefix) \
 protected: \
 const RAttrMap &GetDefaults() const override \
 { \
-   static auto dflts = RAttrMap().dflt_values; \
+   static auto dflts = CollectDefaults(); \
    return dflts; \
 } \
 public: \
@@ -191,13 +206,8 @@ public: \
    ClassName(RDrawable *drawable, const std::string &prefix = dflt_prefix) { AssignDrawable(drawable, prefix); } \
    ClassName(RAttrBase *parent, const std::string &prefix = dflt_prefix) { AssignParent(parent, prefix); } \
    ClassName(const ClassName &src) : ClassName() { src.CopyTo(*this); } \
-   ClassName(ClassName &&src) = default; \
-   ClassName &operator=(ClassName &&src) = default; \
-   ClassName &operator=(const ClassName &src) \
-   { \
-      Clear(); \
-      src.CopyTo(*this); \
-      return *this; \
-   }
+   ClassName(ClassName &&src) : ClassName() { src.MoveTo(*this); } \
+   ClassName &operator=(ClassName &&src) { src.MoveTo(*this); return *this; } \
+   ClassName &operator=(const ClassName &src) { Clear(); src.CopyTo(*this); return *this; } \
 
 #endif

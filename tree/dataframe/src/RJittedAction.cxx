@@ -1,22 +1,24 @@
 // Author: Enrico Guiraud, Danilo Piparo CERN  09/2018
 
 /*************************************************************************
- * Copyright (C) 1995-2018, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "ROOT/RDF/RBookedCustomColumns.hxx"
+#include "ROOT/RDF/RBookedDefines.hxx"
 #include "ROOT/RDF/RLoopManager.hxx"
 #include "ROOT/RDF/RJittedAction.hxx"
+// Avoid error: invalid application of ‘sizeof’ to incomplete type in RJittedAction::GetMergeableValue
+#include "ROOT/RDF/RMergeableValue.hxx"
 #include "TError.h"
 
 using ROOT::Internal::RDF::RJittedAction;
 using ROOT::Detail::RDF::RLoopManager;
 
-RJittedAction::RJittedAction(RLoopManager &lm) : RActionBase(&lm, {}, ROOT::Internal::RDF::RBookedCustomColumns{}) { }
+RJittedAction::RJittedAction(RLoopManager &lm) : RActionBase(&lm, {}, ROOT::Internal::RDF::RBookedDefines{}) {}
 
 void RJittedAction::Run(unsigned int slot, Long64_t entry)
 {
@@ -76,14 +78,18 @@ void RJittedAction::SetHasRun()
    return fConcreteAction->SetHasRun();
 }
 
-void RJittedAction::ClearValueReaders(unsigned int slot)
-{
-   R__ASSERT(fConcreteAction != nullptr);
-   return fConcreteAction->ClearValueReaders(slot);
-}
-
 std::shared_ptr<ROOT::Internal::RDF::GraphDrawing::GraphNode> RJittedAction::GetGraph()
 {
    R__ASSERT(fConcreteAction != nullptr);
    return fConcreteAction->GetGraph();
+}
+
+/**
+   Retrieve a wrapper to the result of the action that knows how to merge
+   with others of the same type.
+*/
+std::unique_ptr<ROOT::Detail::RDF::RMergeableValueBase> RJittedAction::GetMergeableValue() const
+{
+   R__ASSERT(fConcreteAction != nullptr);
+   return fConcreteAction->GetMergeableValue();
 }

@@ -12,7 +12,7 @@
 #ifndef ROOT_Compression
 #define ROOT_Compression
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 namespace ROOT {
 

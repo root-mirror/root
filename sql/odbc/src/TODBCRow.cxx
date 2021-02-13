@@ -12,7 +12,7 @@
 #include "TODBCRow.h"
 
 #include <sqlext.h>
-
+#include "strlcpy.h"
 
 ClassImp(TODBCRow);
 

@@ -15,14 +15,15 @@
 A container class for query results.
 */
 
-#include <string.h>
+#include <cstring>
 
+#include "strlcpy.h"
 #include "TBrowser.h"
-#include "TError.h"
 #include "TEventList.h"
 #include "TQueryResult.h"
 #include "TRegexp.h"
 #include "TROOT.h"
+#include "TMacro.h"
 #include "TMath.h"
 #include "TSelector.h"
 #include "TSystem.h"

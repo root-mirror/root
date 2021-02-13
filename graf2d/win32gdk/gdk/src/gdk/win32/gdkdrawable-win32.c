@@ -178,8 +178,8 @@ void RenderRgn(HDC hDC, HRGN hrgn, HBRUSH hbrFill)
    // Get bounding area for region
    GetRgnBox(hrgn, &rectRgn);
 
-   //if ((rectRgn.right - rectRgn.left > 16) &&
-   //    (rectRgn.bottom - rectRgn.top > 16)) {
+   if ((rectRgn.right - rectRgn.left > 16) &&
+       (rectRgn.bottom - rectRgn.top > 16)) {
       // Area must align to 16x16 pattern
       if (rectRgn.left % 16 != 0)
          rectRgn.left -= rectRgn.left % 16;
@@ -189,36 +189,30 @@ void RenderRgn(HDC hDC, HRGN hrgn, HBRUSH hbrFill)
          rectRgn.right += rectRgn.right % 16;
       if (rectRgn.bottom % 16 != 0)
          rectRgn.bottom += rectRgn.bottom % 16;
-   //}
+   }
+
+   LONG width = rectRgn.right - rectRgn.left;
+   LONG height = rectRgn.bottom - rectRgn.top;
 
    // Create bitmap for pattern
    hMemDC = CreateCompatibleDC(hDC);
-   hBitmap = CreateCompatibleBitmap(hDC, rectRgn.right - rectRgn.left,
-                                    rectRgn.bottom - rectRgn.top);
+   hBitmap = CreateCompatibleBitmap(hDC, width, height);
    hOldMemBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
 
    // Blit source into bitmap, AND'ing with pattern to get the 'transparent' area
    rcRect.left = 0;
    rcRect.top = 0;
-   rcRect.right = rectRgn.right - rectRgn.left;
-   rcRect.bottom = rectRgn.bottom - rectRgn.top;
+   rcRect.right = width;
+   rcRect.bottom = height;
    FillRect(hMemDC, &rcRect, hbrFill);
-   BitBlt(hMemDC, 0, 0, rectRgn.right - rectRgn.left, rectRgn.bottom - rectRgn.top,
-          hDC, rectRgn.left, rectRgn.top, SRCAND); // AND
-   //TransparentBlt(hMemDC,  0, 0, rectRgn.right - rectRgn.left,
-   //               rectRgn.bottom - rectRgn.top, hDC, rectRgn.left,
-   //               rectRgn.top, rectRgn.right - rectRgn.left,
-   //               rectRgn.bottom - rectRgn.top, RGB(255,255,255));
+   BitBlt(hMemDC, 0, 0, width, height, hDC, rectRgn.left, rectRgn.top, SRCAND);
 
    // Render region using opaque brush
    FillRgn(hDC, hrgn, hbrFill);
 
    // Blit 'transparent' area over top of the opaque brush
-   //BitBlt(hDC, rectRgn.left, rectRgn.top, rectRgn.right - rectRgn.left,
-   //       rectRgn.bottom - rectRgn.top, hMemDC, 0, 0, SRCPAINT); // OR
-   TransparentBlt(hDC, rectRgn.left, rectRgn.top, rectRgn.right - rectRgn.left,
-          rectRgn.bottom - rectRgn.top, hMemDC, 0, 0, rectRgn.right - rectRgn.left,
-          rectRgn.bottom - rectRgn.top, RGB(0,0,0));
+   TransparentBlt(hDC, rectRgn.left, rectRgn.top, width, height,
+                  hMemDC, 0, 0, width, height, RGB(0, 0, 0));
    // Clean-up
    SelectObject(hMemDC, hOldMemBitmap);
    DeleteObject(hBitmap);

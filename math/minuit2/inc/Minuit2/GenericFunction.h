@@ -16,8 +16,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 //_____________________________________________________________________
 /**
@@ -35,9 +34,7 @@ which allows to call the function.
 class GenericFunction {
 
 public:
-
    virtual ~GenericFunction() {}
-
 
    /**
 
@@ -50,14 +47,11 @@ public:
 
    */
 
-   virtual double operator()(const std::vector<double>& x) const=0;
-
-
-
+   virtual double operator()(const std::vector<double> &x) const = 0;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_GenericFunction
+#endif // ROOT_Minuit2_GenericFunction

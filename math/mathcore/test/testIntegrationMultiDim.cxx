@@ -22,9 +22,8 @@
 #include "TF1.h"
 
 // for graphical comparison of performance
-#include "TGraph.h"
 #include "TAxis.h"
-#include "TCanvas.h"
+#include "TVirtualPad.h"
 #include "TApplication.h"
 #include "TPaveLabel.h"
 #include "TLegend.h"
@@ -170,6 +169,9 @@ void performance()
       }
       num_performance->SetBinContent(N-1, integral_num(N, a, b, p));
       TF1_performance->SetBinContent(N-1,integral_TF1(N, a, b, p));
+
+      delete [] a;
+      delete [] b;
    }
 
    if (showGraphics) {

@@ -11,24 +11,23 @@
 #include "TH1.h"
 #include "TF1.h"
 
-#include "TRandom.h"
+#include "RConfigure.h"
 #include "TRandom1.h"
 #include "TRandom2.h"
 #include "TSystem.h"
 #include "TApplication.h"
 #include "TCanvas.h"
-//#include "TRint.h"
+#include "TRandom.h"
 #include "TVirtualFitter.h"
 #include "TFitter.h"
 #include "Math/DistFunc.h"
 
 #include <iostream>
 
-#ifdef HAVE_MATHMORE
+#ifdef R__HAS_MATHMORE
 #include "Math/Random.h"
 #include "Math/GSLRndmEngines.h"
 #endif
-
 
 
 #ifdef HAVE_CLHEP

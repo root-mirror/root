@@ -36,7 +36,7 @@ occur.
 #include "TSAXParser.h"
 #include "TXMLAttr.h"
 #include "Varargs.h"
-#include "TObjString.h"
+#include "strlcpy.h"
 #include "TList.h"
 #include "TClass.h"
 
@@ -171,7 +171,10 @@ void TSAXParser::OnWarning(const char *text)
 
 Int_t TSAXParser::OnError(const char *text)
 {
-   Emit("OnError(const char *)", text);
+   TString errmsg;
+   errmsg.Form("Source line: %d  %s", fContext->input->line, text);
+
+   Emit("OnError(const char *)", errmsg.Data());
    return -3;
 }
 
@@ -181,7 +184,10 @@ Int_t TSAXParser::OnError(const char *text)
 
 Int_t TSAXParser::OnFatalError(const char *text)
 {
-   Emit("OnFatalError(const char *)", text);
+   TString errmsg;
+   errmsg.Form("Source line: %d  %s", fContext->input->line, text);
+
+   Emit("OnFatalError(const char *)", errmsg.Data());
    return -4;
 }
 

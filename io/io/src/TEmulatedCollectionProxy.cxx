@@ -28,8 +28,9 @@ the class TEmulatedMapProxy.
 #include "TStreamerInfo.h"
 #include "TClassEdit.h"
 #include "TError.h"
+#include "TEnum.h"
 #include "TROOT.h"
-#include "Riostream.h"
+#include <iostream>
 
 #include "TVirtualMutex.h" // For R__LOCKGUARD
 #include "TInterpreter.h"  // For gInterpreterMutex
@@ -38,9 +39,6 @@ the class TEmulatedMapProxy.
 // Utility function to allow the creation of a TClass for a std::pair without
 // a dictionary (See end of file for implementation
 //
-
-static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const char *dmFull, Int_t offset);
-static TStreamerInfo *R__GenerateTClassForPair(const std::string &f, const std::string &s);
 
 TEmulatedCollectionProxy::TEmulatedCollectionProxy(const TEmulatedCollectionProxy& copy)
    : TGenCollectionProxy(copy)
@@ -115,7 +113,7 @@ TGenCollectionProxy *TEmulatedCollectionProxy::InitializeEx(Bool_t silent)
    if (fClass) return this;
 
 
-   TClass *cl = TClass::GetClass(fName.c_str());
+   TClass *cl = TClass::GetClass(fName.c_str(), kTRUE, silent);
    fEnv = 0;
    fKey = 0;
    if ( cl )  {
@@ -140,18 +138,55 @@ TGenCollectionProxy *TEmulatedCollectionProxy::InitializeEx(Bool_t silent)
             constexpr size_t kSizeOfPtr = sizeof(void*);
             return in + (kSizeOfPtr - in%kSizeOfPtr)%kSizeOfPtr;
          };
+         struct GenerateTemporaryTEnum
+         {
+            TEnum *fTemporaryTEnum = nullptr;
+
+            GenerateTemporaryTEnum(UInt_t typecase, const std::string &enumname)
+            {
+               if (typecase == kIsEnum && !TEnum::GetEnum(enumname.c_str())) {
+                  fTemporaryTEnum = new TEnum();
+                  fTemporaryTEnum->SetName(enumname.c_str());
+                  gROOT->GetListOfEnums()->Add(fTemporaryTEnum);
+               }
+            }
+
+            ~GenerateTemporaryTEnum()
+            {
+               if (fTemporaryTEnum) {
+                  gROOT->GetListOfEnums()->Remove(fTemporaryTEnum);
+                  delete fTemporaryTEnum;
+               }
+            }
+         };
          switch ( fSTL_type )  {
             case ROOT::kSTLmap:
             case ROOT::kSTLmultimap:
                nam = "pair<"+inside[1]+","+inside[2];
                nam += (nam[nam.length()-1]=='>') ? " >" : ">";
-               if (0==TClass::GetClass(nam.c_str())) {
-                  // We need to emulate the pair
-                  R__GenerateTClassForPair(inside[1],inside[2]);
-               }
-               fValue = new Value(nam,silent);
                fKey   = new Value(inside[1],silent);
                fVal   = new Value(inside[2],silent);
+               {
+                  // We have the case of an on-file enum or an unknown class, since
+                  // this comes from a file, we also know that the type was valid but
+                  // since we have no information it was either
+                  //   a. an enum
+                  //   b. a class of type that was never stored
+                  //   c. a class with a custom streamer
+                  // We can "safely" pretend that it is an enum in all 3 case because
+                  //   a. obviously
+                  //   b. it will not be used anyway (no object of that type on the file)
+                  //   c. since we don't know the class we don't have the Streamer and thus can read it anyway
+                  // So let's temporarily pretend it is an enum.
+                  GenerateTemporaryTEnum keyEnum(fKey->fCase, inside[1]);
+                  GenerateTemporaryTEnum valueEnum(fVal->fCase, inside[2]);
+
+                  if (0==TClass::GetClass(nam.c_str(), kTRUE, silent)) {
+                     // We need to emulate the pair
+                     TVirtualStreamerInfo::Factory()->GenerateInfoForPair(inside[1],inside[2], silent, 0, 0);
+                  }
+               }
+               fValue = new Value(nam,silent);
                if ( !(*fValue).IsValid() || !fKey->IsValid() || !fVal->IsValid() ) {
                   return 0;
                }
@@ -606,107 +641,4 @@ void TEmulatedCollectionProxy::Streamer(TBuffer &b)
          WriteItems(nElements, b);
       }
    }
-}
-
-//
-// Utility functions
-//
-static TStreamerElement* R__CreateEmulatedElement(const char *dmName, const char *dmFull, Int_t offset)
-{
-   // Create a TStreamerElement for the type 'dmFull' and whose data member name is 'dmName'.
-
-   TString s1( TClassEdit::ShortType(dmFull,0) );
-   TString dmType( TClassEdit::ShortType(dmFull,1) );
-   Bool_t dmIsPtr = (s1 != dmType);
-   const char *dmTitle = "Emulation";
-
-   TDataType *dt = gROOT->GetType(dmType);
-   if (dt && dt->GetType() > 0 ) {  // found a basic type
-      Int_t dsize,dtype;
-      dtype = dt->GetType();
-      dsize = dt->Size();
-      if (dmIsPtr && dtype != kCharStar) {
-         Error("Pair Emulation Building","%s is not yet supported in pair emulation",
-               dmFull);
-         return 0;
-      } else {
-         TStreamerElement *el = new TStreamerBasicType(dmName,dmTitle,offset,dtype,dmFull);
-         el->SetSize(dsize);
-         return el;
-      }
-   } else {
-
-      static const char *full_string_name = "basic_string<char,char_traits<char>,allocator<char> >";
-      if (strcmp(dmType,"string") == 0 || strcmp(dmType,"std::string") == 0 || strcmp(dmType,full_string_name)==0 ) {
-         return new TStreamerSTLstring(dmName,dmTitle,offset,dmFull,dmIsPtr);
-      }
-      if (TClassEdit::IsSTLCont(dmType)) {
-         return new TStreamerSTL(dmName,dmTitle,offset,dmFull,dmFull,dmIsPtr);
-      }
-      TClass *clm = TClass::GetClass(dmType);
-      if (!clm) {
-         // either we have an Emulated enum or a really unknown class!
-         // let's just claim its an enum :(
-         Int_t dtype = kInt_t;
-         return new TStreamerBasicType(dmName,dmTitle,offset,dtype,dmFull);
-      }
-      // a pointer to a class
-      if ( dmIsPtr ) {
-         if (clm->IsTObject()) {
-            return new TStreamerObjectPointer(dmName,dmTitle,offset,dmFull);
-         } else {
-            return new TStreamerObjectAnyPointer(dmName,dmTitle,offset,dmFull);
-         }
-      }
-      // a class
-      if (clm->IsTObject()) {
-         return new TStreamerObject(dmName,dmTitle,offset,dmFull);
-      } else if(clm == TString::Class() && !dmIsPtr) {
-         return new TStreamerString(dmName,dmTitle,offset);
-      } else {
-         return new TStreamerObjectAny(dmName,dmTitle,offset,dmFull);
-      }
-   }
-}
-
-
-static TStreamerInfo *R__GenerateTClassForPair(const std::string &fname, const std::string &sname)
-{
-   // Generate a TStreamerInfo for a std::pair<fname,sname>
-   // This TStreamerInfo is then used as if it was read from a file to generate
-   // and emulated TClass.
-
-   TStreamerInfo *i = (TStreamerInfo*)TClass::GetClass("pair<const int,int>")->GetStreamerInfo()->Clone();
-   std::string pname = "pair<"+fname+","+sname;
-   pname += (pname[pname.length()-1]=='>') ? " >" : ">";
-   i->SetName(pname.c_str());
-   i->SetClass(0);
-   i->GetElements()->Delete();
-   TStreamerElement *fel = R__CreateEmulatedElement("first", fname.c_str(), 0);
-   Int_t size = 0;
-   if (fel) {
-      i->GetElements()->Add( fel );
-
-      size = fel->GetSize();
-      Int_t sp = sizeof(void *);
-      //align the non-basic data types (required on alpha and IRIX!!)
-      if (size%sp != 0) size = size - size%sp + sp;
-   } else {
-      delete i;
-      return 0;
-   }
-   TStreamerElement *second = R__CreateEmulatedElement("second", sname.c_str(), size);
-   if (second) {
-      i->GetElements()->Add( second );
-   } else {
-      delete i;
-      return 0;
-   }
-   Int_t oldlevel = gErrorIgnoreLevel;
-   // Hide the warning about the missing pair dictionary.
-   gErrorIgnoreLevel = kError;
-   i->BuildCheck();
-   gErrorIgnoreLevel = oldlevel;
-   i->BuildOld();
-   return i;
 }

@@ -21,6 +21,7 @@
 #include <ROOT/RNTupleUtil.hxx>
 
 #include <cstddef>
+#include <mutex>
 #include <vector>
 
 namespace ROOT {
@@ -51,8 +52,9 @@ private:
    ///   - searching by page
    ///   - searching by tree index
    std::vector<RPage> fPages;
-   std::vector<std::uint32_t> fReferences;
+   std::vector<std::int32_t> fReferences;
    std::vector<RPageDeleter> fDeleters;
+   std::mutex fLock;
 
 public:
    RPagePool() = default;
@@ -63,6 +65,8 @@ public:
    /// Adds a new page to the pool together with the function to free its space. Upon registration,
    /// the page pool takes ownership of the page's memory. The new page has its reference counter set to 1.
    void RegisterPage(const RPage &page, const RPageDeleter &deleter);
+   /// Like RegisterPage() but the reference counter is initialized to 0
+   void PreloadPage(const RPage &page, const RPageDeleter &deleter);
    /// Tries to find the page corresponding to column and index in the cache. If the page is found, its reference
    /// counter is increased
    RPage GetPage(ColumnId_t columnId, NTupleSize_t globalIndex);

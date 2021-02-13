@@ -43,31 +43,35 @@
 
 #include "TMVA/MethodBase.h"
 #include "TMatrixDfwd.h"
+#include <string>
+#include <vector>
+#include <map>
+
 #ifndef ROOT_TMVA_TVectorD
 #include "TVectorD.h"
 #include "TMVA/SVKernelFunction.h"
 #endif
 
-namespace TMVA 
+namespace TMVA
 {
    class SVWorkingSet;
    class SVEvent;
    class SVKernelFunction;
-   
+
    class MethodSVM : public MethodBase {
 
    public:
 
       MethodSVM( const TString& jobName, const TString& methodTitle, DataSetInfo& theData,
                  const TString& theOption = "" );
-      
+
       MethodSVM( DataSetInfo& theData, const TString& theWeightFile);
 
       virtual ~MethodSVM( void );
-    
+
       virtual Bool_t HasAnalysisType( Types::EAnalysisType type, UInt_t numberClasses, UInt_t numberTargets );
 
-      // optimise tuning parameters                                                   
+      // optimise tuning parameters
       virtual std::map<TString,Double_t> OptimizeTuningParameters(TString fomType="ROCIntegral", TString fitType="Minuit");
       virtual void SetTuneParameters(std::map<TString,Double_t> tuneParameters);
       std::vector<TMVA::SVKernelFunction::EKernelType> MakeKernelList(std::string multiKernels, TString kernel);
@@ -76,7 +80,7 @@ namespace TMVA
       // training method
       void Train( void );
 
-      // revoke training (required for optimise tuning parameters)                    
+      // revoke training (required for optimise tuning parameters)
       void Reset( void );
 
       using MethodBase::ReadWeightsFromStream;
@@ -93,7 +97,7 @@ namespace TMVA
 
       Double_t GetMvaValue( Double_t* err = 0, Double_t* errUpper = 0 );
       const std::vector<Float_t>& GetRegressionValues();
-      
+
       void Init( void );
 
       // ranking of input variables

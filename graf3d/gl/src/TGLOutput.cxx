@@ -11,14 +11,15 @@
 
 #include "TGLOutput.h"
 
-#include "Riostream.h"
+#include <iostream>
+#include <fstream>
 #include "TVirtualPad.h"
 #include "TVirtualPS.h"
 #include "TGLViewer.h"
-#include "TSystem.h" // For gSystem
+#include "TSystem.h"
 #include "gl2ps.h"
 #include "TError.h"
-#include <assert.h>
+#include <cassert>
 
 /** \class TGLOutput
 \ingroup opengl

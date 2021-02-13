@@ -187,40 +187,7 @@ long TClingTypedefInfo::Property() const
    property |= kIsTypedef;
    const clang::TypedefNameDecl *td = llvm::dyn_cast<clang::TypedefNameDecl>(fDecl);
    clang::QualType qt = td->getUnderlyingType().getCanonicalType();
-   if (qt.isConstQualified()) {
-      property |= kIsConstant;
-   }
-   while (1) {
-      if (qt->isArrayType()) {
-         qt = llvm::cast<clang::ArrayType>(qt)->getElementType();
-         continue;
-      }
-      else if (qt->isReferenceType()) {
-         property |= kIsReference;
-         qt = llvm::cast<clang::ReferenceType>(qt)->getPointeeType();
-         continue;
-      }
-      else if (qt->isPointerType()) {
-         property |= kIsPointer;
-         if (qt.isConstQualified()) {
-            property |= kIsConstPointer;
-         }
-         qt = llvm::cast<clang::PointerType>(qt)->getPointeeType();
-         continue;
-      }
-      else if (qt->isMemberPointerType()) {
-         qt = llvm::cast<clang::MemberPointerType>(qt)->getPointeeType();
-         continue;
-      }
-      break;
-   }
-   if (qt->isBuiltinType()) {
-      property |= kIsFundamental;
-   }
-   if (qt.isConstQualified()) {
-      property |= kIsConstant;
-   }
-   return property;
+   return TClingDeclInfo::Property(property, qt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -281,7 +248,7 @@ const char *TClingTypedefInfo::TrueName(const ROOT::TMetaUtils::TNormalizedCtxt 
 ////////////////////////////////////////////////////////////////////////////////
 /// Get the name of the current typedef.
 
-const char *TClingTypedefInfo::Name()
+const char *TClingTypedefInfo::Name() const
 {
    if (!IsValid()) {
       return "(unknown)";

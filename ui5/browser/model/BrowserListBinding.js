@@ -1,14 +1,12 @@
 sap.ui.define([
-    "sap/base/Log",
     "sap/ui/model/json/JSONListBinding"
-], function(Log, JSONListBinding) {
+], function(JSONListBinding) {
     "use strict";
 
     var hRootListBinding = JSONListBinding.extend("rootui5.browser.model.BrowserListBinding", {
 
         // called by the TreeTable to know the amount of entries
         getLength: function() {
-           // Log.warning("root.model.hListBinding#getLength()");
            return this.getModel().getLength();
         },
 
@@ -23,22 +21,17 @@ sap.ui.define([
            for (var i = args.begin; i < args.end; i++)
               aNodes.push(nodes && nodes[i] ? nodes[i] : null);
 
-           // console.log("root.model.hListBinding#getNodes(" + iStartIndex + ", " + iLength + ", " + iThreshold + ") res = " + aNodes.length);
-
            return aNodes;
         },
 
         getContextByIndex: function(iIndex) {
-           // Log.warning("root.model.hListBinding#getContextByIndex(" + iIndex + ")");
            return this.getModel().getContext(this.getPath() + "/" + iIndex);
         },
 
         findNode: function() {
-           // Log.warning("root.model.hListBinding#findNode()");
         },
 
         nodeHasChildren: function(oNode) {
-           // Log.warning("root.model.hListBinding#nodeHasChildren(" + oNode.type + ")");
            return oNode.type === "folder";
         },
 
@@ -46,17 +39,13 @@ sap.ui.define([
             var elem = this.getModel().getElementByIndex(iIndex);
             var res = elem ? !!elem.expanded : false;
 
-            // Log.warning("root.model.hListBinding#isExpanded(" + iIndex + ") res = " + res + "  iselem = " + (elem ? elem._name : "---"));
-
             return res;
         },
 
         expand: function(iIndex) {
-           // Log.warning("root.model.hListBinding#expand(" + iIndex + ")");
         },
 
         collapse: function(iIndex) {
-           // Log.warning("root.model.hListBinding#collapse(" + iIndex + ")");
         },
 
         collapseToLevel: function(lvl) {
@@ -78,11 +67,9 @@ sap.ui.define([
         },
 
         getSelectedIndex: function() {
-           // Log.warning("root.model.hListBinding#getSelectedIndex(" + JSON.stringify(arguments) + ")");
         },
 
         isIndexSelectable: function() {
-           // Log.warning("root.model.hListBinding#isIndexSelectable(" + JSON.stringify(arguments) + ")");
         },
 
         attachSelectionChanged: function() {

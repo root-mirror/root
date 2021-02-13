@@ -45,7 +45,8 @@ class GappedField : public TEveMagField
 public:
    GappedField():TEveMagField(){}
    ~GappedField(){};
-   using   TEveMagField::GetField;
+
+   virtual Double_t    GetMaxFieldMagD() { return 4; }
 
    virtual TEveVectorD GetFieldD(Double_t /*x*/, Double_t /*y*/, Double_t z) const
    {
@@ -70,8 +71,8 @@ public:
       m_simpleModel(true){}
 
    virtual ~CmsMagField(){}
-   virtual Double_t   GetMaxFieldMagD() const { return m_magnetIsOn ? 3.8 : 0.0; }
-   void               setMagnetState( bool state )
+
+   void setMagnetState( bool state )
    {
       if (state != m_magnetIsOn)
       {
@@ -89,14 +90,14 @@ public:
    void setSimpleModel(bool simpleModel) { m_simpleModel = simpleModel; }
    bool isSimpleModel() const            { return m_simpleModel;}
 
-   using   TEveMagField::GetField;
+   virtual Double_t    GetMaxFieldMagD() const { return m_magnetIsOn ? 3.8 : 0.0; }
 
    virtual TEveVectorD GetFieldD(Double_t x, Double_t y, Double_t z) const
    {
       double R = sqrt(x*x+y*y);
-      double field = m_reverse?-GetMaxFieldMag():GetMaxFieldMag();
+      double field = m_reverse ? -GetMaxFieldMagD() : GetMaxFieldMagD();
       //barrel
-      if ( TMath::Abs(z)<724 )
+      if ( TMath::Abs(z) < 724 )
       {
          //inside solenoid
          if ( R < 300) return TEveVectorD(0,0,field);

@@ -42,18 +42,19 @@
 
 #include "TMVA/Version.h"
 
-#include <iostream>
+#include <sstream>
 #include <vector>
-#include <map>
+#include <string>
+
 namespace TMVA {
 
    class DTNodeTrainingInfo
    {
    public:
-   DTNodeTrainingInfo():fSampleMin(), 
-         fSampleMax(), 
+   DTNodeTrainingInfo():fSampleMin(),
+         fSampleMax(),
          fNodeR(0),fSubTreeR(0),fAlpha(0),fG(0),fNTerminal(0),
-         fNB(0),fNS(0),fSumTarget(0),fSumTarget2(0),fCC(0), 
+         fNB(0),fNS(0),fSumTarget(0),fSumTarget2(0),fCC(0),
          fNSigEvents ( 0 ), fNBkgEvents ( 0 ),
          fNEvents ( -1 ),
          fNSigEvents_unweighted ( 0 ),
@@ -120,11 +121,11 @@ namespace TMVA {
       // constructor of an essentially "empty" node floating in space
       DecisionTreeNode ();
       // constructor of a daughter node as a daughter of 'p'
-      DecisionTreeNode (Node* p, char pos); 
-    
-      // copy constructor 
-      DecisionTreeNode (const DecisionTreeNode &n, DecisionTreeNode* parent = NULL); 
-      
+      DecisionTreeNode (Node* p, char pos);
+
+      // copy constructor
+      DecisionTreeNode (const DecisionTreeNode &n, DecisionTreeNode* parent = NULL);
+
       // destructor
       virtual ~DecisionTreeNode();
 
@@ -133,7 +134,7 @@ namespace TMVA {
       inline void SetNFisherCoeff(Int_t nvars){fFisherCoeff.resize(nvars);}
       inline UInt_t GetNFisherCoeff() const { return fFisherCoeff.size();}
       // set fisher coefficients
-      void SetFisherCoeff(Int_t ivar, Double_t coeff);      
+      void SetFisherCoeff(Int_t ivar, Double_t coeff);
       // get fisher coefficients
       Double_t GetFisherCoeff(Int_t ivar) const {return fFisherCoeff.at(ivar);}
 
@@ -346,8 +347,11 @@ namespace TMVA {
       void     SetSampleMin(UInt_t ivar, Float_t xmin);
       void     SetSampleMax(UInt_t ivar, Float_t xmax);
 
-      static bool fgIsTraining; // static variable to flag training phase in which we need fTrainInfo
-      static UInt_t fgTmva_Version_Code;  // set only when read from weightfile 
+      static void SetIsTraining(bool on);
+      static void SetTmvaVersionCode(UInt_t code);
+
+      static bool IsTraining();
+      static UInt_t GetTmvaVersionCode();
 
       virtual Bool_t ReadDataRecord( std::istream& is, UInt_t tmva_Version_Code = TMVA_VERSION_CODE );
       virtual void ReadAttributes(void* node, UInt_t tmva_Version_Code = TMVA_VERSION_CODE );
@@ -356,6 +360,9 @@ namespace TMVA {
    protected:
 
       static MsgLogger& Log();
+
+      static bool fgIsTraining; // static variable to flag training phase in which we need fTrainInfo
+      static UInt_t fgTmva_Version_Code;  // set only when read from weightfile
 
       std::vector<Double_t>       fFisherCoeff;    // the fisher coeff (offset at the last element)
 
@@ -374,7 +381,7 @@ namespace TMVA {
 
    private:
 
-      ClassDef(DecisionTreeNode,0); // Node for the Decision Tree 
+      ClassDef(DecisionTreeNode,0); // Node for the Decision Tree
    };
 } // namespace TMVA
 

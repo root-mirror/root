@@ -14,8 +14,6 @@
 
 #include "TGFrame.h"
 
-#include "TString.h"
-
 #include "TImage.h"
 
 #include "TGPicture.h"
@@ -23,8 +21,8 @@
 class TGShapedFrame : public TGCompositeFrame {
 
 private:
-   TGShapedFrame(const TGShapedFrame&); // Not implemented
-   TGShapedFrame& operator=(const TGShapedFrame&); // Not implemented
+   TGShapedFrame(const TGShapedFrame&) = delete;
+   TGShapedFrame& operator=(const TGShapedFrame&) = delete;
 
 protected:
    const TGPicture      *fBgnd;     // picture used as background/shape

@@ -18,14 +18,20 @@
     \ingroup Roofit
 
 Single or double sided decay function that can be analytically convolved
-with any RooResolutionModel implementation
+with any RooResolutionModel implementation. It declares the basis functions
+for the analytical convolution with a RooResolutionModel. See RooAbsAnaConvPdf.
+\f[
+  \mathrm{basis} = \begin{cases}
+    \exp\left(-\frac{t}{\tau}\right) & \mathrm{SingleSided} \\
+    \exp\left( \frac{t}{\tau}\right) & \mathrm{Flipped} \\
+    \exp\left(-\frac{|t|}{\tau}\right) & \mathrm{DoubleSided}
+    \end{cases}
+\f]
 **/
 
-#include "RooFit.h"
-
-#include "Riostream.h"
-#include "Riostream.h"
 #include "RooDecay.h"
+
+#include "RooFit.h"
 #include "RooRealVar.h"
 #include "RooRandom.h"
 
@@ -36,8 +42,13 @@ using namespace std;
 ClassImp(RooDecay);
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Constructor
-
+/// Create a new RooDecay.
+/// \param[in] name Name of this object.
+/// \param[in] title Title (for *e.g.* plotting)
+/// \param[in] t Convolution variable (*e.g.* time).
+/// \param[in] tau Decay constant.
+/// \param[in] model Resolution model for the convolution.
+/// \param[in] type One of the decays types `SingleSided, Flipped, DoubleSided`
 RooDecay::RooDecay(const char *name, const char *title,
          RooRealVar& t, RooAbsReal& tau,
          const RooResolutionModel& model, DecayType type) :

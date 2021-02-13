@@ -28,4 +28,5 @@ ROOT_STANDARD_LIBRARY_PACKAGE(FitPanel
     Hist
     MathCore
     Tree
+    TreePlayer
 )

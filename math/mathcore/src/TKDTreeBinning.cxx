@@ -18,7 +18,6 @@
 #include "TKDTreeBinning.h"
 
 #include "Fit/BinData.h"
-#include "TRandom.h"
 #include "TBuffer.h"
 
 ClassImp(TKDTreeBinning);
@@ -37,7 +36,7 @@ edges of bin b is of the form of the following array: {xbmin, ybmin, zbmin}.
 You also have the possibility to sort the bins by their density.
 
 Details of usage can be found in `$ROOTSYS/tutorials/math/kdTreeBinning.C` and more information on
-the embedded TKDTree documentation. 
+the embedded TKDTree documentation.
 
 @ingroup MathCore
 
@@ -109,14 +108,14 @@ fIsSorted(kFALSE), fIsSortedAsc(kFALSE), fBinsContent(std::vector<UInt_t>()) {
    }
 }
 
-/// Default constructor (for I/O) 
+/// Default constructor (for I/O)
 TKDTreeBinning::TKDTreeBinning() :
 //   fData(nullptr),
    fDataBins(nullptr),
    fNBins (0),
    fDim(0),
    fDataSize(0),
-   fIsSorted(kFALSE), fIsSortedAsc(kFALSE) 
+   fIsSorted(kFALSE), fIsSortedAsc(kFALSE)
 {}
 
 /// Class's destructor
@@ -174,14 +173,14 @@ void TKDTreeBinning::SortBinsByDensity(Bool_t sortAsc) {
       std::vector<Double_t> binMinEdges(fNBins * fDim);
       std::vector<Double_t> binMaxEdges(fNBins * fDim);
       std::vector<UInt_t> binContent(fNBins );    // reajust also content (not needed bbut better in general!)
-      fIndices.resize(fNBins);     
+      fIndices.resize(fNBins);
       for (UInt_t i = 0; i < fNBins; ++i) {
          for (UInt_t j = 0; j < fDim; ++j) {
             binMinEdges[i * fDim + j] = fBinMinEdges[indices[i] * fDim + j];
             binMaxEdges[i * fDim + j] = fBinMaxEdges[indices[i] * fDim + j];
          }
          binContent[i] = fBinsContent[indices[i]];
-         fIndices[indices[i]] = i; 
+         fIndices[indices[i]] = i;
       }
       fBinMinEdges.swap(binMinEdges);
       fBinMaxEdges.swap(binMaxEdges);
@@ -216,20 +215,20 @@ void TKDTreeBinning::SetData(Double_t* data) {
       for (UInt_t j = 0; j < fDataSize; ++j) {
          fData[i*fDataSize+j] = data[i * fDataSize + j];
       }
-      auto end = first+fDataSize; 
+      auto end = first+fDataSize;
       fDataThresholds[i] = std::make_pair(*std::min_element(first, end), *std::max_element(first,end));
-      first = end; 
+      first = end;
    }
 }
 void TKDTreeBinning::SetData(const std::vector<double>& data) {
    // Sets the data and finds minimum and maximum by dimensional coordinate
-   fData = data; 
+   fData = data;
    auto first = fData.begin();
    // find min/max
    for (UInt_t i = 0; i < fDim; ++i) {
-      auto end = first+fDataSize; 
+      auto end = first+fDataSize;
       fDataThresholds[i] = std::make_pair(*std::min_element(first, end), *std::max_element(first,end));
-      first = end; 
+      first = end;
    }
 }
 
@@ -537,12 +536,12 @@ const Double_t * TKDTreeBinning::SortOneDimBinEdges(Bool_t sortAsc) {
    fBinMaxEdges.swap(binMaxEdges);
    fBinsContent.swap(binContent);
 
-   fIsSorted = kTRUE; 
+   fIsSorted = kTRUE;
 
    // Add also the upper(lower) edge to the min (max) list
    if (sortAsc) {
       fBinMinEdges.push_back(fBinMaxEdges.back());
-      fIsSortedAsc = kTRUE; 
+      fIsSortedAsc = kTRUE;
       return &fBinMinEdges[0];
    }
    fBinMaxEdges.push_back(fBinMinEdges.back());
@@ -550,8 +549,9 @@ const Double_t * TKDTreeBinning::SortOneDimBinEdges(Bool_t sortAsc) {
 
 }
 
-/// Returns the geometric center of of the bin. 'bin' is between 0 and fNBins - 1
-const Double_t* TKDTreeBinning::GetBinCenter(UInt_t bin) const { 
+/// Returns the geometric center of of the bin. 'bin' is between 0 and fNBins - 1,
+/// Array must be deleted as "delete [] res"
+const Double_t* TKDTreeBinning::GetBinCenter(UInt_t bin) const {
    if(bin < fNBins) {
       Double_t* result = new Double_t[fDim];
       std::pair<const Double_t*, const Double_t*> binEdges = GetBinEdges(bin);
@@ -562,10 +562,11 @@ const Double_t* TKDTreeBinning::GetBinCenter(UInt_t bin) const {
    }
    this->Warning("GetBinCenter", "No such bin. Returning null pointer.");
    this->Info("GetBinCenter", "'bin' is between 0 and %d.", fNBins - 1);
-   return 0;
+   return nullptr;
 }
 
 /// Returns a pointer to the vector of the bin widths. 'bin' is between 0 and fNBins - 1
+/// Array must be deleted as "delete [] res"
 const Double_t* TKDTreeBinning::GetBinWidth(UInt_t bin) const {
    if(bin < fNBins) {
       Double_t* result = new Double_t[fDim];
@@ -577,7 +578,7 @@ const Double_t* TKDTreeBinning::GetBinWidth(UInt_t bin) const {
    }
    this->Warning("GetBinWidth", "No such bin. Returning null pointer.");
    this->Info("GetBinWidth", "'bin' is between 0 and %d.", fNBins - 1);
-   return 0;
+   return nullptr;
 }
 
 /// Return the bin with maximum density
@@ -623,22 +624,22 @@ void TKDTreeBinning::FillBinData(ROOT::Fit::BinData & data) const {
 /// find the corresponding bin index given the coordinate of a point
 UInt_t TKDTreeBinning::FindBin(const Double_t * point) const {
 
-   Int_t inode = fDataBins->FindNode(point); 
+   Int_t inode = fDataBins->FindNode(point);
    // find node return the index in the total nodes and the bins are only the terminal ones
    // so we subtract all the non-terminal nodes
-   inode -= fDataBins->GetNNodes(); 
-   R__ASSERT( inode >= 0); 
+   inode -= fDataBins->GetNNodes();
+   R__ASSERT( inode >= 0);
    UInt_t bin = inode;
 
    if (!fIsSorted) return  bin;
-   //return std::distance(fIndices.begin(), std::find(fIndices.begin(), fIndices.end(), bin ) ); 
+   //return std::distance(fIndices.begin(), std::find(fIndices.begin(), fIndices.end(), bin ) );
    return fIndices[bin];
-} 
+}
 
 /// Return the corresponding point belonging to the bin i
 std::vector<std::vector<Double_t> > TKDTreeBinning::GetPointsInBin(UInt_t bin) const {
    std::vector<Double_t> point(fDim);
-   std::vector< std::vector<Double_t> > thePoints; 
+   std::vector< std::vector<Double_t> > thePoints;
    if (fData.size() == 0) {
       Error("GetPointsInBin","Internal data set is not valid");
       return thePoints;
@@ -649,20 +650,20 @@ std::vector<std::vector<Double_t> > TKDTreeBinning::GetPointsInBin(UInt_t bin) c
    }
    if (bin >= fNBins) {
       Error("GetPointsInBin","Invalid bin number");
-      return thePoints; 
+      return thePoints;
    }
-   // need to find the bin number including the non-terminal node 
+   // need to find the bin number including the non-terminal node
    int inode = bin + fDataBins->GetNNodes();
    auto indices = fDataBins->GetPointsIndexes(inode);
    int npoints =  fDataBins->GetNPointsNode(inode);
    thePoints.resize(npoints);
    for (int ipoint = 0; ipoint < npoints; ++ipoint) {
       for (unsigned int idim = 0; idim < fDim;  ++idim) {
-         point[idim] = fData[idim*fDataSize+indices[ipoint] ]; 
+         point[idim] = fData[idim*fDataSize+indices[ipoint] ];
       }
-      thePoints[ipoint] = point; 
+      thePoints[ipoint] = point;
    }
-   return thePoints; 
+   return thePoints;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

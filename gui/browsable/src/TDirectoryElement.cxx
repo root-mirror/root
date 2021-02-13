@@ -15,12 +15,10 @@
 
 #include <ROOT/RLogger.hxx>
 
-#include "TSystem.h"
 #include "TKey.h"
 #include "TDirectory.h"
 #include "TROOT.h"
 #include "TFile.h"
-#include "TH1.h"
 
 using namespace std::string_literals;
 
@@ -72,32 +70,25 @@ public:
 
    virtual ~TDirectoryLevelIter() = default;
 
-   bool Reset() override { return CreateIter(); }
-
    bool Next() override { return NextDirEntry(); }
 
    // use default implementation for now
    // bool Find(const std::string &name) override { return FindDirEntry(name); }
 
-   bool HasItem() const override { return fKey && !fCurrentName.empty(); }
+   std::string GetItemName() const override { return fCurrentName; }
 
-   std::string GetName() const override { return fCurrentName; }
-
-   int CanHaveChilds() const override
+   bool CanItemHaveChilds() const override
    {
-      std::string clname = fKey->GetClassName();
-      return (clname.find("TDirectory") == 0) || (clname.find("TTree") == 0) || (clname.find("TNtuple") == 0) ? 1 : 0;
+      return RProvider::CanHaveChilds(fKey->GetClassName());
    }
 
    /** Create element for the browser */
    std::unique_ptr<RItem> CreateItem() override
    {
-      auto item = std::make_unique<TKeyItem>(GetName(), CanHaveChilds());
-
+      auto item = std::make_unique<TKeyItem>(GetItemName(), CanItemHaveChilds() ? -1 : 0);
       item->SetClassName(fKey->GetClassName());
-
       item->SetIcon(RProvider::GetClassIcon(fKey->GetClassName()));
-
+      item->SetTitle(fKey->GetTitle());
       return item;
    }
 
@@ -119,6 +110,7 @@ Element representing TKey from TDirectory
 class TKeyElement : public RElement {
    TDirectory *fDir{nullptr};
    TKey *fKey{nullptr};
+   std::shared_ptr<RElement> fElement; ///<! holder of read object
 
 public:
    TKeyElement(TDirectory *dir, TKey *key) : fDir(dir), fKey(key) {}
@@ -128,6 +120,8 @@ public:
    /** Name of TKeyElement, includes key cycle */
    std::string GetName() const override
    {
+      if (fElement)
+         return fElement->GetName();
       std::string name = fKey->GetName();
       name.append(";");
       name.append(std::to_string(fKey->GetCycle()));
@@ -135,14 +129,22 @@ public:
    }
 
    /** Title of TKeyElement (optional) */
-   std::string GetTitle() const override { return fKey->GetTitle(); }
+   std::string GetTitle() const override
+   {
+      if (fElement)
+         return fElement->GetTitle();
+
+      return fKey->GetTitle();
+   }
 
    /** Create iterator for childs elements if any
-    * Means we should try to browse inside.
-    * Either it is directory or some complex object
-    * */
+     * Means we should try to browse inside.
+     * Either it is directory or some complex object */
    std::unique_ptr<RLevelIter> GetChildsIter() override
    {
+      if (fElement)
+         return fElement->GetChildsIter();
+
       std::string clname = fKey->GetClassName();
 
       if (clname.find("TDirectory") == 0) {
@@ -153,10 +155,11 @@ public:
 
       auto obj = GetObject();
 
-      if (obj) {
-         auto elem = RProvider::Browse(obj);
-         if (elem) return elem->GetChildsIter();
-      }
+      if (obj)
+         fElement = RProvider::Browse(obj);
+
+      if (fElement)
+         return fElement->GetChildsIter();
 
       return nullptr;
    }
@@ -164,32 +167,65 @@ public:
    /** Return object associated with TKey, if TDirectory has object of that name it will be returned */
    std::unique_ptr<RHolder> GetObject() override
    {
+      if (fElement)
+         return fElement->GetObject();
+
       std::string clname = fKey->GetClassName();
 
       auto obj_class = TClass::GetClass(clname.c_str());
       if (!obj_class)
          return nullptr;
 
-      if (obj_class->InheritsFrom(TObject::Class())) {
+      void *obj = fDir->GetObjectChecked(fKey->GetName(), obj_class);
+      if (!obj)
+         return nullptr;
 
-         TObject *tobj = fDir->FindObject(fKey->GetName());
+      TObject *tobj = (TObject *) obj_class->DynamicCast(TObject::Class(), obj);
 
-         if (!tobj) {
-            tobj = fKey->ReadObj();
-
-            if (!tobj)
-               return nullptr;
-         }
-
-         bool owned_by_dir = fDir->FindObject(tobj) == tobj;
+      if (tobj) {
+         bool owned_by_dir = (fDir->FindObject(tobj) == tobj) || (clname == "TGeoManager");
 
          return std::make_unique<TObjectHolder>(tobj, !owned_by_dir);
       }
 
-      void *obj = fKey->ReadObjectAny(obj_class);
-      if (!obj) return nullptr;
-
       return std::make_unique<RAnyObjectHolder>(obj_class, obj, true);
+   }
+
+
+   EActionKind GetDefaultAction() const override
+   {
+      if (fElement)
+         return fElement->GetDefaultAction();
+
+      std::string clname = fKey->GetClassName();
+      if (clname.empty()) return kActNone;
+      if (clname == "TGeoManager") return kActGeom;
+      if (RProvider::CanDraw6(clname)) return kActDraw6;
+      if (RProvider::CanDraw7(clname)) return kActDraw7;
+      if (RProvider::CanHaveChilds(clname)) return kActBrowse;
+      return kActNone;
+
+   }
+
+   bool IsCapable(EActionKind action) const override
+   {
+      if (fElement)
+         return fElement->IsCapable(action);
+
+      std::string clname = fKey->GetClassName();
+      if (clname.empty()) return false;
+
+      switch(action) {
+         case kActBrowse: return RProvider::CanHaveChilds(clname);
+         case kActEdit: return true;
+         case kActImage:
+         case kActDraw6: return RProvider::CanDraw6(clname); // if can draw in TCanvas, can produce image
+         case kActDraw7: return RProvider::CanDraw7(clname);
+         case kActGeom: return (clname == "TGeoManager");
+         default: return false;
+      }
+
+      return false;
    }
 
 };
@@ -292,9 +328,9 @@ public:
    RTFileProvider()
    {
       RegisterFile("root", [] (const std::string &fullname) -> std::shared_ptr<RElement> {
-         auto f = TFile::Open(fullname.c_str());
+         auto f = dynamic_cast<TFile *> (gROOT->GetListOfFiles()->FindObject(fullname.c_str()));
+         if (!f) f = TFile::Open(fullname.c_str());
          if (!f) return nullptr;
-
          return std::make_shared<TDirectoryElement>(fullname, f);
       });
 

@@ -9,8 +9,6 @@
 # @author Pere Mato, CERN
 ############################################################################
 
-include_directories(${FREETYPE_INCLUDE_DIRS} ${X11_INCLUDE_DIR})
-
 ROOT_STANDARD_LIBRARY_PACKAGE(GX11TTF
   HEADERS
     TGX11TTF.h
@@ -29,3 +27,5 @@ ROOT_STANDARD_LIBRARY_PACKAGE(GX11TTF
     GX11
     Graf
 )
+
+target_include_directories(GX11TTF PRIVATE ${FREETYPE_INCLUDE_DIRS} ${X11_INCLUDE_DIR})

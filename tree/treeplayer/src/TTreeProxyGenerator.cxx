@@ -47,7 +47,7 @@
 
 #include "TList.h"
 #include "Varargs.h"
-#include <stdio.h>
+#include <cstdio>
 
 class TTree;
 class TBranch;
@@ -62,7 +62,6 @@ class TStreamerElement;
 
 #include "TTreeFormula.h"
 #include "TFormLeafInfo.h"
-
 
 #include "TBranchElement.h"
 #include "TChain.h"
@@ -1228,11 +1227,11 @@ namespace Internal {
       }
 
       // Now let's add the TTreeFriend (if any)
-      if (tree->GetListOfFriends()) {
+      if (tree->GetTree()->GetListOfFriends()) {
          TFriendElement *fe;
          Int_t count = 0;
 
-         TIter nextfriend(tree->GetListOfFriends());
+         TIter nextfriend(tree->GetTree()->GetListOfFriends());
          while ((fe = (TFriendElement*)nextfriend())) {
             TTree *t = fe->GetTree();
             TFriendProxyDescriptor *desc;

@@ -9,8 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#ifndef ROOT_Vertex_t
-#define ROOT_Vertex_t
+#ifndef ROOT_TGeoVector3
+#define ROOT_TGeoVector3
 
 #include <Riostream.h>
 #include <TMath.h>

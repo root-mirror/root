@@ -23,6 +23,8 @@
 
 #include "TDictionary.h"
 
+#include <string>
+
 class TMethodCall;
 
 class TFunction : public TDictionary {

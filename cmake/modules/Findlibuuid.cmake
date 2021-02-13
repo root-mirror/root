@@ -72,5 +72,5 @@ if(NOT TARGET uuid::uuid)
   set_property(TARGET uuid::uuid PROPERTY INTERFACE_LINK_LIBRARIES "${UUID_LIBRARIES}")
 endif()
 
-find_package_handle_standard_args(uuid DEFAULT_MSG UUID_INCLUDE_DIR)
+find_package_handle_standard_args(libuuid DEFAULT_MSG UUID_INCLUDE_DIR)
 mark_as_advanced(UUID_INCLUDE_DIR UUID_LIBRARY)

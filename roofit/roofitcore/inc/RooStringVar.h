@@ -16,35 +16,63 @@
 #ifndef ROO_STRING_VAR
 #define ROO_STRING_VAR
 
-#include "TString.h"
-#include "RooAbsString.h"
-class RooArgSet ;
+#include "RooAbsArg.h"
 
-class RooStringVar : public RooAbsString {
+#include <string>
+
+class RooStringVar final : public RooAbsArg {
 public:
   // Constructors, assignment etc.
-  inline RooStringVar() { }
-  RooStringVar(const char *name, const char *title, const char* value, Int_t size=1024) ; 
+  RooStringVar() { }
+  RooStringVar(const char *name, const char *title, const char* value, Int_t size=1024) ;
   RooStringVar(const RooStringVar& other, const char* name=0);
-  virtual TObject* clone(const char* newname) const { return new RooStringVar(*this,newname); }
-  virtual ~RooStringVar();
-  
+  virtual TObject* clone(const char* newname) const override { return new RooStringVar(*this,newname); }
+  virtual ~RooStringVar() = default;
+
   // Parameter value and error accessors
-  virtual operator TString() ;
-  virtual const char* getVal() const { return _value ; } // overrides RooAbsReal::getVal()
-  virtual void setVal(const char* newVal) ;
-  virtual RooAbsArg& operator=(const char* newValue);
+  virtual operator TString() {return TString(_string.c_str()); }
+  const char* getVal() const { clearValueDirty(); return _string.c_str(); }
+  void setVal(const char* newVal) { _string = newVal ? newVal : ""; setValueDirty(); }
+  virtual RooAbsArg& operator=(const char* newVal) { setVal(newVal); return *this; }
 
   // We implement a fundamental type of AbsArg that can be stored in a dataset
-  inline virtual Bool_t isFundamental() const { return kTRUE; }
+  bool isFundamental() const override { return true; }
 
   // I/O streaming interface (machine readable)
-  virtual Bool_t readFromStream(std::istream& is, Bool_t compact, Bool_t verbose=kFALSE) ;
-  virtual void writeToStream(std::ostream& os, Bool_t compact) const ;
+  bool readFromStream(std::istream& is, Bool_t compact, Bool_t verbose) override;
+  void writeToStream(std::ostream& os, Bool_t /*compact*/) const override { os << _string; }
+
+  // Return value and unit accessors
+  bool operator==(const char* val) const { return _string == val; }
+  bool operator==(const RooAbsArg& other) const override {
+    auto otherStr = dynamic_cast<const RooStringVar*>(&other);
+    return otherStr && _string == otherStr->_string;
+  }
+  bool isIdentical(const RooAbsArg& other, Bool_t /*assumeSameType*/) const override { return *this == other; }
+
+  // Printing interface (human readable)
+  virtual void printValue(std::ostream& os) const override { os << _string; }
+
+
+  RooAbsArg *createFundamental(const char* newname=0) const override {
+    return new RooStringVar(newname ? newname : GetName(), GetTitle(), "", 1);
+  }
 
 protected:
+  // Internal consistency checking (needed by RooDataSet)
+  virtual Bool_t isValid() const override { return true; }
+  virtual Bool_t isValidString(const char*, Bool_t /*printError=kFALSE*/) const { return true; }
 
-  ClassDef(RooStringVar,1) // String-valued variable 
+  virtual void syncCache(const RooArgSet* /*nset*/ = nullptr) override { }
+  void copyCache(const RooAbsArg* source, Bool_t valueOnly=kFALSE, Bool_t setValDiry=kTRUE) override;
+  virtual void attachToTree(TTree& t, Int_t bufSize=32000) override;
+  virtual void attachToVStore(RooVectorDataStore&) override { }
+  virtual void fillTreeBranch(TTree& t) override;
+  virtual void setTreeBranchStatus(TTree& t, Bool_t active) override;
+
+private:
+  std::string _string;
+  ClassDefOverride(RooStringVar,2) // String-valued variable
 };
 
 #endif

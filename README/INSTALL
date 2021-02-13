@@ -7,70 +7,38 @@ Contents:
    1.    Getting the source
    2.    Getting ready to build
    3.    Choosing the installation method
-   3.1.  Environment driven build
-   3.2.  Fixed locations build
+   3.1.  Location independent build
+   3.2.  Fixed location build
    4.    Installation Location
-   5.    Makefile targets
-   6.    Installing optional add-on libraries
-   7.    Information on third party software
-   7.1.  Posix Thread usage
-   7.2.  OpenGL library
-   7.3.  SHIFT managed tape I/O
-   7.4.  ZEBRA file conversion tools
-   7.5.  MySQL client
-   7.6.  PostGreSQL Client
-   7.7.  SapDB Client
-   7.8.  Pythia Event Generators
-   7.9.  Venus Event Generators
-   7.10. Secure Remote Password (SRP) Authentication
-   7.11. AFS Authentication
-   7.12. Kerberos Authentication
-   7.13. Globus Authentication
-   7.14. SSH Authentication
+   5.    Where to get more information
+   6.    Where to get help
 
 1. Getting the source:
 ======================
 
-To install ROOT from source you first have to get the tar file
-containing the source. This tar file can be found in the usual
-ROOT download page http://root.cern.ch/downloading-root. The files are named
-root-<version>.source.tar.gz.
+To install ROOT from source you first have to get the source code.
 
-Here's a short summary:
+You can clone the source code from our GitHub repository:
 
-
-1) Get the sources
-
-     wget https://root.cern.ch/download/root_<version>.source.tar.gz
-
-2) Unpack the distribution:
-
-     tar -zxf root_<version>.source.tar.gz
-
-An alternative approach is to use our public GIT repository to get
-the latest version.
-
-     git clone http://root.cern.ch/git/root.git
+     git clone https://github.com/root-project/root.git
 
 The release specific tag can be obtained using for example:
 
      cd root
-     git checkout -b v6-04-14 v6-04-14
-
+     git checkout v6-22-00
 
 
 2. Getting ready to build:
 ==========================
 
-Building ROOT requires to have CMake in your system. This can be
-downloaded from http://cmake.org
-You may want to compile features into ROOT, which depends on third
-party libraries. Make sure you meet all demands for additional
+ROOT requires CMake to be built.
+You may want to build ROOT with features (such as HistFactory) that depend on third-party libraries (such as libxml2).
+Make sure you meet all demands for additional
 features before trying to enable them (see below).
 
-The prerequisites needed for the different platforms are documented at 
+The prerequisites needed for the different platforms are documented at
 
-  https://root.cern.ch/build-prerequisites
+  https://root.cern/install/dependencies
 
 
 3. Choosing the installation method:
@@ -78,10 +46,10 @@ The prerequisites needed for the different platforms are documented at
 
 There are two main methods of installing ROOT from source.
   - 'location independent' is advised for a personal installation of ROOT
-  - 'fix location' for a system wide installation. 
-  
-Both require to set the CMAKE_INSTALL_PREFIX variable at configuration time. 
-The 'fix location' requires in addition to set the 'gnuinstall' option at configuration. 
+  - 'fixed location' for a system wide installation.
+
+Both methods will install ROOT in the location specified as the `CMAKE_INSTALL_PREFIX` cmake variable at configuration time (`/usr/local` by default).
+The 'fixed location' requires in addition to set the 'gnuinstall' cmake option at configuration time, with `-Dgnuinstall=ON`.
 
 
 3.1. Location independent build:
@@ -132,7 +100,7 @@ libraries.
         cmake ../root -DCMAKE_INSTALL_PREFIX=<prefix> -Dgnuinstall=ON 
         cmake --build .                  [ or simply "make -j<N>" on Unix systems ]
         cmake --build . --target install [ or simply "make install" on Unix systems ]
-         
+
    3) Update the ldconfig cache by doing:
         ldconfig
 
@@ -150,201 +118,18 @@ Using the fixed location mode (section 3.2), the default 'CMAKE_INSTALL_PREFIX'
 path is '/usr/local', which will result in the ROOT files to be
 installed in '/usr/local/bin', `/usr/local/lib', etc. You can specify
 an installation prefix other than `/usr/local' by giving `cmake'
-the option `-DCMAKE_INSTALL_PREFIX=PATH'. For more detailed location specifications
-see http://root.cern.ch/building-root#variables.
-
-Here's the complete list:
-
-* prefix (/usr/local)
-  Installation prefix. This will prefix any installation directory not
-  explicitly specified.
-* bindir (<prefix>/bin)
-  This is where the ROOT applications (root, cint, rootcint, etc.)
-  will be installed.
-* libdir (<prefix>/lib/root)
-  Library installation directory. All the class libraries of ROOT will
-  be installed into this directory. You should make your dynamic
-  linker aware of this directory. On Linux - and some other Un*ces -
-  this directory can be added to /etc/ld.so.conf and ldconfig should
-  be run afterward (you need to be root - the user - to do
-  this). Please note, that this directory should probably not be
-  something like /usr/lib or /usr/local/lib, since you'll most likely
-  get a name clash with ROOT libraries and other libraries
-  (e.g. libMatrix.so); rather use something like /usr/local/lib/root
-* incdir (<prefix>/include/root)
-  Header installation directory. All the header (declaration) files
-  for the ROOT classes will be installed into this directory. This
-  should be parallel to libdir, for consistency.
-* etcdir (<prefix>/etc/root)
-  Configuration files installation directory. The system-wide
-  system.rootrc and root.mimes will be installed into this directory.
-* mandir (<prefix>/share/man/man1)
-  Installation directory for the ROOT man(1) pages. This should be
-  somewhere searched by man(1). On most Un*x you can set the search
-  path for man(1) via environment variable MANPATH. On some systems, a
-  special configuration file /etc/manpath.config exist and should be
-  used. See also man(1) - type man man in the prompt - on your
-  system.
-* datadir (<prefix>/share/root)
-  Top-level data installation directory. Under this directory, various
-  data files needed by ROOT will be installed, either in
-  subdirectories, or directly.
-* proofdir (<datadir>/proof)
-  PROOF utilities directory. Various PROOF utility scripts as well as
-  example configurations are installed into this directory.
-* macrodir (<datadir>/macros)
-  Macro installation directory. Macros - properly called scripts -
-  provided by the ROOT system are installed into this directory. ROOT
-  - the application -  will always search this directory for scripts.
-* cintincdir (<datadir>/cint)
-  CINT data directory. In this directory, the CINT runtime headers
-  will be installed, both the standard headers, as well as
-  pre-processed once.
-* iconpath (<datadir>/icons)
-  Icon installation directory. The icons used by the TBrowser and other
-  classes will be installed into this directory. The user can specify
-  additional directories in using the "--with-sysicondir" option.
-* srcdir (<datadir>/src)
-  Sources installation directory. Currently not used!
-* docdir (<prefix>/doc/root)
-  Documentation, like the LICENCE, README, etc. files will be
-  installed into this directory.
-* tutdir (<docdir>/tutorial)
-  All the tutorials will be installed in this directory.
+the option `-DCMAKE_INSTALL_PREFIX=/opt/root-6.22'. Using a version-specific install prefix is recommended in case mulitple versions of ROOT will be installed in the system at the same time.
 
 
-5. Makefile targets:
-====================
+5. Where to get more information:
+=================================
 
-The available Makefile top level targets are shown by doing 
+For more detailed information about building ROOT from source, please check https://root.cern/install/build_from_source.
 
-    make help
-
-
-6. Installing optional add-on libraries:
-========================================
-
-You can also specify additional features and external linking using
-command line options -D<option>=ON in the cmake command.
-
-See the full list of available options described at http://root.cern.ch/building-root#options
+A list of build options is available at https://root.cern/install/build_from_source/#all-build-options.
 
 
-7. Information on third party software:
-=======================================
+6. Where to get help:
+=====================
 
-The optional add-ons are not necessary for the proper functioning of
-ROOT but we advice you to at least get the True Type fonts since they
-hugely increase the appearance of text on the screen.
-
-
-7.1. Posix Thread usage:
-------------------------
-To build the library providing thread support you need to have the
-library libpthread.{a,so} and header files installed. This is usually
-the case for any Un*x OS. For architecture "linux" thread support
-will always be build.
-
-
-7.2. OpenGL library:
---------------------
-On how to get an open source version of OpenGL see:
-
-   http://www.mesa3d.org
-
-For pre-built versions see:
-
-   ftp://root.cern.ch/root/opengl/
-
-Most Linux distributions come with a Mesa package, providing the
-needed headers and libraries. Also, the OpenGL libraries are already
-in XFree86 version 4 or above.
-
-
-7.3. SHIFT managed tape I/O:
-----------------------------
-To build the library providing CERN RFIO (remote I/O) support you need
-to get the "libshift.a" library from CERN. You can get pre-build
-libraries from
-
-  http://root.cern.ch/root/shift
-
-or you can download the full source from
-
-  http://savannah.cern.ch/files/?group=castor
-
-7.4. ZEBRA file conversion tools:
----------------------------------
-To build the HBOOK and Geant3 conversion programs `h2root' and
-`g2root' you need the CERNLIB components "libpacklib.{a,so}" and
-"libkernlib.{a,so}" from CERN. You can get it from
-
-  ftp://asisftp.cern.ch/cernlib
-
-
-7.5. MySQL client:
-------------------
-To build the MySQL interface library you need to install MySQL first. See:
-
-   http://www.mysql.com/
-
-
-7.6. PostGreSQL Client:
------------------------
-To build the PostGreSQL interface you need to install PostGreSQL
-first. See
-
-   http://www.postgresql.org
-
-
-7.7.  SapDB Client:
--------------------
-Not supported any longer
-
-
-7.8. Pythia Event Generators:
------------------------------
-To build the event generator interfaces for Pythia and Pythia6, you
-first have to get the pythia libraries. You can get pre-build
-libraries from:
-
-   ftp://root.cern.ch/root/pythia/
-
-or you can download the source from the same directory. The original
-sources can be found via Lunds FTP server.
-
-More information is available from:
-
-   http://www.thep.lu.se/~torbjorn/Pythia.html
-
-
-7.9. Venus Event Generators:
-----------------------------
-To build the event generator interface for Venus, you need to have the
-Venus libraries.  The sources can be downloaded from
-
-    ftp://root.cern.ch/root/venus/
-
-
-7.10. Secure Remote Password (SRP) Authentication:
---------------------------------------------------
-Not supported any longer
-
-
-7.11. AFS Authentication:
--------------------------
-Not supported any longer
-
-
-7.12. Kerberos Authentication (LEGACY):
----------------------------------------
-Not supported any longer
-
-7.13. Globus Authentication (LEGACY):
--------------------------------------
-Not supported any longer
-
-7.14. SSH Authentication:
--------------------------
-Not supported any longer
-
+To get help provide feedback, please contact us by opening a new topic at https://root-forum.cern.ch.

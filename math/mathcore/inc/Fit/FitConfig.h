@@ -23,6 +23,7 @@
 #include "TMath.h"
 
 #include <vector>
+#include <string>
 
 namespace ROOT {
 

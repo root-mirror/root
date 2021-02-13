@@ -26,7 +26,7 @@ required, use TTimeStamp.
 
 #include <ROOT/RConfig.hxx>
 
-#include <time.h>
+#include <ctime>
 
 #ifdef WIN32
 #include "Windows4Root.h"
@@ -35,6 +35,7 @@ required, use TTimeStamp.
 
 #include "TBuffer.h"
 #include "Strlen.h"
+#include "snprintf.h"
 #include "TDatime.h"
 #include "TError.h"
 #include "Bytes.h"

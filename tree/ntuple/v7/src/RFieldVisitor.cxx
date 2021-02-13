@@ -42,7 +42,7 @@ void ROOT::Experimental::RPrepareVisitor::VisitField(const Detail::RFieldBase &f
 }
 
 
-void ROOT::Experimental::RPrepareVisitor::VisitRootField(const RFieldRoot &field)
+void ROOT::Experimental::RPrepareVisitor::VisitFieldZero(const RFieldZero &field)
 {
    VisitField(field);
    fNumFields--;
@@ -93,11 +93,12 @@ void ROOT::Experimental::RPrintSchemaVisitor::VisitField(const Detail::RFieldBas
 }
 
 
-void ROOT::Experimental::RPrintSchemaVisitor::VisitRootField(const RFieldRoot &field)
+void ROOT::Experimental::RPrintSchemaVisitor::VisitFieldZero(const RFieldZero &fieldZero)
 {
-   auto subFields = field.GetSubFields();
-   for (auto f : subFields) {
+   auto fieldNo = 1;
+   for (auto f : fieldZero.GetSubFields()) {
       RPrintSchemaVisitor visitor(*this);
+      visitor.fFieldNo = fieldNo++;
       f->AcceptVisitor(visitor);
    }
 }
@@ -220,13 +221,13 @@ void ROOT::Experimental::RPrintValueVisitor::VisitUInt64Field(const RField<std::
 }
 
 
-void ROOT::Experimental::RPrintValueVisitor::VisitArrayField(const RFieldArray &field)
+void ROOT::Experimental::RPrintValueVisitor::VisitArrayField(const RArrayField &field)
 {
    PrintCollection(field);
 }
 
 
-void ROOT::Experimental::RPrintValueVisitor::VisitClassField(const RFieldClass &field)
+void ROOT::Experimental::RPrintValueVisitor::VisitClassField(const RClassField &field)
 {
    PrintIndent();
    PrintName(field);
@@ -256,7 +257,7 @@ void ROOT::Experimental::RPrintValueVisitor::VisitClassField(const RFieldClass &
 }
 
 
-void ROOT::Experimental::RPrintValueVisitor::VisitVectorField(const RFieldVector &field)
+void ROOT::Experimental::RPrintValueVisitor::VisitVectorField(const RVectorField &field)
 {
    PrintCollection(field);
 }

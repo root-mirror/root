@@ -48,7 +48,6 @@ the Clang C++ compiler, not CINT.
 
 #include <string>
 #include <sstream>
-#include <iostream>
 
 using namespace llvm;
 using namespace clang;

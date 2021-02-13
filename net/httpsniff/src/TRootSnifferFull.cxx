@@ -553,9 +553,11 @@ Bool_t TRootSnifferFull::ProduceExe(const std::string &path, const std::string &
          // very special case - function requires list of options after method=argument
 
          const char *pos = strstr(options.c_str(), "method=");
-         if (!pos || (strlen(pos) < strlen(method_name) + 8))
+         if (!pos || (strlen(pos) < strlen(method_name) + 7))
             return debug != nullptr;
-         call_args.Form("\"%s\"", pos + strlen(method_name) + 8);
+         const char *rest_url = pos + strlen(method_name) + 7;
+         if (*rest_url == '&') ++rest_url;
+         call_args.Form("\"%s\"", rest_url);
          break;
       }
 

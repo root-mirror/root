@@ -71,9 +71,13 @@ RooConvGenContext::RooConvGenContext(const RooAbsAnaConvPdf &model, const RooArg
   }
 
   RooAbsAnaConvPdf* pdfClone = (RooAbsAnaConvPdf*) _pdfCloneSet->find(model.GetName()) ;
-  RooTruthModel truthModel("truthModel","Truth resolution model",(RooRealVar&)*pdfClone->convVar()) ;
+  RooTruthModel truthModel("truthModel","Truth resolution model",*pdfClone->convVar()) ;
   pdfClone->changeModel(truthModel) ;
-  ((RooRealVar*)pdfClone->convVar())->removeRange() ;
+  auto convV = dynamic_cast<RooRealVar*>(pdfClone->convVar());
+  if (!convV) {
+    throw std::runtime_error("RooConvGenContext only works with convolution variables of type RooRealVar.");
+  }
+  convV->removeRange();
 
   // Create generator for physics X truth model
   _pdfVars = (RooArgSet*) pdfClone->getObservables(&vars) ; ;
@@ -89,7 +93,11 @@ RooConvGenContext::RooConvGenContext(const RooAbsAnaConvPdf &model, const RooArg
     _modelCloneSet->find(model._convSet.at(0)->GetName())->Clone("smearing") ;
   _modelCloneSet->addOwned(*modelClone) ;
   modelClone->changeBasis(0) ;
-  modelClone->convVar().removeRange() ;
+  convV = dynamic_cast<RooRealVar*>(&modelClone->convVar());
+  if (!convV) {
+    throw std::runtime_error("RooConvGenContext only works with convolution variables of type RooRealVar.");
+  }
+  convV->removeRange();
 
   // Create generator for resolution model as PDF
   _modelVars = (RooArgSet*) modelClone->getObservables(&vars) ;

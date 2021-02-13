@@ -20,6 +20,7 @@
 #include "TH1F.h"
 #include "TF1.h"
 #include "TLegend.h"
+#include <vector>
 
 #include "RooStats/SamplingDistribution.h"
 

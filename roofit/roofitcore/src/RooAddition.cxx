@@ -21,8 +21,7 @@
 
 RooAddition calculates the sum of a set of RooAbsReal terms, or
 when constructed with two sets, it sums the product of the terms
-in the two sets. This class does not (yet) do any smart handling of integrals, 
-i.e. all integrals of the product are handled numerically.
+in the two sets.
 **/
 
 

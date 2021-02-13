@@ -10,7 +10,7 @@
  *************************************************************************/
 
  //////////////////////////////////////////////////////////////////
-// Definition of the TCpu architecture, which provides a         //
+ // Definition of the TCpu architecture, which provides a         //
  // multi-threaded CPU implementation of the low-level interface //
  // networks for Cpus using BLAS and Roots TThreadExecutor            //
  //////////////////////////////////////////////////////////////////
@@ -21,16 +21,18 @@
 #include "TMVA/DNN/Functions.h"
 #include "TMVA/DNN/CNN/ContextHandles.h"
 //#include "TMVA/DNN/CNN/Descriptors.h"
+#include "TMVA/DNN/GeneralLayer.h"
 #include "TMVA/DNN/BatchNormLayer.h"
 #include "TMVA/DNN/CNN/ConvLayer.h"
 #include "TMVA/DNN/CNN/MaxPoolLayer.h"
+#include "TMVA/DNN/RNN/RNNLayer.h"
 
 #include "TMVA/DNN/Architectures/Cpu/CpuBuffer.h"
 #include "TMVA/DNN/Architectures/Cpu/CpuMatrix.h"
 #include "TMVA/DNN/Architectures/Cpu/CpuTensor.h"
 
 #include <vector>
-
+#include <string>
 
 class TRandom;
 
@@ -64,7 +66,6 @@ class TCpu
 private:
    static TRandom * fgRandomGen;
 public:
-
    using Scalar_t       = AReal;
    using Tensor_t       = TCpuTensor<AReal>;
    using Matrix_t       = TCpuMatrix<AReal>;
@@ -75,27 +76,32 @@ public:
    using ConvolutionDescriptor_t = DummyDescriptor;
    using FilterDescriptor_t      = DummyDescriptor;
    using DropoutDescriptor_t     = DummyDescriptor;
-   //using OpTensorDescriptor_t    = DummyOpTensorDescriptor;
    using PoolingDescriptor_t     = DummyDescriptor;
    using TensorDescriptor_t      = DummyDescriptor;
-   //using ReductionDescriptor_t   = DummyReduceTensorDescriptor;
+
    using AlgorithmForward_t      = DummyConvolutionFwdAlgo;
    using AlgorithmBackward_t     = DummyConvolutionBwdDataAlgo;
    using AlgorithmHelper_t       = DummyConvolutionBwdFilterAlgo;
    using AlgorithmDataType_t     = DummyDataType;
    using ReduceTensorDescriptor_t = DummyDataType;
+   using RecurrentDescriptor_t    = DummyDataType;
 
-   using EmptyDescriptor_t       = DummyDescriptor;        // Used if a descriptor is not needed in a class
+   using EmptyDescriptor_t       = DummyDescriptor; // Used if a descriptor is not needed in a class
 
+   using GenLayer_t              = VGeneralLayer<TCpu<AReal>>;
    using BNormLayer_t            = TBatchNormLayer<TCpu<AReal>>;
    using BNormDescriptors_t      = TDNNGenDescriptors<BNormLayer_t>;
-   //using BNormWorkspace_t        = CNN::TCNNWorkspace<BNormLayer_t>;
+
    using ConvLayer_t             = CNN::TConvLayer<TCpu<AReal>>;
    using ConvDescriptors_t       = CNN::TCNNDescriptors<ConvLayer_t>;
    using ConvWorkspace_t         = CNN::TCNNWorkspace<ConvLayer_t>;
    using PoolingLayer_t          = CNN::TMaxPoolLayer<TCpu<AReal>>;
    using PoolingDescriptors_t    = CNN::TCNNDescriptors<PoolingLayer_t>;
    using PoolingWorkspace_t      = CNN::TCNNWorkspace<PoolingLayer_t>;
+
+   using RNNDescriptors_t = RNN::TRNNDescriptors<TCpu<AReal>>;
+   using RNNWorkspace_t = RNN::TRNNWorkspace<TCpu<AReal>>;
+
 
    static TMVA::Experimental::MemoryLayout GetTensorLayout() { return TMVA::Experimental::MemoryLayout::ColumnMajor; }
 
@@ -105,6 +111,14 @@ public:
    static Tensor_t CreateTensor(DeviceBuffer_t buffer, size_t n, size_t c, size_t h, size_t w) {
       return Tensor_t( buffer, {c,h*w,n}, GetTensorLayout());
    }
+   static Tensor_t CreateTensor(size_t b, size_t t, size_t w)
+   {
+      return Tensor_t({t, w, b}, GetTensorLayout());
+   }
+   static Tensor_t CreateTensor(DeviceBuffer_t buffer, size_t b, size_t t, size_t w)
+   {
+      return Tensor_t(buffer, {t, w, b}, GetTensorLayout());
+   }
    // create a weight tensor/matrix vector   from another tensor/weight  vector using the given tensor shapes
    // this function is used by the optimizers to stgore intermidiate weights representations
    static void  CreateWeightTensors( std::vector<Matrix_t> & newWeights, const std::vector<Matrix_t> & weights) {
@@ -113,6 +127,8 @@ public:
       for (size_t i = 0; i < n; ++i)
          newWeights.emplace_back( weights[i].GetNrows(), weights[i].GetNcols());
    }
+
+   static bool IsCudnn() { return false; }
    //____________________________________________________________________________
    //
    // Architecture Initialization
@@ -127,6 +143,9 @@ public:
                                          ConvLayer_t * /*L = nullptr*/) {}
    static void InitializePoolDescriptors(TDescriptors * & /*descriptors*/,
                                          PoolingLayer_t * /*L = nullptr*/) {}
+   static void InitializeRNNDescriptors(TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/) {}
+   static void InitializeLSTMDescriptors(TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/) {}
+   static void InitializeGRUDescriptors(TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/) {}
 
    static void InitializeActivationDescriptor(ActivationDescriptor_t &/*descriptors*/, EActivationFunction /*activFunc */ , double /*coef*/ = 0.0) {}
 
@@ -134,6 +153,7 @@ public:
    static void ReleaseConvDescriptors(TDescriptors * & /*descriptors*/) {}
    static void ReleasePoolDescriptors(TDescriptors * & /*descriptors*/) {}
    static void ReleaseBNormDescriptors(TDescriptors * & /*descriptors*/) {}
+   static void ReleaseRNNDescriptors(TDescriptors *& /*descriptors*/) {}
 
    static void InitializeConvWorkspace(TWorkspace * & /*workspace*/,
                                        TDescriptors * & /*descriptors*/,
@@ -143,11 +163,19 @@ public:
                                        TDescriptors * & /*descriptors*/,
                                        const DNN::CNN::TConvParams & /*params*/,
                                        PoolingLayer_t * /*L = nullptr*/) {}
+   static void InitializeRNNWorkspace(TWorkspace *& /*workspace*/, TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/) {}
+   static void InitializeLSTMWorkspace(TWorkspace *& /*workspace*/, TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/){}
+   static void InitializeGRUWorkspace(TWorkspace *& /*workspace*/, TDescriptors *& /*descriptors*/, GenLayer_t * /*L*/){}
 
-   static void FreeConvWorkspace(TWorkspace * & /*workspace*/, ConvLayer_t * /*L = nullptr*/) {}   ///< Only used for certain cudnn on-device memory
-   static void FreePoolDropoutWorkspace(TWorkspace * & /*workspace*/, PoolingLayer_t * /*L = nullptr*/) {}
+   static void FreeConvWorkspace(TWorkspace * & /*workspace*/) {}   ///< Only used for certain cudnn on-device memory
+   static void FreePoolDropoutWorkspace(TWorkspace * & /*workspace*/) {}
+   static void FreeRNNWorkspace(TWorkspace *& /*workspace*/) {}
 
    static void ReleaseDescriptor(ActivationDescriptor_t &  /* activationDescr */) {}
+
+   static void InitializeRNNTensors(GenLayer_t * /*layer*/)   {}
+   static void InitializeLSTMTensors(GenLayer_t * /*layer*/) {}
+   static void InitializeGRUTensors(GenLayer_t * /*layer*/) {}
 
    //____________________________________________________________________________
    //
@@ -198,6 +226,7 @@ public:
                         const Tensor_t & activationGradients,
                         const Matrix_t & weights,
                         const Tensor_t & activationBackward);
+
 
    /** Adds a the elements in matrix B scaled by c to the elements in
     *  the matrix A. This is required for the weight update in the gradient
@@ -280,6 +309,10 @@ public:
    static void Tanh(Tensor_t & B);
    static void TanhDerivative(Tensor_t & B,
                               const Tensor_t & A);
+
+   // fast tanh (only when VDT is available)
+   static void FastTanh(Tensor_t &B);
+   static void FastTanhDerivative(Tensor_t &B, const Tensor_t &A);
 
    static void SymmetricRelu(Tensor_t & B);
    static void SymmetricReluDerivative(Tensor_t & B,
@@ -389,6 +422,7 @@ public:
    static void InitializeUniform(Matrix_t & A);
    static void InitializeIdentity(Matrix_t & A);
    static void InitializeZero(Matrix_t & A);
+   static void InitializeZero(Tensor_t &A);
    static void InitializeGlorotNormal(Matrix_t & A);
    static void InitializeGlorotUniform(Matrix_t & A);
 
@@ -580,6 +614,102 @@ public:
                                     size_t fltHeight, size_t fltWidth, size_t strideRows, size_t strideCols,
                                     size_t nLocalViews);
 
+                                     //// Recurrent Network Functions
+
+   /** Backward pass for Recurrent Networks */
+   static Matrix_t &RecurrentLayerBackward(Matrix_t &state_gradients_backward, // BxH
+                                           Matrix_t &input_weight_gradients, Matrix_t &state_weight_gradients,
+                                           Matrix_t &bias_gradients,
+                                           Matrix_t &df,                  // DxH
+                                           const Matrix_t &state,         // BxH
+                                           const Matrix_t &weights_input, // HxD
+                                           const Matrix_t &weights_state, // HxH
+                                           const Matrix_t &input,         // BxD
+                                           Matrix_t &input_gradient);
+
+   // dummy RNN functions
+   static void RNNForward(const Tensor_t & /* x */, const Matrix_t & /* hx */, const Matrix_t & /* cx */,
+                          const Matrix_t & /* weights */, Tensor_t & /* y */, Matrix_t & /* hy */, Matrix_t & /* cy */,
+                          const RNNDescriptors_t & /* descr */, RNNWorkspace_t & /* workspace */, bool /* isTraining */)
+   {
+   }
+
+   static void RNNBackward(const Tensor_t & /* x */, const Matrix_t & /* hx */, const Matrix_t & /* cx */,
+                           const Tensor_t & /* y */, const Tensor_t & /* dy */, const Matrix_t & /* dhy */,
+                           const Matrix_t & /* dcy */, const Tensor_t & /* weights */, Tensor_t & /* dx */,
+                           Matrix_t & /* dhx */, Matrix_t & /* dcx */, Tensor_t & /* dw */,
+                           const RNNDescriptors_t & /* desc */, RNNWorkspace_t & /* workspace */)
+   {
+   }
+
+   /** Backward pass for LSTM Network */
+   static Matrix_t & LSTMLayerBackward(TCpuMatrix<Scalar_t> & state_gradients_backward,
+			                              TCpuMatrix<Scalar_t> & cell_gradients_backward,
+			                              TCpuMatrix<Scalar_t> & input_weight_gradients,
+                                       TCpuMatrix<Scalar_t> & forget_weight_gradients,
+                                       TCpuMatrix<Scalar_t> & candidate_weight_gradients,
+                                       TCpuMatrix<Scalar_t> & output_weight_gradients,
+                                       TCpuMatrix<Scalar_t> & input_state_weight_gradients,
+                                       TCpuMatrix<Scalar_t> & forget_state_weight_gradients,
+                                       TCpuMatrix<Scalar_t> & candidate_state_weight_gradients,
+                                       TCpuMatrix<Scalar_t> & output_state_weight_gradients,
+                                       TCpuMatrix<Scalar_t> & input_bias_gradients,
+                                       TCpuMatrix<Scalar_t> & forget_bias_gradients,
+                                       TCpuMatrix<Scalar_t> & candidate_bias_gradients,
+                                       TCpuMatrix<Scalar_t> & output_bias_gradients,
+                                       TCpuMatrix<Scalar_t> & di,
+                                       TCpuMatrix<Scalar_t> & df,
+                                       TCpuMatrix<Scalar_t> & dc,
+                                       TCpuMatrix<Scalar_t> & dout,
+                                       const TCpuMatrix<Scalar_t> & precStateActivations,
+                                       const TCpuMatrix<Scalar_t> & precCellActivations,
+                                       const TCpuMatrix<Scalar_t> & fInput,
+                                       const TCpuMatrix<Scalar_t> & fForget,
+                                       const TCpuMatrix<Scalar_t> & fCandidate,
+                                       const TCpuMatrix<Scalar_t> & fOutput,
+                                       const TCpuMatrix<Scalar_t> & weights_input,
+                                       const TCpuMatrix<Scalar_t> & weights_forget,
+                                       const TCpuMatrix<Scalar_t> & weights_candidate,
+                                       const TCpuMatrix<Scalar_t> & weights_output,
+                                       const TCpuMatrix<Scalar_t> & weights_input_state,
+                                       const TCpuMatrix<Scalar_t> & weights_forget_state,
+                                       const TCpuMatrix<Scalar_t> & weights_candidate_state,
+                                       const TCpuMatrix<Scalar_t> & weights_output_state,
+                                       const TCpuMatrix<Scalar_t> & input,
+                                       TCpuMatrix<Scalar_t> & input_gradient,
+                                       TCpuMatrix<Scalar_t> & cell_gradient,
+                                       TCpuMatrix<Scalar_t> & cell_tanh);
+
+
+   /** Backward pass for GRU Network */
+   static Matrix_t & GRULayerBackward(TCpuMatrix<Scalar_t> & state_gradients_backward,
+                                      TCpuMatrix<Scalar_t> & reset_weight_gradients,
+                                      TCpuMatrix<Scalar_t> & update_weight_gradients,
+                                      TCpuMatrix<Scalar_t> & candidate_weight_gradients,
+                                      TCpuMatrix<Scalar_t> & reset_state_weight_gradients,
+                                      TCpuMatrix<Scalar_t> & update_state_weight_gradients,
+                                      TCpuMatrix<Scalar_t> & candidate_state_weight_gradients,
+                                      TCpuMatrix<Scalar_t> & reset_bias_gradients,
+                                      TCpuMatrix<Scalar_t> & update_bias_gradients,
+                                      TCpuMatrix<Scalar_t> & candidate_bias_gradients,
+                                      TCpuMatrix<Scalar_t> & dr,
+                                      TCpuMatrix<Scalar_t> & du,
+                                      TCpuMatrix<Scalar_t> & dc,
+                                      const TCpuMatrix<Scalar_t> & precStateActivations,
+                                      const TCpuMatrix<Scalar_t> & fReset,
+                                      const TCpuMatrix<Scalar_t> & fUpdate,
+                                      const TCpuMatrix<Scalar_t> & fCandidate,
+                                      const TCpuMatrix<Scalar_t> & weights_reset,
+                                      const TCpuMatrix<Scalar_t> & weights_update,
+                                      const TCpuMatrix<Scalar_t> & weights_candidate,
+                                      const TCpuMatrix<Scalar_t> & weights_reset_state,
+                                      const TCpuMatrix<Scalar_t> & weights_update_state,
+                                      const TCpuMatrix<Scalar_t> & weights_candidate_state,
+                                      const TCpuMatrix<Scalar_t> & input,
+                                      TCpuMatrix<Scalar_t> & input_gradient,
+                                      bool resetGateAfter);
+
+
    ///@}
 
    //____________________________________________________________________________
@@ -604,16 +734,6 @@ public:
    /** Rearrage data accoring to time fill B x T x D out with T x B x D matrix in*/
    static void Rearrange(Tensor_t &out, const Tensor_t &in);
 
-   /** Backward pass for Recurrent Networks */
-   static Matrix_t &RecurrentLayerBackward(Matrix_t &state_gradients_backward, // BxH
-                                           Matrix_t &input_weight_gradients, Matrix_t &state_weight_gradients,
-                                           Matrix_t &bias_gradients,
-                                           Matrix_t &df,                  // DxH
-                                           const Matrix_t &state,         // BxH
-                                           const Matrix_t &weights_input, // HxD
-                                           const Matrix_t &weights_state, // HxH
-                                           const Matrix_t &input,         // BxD
-                                           Matrix_t &input_gradient);
 
    ///@}
 
@@ -721,7 +841,7 @@ void TCpu<AReal>::CopyDiffArch(TCpuTensor<AReal> &B,
       TCpuMatrix<AReal> tmpOut = B.At(i).GetMatrix();    // matrix (D,HW)
       Copy(tmpOut, TCpuMatrix<AReal>(tmpIn));
    }
-   
+
    // ATensor_t tmpIn = A.Reshape({A.GetNrows(), A.GetNcols()});
    // auto tmpOut = B.Reshape({A.GetNrows(), A.GetNcols()});
    // Matrix_t mOut = tmpOut.GetMatrix();

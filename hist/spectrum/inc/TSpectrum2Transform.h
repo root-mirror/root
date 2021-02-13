@@ -11,7 +11,7 @@
 #ifndef ROOT_TSpectrum2Transform
 #define ROOT_TSpectrum2Transform
 
-#include "TNamed.h"
+#include "TObject.h"
 
 class TSpectrum2Transform : public TObject {
 protected:

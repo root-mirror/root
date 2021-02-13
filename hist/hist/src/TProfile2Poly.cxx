@@ -11,15 +11,13 @@
 
 #include "TProfile2Poly.h"
 #include "TProfileHelper.h"
-
 #include "TMultiGraph.h"
-#include "TGraph.h"
-#include "TClass.h"
 #include "TList.h"
-#include "TMath.h"
 
+#include <iostream>
 #include <cassert>
 #include <cmath>
+#include <set>
 
 /** \class TProfile2Poly
     \ingroup Hist

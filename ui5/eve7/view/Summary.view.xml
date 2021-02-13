@@ -1,27 +1,14 @@
 <mvc:View
     controllerName="rootui5.eve7.controller.Summary"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns:core="sap.ui.core"
-    xmlns:form="sap.ui.layout.form"
     xmlns:l="sap.ui.layout"
     xmlns="sap.m"
-    class="sapUiSizeCompact"
-    >
+    class="sapUiSizeCompact">
   <l:Splitter id="sumSplitter" height="100%"  width="auto" orientation="Vertical">
-
-    <Tree id="tree" itemPress="onItemPressed"  toggleOpenState="onToggleOpenState" width="95%"
-	  class="sapUiSizeCompact sapUiTinyMargin" >
-      <layoutData><l:SplitterLayoutData size="auto" minSize="90%"/></layoutData>
+    <Tree id="tree" width="95%"
+          toggleOpenState="onToggleOpenState"
+          class="sapUiSizeCompact sapUiTinyMargin">
+        <layoutData><l:SplitterLayoutData size="auto" minSize="90%"/></layoutData>
     </Tree>
-    <!--
-    <Panel id="productDetailsPanel" headerText="EveElement Editor"
-	   class="sapUiTinyMargin"  heigh="90%" width="97%">
-     <VBox>
-	<l:VerticalLayout id="GED"  />
-    </VBox>
-      <layoutData><l:SplitterLayoutData size="15%" /></layoutData>
-  </Panel>
--->
   </l:Splitter>
-
 </mvc:View>

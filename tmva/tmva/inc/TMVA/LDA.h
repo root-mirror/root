@@ -32,7 +32,7 @@
 #include <vector>
 
 // ROOT
-#include "Rtypes.h"
+#include "RtypesCore.h"
 #include "TMatrixFfwd.h"
 
 typedef std::vector<std::vector<Float_t> >  LDAEvents;

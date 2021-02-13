@@ -119,6 +119,7 @@ along with TUnfold.  If not, see <http://www.gnu.org/licenses/>.
 #include <TMatrixDSymEigen.h>
 #include <TMath.h>
 #include "TUnfold.h"
+#include "TGraph.h"
 
 #include <map>
 #include <vector>

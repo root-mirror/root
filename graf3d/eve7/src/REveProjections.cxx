@@ -18,7 +18,6 @@
 #include <limits>
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveProjection
 \ingroup REve
@@ -28,8 +27,8 @@ Enables to define an external center of distortion and a scale to
 fixate a bounding box of a projected point.
 */
 
-Float_t REX::REveProjection::fgEps    = 0.005f;
-Float_t REX::REveProjection::fgEpsSqr = 0.000025f;
+Float_t REveProjection::fgEps    = 0.005f;
+Float_t REveProjection::fgEpsSqr = 0.000025f;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.

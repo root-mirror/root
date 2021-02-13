@@ -56,7 +56,6 @@ uniformly over their intervals before construction of the MarkovChain begins.
 #include "RooArgList.h"
 #include "RooMsgService.h"
 #include "RooRandom.h"
-#include "TH1.h"
 #include "TMath.h"
 #include "TFile.h"
 

@@ -18,38 +18,9 @@
 
 #include <memory>
 
+#include <nlohmann/json.hpp>
+
 class TGeoMatrix;
-
-/// use temporary solution for forwarding of nlohmann::json
-/// after version of 3.1.0 it is included in official releases
-/// see https://github.com/nlohmann/json/issues/314
-
-#include <cstdint> // int64_t, uint64_t
-#include <map> // map
-#include <memory> // allocator
-#include <string> // string
-#include <vector> // vector
-
-namespace nlohmann {
-
-  template<typename T, typename SFINAE>
-    struct adl_serializer;
-
-  template<template<typename U, typename V, typename... Args> class ObjectType,
-           template<typename U, typename... Args> class ArrayType,
-           class StringType,
-           class BooleanType,
-           class NumberIntegerType,
-           class NumberUnsignedType,
-           class NumberFloatType,
-           template<typename U> class AllocatorType,
-           template<typename T, typename SFINAE> class JSONSerializer>
-     class basic_json;
-
-   using json = basic_json<std::map, std::vector, std::string,
-                           bool, std::int64_t, std::uint64_t, double,
-                           std::allocator, adl_serializer>;
-}
 
 namespace ROOT {
 namespace Experimental {
@@ -71,7 +42,7 @@ class REveElement
    friend class REveManager;
    friend class REveScene;
 
-   REveElement& operator=(const REveElement&); // Not implemented
+   REveElement& operator=(const REveElement&) = delete;
 
 public:
    typedef std::list<REveElement*>              List_t;
@@ -139,12 +110,12 @@ public:
    virtual REveElement* CloneElementRecurse(Int_t level = 0) const;
    virtual void         CloneChildrenRecurse(REveElement *dest, Int_t level = 0) const;
 
-   std::string GetName()   const { return fName;  }
+   const std::string &GetName()   const { return fName;  }
    const char* GetCName()  const { return fName.c_str();  }
-   std::string GetTitle()  const { return fTitle; }
+   const std::string &GetTitle()  const { return fTitle; }
    const char* GetCTitle() const { return fTitle.c_str();  }
 
-   virtual std::string GetHighlightTooltip() const { return fTitle; }
+   virtual std::string GetHighlightTooltip(const std::set<int>&) const;
 
    void SetName (const std::string &name);
    void SetTitle(const std::string &title);
@@ -319,7 +290,7 @@ public:
    void   SetPickable(Bool_t p) { fPickable = p; }
    void   SetPickableRecursively(Bool_t p);
 
-   REveElement* GetSelectionMaster();
+   virtual REveElement* GetSelectionMaster();
    void         SetSelectionMaster(REveElement *el) { fSelectionMaster = el; }
 
    virtual void FillImpliedSelectedSet(Set_t& impSelSet);
@@ -342,6 +313,8 @@ public:
    void   CSCApplyMainTransparencyToAllChildren()      { fCSCBits |= kCSCBApplyMainTransparencyToAllChildren; }
    void   CSCApplyMainTransparencyToMatchingChildren() { fCSCBits |= kCSCBApplyMainTransparencyToMatchingChildren; }
 
+   virtual bool RequiresExtraSelectionData() const { return false; }
+   virtual void FillExtraSelectionData(nlohmann::json&, const std::set<int>&) const {}
 
    // Change-stamping and change bits
    //---------------------------------

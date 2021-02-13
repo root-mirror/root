@@ -41,16 +41,17 @@
 
 #include "TGPicture.h"
 #include "TGListBox.h"
-#include "TGScrollBar.h"
 #include "TGResourcePool.h"
 #include "TSystem.h"
-#include "Riostream.h"
 #include "TMath.h"
-#include <stdlib.h>
+#include "TVirtualX.h"
+
+#include <cstdlib>
+#include <iostream>
 
 
-const TGFont *TGTextLBEntry::fgDefaultFont = 0;
-TGGC         *TGTextLBEntry::fgDefaultGC = 0;
+const TGFont *TGTextLBEntry::fgDefaultFont = nullptr;
+TGGC         *TGTextLBEntry::fgDefaultGC = nullptr;
 
 ClassImp(TGLBEntry);
 ClassImp(TGTextLBEntry);

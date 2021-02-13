@@ -42,7 +42,7 @@ Int_t mt101_fillNtuples()
 
    // Create a random generator and and Ntuple to hold the numbers
    TRandom3 rndm(1);
-   TFile ofile("mp101_singleCore.root", "RECREATE");
+   TFile ofile("mt101_singleCore.root", "RECREATE");
    TNtuple randomNumbers("singleCore", "Random Numbers", "r");
    fillRandom(randomNumbers, rndm, nNumbers);
    randomNumbers.Write();

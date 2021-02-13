@@ -22,16 +22,16 @@ namespace HistFactory {
     void PrintXML(std::ostream& );  
 
     void SetName( const std::string& Name) { fName = Name; }
-    std::string GetName() { return fName; }
+    std::string GetName() const { return fName; }
 
     void SetExpression( const std::string& Expression) { fExpression = Expression; }
-    std::string GetExpression() { return fExpression; }
+    std::string GetExpression() const { return fExpression; }
 
     void SetDependents( const std::string& Dependents) { fDependents = Dependents; }
-    std::string GetDependents() { return fDependents; }
+    std::string GetDependents() const { return fDependents; }
     
     void SetCommand( const std::string& Command) { fCommand = Command; }
-    std::string GetCommand() { return fCommand; }
+    std::string GetCommand() const { return fCommand; }
 
   protected:
 

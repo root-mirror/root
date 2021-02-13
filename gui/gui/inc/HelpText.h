@@ -9,7 +9,10 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Rtypes.h"
+#ifndef ROOT_HelpText
+#define ROOT_HelpText
+
+#include "RtypesCore.h"
 
 R__EXTERN const char gHelpAbout[];
 R__EXTERN const char gHelpBrowser[];
@@ -23,3 +26,5 @@ R__EXTERN const char gHelpCanvas[];
 R__EXTERN const char gHelpObjects[];
 R__EXTERN const char gHelpTextEditor[];
 R__EXTERN const char gHelpRemote[];
+
+#endif

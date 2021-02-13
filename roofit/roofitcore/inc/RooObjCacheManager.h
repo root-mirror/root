@@ -25,9 +25,8 @@
 #include "RooAbsCache.h"
 #include "RooAbsCacheElement.h"
 #include "RooCacheManager.h"
-#include <list>
 
-class RooNameSet ;
+class RooNameSet;
 
 
 class RooObjCacheManager : public RooCacheManager<RooAbsCacheElement> {

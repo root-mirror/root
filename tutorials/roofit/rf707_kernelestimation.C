@@ -1,12 +1,14 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook
-/// Speecial p.d.f.'s: using non-parametric (multi-dimensional) kernel estimation p.d.f.s
+/// Special pdf's: using non-parametric (multi-dimensional) kernel estimation pdfs
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"

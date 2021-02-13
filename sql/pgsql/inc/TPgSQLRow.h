@@ -14,13 +14,7 @@
 
 #include "TSQLRow.h"
 
-#if !defined(__CINT__)
 #include <libpq-fe.h>
-#else
-struct PGresult;
-typedef char **PGresAttValue;
-#endif
-
 
 class TPgSQLRow : public TSQLRow {
 

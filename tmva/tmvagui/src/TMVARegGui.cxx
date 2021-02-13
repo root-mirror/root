@@ -4,6 +4,7 @@
 
 #include "TROOT.h"
 #include "TControlBar.h"
+#include "TObjString.h"
 
 
 // some global lists

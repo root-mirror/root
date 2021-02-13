@@ -1,4 +1,4 @@
-/// \file ROOT/rhysd_span.h
+/// \file ROOT/span.hxx
 /// \ingroup Base StdExt
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-09-06

@@ -1122,6 +1122,66 @@ void print_mask_info(ULong_t mask)
 }
 #endif
 
+@implementation CrosshairView
+
+- (void) drawRect : (NSRect) dirtyRect
+{
+    [super drawRect:dirtyRect];
+
+    NSGraphicsContext *nsContext = [NSGraphicsContext currentContext];
+    if (!nsContext)
+        return;
+
+    CGContextRef cgContext = nsContext.CGContext;
+    if (!cgContext)
+        return;
+
+    const Quartz::CGStateGuard ctxGuard(cgContext);
+
+    CGContextSetRGBStrokeColor(cgContext, 0., 0., 0., 1.);
+    CGContextSetLineWidth(cgContext, 1.);
+    // Horizontal line:
+    CGContextBeginPath(cgContext);
+    CGContextMoveToPoint(cgContext, self.start1.x, self.start1.y);
+    CGContextAddLineToPoint(cgContext, self.end1.x, self.end1.y);
+    CGContextStrokePath(cgContext);
+    // Vertical line:
+    CGContextBeginPath(cgContext);
+    CGContextMoveToPoint(cgContext, self.start2.x, self.start2.y);
+    CGContextAddLineToPoint(cgContext, self.end2.x, self.end2.y);
+    CGContextStrokePath(cgContext);
+}
+
+@end
+
+@implementation CrosshairWindow
+
+- (instancetype) init
+{
+    if (self = [super init])
+    {
+        self.styleMask = NSWindowStyleMaskBorderless; // No titlebar, buttons, etc.
+        self.opaque = NO;
+        self.hasShadow = NO;
+        self.backgroundColor = NSColor.clearColor; // No background.
+        self.ignoresMouseEvents = YES; // Lets mouse events pass through.
+        self.contentView = [[CrosshairView alloc] init];
+    }
+    return self;
+}
+
+#pragma mark - suppress the normal window behavior.
+- (BOOL)canBecomeKeyWindow
+{
+    return NO;
+}
+- (BOOL)canBecomeMainWindow
+{
+    return NO;
+}
+
+@end
+
 
 @implementation QuartzWindow
 
@@ -1432,6 +1492,59 @@ void print_mask_info(ULong_t mask)
 
    return [fContentView readColorBits : area];
 }
+
+#pragma mark - CrosshairWindow/View
+
+//______________________________________________________________________________
+- (void) addCrosshairWindow
+{
+    if ([self findCrosshairWindow])
+        return;
+
+    CrosshairWindow *special = [[CrosshairWindow alloc] init];
+    [self adjustCrosshairWindowGeometry:special];
+    [self addChildWindow : special ordered : NSWindowAbove];
+    [special release];
+}
+
+//______________________________________________________________________________
+- (void) adjustCrosshairWindowGeometry
+{
+    if (auto win = [self findCrosshairWindow])
+        [self adjustCrosshairWindowGeometry:win];
+}
+
+//______________________________________________________________________________
+- (void) adjustCrosshairWindowGeometry : (CrosshairWindow *) win
+{
+    assert(win && "invalid (nil) parameter 'win'");
+    auto frame = self.contentView.frame;
+    frame = [self convertRectToScreen:frame];
+    [win setFrame:frame display:NO];
+}
+
+//______________________________________________________________________________
+- (void) removeCrosshairWindow
+{
+    if (auto win = [self findCrosshairWindow]) {
+        // For some reason, without ordeing out, the crosshair window's content stays
+        // in the parent's window. Thus we first have to order out the crosshair window.
+        [win orderOut:nil];
+        [self removeChildWindow : win];
+    }
+}
+
+//______________________________________________________________________________
+- (CrosshairWindow *) findCrosshairWindow
+{
+    auto children = [self childWindows];
+    for (NSWindow *child in children) {
+        if ([child isKindOfClass : CrosshairWindow.class])
+            return (CrosshairWindow *)child;
+    }
+    return nil;
+}
+
 
 #pragma mark - X11Window protocol's implementation.
 

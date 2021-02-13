@@ -13,11 +13,12 @@
 #define ROOT_TGraphPolar
 
 #include "TGraphErrors.h"
-#include "TAttText.h"
-#include "TAttLine.h"
 
+#ifdef R__LESS_INCLUDES
+class TGraphPolargram;
+#else
 #include "TGraphPolargram.h"
-
+#endif
 
 class TGraphPolar: public TGraphErrors {
 

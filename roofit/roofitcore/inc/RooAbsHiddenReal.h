@@ -42,7 +42,7 @@ public:
   
   inline Bool_t isHidden() const { 
     // If true, hiding mode is active
-    return _state.arg().getIndex()!=0 ; 
+    return _state.arg().getCurrentIndex()!=0 ; 
   }
 
   Double_t getHiddenVal(const RooArgSet* nset=0) const { 

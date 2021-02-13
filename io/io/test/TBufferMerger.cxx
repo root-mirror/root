@@ -84,12 +84,6 @@ TEST(TBufferMerger, SequentialTreeFill)
       auto myfile = merger.GetFile();
       auto mytree = new TTree("mytree", "mytree");
 
-      // The resetting of the kCleanup bit below is necessary to avoid leaving
-      // the management of this object to ROOT, which leads to a race condition
-      // that may cause a crash once all threads are finished and the final
-      // merge is happening
-      mytree->ResetBit(kMustCleanup);
-
       Fill(mytree, 0, nevents);
       myfile->Write();
    }
@@ -111,12 +105,6 @@ TEST(TBufferMerger, ParallelTreeFill)
          threads.emplace_back([=, &merger]() {
             auto myfile = merger.GetFile();
             auto mytree = new TTree("mytree", "mytree");
-
-            // The resetting of the kCleanup bit below is necessary to avoid leaving
-            // the management of this object to ROOT, which leads to a race condition
-            // that may cause a crash once all threads are finished and the final
-            // merge is happening
-            mytree->ResetBit(kMustCleanup);
 
             Fill(mytree, i * nevents, nevents);
             myfile->Write();
@@ -148,12 +136,6 @@ TEST(TBufferMerger, AutoSave)
          threads.emplace_back([=, &merger]() {
             auto myfile = merger.GetFile();
             auto mytree = new TTree("mytree", "mytree");
-
-            // The resetting of the kCleanup bit below is necessary to avoid leaving
-            // the management of this object to ROOT, which leads to a race condition
-            // that may cause a crash once all threads are finished and the final
-            // merge is happening
-            mytree->ResetBit(kMustCleanup);
 
             Fill(mytree, i * events_per_thread, events_per_thread);
             myfile->Write();
@@ -228,4 +210,59 @@ TEST(TBufferMerger, CheckTreeFillResults)
 
    RemoveFile("tbuffermerger_sequential.root");
    RemoveFile("tbuffermerger_parallel.root");
+}
+
+/**
+ * \test TBufferMerger, SetMaxTreeSize
+ * \brief Test to avoid issue #6523.
+ * 
+ * `TTree`'s default behaviour of changing the file it is attached to when reaching
+ * a size greater than `fgMaxTreeSize` doesn't fit in the design of TBufferMerger.
+ * The `TTree::Fill` method has been modified accordingly, avoiding this behaviour
+ * when the tree is attached to a TMemFile (thus also a TBufferMergerFile). This
+ * test tries to trigger the behaviour forcedly by calling `TTree::SetMaxTreeSize`
+ * but the TBufferMergerFile is never detached from the tree.
+ */
+TEST(TBufferMerger, SetMaxTreeSize)
+{
+   ROOT::EnableThreadSafety();
+
+   {
+      ROOT::Experimental::TBufferMerger merger{"tbuffermerger_setmaxtreesize.root"};
+
+      auto tbmfile = merger.GetFile(); // std::shared_ptr<TBufferMergerFile>
+
+      int nentries{20000};
+      int maxtreesize{1000};
+
+      TTree tree{"T", "SetMaxTreeSize(1000)"};
+      tree.SetMaxTreeSize(maxtreesize);
+
+      Fill(&tree, 0, nentries);
+
+      tbmfile->Write();
+   }
+
+   EXPECT_TRUE(FileExists("tbuffermerger_setmaxtreesize.root"));
+
+   {
+      TFile f{"tbuffermerger_setmaxtreesize.root"};
+      std::unique_ptr<TTree> t{f.Get<TTree>("T")};
+
+      EXPECT_EQ(t->GetEntries(), 20000);
+
+      int sum{0};
+      int n{0};
+      t->SetBranchAddress("n", &n);
+
+      for (auto i = 0; i < t->GetEntries(); i++) {
+         t->GetEntry(i);
+         sum += n;
+      }
+
+      // sum(range(20000)) == 199990000
+      EXPECT_EQ(sum, 199990000);
+   }
+
+   RemoveFile("tbuffermerger_setmaxtreesize.root");
 }

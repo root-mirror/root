@@ -13,17 +13,30 @@
 /** \class RooFunctorBinding
     \ingroup Roofit
 
-RooCFunction1Binding is a templated implementation of class RooAbsReal that binds
-generic C(++) functions to a RooAbsReal argument thus allowing generic C++
-functions to be used as RooFit functions. Instances of function binding
+RooFunctorBinding makes math functions from ROOT usable in RooFit. It takes
+a ROOT::Math::IBaseFunctionMultiDim, and binds the variables of this function to
+the RooFit variables passed in the constructor.
+
+Instances of function binding
 classes are fully functional RooFit function objects with one exception:
-if the bound function is _not_ a standard TMath or MathMore function the
+if the bound function is *not* a standard TMath or MathMore function the
 class cannot be persisted in a RooWorkspace without registering the function
 pointer first using RooCFunction1Binding<T1,T2>::register().
 **/
 
 /** \class RooFunctorPdfBinding
     \ingroup Roofit
+RooFunctorPdfBinding makes math functions from ROOT usable as PDFs in RooFit. It takes
+a ROOT::Math::IBaseFunctionMultiDim, and binds the variables of this function to
+the RooFit variables passed in the constructor.
+When the PDF is evaluated, the bound function is evaluated, and also integrated numerically
+to normalise it to unity over the range of its observables.
+
+Instances of function binding
+classes are fully functional RooFit function objects with one exception:
+if the bound function is *not* a standard TMath or MathMore function the
+class cannot be persisted in a RooWorkspace without registering the function
+pointer first using RooCFunction1Binding<T1,T2>::register().
 **/
 
 #include "Riostream.h"
@@ -35,6 +48,11 @@ ClassImp(RooFunctorBinding);
 ClassImp(RooFunctorPdfBinding);
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Create a RooFit function that makes `ftor` usable in RooFit.
+/// \param name Name of the object.
+/// \param title Title (e.g. for plotting)
+/// \param ftor Functor instance to be evaluated.
+/// \param v RooFit variables to be passed to the function.
 RooFunctorBinding::RooFunctorBinding(const char *name, const char *title, const ROOT::Math::IBaseFunctionMultiDim& ftor, const RooArgList& v) :
   RooAbsReal(name,title),
   func(&ftor),
@@ -83,7 +101,13 @@ Double_t RooFunctorBinding::evaluate() const {
     return (*func)(x) ;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
+/// Create a RooFit PDF that makes `ftor` usable as a PDF in RooFit.
+/// \param name Name of the object.
+/// \param title Title (e.g. for plotting)
+/// \param ftor Functor instance to be evaluated and normalised.
+/// \param v RooFit variables to be passed to the function.
 RooFunctorPdfBinding::RooFunctorPdfBinding(const char *name, const char *title, const ROOT::Math::IBaseFunctionMultiDim& ftor, const RooArgList& v) :
   RooAbsPdf(name,title),
   func(&ftor),

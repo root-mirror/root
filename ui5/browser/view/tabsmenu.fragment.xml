@@ -1,8 +1,9 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
   <ActionSheet title="Tabs selection" showCancelButton="true" placement="Left">
-    <Button text="Code Editor"   id="NewTabCE" icon="sap-icon://write-new-document"     press="newCodeEditor"  />
-    <Button text="Root 6 canvas" id="NewTabR6" icon="sap-icon://column-chart-dual-axis" press="newRootXCanvas" />
-    <Button text="Root 7 canvas" id="NewTabR7" icon="sap-icon://column-chart-dual-axis" press="newRootXCanvas" />
-    <Button text="Image viewer"  id="NewTabIV" icon="sap-icon://background"             press="newImageViewer" />
+    <Button text="Root 6 canvas"   icon="sap-icon://column-chart-dual-axis" press="handleNewTab" />
+    <Button text="Root 7 canvas"   icon="sap-icon://column-chart-dual-axis" press="handleNewTab" />
+    <Button text="Geometry viewer" icon="sap-icon://overview-chart"         press="handleNewTab" />
+    <Button text="Code editor"     icon="sap-icon://write-new-document"     press="handleNewTab"  />
+    <Button text="Image viewer"    icon="sap-icon://background"             press="handleNewTab" />
   </ActionSheet>
 </core:FragmentDefinition>

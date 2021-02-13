@@ -49,8 +49,9 @@ than the polygon they will describe. This complication is due to efficiency reas
 At the end one has to call the FinishPolygon() method.
 */
 
-#include "TObjArray.h"
 #include "TGeoPolygon.h"
+
+#include "TObjArray.h"
 #include "TMath.h"
 #include "TGeoShape.h"
 #include "TGeoManager.h"
@@ -65,11 +66,11 @@ TGeoPolygon::TGeoPolygon()
 {
    fNvert   = 0;
    fNconvex = 0;
-   fInd     = 0;
-   fIndc    = 0;
-   fX       = 0;
-   fY       = 0;
-   fDaughters = 0;
+   fInd     = nullptr;
+   fIndc    = nullptr;
+   fX       = nullptr;
+   fY       = nullptr;
+   fDaughters = nullptr;
    SetConvex(kFALSE);
    TObject::SetBit(kGeoFinishPolygon, kFALSE);
 }
@@ -86,10 +87,10 @@ TGeoPolygon::TGeoPolygon(Int_t nvert)
    fNvert   = nvert;
    fNconvex = 0;
    fInd     = new Int_t[nvert];
-   fIndc    = 0;
-   fX       = 0;
-   fY       = 0;
-   fDaughters = 0;
+   fIndc    = nullptr;
+   fX       = nullptr;
+   fY       = nullptr;
+   fDaughters = nullptr;
    SetConvex(kFALSE);
    TObject::SetBit(kGeoFinishPolygon, kFALSE);
    SetNextIndex();

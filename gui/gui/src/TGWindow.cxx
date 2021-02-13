@@ -29,8 +29,11 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TGWindow.h"
-#include "Riostream.h"
+#include <iostream>
+#include "TVirtualX.h"
 #include "TApplication.h"
+#include "TError.h"
+#include "TSystem.h"
 
 ClassImp(TGWindow);
 ClassImp(TGUnknownWindowHandler);
@@ -50,6 +53,13 @@ TGWindow::TGWindow(const TGWindow *p, Int_t x, Int_t y, UInt_t w, UInt_t h,
    fId = 0;
    fParent = 0;
    fNeedRedraw = kFALSE;
+
+   if (!p && !gClient && !gApplication) {
+      ::Error("TGWindow::TGWindow",
+              "gClient and gApplication are nullptr!\n"
+              "Please add a TApplication instance in the main() function of your application\n");
+      gSystem->Exit(1);
+   }
 
    if (!p && gClient) {
       p = gClient->GetRoot();
@@ -117,6 +127,14 @@ TGWindow::~TGWindow()
 
 void TGWindow::SetWindowName(const char *name)
 {
+#ifdef R__MACOSX
+   // MacOS fails to find the drawable of GetDefaultRootWindow(), only subsequent
+   // windows ids can be found. See discussion here:
+   // https://github.com/root-project/root/pull/6757#discussion_r518776154
+   if (fId == gVirtualX->GetDefaultRootWindow())
+      return;
+#endif
+
    if (!name && gDebug > 0) {
       // set default frame names only when in debug mode
       TString wname = ClassName();
@@ -133,6 +151,102 @@ void TGWindow::SetWindowName(const char *name)
 const TGWindow *TGWindow::GetMainFrame() const
 {
    return ((fParent == 0) || (fParent == fClient->GetDefaultRoot())) ? this : fParent->GetMainFrame();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// map window
+
+void TGWindow::MapWindow()
+{
+   gVirtualX->MapWindow(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// map sub windows
+
+void TGWindow::MapSubwindows()
+{
+   gVirtualX->MapSubwindows(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// map raised
+
+void TGWindow::MapRaised()
+{
+   gVirtualX->MapRaised(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// unmap window
+
+void TGWindow::UnmapWindow()
+{
+   gVirtualX->UnmapWindow(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// destroy window
+
+void TGWindow::DestroyWindow()
+{
+   gVirtualX->DestroyWindow(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// destroy sub windows
+
+void TGWindow::DestroySubwindows()
+{
+   gVirtualX->DestroySubwindows(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// raise window
+
+void TGWindow::RaiseWindow()
+{
+   gVirtualX->RaiseWindow(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// lower window
+
+void TGWindow::LowerWindow()
+{
+   gVirtualX->LowerWindow(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// iconify window
+
+void TGWindow::IconifyWindow()
+{
+   gVirtualX->IconifyWindow(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// request focus
+
+void TGWindow::RequestFocus()
+{
+   gVirtualX->SetInputFocus(fId);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// set background color
+
+void TGWindow::SetBackgroundColor(Pixel_t color)
+{
+   gVirtualX->SetWindowBackground(fId, color);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// set background pixmap
+
+void TGWindow::SetBackgroundPixmap(Pixmap_t pixmap)
+{
+   gVirtualX->SetWindowBackgroundPixmap(fId, pixmap);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -27,7 +27,6 @@
 #include "TGLabel.h"
 #include "TGNumberEntry.h"
 #include "TLine.h"
-#include "TVirtualPad.h"
 
 ClassImp(TLineEditor);
 

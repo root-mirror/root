@@ -15,6 +15,7 @@
 #include <cmath>
 #include <algorithm>
 
+#include "Math/Util.h"
 #include "Math/Error.h"
 
 #include <iostream>
@@ -113,12 +114,16 @@ namespace BrentMethods {
    //std::cout << "bracketing result " << xmin << "  " << xmax  << "middle value " <<  xmiddle << std::endl;
    if (!foundInterval) {
       MATH_INFO_MSG("BrentMethods::MinimStep", "Grid search failed to find a root in the  interval ");
-      std::cout << "xmin = " << xmin << " xmax = " << xmax << " npts = " <<  npx << std::endl;
+      std::string msg = "xmin = ";
+      msg += ROOT::Math::Util::ToString(xmin);
+      msg += std::string(" xmax = ");
+      msg += ROOT::Math::Util::ToString(xmax);
+      msg += std::string(" npts = ");
+      msg += ROOT::Math::Util::ToString(npx);
+      MATH_INFO_MSG("BrentMethods::MinimStep", msg.c_str());
       xmin = 1;
       xmax = 0; 
    }
-   // else 
-   //    std::cout << " root found !!! " << std::endl;
 
    return xmiddle;
 }

@@ -11,8 +11,8 @@
 
 #include "TGeoCache.h"
 
-#include "Rtypes.h"
 #include "TGeoManager.h"
+#include "TGeoStateInfo.h"
 #include "TGeoMatrix.h"
 #include "TGeoVolume.h"
 #include "TObject.h"

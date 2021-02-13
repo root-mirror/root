@@ -28,7 +28,6 @@ e.g. the binning of class RooBinning.
 #include "RooFit.h"
 
 #include "RooUniformBinning.h"
-#include "RooUniformBinning.h"
 #include "RooMsgService.h"
 
 #include "Riostream.h"

@@ -24,6 +24,7 @@
 #include "TMVA/PyMethodBase.h"
 
 #include "TString.h"
+#include <vector>
 
 namespace TMVA {
 

@@ -12,7 +12,7 @@
 #ifndef ROOT_TBranchIMTHelper
 #define ROOT_TBranchIMTHelper
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 #ifdef R__USE_IMT
 #include "ROOT/TTaskGroup.hxx"

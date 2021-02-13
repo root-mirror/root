@@ -38,11 +38,11 @@ private:
    TMutex         *fMutex;         // mutex used around Wait() and TimedWait()
    Bool_t          fPrivateMutex;  // is fMutex our private mutex
 
-   TCondition(const TCondition&);             // not implemented
-   TCondition& operator=(const TCondition&);  // not implemented
+   TCondition(const TCondition&) = delete;
+   TCondition& operator=(const TCondition&) = delete;
 
 public:
-   TCondition(TMutex *m = 0);
+   TCondition(TMutex *m = nullptr);
    virtual ~TCondition();
 
    TMutex *GetMutex() const;

@@ -18,8 +18,8 @@
 
 #include "TIterator.h"
 #include "RooArgSet.h"
-#include "TObjString.h"
-class RooDataHist ;
+
+class RooDataHist;
 
 typedef TIterator* pTIterator ;
 

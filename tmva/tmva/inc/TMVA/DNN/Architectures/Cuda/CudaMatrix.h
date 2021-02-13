@@ -19,6 +19,16 @@
 #ifndef TMVA_DNN_ARCHITECTURES_CUDA_CUDAMATRIX
 #define TMVA_DNN_ARCHITECTURES_CUDA_CUDAMATRIX
 
+// in case we compile C++ code with std-17 and cuda with lower standard
+// use experimental string_view, otherwise keep as is
+#include "RConfigure.h"
+#ifdef R__HAS_STD_STRING_VIEW
+#ifndef R__CUDA_HAS_STD_STRING_VIEW
+#undef R__HAS_STD_STRING_VIEW
+#define R__HAS_STD_EXPERIMENTAL_STRING_VIEW
+#endif
+#endif
+
 #include "cuda.h"
 #include "cuda_runtime.h"
 #include "cublas_v2.h"
@@ -108,7 +118,7 @@ private:
    static size_t          fNOnes;        ///< Current length of the one vector.
    static curandState_t * fCurandStates;
    static size_t          fNCurandStates;
-   
+
 
    size_t                    fNRows;
    size_t                    fNCols;
@@ -155,7 +165,7 @@ public:
    size_t GetNrows() const {return fNRows;}
    size_t GetNcols() const {return fNCols;}
    size_t GetNoElements() const {return fNRows * fNCols;}
-    
+
    const AFloat * GetDataPointer() const {return fElementBuffer;}
    AFloat *       GetDataPointer()       {return fElementBuffer;}
    const cublasHandle_t & GetCublasHandle() const    {return fCublasHandle;}
@@ -167,9 +177,9 @@ public:
     *  on all streams. Only used for testing. */
    TCudaDeviceReference<AFloat> operator()(size_t i, size_t j) const;
 
-   void Print() const { 
-      TMatrixT<AFloat> mat(*this); 
-      mat.Print(); 
+   void Print() const {
+      TMatrixT<AFloat> mat(*this);
+      mat.Print();
    }
 
    void Zero() {

@@ -29,19 +29,20 @@ class TGTextButton;
 class TGInputDialog : public TGTransientFrame {
 
 private:
-   TGLabel          *fLabel;   // text entry label
-   TGTextEntry      *fTE;      // text entry widget
-   TGTextButton     *fOk;      // ok button
-   TGTextButton     *fCancel;  // cancel button
-   char             *fRetStr;  // address to store return string
+   TGLabel          *fLabel{nullptr};   // text entry label
+   TGTextEntry      *fTE{nullptr};      // text entry widget
+   TGTextButton     *fOk{nullptr};      // ok button
+   TGTextButton     *fCancel{nullptr};  // cancel button
+   char             *fRetStr{nullptr};  // address to store return string
+   char             *fOwnBuf{nullptr};  // internal buffer when return string not specified
 
-   TGInputDialog(const TGInputDialog&);  // Not implemented
-   TGInputDialog &operator= (const TGInputDialog&); // Not implemented
+   TGInputDialog(const TGInputDialog&) = delete;
+   TGInputDialog &operator= (const TGInputDialog&) = delete;
 
 public:
-   TGInputDialog(const TGWindow *p = 0, const TGWindow *main = 0,
-                 const char *prompt =0, const char *defval = 0,
-                 char *retstr = 0, UInt_t options = kVerticalFrame);
+   TGInputDialog(const TGWindow *p = nullptr, const TGWindow *main = nullptr,
+                 const char *prompt = nullptr, const char *defval = nullptr,
+                 char *retstr = nullptr, UInt_t options = kVerticalFrame);
    ~TGInputDialog();
    virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t);
 

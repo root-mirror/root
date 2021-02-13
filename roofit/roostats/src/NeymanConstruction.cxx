@@ -63,7 +63,6 @@ construction by:
 
 #include "RooDataSet.h"
 #include "TFile.h"
-#include "TTree.h"
 #include "TMath.h"
 #include "TH1F.h"
 

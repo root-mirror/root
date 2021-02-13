@@ -11,11 +11,11 @@
 #ifndef ROOT_TF1Convolution__
 #define ROOT_TF1Convolution__
 
-#include <iostream>
+#include "TF1AbsComposition.h"
+#include <memory>
+#include <vector>
 #include "TF1.h"
 #include "TGraph.h"
-#include <memory>
-#include "TF1AbsComposition.h"
 
 class TF1Convolution : public TF1AbsComposition {
    std::unique_ptr<TF1> fFunction1;    ///< First function to be convolved

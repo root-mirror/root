@@ -14,8 +14,12 @@
 
 #include "TNamed.h"
 #include "TDatime.h"
-#include "TBuffer.h"
 #include "TClass.h"
+#ifdef R__LESS_INCLUDES
+class TBuffer;
+#else
+#include "TBuffer.h"
+#endif
 
 class TBrowser;
 class TDirectory;
@@ -50,7 +54,7 @@ protected:
    virtual Int_t    Read(const char *name) { return TObject::Read(name); }
    virtual void     Create(Int_t nbytes, TFile* f = 0);
            void     Build(TDirectory* motherDir, const char* classname, Long64_t filepos);
-   virtual void     Reset(); // Currently only for the use of TBasket.
+           void     Reset(); // Currently only for the use of TBasket.
    virtual Int_t    WriteFileKeepBuffer(TFile *f = 0);
 
 
@@ -88,6 +92,7 @@ protected:
    virtual void        IncrementPidOffset(UShort_t offset);
            Bool_t      IsFolder() const;
    virtual void        Keep();
+   virtual void        ls(Bool_t current) const;
    virtual void        ls(Option_t *option="") const;
    virtual void        Print(Option_t *option="") const;
    virtual Int_t       Read(TObject *obj);

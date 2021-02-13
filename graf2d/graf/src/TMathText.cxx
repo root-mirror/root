@@ -9,9 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
+#include <iostream>
 #include "TROOT.h"
-#include "TClass.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
@@ -20,6 +19,7 @@
 #include "TMath.h"
 #include "TVirtualPad.h"
 #include "TVirtualPS.h"
+#include "TVirtualX.h"
 #include "TText.h"
 
 #include "../../../graf2d/mathtext/inc/mathtext.h"
@@ -44,6 +44,10 @@ The list of all available symbols is given in the following example:
 Begin_Macro
 ../../../tutorials/graphics/tmathtext2.C
 End_Macro
+
+#### Limitation:
+TMathText rendering is not implemented for the PDF output.
+PostScript output should be used instead.
 */
 
 const Double_t kPI      = TMath::Pi();
@@ -586,6 +590,11 @@ void TMathText::PaintMathText(Double_t x, Double_t y, Double_t angle,
    Short_t saveAlign = fTextAlign;
 
    TAttText::Modify();
+   if (gVirtualPS) { // Initialise TMathTextRenderer
+      if (gPad->IsBatch()) {
+         if (gVirtualPS->InheritsFrom("TImageDump")) gPad->PaintText(0, 0, "");
+      }
+   }
 
    // Do not use Latex if font is low precision.
    if (fTextFont % 10 < 2) {

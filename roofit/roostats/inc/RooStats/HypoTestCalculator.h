@@ -11,13 +11,7 @@
 #ifndef ROOSTATS_HypoTestCalculator
 #define ROOSTATS_HypoTestCalculator
 
-//#include "TNamed.h"
-
 #include "Rtypes.h"
-
-
-
-//
 
 // class RooAbsPdf;
 class RooAbsData;

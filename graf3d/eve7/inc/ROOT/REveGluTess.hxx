@@ -37,21 +37,21 @@ protected:
    Int_t fNVertices{0};
    Int_t fV0{-1}, fV1{-1};
    Int_t fType{0};
-   std::vector<Int_t> fPolyDesc;
+   std::vector<UInt_t> fPolyDesc;
 
-   void add_triangle(Int_t v0, Int_t v1, Int_t v2);
-   void process_vertex(Int_t vi);
+   void add_triangle(UInt_t v0, UInt_t v1, UInt_t v2);
+   void process_vertex(UInt_t vi);
 
 public:
    TriangleCollector();
    ~TriangleCollector();
 
    // Process polygons
-   void ProcessData(const std::vector<Double_t> &verts, const std::vector<Int_t> &polys, const Int_t n_polys);
+   void ProcessData(const std::vector<Double_t> &verts, const std::vector<UInt_t> &polys, const Int_t n_polys);
 
    // Get output
    Int_t GetNTrianlges() { return fNTriangles; }
-   std::vector<Int_t> &RefPolyDesc() { return fPolyDesc; }
+   std::vector<UInt_t> &RefPolyDesc() { return fPolyDesc; }
 };
 
 } // namespace EveGlu

@@ -48,15 +48,25 @@ elseif(cocoa)
     LIBRARIES
       "-framework Cocoa"
   )
+  set(cocoa_incl ${CMAKE_SOURCE_DIR}/core/macosx/inc)
 endif()
 
 if(x11 OR cocoa)
   generateHeader(root
     ${CMAKE_SOURCE_DIR}/core/base/src/root-argparse.py
-    ${CMAKE_BINARY_DIR}/include/rootCommandLineOptionsHelp.h
+    ${CMAKE_BINARY_DIR}/ginclude/rootCommandLineOptionsHelp.h
   )
-endif()
 
-if(rpath)
-  add_definitions(-DIS_RPATH_BUILD=1)
+  target_include_directories(root PRIVATE
+    ${CMAKE_SOURCE_DIR}/core/foundation/inc
+    ${CMAKE_SOURCE_DIR}/core/base/inc
+    ${CMAKE_SOURCE_DIR}/core/clib/inc    # for snprintf.h
+    ${CMAKE_SOURCE_DIR}/core/meta/inc    # for TGenericClassInfo.h
+    ${CMAKE_BINARY_DIR}/ginclude         # for RConfigure.h and rootCommandLineOptionsHelp.h
+    ${cocoa_incl}                        # for CocoaUtils.h
+  )
+
+  if(rpath)
+    target_compile_definitions(root PRIVATE IS_RPATH_BUILD)
+  endif()
 endif()

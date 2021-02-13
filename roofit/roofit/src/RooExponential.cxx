@@ -28,8 +28,8 @@ range and values of the arguments.
 #include "RooExponential.h"
 
 #include "RooRealVar.h"
-#include "BatchHelpers.h"
-#include "RooVDTHeaders.h"
+#include "RooBatchCompute.h"
+
 
 #include <cmath>
 
@@ -87,46 +87,9 @@ Double_t RooExponential::analyticalIntegral(Int_t code, const char* rangeName) c
       / constant;
 }
 
-
-namespace {
-
-template<class Tx, class Tc>
-void compute(size_t n, double* __restrict output, Tx x, Tc c) {
-
-  for (size_t i = 0; i < n; ++i) { //CHECK_VECTORISE
-    output[i] = _rf_fast_exp(x[i]*c[i]);
-  }
-}
-
-}
-
 ////////////////////////////////////////////////////////////////////////////////
-/// Evaluate the exponential without normalising it on the given batch.
-/// \param[in] batchIndex Index of the batch to be computed.
-/// \param[in] batchSize Size of each batch. The last batch may be smaller.
-/// \return A span with the computed values.
-
-RooSpan<double> RooExponential::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  using namespace BatchHelpers;
-  auto xData = x.getValBatch(begin, batchSize);
-  auto cData = c.getValBatch(begin, batchSize);
-  const bool batchX = !xData.empty();
-  const bool batchC = !cData.empty();
-
-  if (!batchX && !batchC) {
-    return {};
-  }
-  batchSize = findSize({ xData, cData });
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-
-  if (batchX && !batchC ) {
-    compute(batchSize, output.data(), xData, BracketAdapter<double>(c));
-  }
-  else if (!batchX && batchC ) {
-    compute(batchSize, output.data(), BracketAdapter<double>(x), cData);
-  }
-  else if (batchX && batchC ) {
-    compute(batchSize, output.data(), xData, cData);
-  }
-  return output;
+/// Compute multiple values of Exponential distribution.  
+RooSpan<double> RooExponential::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  return RooBatchCompute::dispatch->computeExponential(this, evalData, x->getValues(evalData, normSet), c->getValues(evalData, normSet));
 }
+

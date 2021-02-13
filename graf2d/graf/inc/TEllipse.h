@@ -17,9 +17,8 @@
 #include "TAttLine.h"
 #include "TAttFill.h"
 #include "TAttBBox2D.h"
-#include "TPoint.h"
-#include "GuiTypes.h"
 
+class TPoint;
 
 class TEllipse : public TObject, public TAttLine, public TAttFill, public TAttBBox2D {
 

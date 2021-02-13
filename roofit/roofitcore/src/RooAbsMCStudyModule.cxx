@@ -28,7 +28,7 @@ between the generation and fitting step and after the fitting step.
 Any summary output variables declared in the RooDataSet exported through
 summaryData() is merged with the 'master' summary dataset in RooMCStudy.
 
-Look at RooDLLSignificanceMCStudyModule for an example of an implementation.
+Look at RooDLLSignificanceMCSModule for an example of an implementation.
 **/
 
 #include "RooFit.h"

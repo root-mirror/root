@@ -38,12 +38,14 @@
 
 #include "TMVA/VariableTransformBase.h"
 
+#include <vector>
+
 namespace TMVA {
 
    class VariableIdentityTransform : public VariableTransformBase {
-      
+
    public:
-      
+
       VariableIdentityTransform( DataSetInfo& dsi );
       virtual ~VariableIdentityTransform( void ) {}
 

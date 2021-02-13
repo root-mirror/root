@@ -6,6 +6,6 @@
 
 #pragma link C++ class TDavixFile+;
 #pragma link C++ class TDavixSystem+;
-#pragma link C++ class ROOT::Experimental::Detail::RRawFileDavix+;
+#pragma link C++ class ROOT::Internal::RRawFileDavix+;
 
 #endif

@@ -17,6 +17,8 @@
 #include "Rtypes.h"
 
 #include <vector>
+#include <list>
+#include <string>
 #include <sstream>
 
 #include "RooStats/TestStatSampler.h"

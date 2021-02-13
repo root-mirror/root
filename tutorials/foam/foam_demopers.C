@@ -50,7 +50,7 @@ Int_t foam_demopers()
    TFoamIntegrand * rho = (TFoamIntegrand*) gROOT->ProcessLine("return new TFDISTR();");
    FoamX->SetRho(rho);
 
-   Double_t *MCvect =new Double_t[2]; // 2-dim vector generated in the MC run
+   Double_t MCvect[2]; // 2-dim vector generated in the MC run
 
    for(long loop=0; loop<50000; loop++){
       FoamX->MakeEvent();            // generate MC event

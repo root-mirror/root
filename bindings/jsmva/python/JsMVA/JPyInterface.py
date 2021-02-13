@@ -145,14 +145,14 @@ class functions:
     # from DataLoader and Factory modules
     @staticmethod
     def register(noOutput=False):
-        from JupyROOT.utils import transformers
+        from JupyROOT.helpers.utils import transformers
         functions.__register(ROOT.TMVA.DataLoader, DataLoader, *functions.__getMethods(DataLoader, "Draw"))
         functions.__register(ROOT.TMVA.Factory,    Factory,    *functions.__getMethods(Factory,    "Draw"))
         functions.__changeMethod(ROOT.TMVA.Factory,    Factory,    *functions.__getMethods(Factory,    "Change"))
         functions.__changeMethod(ROOT.TMVA.DataLoader, DataLoader, *functions.__getMethods(DataLoader, "Change"))
         for key in functions.ThreadedFunctions:
             for func in functions.ThreadedFunctions[key]:
-                setattr(getattr(getattr(ROOT.TMVA, key), func), "_threaded", True)
+                setattr(getattr(getattr(ROOT.TMVA, key), func), "__release_gil__", True)
         functions.__register(ROOT.TMVA.Factory, Factory, "BookDNN")
         if not noOutput:
             outputTransformer = OutputTransformer.transformTMVAOutputToHTML()
@@ -189,7 +189,7 @@ class functions:
 class JsDraw:
     ## Base repository
     __jsMVARepo = "https://root.cern.ch/js/jsmva/latest"
- 
+
     ## String containing the link to JavaScript files
     __jsMVASourceDir = __jsMVARepo + "/js"
 

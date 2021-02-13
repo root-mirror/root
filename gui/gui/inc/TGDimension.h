@@ -22,7 +22,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
+#include "RtypesCore.h"
 
 class TGDimension {
 public:

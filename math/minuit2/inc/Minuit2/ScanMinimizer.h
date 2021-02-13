@@ -15,11 +15,9 @@
 #include "Minuit2/ScanBuilder.h"
 #include "Minuit2/SimplexSeedGenerator.h"
 
-#include <vector>
-
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
 //_____________________________________________________________
 /**
@@ -30,24 +28,21 @@ namespace ROOT {
 class ScanMinimizer : public ModularFunctionMinimizer {
 
 public:
-
-   ScanMinimizer() : fSeedGenerator(SimplexSeedGenerator()),
-                     fBuilder(ScanBuilder()) {}
+   ScanMinimizer() : fSeedGenerator(SimplexSeedGenerator()), fBuilder(ScanBuilder()) {}
 
    ~ScanMinimizer() {}
 
-   const MinimumSeedGenerator& SeedGenerator() const {return fSeedGenerator;}
-   const MinimumBuilder& Builder() const {return fBuilder;}
-   MinimumBuilder& Builder()  {return fBuilder;}
+   const MinimumSeedGenerator &SeedGenerator() const { return fSeedGenerator; }
+   const MinimumBuilder &Builder() const { return fBuilder; }
+   MinimumBuilder &Builder() { return fBuilder; }
 
 private:
-
    SimplexSeedGenerator fSeedGenerator;
    ScanBuilder fBuilder;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_ScanMinimizer
+#endif // ROOT_Minuit2_ScanMinimizer

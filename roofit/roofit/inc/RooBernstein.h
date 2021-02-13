@@ -14,18 +14,21 @@
 #define ROO_BERNSTEIN
 
 #include "RooAbsPdf.h"
-#include "RooRealProxy.h"
+#include "RooTemplateProxy.h"
+#include "RooRealVar.h"
 #include "RooListProxy.h"
+#include "RooAbsRealLValue.h"
+#include <string>
 
 class RooRealVar;
-class RooArgList ;
+class RooArgList;
 
 class RooBernstein : public RooAbsPdf {
 public:
 
   RooBernstein() ;
   RooBernstein(const char *name, const char *title,
-               RooAbsReal& _x, const RooArgList& _coefList) ;
+               RooAbsRealLValue& _x, const RooArgList& _coefList) ;
 
   RooBernstein(const RooBernstein& other, const char* name = 0);
   virtual TObject* clone(const char* newname) const { return new RooBernstein(*this, newname); }
@@ -33,17 +36,18 @@ public:
 
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ;
+  void selectNormalizationRange(const char* rangeName=0, Bool_t force=kFALSE) ;
 
 private:
-
-  RooRealProxy _x;
+  
+  RooTemplateProxy<RooAbsRealLValue> _x ;
   RooListProxy _coefList ;
+  std::string _refRangeName ;
 
   Double_t evaluate() const;
-  RooSpan<double> evaluateBatch(std::size_t begin, std::size_t batchSize) const;
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
 
-
-  ClassDef(RooBernstein,1) // Bernstein polynomial PDF
+  ClassDef(RooBernstein,2) // Bernstein polynomial PDF
 };
 
 #endif

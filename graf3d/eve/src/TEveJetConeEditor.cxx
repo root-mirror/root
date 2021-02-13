@@ -12,16 +12,6 @@
 #include "TEveJetConeEditor.h"
 #include "TEveJetCone.h"
 
-#include "TVirtualPad.h"
-#include "TColor.h"
-
-// Cleanup these includes:
-#include "TGLabel.h"
-#include "TGButton.h"
-#include "TGNumberEntry.h"
-#include "TGColorSelect.h"
-#include "TGDoubleSlider.h"
-
 /** \class TEveJetConeEditor
 \ingroup TEve
 GUI editor for TEveJetCone.

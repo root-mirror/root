@@ -31,14 +31,12 @@ by offering it a list of new RooAbsArg objects.
 #include "RooFit.h"
 #include "Riostream.h"
 
-#include "TObjString.h"
 #include "TClass.h"
 #include "RooNameSet.h"
 #include "RooArgSet.h"
 #include "RooArgList.h"
 
 ClassImp(RooNameSet);
-;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// copy src to dst, keep dstlen up to date, make sure zero length strings

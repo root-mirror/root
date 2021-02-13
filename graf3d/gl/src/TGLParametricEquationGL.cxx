@@ -12,7 +12,6 @@
 #include "TGLParametricEquationGL.h"
 
 #include "TGLParametric.h"
-#include "TVirtualPad.h"
 
 #include "TGLSurfacePainter.h"
 #include "TGLTF3Painter.h"

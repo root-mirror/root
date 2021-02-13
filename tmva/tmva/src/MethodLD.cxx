@@ -51,12 +51,12 @@ Can compute multidimensional output for regression
 #include "TMVA/Types.h"
 #include "TMVA/VariableTransformBase.h"
 
-#include "Riostream.h"
 #include "TMath.h"
 #include "TMatrix.h"
 #include "TMatrixD.h"
 #include "TList.h"
 
+#include <iostream>
 #include <iomanip>
 
 using std::vector;

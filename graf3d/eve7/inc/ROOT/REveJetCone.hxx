@@ -28,8 +28,8 @@ class REveJetCone : public REveShape,
    friend class REveJetConeProjected;
 
 private:
-   REveJetCone(const REveJetCone &);            // Not implemented
-   REveJetCone &operator=(const REveJetCone &); // Not implemented
+   REveJetCone(const REveJetCone &) = delete;
+   REveJetCone &operator=(const REveJetCone &) = delete;
 
 protected:
    REveVector fApex;   // Apex of the cone.
@@ -83,8 +83,8 @@ class REveJetConeProjected : public REveShape,
                              public REveProjected
 {
 private:
-   REveJetConeProjected(const REveJetConeProjected &);            // Not implemented
-   REveJetConeProjected &operator=(const REveJetConeProjected &); // Not implemented
+   REveJetConeProjected(const REveJetConeProjected &) = delete;
+   REveJetConeProjected &operator=(const REveJetConeProjected &) = delete;
 
 protected:
    void SetDepthLocal(Float_t d) override;

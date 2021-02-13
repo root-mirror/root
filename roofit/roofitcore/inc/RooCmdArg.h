@@ -18,10 +18,9 @@
 #define ROO_CMD_ARG
 
 #include "TNamed.h"
-#include "TString.h"
 #include "RooLinkedList.h"
-
 #include <string>
+
 class RooAbsData ;
 class RooArgSet ;
 

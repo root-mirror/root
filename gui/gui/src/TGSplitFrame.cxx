@@ -22,7 +22,11 @@
 #include "TString.h"
 #include "TClass.h"
 #include "TList.h"
-#include "Riostream.h"
+#include "TVirtualX.h"
+#include "snprintf.h"
+
+#include <iostream>
+
 
 ClassImp(TGSplitTool);
 ClassImp(TGSplitFrame);

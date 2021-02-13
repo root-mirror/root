@@ -30,14 +30,16 @@
 //
 // ********************************************************************
 
-//doxygen tag
-/**
-   @defgroup MatrixFunctions Matrix Template Functions
-   @ingroup SMatrixGroup
 
-   These function apply to matrices (and also Matrix expression) and can return a
-   matrix expression of a particular defined type, like in the matrix multiplication or
-   a vector, like in the matrix-vector product or a scalar like in the Similarity vector-matrix product.
+/**
+\defgroup MatrixFunctions Matrix Template Functions
+\ingroup SMatrixGroup
+
+These function apply to matrices (and also Matrix expression) and can return a
+matrix expression of a particular defined type, like in the matrix multiplication or
+a vector, like in the matrix-vector product or a scalar like in the Similarity
+vector-matrix product.
+
 */
 
 #include "Math/BinaryOpPolicy.h"

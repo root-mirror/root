@@ -22,4 +22,5 @@ ROOT_LINKER_LIBRARY(GQuartz
     "-framework Cocoa"
   DEPENDENCIES
     Core
+    MathCore
 )

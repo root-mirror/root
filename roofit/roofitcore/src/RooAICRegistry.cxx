@@ -29,7 +29,6 @@ associated normalization and integration sets.
 #include "RooAICRegistry.h"
 #include "RooMsgService.h"
 #include "RooArgSet.h"
-#include "RooMsgService.h"
 
 #include "Riostream.h"
 

@@ -17,7 +17,6 @@ This class describes one single function template.
 #include "TFunctionTemplate.h"
 #include "TInterpreter.h"
 #include "TClass.h"
-#include "TROOT.h"
 
 ClassImp(TFunctionTemplate);
 

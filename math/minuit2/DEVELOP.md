@@ -12,13 +12,14 @@ cmake .. -Dminuit2_standalone=ON
 This will fill in the `math/minuit2` directory with all the files needed for Minuit2, copied from the corresponding ROOT files, as part of the configure step.
 At this point, you could continue to build (using `make`). Note that the CMake option `minuit2_inroot` will automatically be set to `ON` if you are inside the ROOT source tree. Setting `minuit2_standalone` requires that this be inside the ROOT source tree. As always, any manual setting of a cached variable in CMake will be remembered as long as the `CMakeCache.txt` file is not removed.
 
-You can remove the copied files using:
+Remember that after building a tarball or a binary package you should remove the copied files using:
 
 ```bash
 make purge
 ```
 
-(The files are ignored by git, so standard git tools to remove untracked files work as well.)
+Otherwise git shows the file as untracked, unless you explicitly remove their tracking yourself with a .gitignore file
+
 
 ## Building a tarball
 

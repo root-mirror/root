@@ -32,6 +32,7 @@
 #define ROOT_Math_Polynomial
 
 #include <complex>
+#include <vector>
 
 #include "Math/ParamFunction.h"
 

@@ -20,6 +20,7 @@ Helper class implementing the TFile::MakeProject.
 #include "TMakeProject.h"
 #include "TClass.h"
 #include "TClassEdit.h"
+#include "TList.h"
 #include "TROOT.h"
 #include "TMD5.h"
 #include "TStreamerInfo.h"
@@ -517,7 +518,7 @@ UInt_t TMakeProject::GenerateIncludeForTemplate(FILE *fp, const char *clname, ch
                   AddInclude(fp, what, kTRUE, inclist);
                   fprintf(fp, "namespace std {} using namespace std;\n");
                   ninc += GenerateIncludeForTemplate(fp, incName, inclist, forward, extrainfos);
-               } else if (strncmp(incName.Data(), "pair<", strlen("pair<")) == 0) {
+               } else if (TClassEdit::IsStdPair(incName)) {
                   AddInclude(fp, "utility", kTRUE, inclist);
                   ninc += GenerateIncludeForTemplate(fp, incName, inclist, forward, extrainfos);
                } else if (strncmp(incName.Data(), "auto_ptr<", strlen("auto_ptr<")) == 0) {
@@ -614,7 +615,7 @@ void TMakeProject::GeneratePostDeclaration(FILE *fp, const TVirtualStreamerInfo 
          Int_t stlkind =  TClassEdit::STLKind(inside[0]);
          TClass *key = TClass::GetClass(inside[1].c_str());
          TString what;
-         if (strncmp(inside[1].c_str(),"pair<",strlen("pair<"))==0) {
+         if (TClassEdit::IsStdPair(inside[1])) {
             what = inside[1].c_str();
          } else if (key) {
             switch (stlkind)  {
@@ -672,6 +673,11 @@ TString TMakeProject::UpdateAssociativeToVector(const char *name)
       }
 
       if (nestedLoc) narg = nestedLoc;
+
+      // Treat the trailing stars the same as nested loc (i.e. ends up, properly, tacking them up back at the end of the name)
+      if (!inside[narg-1].empty() && inside[narg-1][0] == '*')
+         narg = narg - 1;
+
 
       // Remove default allocator if any.
       static const char* allocPrefix = "std::allocator<";

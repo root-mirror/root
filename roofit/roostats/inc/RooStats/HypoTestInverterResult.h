@@ -11,11 +11,11 @@
 #ifndef ROOSTATS_HypoTestInverterResult
 #define ROOSTATS_HypoTestInverterResult
 
-
-
 #include "RooStats/SimpleInterval.h"
 
 #include "RooStats/HypoTestResult.h"
+
+#include <vector>
 
 class RooRealVar;
 

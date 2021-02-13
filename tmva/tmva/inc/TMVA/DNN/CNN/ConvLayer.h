@@ -35,6 +35,7 @@
 
 #include <vector>
 #include <iostream>
+#include <string>
 
 namespace TMVA {
 namespace DNN {
@@ -245,7 +246,7 @@ TConvLayer<Architecture_t>::TConvLayer(size_t batchSize, size_t inputDepth, size
     **/
    fInputActivation = Tensor_t( batchSize, depth, fNLocalViews);     // create tensor (shape is B x C x LV)
    fForwardTensor = Tensor_t ( batchSize, fNLocalViews, fNLocalViewPixels );
-   
+
 
    InitializeDescriptors();
    InitializeWorkspace();
@@ -267,7 +268,7 @@ TConvLayer<Architecture_t>::TConvLayer(TConvLayer<Architecture_t> *layer)
 {
    InitializeDescriptors();
    InitializeWorkspace();
-   
+
 }
 
 //______________________________________________________________________________
@@ -442,7 +443,7 @@ void TConvLayer<Architecture_t>::InitializeWorkspace() {
 
 template <typename Architecture_t>
 void TConvLayer<Architecture_t>::FreeWorkspace() {
-   Architecture_t::FreeConvWorkspace(fWorkspace, this);
+   Architecture_t::FreeConvWorkspace(fWorkspace);
 }
 
 //______________________________________________________________________________

@@ -16,9 +16,9 @@
 #include "TXMLEngine.h"
 #include "TGeoMatrix.h"
 #include "TGeoVolume.h"
+#include "TGeoElement.h"
 
 #include <map>
-#include <vector>
 #include <iostream>
 
 class TGDMLMatrix;

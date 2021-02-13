@@ -11,7 +11,7 @@ ROOT Source Code
 
 The source code for ROOT is kept in [GitHub](http://github.com/root-project/root) and follows mainly the pull-request model;
 the primary branch for development is `master`.
-Visit [this page](https://root.cern/creating-pull-request) for more details on how to
+Visit [this page](https://root.cern/for_developers/creating_pr) for more details on how to
 create pull requests.
 
 Once a PR is created, a member of the ROOT team will review it as quickly as possible.  If you are familiar with the
@@ -24,7 +24,7 @@ Testing
 -------
 
 While there are several levels of automated tests that will be triggered before a PR is integrated into `master`, we
-strongly encourage new developers to run the tests _before_ submitting new code.  [Please follow the testing docs](https://root.cern.ch/run-tests)
+strongly encourage new developers to run the tests _before_ submitting new code.  [Please follow the testing docs](https://root.cern/for_developers/run_the_tests/)
 for more information.
 
 Continuous Integration

@@ -1,8 +1,9 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -jss
-/// Plot the ROOT downloads based on the version reading a remote sqlite3 file with RSqliteDS.
-/// This tutorial uses the Reduce method which allows to extract the minimum time 
+/// Plot the ROOT downloads based on the version reading a remote sqlite3 file.
+///
+/// This tutorial uses the Reduce method which allows to extract the minimum time
 /// stored in the SQlite3 database.
 /// The next step is to create a TH1F Histogram, which will be filled with the values stored in
 /// two different columns from the database. This procedure is simplified with a lambda
@@ -19,7 +20,7 @@ void df027_SQliteDependencyOverVersion () {
    auto rdfb = ROOT::RDF::MakeSqliteDataFrame("http://root.cern/files/root_download_stats.sqlite", "SELECT * FROM accesslog;" );
 
    auto minTimeStr = *rdfb.Reduce([](std::string a, std::string b) {return std::min(a, b);}, "Time", std::string("Z"));
-   
+
    std::cout << "Minimum time is '" << minTimeStr << "'" << std::endl;
 
    double minTime = TDatime(minTimeStr.c_str()).Convert();

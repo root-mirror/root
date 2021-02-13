@@ -47,7 +47,6 @@ with the goal of having all workers ending at the same time.
 #include "TUrl.h"
 #include "TClass.h"
 #include "TMath.h"
-#include "TObjString.h"
 
 
 using namespace TMath;

@@ -22,13 +22,12 @@
 Class RooRecursiveFraction is a RooAbsReal implementation that
 calculates the plain fraction of sum of RooAddPdf components
 from a set of recursive fractions: for a given set of input fractions
-a_i it returns a_0 * Prod_i (1 - a_i). 
+\f$ {a_i} \f$, it returns \f$ a_n * \prod_{i=0}^{n-1} (1 - a_i) \f$.
 **/
 
 
 #include "RooFit.h"
 
-#include "Riostream.h"
 #include "Riostream.h"
 #include <math.h>
 
@@ -44,7 +43,7 @@ a_i it returns a_0 * Prod_i (1 - a_i).
 using namespace std;
 
 ClassImp(RooRecursiveFraction);
-;
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +51,7 @@ ClassImp(RooRecursiveFraction);
 
 RooRecursiveFraction::RooRecursiveFraction()
 {
-  _listIter = _list.createIterator() ;
+
 }
 
 
@@ -64,15 +63,16 @@ RooRecursiveFraction::RooRecursiveFraction(const char* name, const char* title, 
   RooAbsReal(name, title),
   _list("list","First set of components",this)
 {
-  _listIter = _list.createIterator() ;
-
   for (Int_t ifrac=fracList.getSize()-1 ; ifrac>=0 ; ifrac--) {
     RooAbsArg* comp = fracList.at(ifrac) ;
     if (!dynamic_cast<RooAbsReal*>(comp)) {
-      coutE(InputArguments) << "RooRecursiveFraction::ctor(" << GetName() << ") ERROR: component " << comp->GetName() 
+      std::stringstream errorMsg;
+      errorMsg << "RooRecursiveFraction::ctor(" << GetName() << ") ERROR: component " << comp->GetName()
 			    << " is not of type RooAbsReal" << endl ;
-      RooErrorHandler::softAbort() ;
+      coutE(InputArguments) << errorMsg.str();
+      throw std::invalid_argument(errorMsg.str());
     }
+
     _list.add(*comp) ;    
   }
 }
@@ -86,7 +86,7 @@ RooRecursiveFraction::RooRecursiveFraction(const RooRecursiveFraction& other, co
   RooAbsReal(other, name), 
   _list("list",this,other._list)
 {
-  _listIter = _list.createIterator() ;
+
 }
 
 
@@ -96,25 +96,22 @@ RooRecursiveFraction::RooRecursiveFraction(const RooRecursiveFraction& other, co
 
 RooRecursiveFraction::~RooRecursiveFraction() 
 {
-  if (_listIter) delete _listIter ;
+
 }
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Calculate and return value of 1 - prod_i (1 - f_i )
-
+/// Calculate and return value of \f$ a_n * \prod_{i=0}^{n-1} (1 - a_i) \f$.
 Double_t RooRecursiveFraction::evaluate() const 
 {
-  RooAbsReal* comp ;
   const RooArgSet* nset = _list.nset() ;
 
-  _listIter->Reset() ;
-  comp=(RooAbsReal*)_listIter->Next() ;
-  Double_t prod = comp->getVal(nset) ;
+  // Note that input coefficients are saved in reverse in this list.
+  Double_t prod = static_cast<RooAbsReal&>(_list[0]).getVal(nset);
 
-  while((comp=(RooAbsReal*)_listIter->Next())) {
-    prod *= (1-comp->getVal(nset)) ;
+  for (unsigned int i=1; i < _list.size(); ++i) {
+    prod *= (1 - static_cast<RooAbsReal&>(_list[i]).getVal(nset));
   }
     
   return prod ;

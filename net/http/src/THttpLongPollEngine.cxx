@@ -13,7 +13,6 @@
 
 #include "TError.h"
 #include "THttpCallArg.h"
-#include "TSystem.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -101,9 +100,17 @@ void THttpLongPollEngine::Send(const void *buf, int len)
 {
    std::shared_ptr<THttpCallArg> poll;
 
+   std::string sendbuf = MakeBuffer(buf, len);
+
    {
       std::lock_guard<std::mutex> grd(fMutex);
-      poll = std::move(fPoll);
+      if (fPoll) {
+         poll = std::move(fPoll);
+      } else if (fBufKind == kNoBuf)  {
+         fBufKind = kBinBuf;
+         std::swap(fBuf, sendbuf);
+         return;
+      }
    }
 
    if(!poll) {
@@ -111,9 +118,7 @@ void THttpLongPollEngine::Send(const void *buf, int len)
       return;
    }
 
-   std::string buf2 = MakeBuffer(buf, len);
-
-   poll->SetBinaryContent(std::move(buf2));
+   poll->SetBinaryContent(std::move(sendbuf));
    poll->NotifyCondition();
 }
 
@@ -124,9 +129,18 @@ void THttpLongPollEngine::SendHeader(const char *hdr, const void *buf, int len)
 {
    std::shared_ptr<THttpCallArg> poll;
 
+   std::string sendbuf = MakeBuffer(buf, len, hdr);
+
    {
       std::lock_guard<std::mutex> grd(fMutex);
-      poll = std::move(fPoll);
+      if (fPoll) {
+         poll = std::move(fPoll);
+      } else if (fBufKind == kNoBuf)  {
+         fBufKind = kBinBuf;
+         if (!fRaw && hdr) fBufHeader = hdr;
+         std::swap(fBuf, sendbuf);
+         return;
+      }
    }
 
    if(!poll) {
@@ -134,9 +148,7 @@ void THttpLongPollEngine::SendHeader(const char *hdr, const void *buf, int len)
       return;
    }
 
-   std::string buf2 = MakeBuffer(buf, len, hdr);
-
-   poll->SetBinaryContent(std::move(buf2));
+   poll->SetBinaryContent(std::move(sendbuf));
    if (!fRaw)
       poll->SetExtraHeader("LongpollHeader", hdr);
    poll->NotifyCondition();
@@ -150,18 +162,24 @@ void THttpLongPollEngine::SendCharStar(const char *buf)
 {
    std::shared_ptr<THttpCallArg> poll;
 
+   std::string sendbuf(fRaw ? "txt:" : "");
+   sendbuf.append(buf);
+
    {
       std::lock_guard<std::mutex> grd(fMutex);
-      poll = std::move(fPoll);
+      if (fPoll) {
+         poll = std::move(fPoll);
+      } else if (fBufKind == kNoBuf) {
+         fBufKind = fRaw ? kBinBuf : kTxtBuf;
+         std::swap(fBuf, sendbuf);
+         return;
+      }
    }
 
    if(!poll) {
       Error("SendCharStart", "Operation invoked before polling request obtained");
       return;
    }
-
-   std::string sendbuf(fRaw ? "txt:" : "");
-   sendbuf.append(buf);
 
    if (fRaw) poll->SetBinaryContent(std::move(sendbuf));
         else poll->SetTextContent(std::move(sendbuf));
@@ -178,25 +196,27 @@ Bool_t THttpLongPollEngine::PreProcess(std::shared_ptr<THttpCallArg> &arg)
    if (!strstr(arg->GetQuery(), "&dummy"))
       return kFALSE;
 
-   arg->SetPostponed(); // mark http request as pending, http server should wait for notification
-
    std::shared_ptr<THttpCallArg> poll;
 
-   {
+   // if request cannot be postponed just reply it
+   if (arg->CanPostpone()) {
       std::lock_guard<std::mutex> grd(fMutex);
-      poll = std::move(fPoll);
-      fPoll = arg;         // keep reference on polling request
+      if (fBufKind != kNoBuf) {
+         // there is data which can be send directly
+         poll = arg;
+      } else {
+         arg->SetPostponed(); // mark http request as pending, http server should wait for notification
+         poll = std::move(fPoll);
+         fPoll = arg;         // keep reference on polling request
+      }
+
+   } else {
+      poll = arg;
    }
 
-   if (arg == poll)
-      Fatal("PreviewData", "Submit same THttpCallArg object once again");
-
    if (poll) {
-      Error("PreviewData", "Get next dummy request when previous not completed");
-      // if there are pending request, reply it immediately
-      // normally should never happen
-      if (fRaw) poll->SetBinaryContent(std::string("txt:") + gLongPollNope);
-           else poll->SetTextContent(std::string(gLongPollNope));
+      // if there buffered data, it will be provided
+      PostProcess(poll);
       poll->NotifyCondition();         // inform http server that request is processed
    }
 
@@ -210,15 +230,37 @@ Bool_t THttpLongPollEngine::PreProcess(std::shared_ptr<THttpCallArg> &arg)
 
 void THttpLongPollEngine::PostProcess(std::shared_ptr<THttpCallArg> &arg)
 {
-   if (fRaw) arg->SetBinaryContent(std::string("txt:") + gLongPollNope);
-        else arg->SetTextContent(std::string(gLongPollNope));
+   EBufKind kind = kNoBuf;
+   std::string sendbuf, sendhdr;
+
+   {
+      std::lock_guard<std::mutex> grd(fMutex);
+      if (fBufKind != kNoBuf) {
+         kind = fBufKind;
+         fBufKind = kNoBuf;
+         std::swap(sendbuf, fBuf);
+         std::swap(sendhdr, fBufHeader);
+      }
+   }
+
+   if (kind == kTxtBuf) {
+      arg->SetTextContent(std::move(sendbuf));
+   } else if (kind == kBinBuf) {
+      arg->SetBinaryContent(std::move(sendbuf));
+      if (!sendhdr.empty())
+         arg->SetExtraHeader("LongpollHeader", sendhdr.c_str());
+   } else if (fRaw) {
+      arg->SetBinaryContent(std::string("txt:") + gLongPollNope);
+   } else {
+      arg->SetTextContent(std::string(gLongPollNope));
+   }
 }
 
 //////////////////////////////////////////////////////////////////////////////
-/// Indicate that polling requests is there and can be immediately invoked
+/// Indicate that polling requests is there or buffer empty and can be immediately invoked
 
 Bool_t THttpLongPollEngine::CanSendDirectly()
 {
    std::lock_guard<std::mutex> grd(fMutex);
-   return fPoll ? kTRUE : kFALSE;
+   return fPoll || (fBufKind == kNoBuf) ? kTRUE : kFALSE;
 }

@@ -64,8 +64,8 @@ sap.ui.define([
         var svg = d3.select(dom.get(0)).append("svg").attr("width", w).attr("height",h).attr("viewBox","0 0 " + w + " " + h);
 
         var attr = this.getProperty("svgsample");
-        if (attr && (typeof attr == "object") && (typeof attr.CreateSample == "function"))
-           attr.CreateSample(svg,w,h);
+        if (attr && (typeof attr == "object") && (typeof attr.createSample == "function"))
+           attr.createSample(svg,w,h);
         else
            svg.append("text").text("none");
      },

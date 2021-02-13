@@ -2,17 +2,19 @@
 <html lang="en">
    <head>
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <title>Read a ROOT file</title>
       <link rel="shortcut icon" href="img/RootIcon.ico"/>
       <!-- To make use of RequireJS, replace following line with commented one -->
-      <script type="text/javascript" src="scripts/JSRootCore.js?gui"></script>
-      <!--script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="scripts/JSRootCore.js"></script-->
+      <!--script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="scripts/JSRoot.core.js"></script-->
+      <script type="text/javascript" src="scripts/JSRoot.core.js"></script>
    </head>
    <body>
       <div id="simpleGUI" path="../files/" files="ct.root;exclusion.root;fillrandom.root;glbox.root;graph.root;hsimple.root;legends.root;rf107.root;stacks.root;zdemo.root">
          loading scripts ...
       </div>
+      <script type="text/javascript">
+         JSROOT.buildGUI("simpleGUI");
+      </script>
    </body>
 </html>
 
@@ -44,8 +46,8 @@ But one should be aware about Cross-Origin Request blocking.
 Read https://developer.mozilla.org/en/http_access_control for more details.
 
 To avoid problem at all, one can copy only index.htm on the web server where data files are located.
-And specify full path to the JSRootCore.js script like
-   <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRootCore.min.js?gui"></script>
+And specify full path to the JSRoot.core.js script like
+   <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRoot.core.min.js"></script>
 
 If necessary, complete JSROOT can be installed on the web server.
 Project repository: https://github.com/root-project/jsroot.

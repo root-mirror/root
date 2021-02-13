@@ -105,8 +105,8 @@ private:
    TList fProperties; // List of surface properties
 
    // No copy
-   TGeoOpticalSurface(const TGeoOpticalSurface &);
-   TGeoOpticalSurface &operator=(const TGeoOpticalSurface &);
+   TGeoOpticalSurface(const TGeoOpticalSurface &) = delete;
+   TGeoOpticalSurface &operator=(const TGeoOpticalSurface &) = delete;
 
 public:
    // constructors

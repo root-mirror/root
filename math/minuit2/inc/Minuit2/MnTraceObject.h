@@ -12,38 +12,34 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-      class MinimumState;
-      class MnUserParameterState;
+class MinimumState;
+class MnUserParameterState;
 
-      class MnTraceObject {
+class MnTraceObject {
 
-      public:
+public:
+   MnTraceObject(int parNumber = -1) : fUserState(0), fParNumber(parNumber) {}
 
-         MnTraceObject(int parNumber = -1) :
-            fUserState(0),
-            fParNumber(parNumber) {}
+   virtual ~MnTraceObject() {}
 
-         virtual ~MnTraceObject() {}
+   virtual void Init(const MnUserParameterState &state) { fUserState = &state; }
 
-         virtual void Init(const MnUserParameterState & state) { fUserState = &state; }
+   virtual void operator()(int i, const MinimumState &state);
 
-         virtual void operator() (int i, const MinimumState & state);
+   const MnUserParameterState &UserState() const { return *fUserState; }
 
-         const MnUserParameterState & UserState() const { return *fUserState; }
+   void SetParNumber(int number) { fParNumber = number; }
 
-         void SetParNumber(int number) { fParNumber = number; }
+   int ParNumber() const { return fParNumber; }
 
-         int  ParNumber() const { return fParNumber; }
+private:
+   const MnUserParameterState *fUserState;
+   int fParNumber;
+};
 
-      private:
+} // namespace Minuit2
+} // namespace ROOT
 
-         const MnUserParameterState * fUserState;
-         int fParNumber;
-      };
-
-   }  // namespace Minuit2
-}  // namespace ROOT
-
-#endif  // ROOT_Minuit2_MnTraceIter
+#endif // ROOT_Minuit2_MnTraceIter

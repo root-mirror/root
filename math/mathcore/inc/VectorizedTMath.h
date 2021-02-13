@@ -1,7 +1,7 @@
 #ifndef ROOT_VectorizedTMath
 #define ROOT_VectorizedTMath
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 #include "Math/Types.h"
 #include "TMath.h"
 

@@ -274,3 +274,14 @@ TEST(RDataFrameHistoModels, Histo3D)
    CheckBins(hm0w->GetYaxis(), ref1);
    CheckBins(hm0w->GetZaxis(), ref0);
 }
+
+TEST(RDataFrameHisto, FillVecBool)
+{
+    const auto n = 10u;
+    ROOT::RDataFrame df(n);
+    auto h = df.Define("x", [] { return ROOT::RVec<bool>{true, false}; }).Histo1D<ROOT::RVec<bool>>({"h", "h", 2, -0.5, 1.5}, "x");
+    EXPECT_EQ(h->GetBinContent(0), 0u);
+    EXPECT_EQ(h->GetBinContent(1), n);
+    EXPECT_EQ(h->GetBinContent(2), n);
+    EXPECT_EQ(h->GetBinContent(3), 0u);
+}

@@ -16,22 +16,25 @@
 #ifndef ROO_REAL_VAR
 #define ROO_REAL_VAR
 
-#include <list>
-#include <string>
-#include <cmath>
-#include <float.h>
+#include "RooAbsRealLValue.h"
+
 #include "TString.h"
 
-#include "RooAbsRealLValue.h"
-#include "RooUniformBinning.h"
-#include "RooNumber.h"
-#include "RooSharedPropertiesList.h"
-#include "RooRealVarSharedProperties.h"
+#include <list>
+#include <string>
+#include <map>
+#include <memory>
+#include <unordered_map>
+
 
 class RooArgSet ;
 class RooErrorVar ;
 class RooVectorDataStore ;
 class RooExpensiveObjectCache ;
+class RooRealVarSharedProperties;
+namespace RooBatchCompute{
+struct RunContext;
+}
 
 class RooRealVar : public RooAbsRealLValue {
 public:
@@ -50,10 +53,10 @@ public:
   
   // Parameter value and error accessors
   virtual Double_t getValV(const RooArgSet* nset=0) const ;
-  RooSpan<const double> getValBatch(std::size_t begin, std::size_t batchSize,
-      const RooArgSet* = nullptr) const;
+  RooSpan<const double> getValues(RooBatchCompute::RunContext& inputData, const RooArgSet*) const final;
 
   virtual void setVal(Double_t value);
+  virtual void setVal(Double_t value, const char* rangeName);
   inline Double_t getError() const { return _error>=0?_error:0. ; }
   inline Bool_t hasError(Bool_t allowZero=kTRUE) const { return allowZero ? (_error>=0) : (_error>0) ; }
   inline void setError(Double_t value) { _error= value ; }
@@ -75,10 +78,12 @@ public:
   void setRange(const char* name, RooAbsReal& min, RooAbsReal& max) ;
   inline void setMin(Double_t value) { setMin(0,value) ; }
   inline void setMax(Double_t value) { setMax(0,value) ; }
+  /// Set the limits of the default range.
   inline void setRange(Double_t min, Double_t max) { setRange(0,min,max) ; }
+  /// Set parameterised limits of the default range. See setRange(const char*, RooAbsReal&, RooAbsReal&).
   inline void setRange(RooAbsReal& min, RooAbsReal& max) { setRange(0,min,max) ; }
 
-  void setBins(Int_t nBins, const char* name=0) { setBinning(RooUniformBinning(getMin(name),getMax(name),nBins),name) ; } 
+  void setBins(Int_t nBins, const char* name=0);
   void setBinning(const RooAbsBinning& binning, const char* name=0) ;
 
   // RooAbsRealLValue implementation
@@ -88,9 +93,12 @@ public:
   std::list<std::string> getBinningNames() const ;
 
   // Set infinite fit range limits
-  inline void removeMin(const char* name=0) { getBinning(name).setMin(-RooNumber::infinity()) ; }
-  inline void removeMax(const char* name=0) { getBinning(name).setMax(RooNumber::infinity()) ; }
-  inline void removeRange(const char* name=0) { getBinning(name).setRange(-RooNumber::infinity(),RooNumber::infinity()) ; }
+  /// Remove lower range limit for binning with given name. Empty name means default range.
+  void removeMin(const char* name=0);
+  /// Remove upper range limit for binning with given name. Empty name means default range.
+  void removeMax(const char* name=0);
+  /// Remove range limits for binning with given name. Empty name means default range.
+  void removeRange(const char* name=0);
  
   // I/O streaming interface (machine readable)
   virtual Bool_t readFromStream(std::istream& is, Bool_t compact, Bool_t verbose=kFALSE) ;
@@ -129,8 +137,6 @@ public:
   static Bool_t _printScientific ;
   static Int_t  _printSigDigits ;
 
-  virtual void setVal(Double_t value, const char* rangeName) ;
-
   friend class RooAbsRealLValue ;
   virtual void setValFast(Double_t value) { _value = value ; setValueDirty() ; }
 
@@ -146,23 +152,19 @@ public:
   Double_t _error;      // Symmetric error associated with current value
   Double_t _asymErrLo ; // Low side of asymmetric error associated with current value
   Double_t _asymErrHi ; // High side of asymmetric error associated with current value
-  RooAbsBinning* _binning ; 
-  RooLinkedList _altNonSharedBinning ; // Non-shareable alternative binnings
+  std::unique_ptr<RooAbsBinning> _binning;
+  std::unordered_map<std::string,std::unique_ptr<RooAbsBinning>> _altNonSharedBinning ; //! Non-shareable alternative binnings
 
-  inline RooRealVarSharedProperties* sharedProp() const {
-    if (!_sharedProp) {
-      _sharedProp = (RooRealVarSharedProperties*) _sharedPropList.registerProperties(new RooRealVarSharedProperties()) ;
-    }
-    return _sharedProp ;
-  }
+  std::shared_ptr<RooRealVarSharedProperties> sharedProp() const;
+  void installSharedProp(std::shared_ptr<RooRealVarSharedProperties>&& prop);
 
   virtual void setExpensiveObjectCache(RooExpensiveObjectCache&) { ; } // variables don't need caches 
+  static RooRealVarSharedProperties& _nullProp(); // Null property
+  static std::map<std::string,std::weak_ptr<RooRealVarSharedProperties>>& _sharedPropList(); // List of properties shared among clones of a variable
   
-  static RooSharedPropertiesList _sharedPropList; // List of properties shared among clone sets 
-  static RooRealVarSharedProperties _nullProp ; // Null property
-  mutable RooRealVarSharedProperties* _sharedProp ; //! Shared properties associated with this instance
+  std::shared_ptr<RooRealVarSharedProperties> _sharedProp; //! Shared binnings associated with this instance
 
-  ClassDef(RooRealVar,5) // Real-valued variable 
+  ClassDef(RooRealVar,7) // Real-valued variable
 };
 
 

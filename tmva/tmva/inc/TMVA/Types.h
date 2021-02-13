@@ -42,7 +42,7 @@
 #include <atomic>
 #endif
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 #include "TString.h"
 
@@ -103,6 +103,7 @@ namespace TMVA {
          kPyAdaBoost     ,
          kPyGTB          ,
          kPyKeras        ,
+         kPyTorch        ,
          kC50            ,
          kRSNNS          ,
          kRSVM           ,

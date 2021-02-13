@@ -1,6 +1,8 @@
 ## \file
 ## \ingroup tutorial_dataframe
 ## \notebook -draw
+## Show how to work with non-flat data models, e.g. vectors of tracks.
+##
 ## This tutorial shows the possibility to use data models which are more
 ## complex than flat ntuples with RDataFrame
 ##
@@ -8,7 +10,7 @@
 ## \macro_image
 ##
 ## \date May 2017
-## \author Danilo Piparo
+## \author Danilo Piparo (CERN)
 
 import ROOT
 
@@ -57,16 +59,15 @@ ROOT.fill_tree(fileName, treeName)
 
 # We read the tree from the file and create a RDataFrame, a class that
 # allows us to interact with the data contained in the tree.
-RDF = ROOT.ROOT.RDataFrame
-d = RDF(treeName, fileName)
+d = ROOT.RDataFrame(treeName, fileName)
 
 # Operating on branches which are collection of objects
 # Here we deal with the simplest of the cuts: we decide to accept the event
-# only if the number of tracks is greater than 5.
+# only if the number of tracks is greater than 8.
 n_cut = 'tracks.size() > 8'
 nentries = d.Filter(n_cut).Count();
 
-print("%s passed all filters" %nentries.GetValue())
+print("%s events passed all filters" % nentries.GetValue())
 
 # Another possibility consists in creating a new column containing the
 # quantity we are interested in.
@@ -106,9 +107,14 @@ trWPts = augmented_d.Histo1D("tracks_pts", "tracks_pts_weights")
 
 c1 = ROOT.TCanvas()
 trN.Draw()
+c1.SaveAs("df002_trN.png")
 
 c2 = ROOT.TCanvas()
 trPts.Draw()
+c2.SaveAs("df002_trPts.png")
 
 c3 = ROOT.TCanvas()
 trWPts.Draw()
+c2.SaveAs("df002_trWPts.png")
+
+print("Saved figures to df002_*.png")

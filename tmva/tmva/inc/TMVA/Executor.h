@@ -12,13 +12,14 @@
 //
 //  Defining Executor classes to be used in TMVA
 // wrapping the functionality of the ROOT TThreadExecutor and
-// ROOT TSequential Executor 
-//  
+// ROOT TSequential Executor
+//
 /////////////////////////////////////////////////////////////////////////
 #ifndef ROOT_TMVA_Executor
 #define ROOT_TMVA_Executor
 
 #include <memory>
+#include <vector>
 
 #include <ROOT/TSequentialExecutor.hxx>
 #ifdef R__USE_IMT

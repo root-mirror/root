@@ -389,6 +389,8 @@ ACLiC.Linkdef:          _linkdef
 #      needed libraries.
 # On Windows, the default is 3
 #ACLiC.LinkLibs:      1
+# Add extra options to rootcling invocation by ACLiC
+#ACLiC.ExtraRootclingFlags:      [-optA ... -optZ]
 
 # PROOF related variables
 #

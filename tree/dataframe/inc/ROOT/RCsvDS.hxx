@@ -14,14 +14,20 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RDataSource.hxx"
 
+#include <cstdint>
 #include <deque>
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include <TRegexp.h>
 
 namespace ROOT {
+
+namespace Internal {
+class RRawFile;
+}
 
 namespace RDF {
 
@@ -32,10 +38,13 @@ private:
    using ColType_t = char;
    static const std::map<ColType_t, std::string> fgColTypeMap;
 
-   std::streampos fDataPos = 0;
+   // Regular expressions for type inference
+   static const TRegexp fgIntRegex, fgDoubleRegex1, fgDoubleRegex2, fgDoubleRegex3, fgTrueRegex, fgFalseRegex;
+
+   std::uint64_t fDataPos = 0;
    bool fReadHeaders = false;
    unsigned int fNSlots = 0U;
-   std::ifstream fStream;
+   std::unique_ptr<ROOT::Internal::RRawFile> fCsvFile;
    const char fDelimiter;
    const Long64_t fLinesChunkSize;
    ULong64_t fEntryRangesRequested = 0ULL;
@@ -51,8 +60,6 @@ private:
    // This must be a deque to avoid the specialisation vector<bool>. This would not
    // work given that the pointer to the boolean in that case cannot be taken
    std::vector<std::deque<bool>> fBoolEvtValues; // one per column per slot
-
-   static TRegexp intRegex, doubleRegex1, doubleRegex2, doubleRegex3, trueRegex, falseRegex;
 
    void FillHeaders(const std::string &);
    void FillRecord(const std::string &, Record_t &);

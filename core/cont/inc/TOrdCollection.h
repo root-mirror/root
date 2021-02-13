@@ -47,8 +47,8 @@ private:
    Bool_t     LowWaterMark() const;
    void       SetCapacity(Int_t newCapacity);
 
-   TOrdCollection(const TOrdCollection&); // Not implemented
-   TOrdCollection& operator=(const TOrdCollection&); // Not implemented
+   TOrdCollection(const TOrdCollection&) = delete;
+   TOrdCollection& operator=(const TOrdCollection&) = delete;
 
 public:
    enum { kDefaultCapacity = 1, kMinExpand = 8, kShrinkFactor = 2 };
@@ -104,7 +104,7 @@ private:
    Int_t                  fCursor;    //next position in collection
    Bool_t                 fDirection; //iteration direction
 
-   TOrdCollectionIter() : fCol(0), fCurCursor(0), fCursor(0), fDirection(kIterForward) { }
+   TOrdCollectionIter() : fCol(nullptr), fCurCursor(0), fCursor(0), fDirection(kIterForward) { }
 
 public:
    TOrdCollectionIter(const TOrdCollection *col, Bool_t dir = kIterForward);

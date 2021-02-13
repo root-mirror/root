@@ -1,15 +1,10 @@
 #include "TMVA/BDT_Reg.h"
 #include <iostream>
-#include <iomanip>
 #include <fstream>
-
-
 
 #include "RQ_OBJECT.h"
 
 #include "TROOT.h"
-#include "TStyle.h"
-#include "TPad.h"
 #include "TCanvas.h"
 #include "TLine.h"
 #include "TFile.h"

@@ -1,13 +1,13 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook -nodraw
-##
-## Organization and simultaneous fits: using RooSimWSTool to construct a simultaneous p.d.f that is built of variations of an input p.d.f
+## Organization and simultaneous fits: using RooSimWSTool to construct a simultaneous pdf
+## that is built of variations of an input pdf
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -47,7 +47,7 @@ d.defineType("bar")
 
 # Import ingredients in a workspace
 w = ROOT.RooWorkspace("w", "w")
-getattr(w, 'import')(ROOT.RooArgSet(model, c, d))
+w.Import(ROOT.RooArgSet(model, c, d))
 
 # Make Sim builder tool
 sct = ROOT.RooSimWSTool(w)
@@ -55,14 +55,14 @@ sct = ROOT.RooSimWSTool(w)
 # Build a simultaneous model with one split
 # ---------------------------------------------------------------------------------
 
-# Construct a simultaneous p.d.f with the following form
+# Construct a simultaneous pdf with the following form
 #
 # model_run1(x) = f*gauss_run1(x,m_run1,s) + (1-f)*poly
 # model_run2(x) = f*gauss_run2(x,m_run2,s) + (1-f)*poly
 # simpdf(x,c) = model_run1(x) if c=="run1"
 #             = model_run2(x) if c=="run2"
 #
-# Returned p.d.f is owned by the workspace
+# Returned pdf is owned by the workspace
 model_sim = sct.build("model_sim", "model",
                       ROOT.RooFit.SplitParam("m", "c"))
 
@@ -79,7 +79,7 @@ w.Print("v")
 # Build a simultaneous model with product split
 # -----------------------------------------------------------------------------------------
 
-# Build another simultaneous p.d.f using a composite split in states c X d
+# Build another simultaneous pdf using a composite split in states c X d
 model_sim2 = sct.build("model_sim2", "model",
                        ROOT.RooFit.SplitParam("p0", "c,d"))
 

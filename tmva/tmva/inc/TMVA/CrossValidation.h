@@ -15,6 +15,8 @@
 #include "TGraph.h"
 #include "TMultiGraph.h"
 #include "TString.h"
+#include <vector>
+#include <map>
 
 #include "TMVA/IMethod.h"
 #include "TMVA/Configurable.h"

@@ -11,9 +11,9 @@
 #ifndef ROOT_RFILTER
 #define ROOT_RFILTER
 
+#include "ROOT/RDF/ColumnReaderUtils.hxx"
+#include "ROOT/RDF/RColumnReaderBase.hxx"
 #include "ROOT/RDF/RCutFlowReport.hxx"
-#include "ROOT/RDF/RColumnValue.hxx"
-#include "ROOT/RDF/NodesUtils.hxx"
 #include "ROOT/RDF/Utils.hxx"
 #include "ROOT/RDF/RFilterBase.hxx"
 #include "ROOT/RDF/RLoopManager.hxx"
@@ -36,10 +36,9 @@ using namespace ROOT::Detail::RDF;
 namespace GraphDrawing {
 std::shared_ptr<GraphNode> CreateFilterNode(const RFilterBase *filterPtr);
 
-bool CheckIfDefaultOrDSColumn(const std::string &name, const std::shared_ptr<RCustomColumnBase> &column);
-
-std::shared_ptr<GraphNode>
-CreateDefineNode(const std::string &columnName, const RDFDetail::RCustomColumnBase *columnPtr);
+std::shared_ptr<GraphNode> AddDefinesToGraph(std::shared_ptr<GraphNode> node,
+                                             const RDFInternal::RBookedDefines &defines,
+                                             const std::vector<std::string> &prevNodeDefines);
 } // ns GraphDrawing
 
 } // ns RDF
@@ -51,7 +50,7 @@ using namespace ROOT::TypeTraits;
 namespace RDFGraphDrawing = ROOT::Internal::RDF::GraphDrawing;
 
 template <typename FilterF, typename PrevDataFrame>
-class RFilter final : public RFilterBase {
+class R__CLING_PTRCHECK(off) RFilter final : public RFilterBase {
    using ColumnTypes_t = typename CallableTraits<FilterF>::arg_types;
    using TypeInd_t = std::make_index_sequence<ColumnTypes_t::list_size>;
 
@@ -59,20 +58,21 @@ class RFilter final : public RFilterBase {
    const ColumnNames_t fColumnNames;
    const std::shared_ptr<PrevDataFrame> fPrevDataPtr;
    PrevDataFrame &fPrevData;
-   std::vector<RDFInternal::RDFValueTuple_t<ColumnTypes_t>> fValues;
+   /// Column readers per slot and per input column
+   std::vector<std::array<std::unique_ptr<RColumnReaderBase>, ColumnTypes_t::list_size>> fValues;
    /// The nth flag signals whether the nth input column is a custom column or not.
-   std::array<bool, ColumnTypes_t::list_size> fIsCustomColumn;
+   std::array<bool, ColumnTypes_t::list_size> fIsDefine;
 
 public:
-   RFilter(FilterF &&f, const ColumnNames_t &columns, std::shared_ptr<PrevDataFrame> pd,
-           const RDFInternal::RBookedCustomColumns &customColumns, std::string_view name = "")
-      : RFilterBase(pd->GetLoopManagerUnchecked(), name, pd->GetLoopManagerUnchecked()->GetNSlots(), customColumns),
-        fFilter(std::forward<FilterF>(f)), fColumnNames(columns), fPrevDataPtr(std::move(pd)), fPrevData(*fPrevDataPtr),
-        fValues(fNSlots), fIsCustomColumn()
+   RFilter(FilterF f, const ColumnNames_t &columns, std::shared_ptr<PrevDataFrame> pd,
+           const RDFInternal::RBookedDefines &defines, std::string_view name = "")
+      : RFilterBase(pd->GetLoopManagerUnchecked(), name, pd->GetLoopManagerUnchecked()->GetNSlots(), defines),
+        fFilter(std::move(f)), fColumnNames(columns), fPrevDataPtr(std::move(pd)), fPrevData(*fPrevDataPtr),
+        fValues(fNSlots), fIsDefine()
    {
       const auto nColumns = fColumnNames.size();
       for (auto i = 0u; i < nColumns; ++i)
-         fIsCustomColumn[i] = fCustomColumns.HasName(fColumnNames[i]);
+         fIsDefine[i] = fDefines.HasName(fColumnNames[i]);
    }
 
    RFilter(const RFilter &) = delete;
@@ -89,7 +89,7 @@ public:
             fLastResult[slot] = false;
          } else {
             // evaluate this filter, cache the result
-            auto passed = CheckFilterHelper(slot, entry, TypeInd_t());
+            auto passed = CheckFilterHelper(slot, entry, ColumnTypes_t{}, TypeInd_t{});
             passed ? ++fAccepted[slot] : ++fRejected[slot];
             fLastResult[slot] = passed;
          }
@@ -98,20 +98,22 @@ public:
       return fLastResult[slot];
    }
 
-   template <std::size_t... S>
-   bool CheckFilterHelper(unsigned int slot, Long64_t entry, std::index_sequence<S...>)
+   template <typename... ColTypes, std::size_t... S>
+   bool CheckFilterHelper(unsigned int slot, Long64_t entry, TypeList<ColTypes...>, std::index_sequence<S...>)
    {
       // silence "unused parameter" warnings in gcc
       (void)slot;
       (void)entry;
-      return fFilter(std::get<S>(fValues[slot]).Get(entry)...);
+      return fFilter(fValues[slot][S]->template Get<ColTypes>(entry)...);
    }
 
    void InitSlot(TTreeReader *r, unsigned int slot) final
    {
-      for (auto &bookedBranch : fCustomColumns.GetColumns())
+      for (auto &bookedBranch : fDefines.GetColumns())
          bookedBranch.second->InitSlot(r, slot);
-      RDFInternal::InitRDFValues(slot, fValues[slot], r, fColumnNames, fCustomColumns, TypeInd_t(), fIsCustomColumn);
+      RDFInternal::RColumnReadersInfo info{fColumnNames, fDefines, fIsDefine.data(), fLoopManager->GetDSValuePtrs(),
+                                           fLoopManager->GetDataSource()};
+      fValues[slot] = RDFInternal::MakeColumnReaders(slot, r, ColumnTypes_t{}, info);
    }
 
    // recursive chain of `Report`s
@@ -144,11 +146,6 @@ public:
       fPrevData.IncrChildrenCount();
    }
 
-   virtual void ClearValueReaders(unsigned int slot) final
-   {
-      RDFInternal::ResetRDFValueTuple(fValues[slot], TypeInd_t());
-   }
-
    void AddFilterName(std::vector<std::string> &filters)
    {
       fPrevData.AddFilterName(filters);
@@ -156,13 +153,14 @@ public:
       filters.push_back(name);
    }
 
-   virtual void ClearTask(unsigned int slot) final
+   /// Clean-up operations to be performed at the end of a task.
+   virtual void FinaliseSlot(unsigned int slot) final
    {
-      for (auto &column : fCustomColumns.GetColumns()) {
-         column.second->ClearValueReaders(slot);
-      }
+      for (auto &column : fDefines.GetColumns())
+         column.second->FinaliseSlot(slot);
 
-      ClearValueReaders(slot);
+      for (auto &v : fValues[slot])
+         v.reset();
    }
 
    std::shared_ptr<RDFGraphDrawing::GraphNode> GetGraph()
@@ -180,25 +178,12 @@ public:
          return thisNode;
       }
 
-      auto evaluatedNode = thisNode;
-      /* Each column that this node has but the previous hadn't has been defined in between,
-       * so it has to be built and appended. */
-
-      for (auto &column : fCustomColumns.GetColumns()) {
-         // Even if treated as custom columns by the Dataframe, datasource columns must not be in the graph.
-         if (RDFGraphDrawing::CheckIfDefaultOrDSColumn(column.first, column.second))
-            continue;
-         if (std::find(prevColumns.begin(), prevColumns.end(), column.first) == prevColumns.end()) {
-            auto defineNode = RDFGraphDrawing::CreateDefineNode(column.first, column.second.get());
-            evaluatedNode->SetPrevNode(defineNode);
-            evaluatedNode = defineNode;
-         }
-      }
+      auto upmostNode = AddDefinesToGraph(thisNode, fDefines, prevColumns);
 
       // Keep track of the columns defined up to this point.
-      thisNode->AddDefinedColumns(fCustomColumns.GetNames());
+      thisNode->AddDefinedColumns(fDefines.GetNames());
 
-      evaluatedNode->SetPrevNode(prevNode);
+      upmostNode->SetPrevNode(prevNode);
       return thisNode;
    }
 };

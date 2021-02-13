@@ -12,8 +12,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MnParabola;
 class MnParabolaPoint;
@@ -21,23 +20,19 @@ class MnParabolaPoint;
 class MnParabolaFactory {
 
 public:
+   MnParabolaFactory() {}
 
-  MnParabolaFactory() {}
+   ~MnParabolaFactory() {}
 
-  ~MnParabolaFactory() {}
+   MnParabola operator()(const MnParabolaPoint &, const MnParabolaPoint &, const MnParabolaPoint &) const;
 
-  MnParabola operator()(const MnParabolaPoint&, const MnParabolaPoint&,
-                        const MnParabolaPoint&) const;
-
-  MnParabola operator()(const MnParabolaPoint&, double,
-                        const MnParabolaPoint&) const;
+   MnParabola operator()(const MnParabolaPoint &, double, const MnParabolaPoint &) const;
 
 private:
-
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnParabolaFactory
+#endif // ROOT_Minuit2_MnParabolaFactory

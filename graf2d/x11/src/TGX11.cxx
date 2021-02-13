@@ -44,6 +44,7 @@ by Olivier Couet (package X11INT).
 #include "TObjString.h"
 #include "TObjArray.h"
 #include "RStipples.h"
+#include "strlcpy.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -52,10 +53,10 @@ by Olivier Couet (package X11INT).
 #include <X11/keysym.h>
 #include <X11/xpm.h>
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <cctype>
 #include <unistd.h>
 #ifdef R__AIX
 #   include <sys/socket.h>
@@ -2436,12 +2437,19 @@ void TGX11::SetMarkerStyle(Style_t markerstyle)
    if (fMarkerStyle == markerstyle) return;
    static RXPoint shape[30];
    fMarkerStyle = TMath::Abs(markerstyle);
-   gMarkerLineWidth = TMath::Max(1, Int_t(TAttMarker::GetMarkerLineWidth(fMarkerStyle)));
-   XSetLineAttributes((Display*)fDisplay, *gGCmark, gMarkerLineWidth,
-                      gMarkerLineStyle, gMarkerCapStyle, gMarkerJoinStyle);
-   Float_t MarkerSizeReduced = fMarkerSize - TMath::Floor(TAttMarker::GetMarkerLineWidth(fMarkerStyle)/2.)/4.;
-   Int_t im = Int_t(4*MarkerSizeReduced + 0.5);
    markerstyle = TAttMarker::GetMarkerStyleBase(fMarkerStyle);
+   gMarkerLineWidth = TAttMarker::GetMarkerLineWidth(fMarkerStyle);
+
+   // The fast pixel markers need to be treated separately
+   if (markerstyle == 1 || markerstyle == 6 || markerstyle == 7) {
+       XSetLineAttributes((Display*)fDisplay, *gGCmark, 0, LineSolid, CapButt, JoinMiter);
+   } else {
+       XSetLineAttributes((Display*)fDisplay, *gGCmark, gMarkerLineWidth,
+                          gMarkerLineStyle, gMarkerCapStyle, gMarkerJoinStyle);
+   }
+
+   Float_t MarkerSizeReduced = fMarkerSize - TMath::Floor(gMarkerLineWidth/2.)/4.;
+   Int_t im = Int_t(4*MarkerSizeReduced + 0.5);
    if (markerstyle == 2) {
       // + shaped marker
       shape[0].x = -im;  shape[0].y = 0;
@@ -3598,9 +3606,9 @@ Pixmap_t TGX11::ReadGIF(int x0, int y0, const char *file, Window_t id)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Returns an array of pixels created from a part of drawable (defined by x, y, w, h)
-/// in format:
-/// `b1, g1, r1, 0,  b2, g2, r2, 0 ... bn, gn, rn, 0 ..`
+/// Returns an array of pixels created from a part of drawable
+/// (defined by x, y, w, h) in format:
+/// `b1, g1, r1, 0,  b2, g2, r2, 0,  ...,  bn, gn, rn, 0`.
 ///
 /// Pixels are numbered from left to right and from top to bottom.
 /// By default all pixels from the whole drawable are returned.

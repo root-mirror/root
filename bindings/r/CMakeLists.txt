@@ -35,9 +35,16 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RInterface
 
 ROOT_ADD_CXX_FLAG(_R_FLAGS -Wno-cast-function-type)
 ROOT_ADD_CXX_FLAG(_R_FLAGS -Wno-overloaded-virtual)
+if(x11)
+  ROOT_ADD_CXX_FLAG(_R_FLAGS -DHAS_X11)
+endif()
 
 separate_arguments(_R_FLAGS)
 
 target_compile_options(RInterface PUBLIC ${_R_FLAGS})
 target_include_directories(RInterface BEFORE PUBLIC ${R_INCLUDE_DIRS})
-target_link_libraries(RInterface PUBLIC ${R_LIBRARIES} readline)
+if(x11)
+  target_link_libraries(RInterface PUBLIC ${R_LIBRARIES} ${X11_LIBRARIES} readline)
+elseif()
+  target_link_libraries(RInterface PUBLIC ${R_LIBRARIES} readline)
+endif()

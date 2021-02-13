@@ -78,6 +78,7 @@ will return the name of the last clicked button.
 
 #include "TApplication.h"
 #include "TControlBar.h"
+#include "TControlBarImp.h"
 #include "TGuiFactory.h"
 #include "TList.h"
 #include "TStyle.h"

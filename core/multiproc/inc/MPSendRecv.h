@@ -8,7 +8,7 @@
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
- 
+
 #ifndef ROOT_MPSendRecv
 #define ROOT_MPSendRecv
 
@@ -20,6 +20,7 @@
 #include <type_traits> //enable_if
 #include <typeinfo> //typeid
 #include <utility> //pair
+#include <string>
 
 //////////////////////////////////////////////////////////////////////////
 /// An std::pair that wraps the code and optional object contained in a message.

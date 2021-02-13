@@ -20,6 +20,7 @@
 #include "TMVA/DNN/Architectures/Cpu/Blas.h"
 #else
 #include "TMVA/DNN/Architectures/Reference.h"
+#include "TVectorT.h"
 #endif
 
 #if defined(__GNUC__)
@@ -101,8 +102,12 @@ void TCpu<AReal>::TransposeMultiply(TCpuMatrix<AReal> &C,
                             APointer, &k, BPointer, &k, &beta, CPointer, &m);
 #else
    TMatrixT<AReal> tmp(C.GetNrows(), C.GetNcols());
-   tmp.TMult(A,B);
-   tmp = alpha*tmp + beta;
+   tmp.TMult(A, B);
+   tmp = alpha * tmp;
+   if (beta != 0.0) {
+      TMatrixT<AReal> tmp0(C);
+      tmp = tmp + beta * tmp0;
+   }
    C = tmp;
 #endif
 }
@@ -208,26 +213,33 @@ void TCpu<AReal>::SumColumns(TCpuMatrix<AReal> &B,
                               const TCpuMatrix<AReal> &A,
                               AReal alpha, AReal beta)
 {
-#ifdef R__HAS_TMVACPU
+
    int m = (int) A.GetNrows();
    int n = (int) A.GetNcols();
-   int inc = 1;
 
-   // AReal alpha = 1.0;
-   //AReal beta  = 0.0;
+   assert((int) B.GetNoElements() >= n);
+
+#ifdef R__HAS_TMVACPU
+   int inc = 1;
    char   trans   = 'T';
 
    const AReal * APointer = A.GetRawDataPointer();
          AReal * BPointer = B.GetRawDataPointer();
 
+   // compute B = alpha * A * I + beta * B
+
    ::TMVA::DNN::Blas::Gemv(&trans, &m, &n, &alpha, APointer, &m,
                            TCpuMatrix<AReal>::GetOnePointer(), &inc,
                            &beta, BPointer, &inc);
 #else
-   TMatrixT<AReal> tmp(B.GetNrows(), B.GetNcols());
-   TReference<AReal>::SumColumns(tmp,A);
-   tmp = alpha*tmp + beta;
-   B = tmp;
+   TMatrixT<AReal> tA(A);
+   tA.T();
+   TVectorT<AReal> ones(m, TCpuMatrix<AReal>::GetOnePointer());
+   TVectorT<AReal> tmp(n, B.GetRawDataPointer());
+   assert(B.GetNrows() == 1 || B.GetNcols() == 1);
+   tmp = alpha * tA * ones + beta * tmp;
+   // copy result buffer in B matrix
+   std::copy(tmp.GetMatrixArray(), tmp.GetMatrixArray() + n, B.GetRawDataPointer());
 #endif
 }
 
@@ -246,7 +258,7 @@ void TCpu<AReal>::ScaleAdd(TCpuMatrix<AReal> &B,
 
    ::TMVA::DNN::Blas::Axpy(&n, &alpha, x, &inc, y, &inc);
 #else
-   TMatrixT<AReal> tmp;
+   TMatrixT<AReal> tmp(B);
    TReference<AReal>::ScaleAdd(tmp, A, alpha);
    B = tmp;
 #endif

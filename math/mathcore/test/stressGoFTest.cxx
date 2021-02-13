@@ -172,7 +172,7 @@ struct GoFTStress {
 
 #ifndef R__HAS_MATHMORE
       std::cout << "SKIPPED (Mathmore is not present) " << std::endl;
-      return 0; 
+      return 0;
 #else
 
       UInt_t nEvents = 1000;
@@ -210,6 +210,8 @@ struct GoFTStress {
       result += PrintResultKS(nsmps, Dn, expectedDn, pvalueKS);
 
       delete goft;
+      delete [] sample;
+
       return result;
 #endif
    }
@@ -252,6 +254,8 @@ struct GoFTStress {
       result += PrintResultKS(nsmps, Dn, expectedDn, pvalueKS);
 
       delete goft;
+      delete [] sample;
+
       return result;
    }
 
@@ -292,6 +296,9 @@ struct GoFTStress {
       result += PrintResultKS(nsmps, Dn, expectedDn, pvalueKS);
 
       delete goft;
+
+      delete [] sample;
+
       return result;
    }
 
@@ -331,6 +338,8 @@ struct GoFTStress {
       result += PrintResultKS(nsmps, Dn, expectedDn, pvalueKS);
 
       delete goft;
+      delete [] sample;
+
       return result;
    }
 
@@ -379,6 +388,8 @@ struct GoFTStress {
       result += PrintResultKS(nsmps, Dn, expectedDn, pvalueKS,0.001);
 
       delete goft;
+      delete [] sample;
+
       return result;
    }
 

@@ -21,9 +21,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
 #include "TEllipse.h"
-
 
 class TArc : public TEllipse {
 

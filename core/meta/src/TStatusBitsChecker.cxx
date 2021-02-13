@@ -68,6 +68,7 @@ Error in <TStatusBitsChecker>:    Bit  13 used in TObject as kInvalidObject
 #include "TError.h"
 
 #include <cmath>
+#include <set>
 
 namespace ROOT {
 namespace Detail {

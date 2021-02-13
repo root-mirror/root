@@ -12,21 +12,13 @@
 #ifndef ROOT_TCanvas
 #define ROOT_TCanvas
 
-
-
 #include "TPad.h"
 
 #include "TAttCanvas.h"
 
-#include "TVirtualX.h"
-
-#include "TString.h"
-
-#include "TCanvasImp.h"
-
+class TCanvasImp;
 class TContextMenu;
 class TControlBar;
-class TBrowser;
 
 class TCanvas : public TPad {
 
@@ -134,7 +126,7 @@ public:
    void              FeedbackMode(Bool_t set);
    void              Flush();
    void              UseCurrentStyle(); // *MENU*
-   void              ForceUpdate() { if (fCanvasImp) fCanvasImp->ForceUpdate(); }
+   void              ForceUpdate();
    const char       *GetDISPLAY() const {return fDISPLAY.Data();}
    TContextMenu     *GetContextMenu() const {return fContextMenu;};
    Int_t             GetDoubleBuffer() const {return fDoubleBuffer;}
@@ -173,13 +165,13 @@ public:
    virtual void      HandleInput(EEventType button, Int_t x, Int_t y);
    Bool_t            HasMenuBar() const { return TestBit(kMenuBar); }
    virtual void      HighlightConnect(const char *slot);
-   void              Iconify() { if (fCanvasImp) fCanvasImp->Iconify(); }
+   void              Iconify();
    Bool_t            IsBatch() const { return fBatch; }
    Bool_t            IsDrawn() { return fDrawn; }
    Bool_t            IsFolder() const;
    Bool_t            IsGrayscale();
    Bool_t            IsRetained() const { return fRetained; }
-   Bool_t            IsWeb() const { return fCanvasImp ? fCanvasImp->IsWeb() : kFALSE; }
+   Bool_t            IsWeb() const;
    virtual void      ls(Option_t *option="") const;
    void              MoveOpaque(Int_t set=1);
    Bool_t            OpaqueMoving() const { return TestBit(kMoveOpaque); }
@@ -193,7 +185,7 @@ public:
    virtual void      Selected(TVirtualPad *pad, TObject *obj, Int_t event);            // *SIGNAL*
    virtual void      Cleared(TVirtualPad *pad);                                        // *SIGNAL*
    virtual void      Closed();                                                         // *SIGNAL*
-   void              RaiseWindow() { if (fCanvasImp) fCanvasImp->RaiseWindow(); }
+   void              RaiseWindow();
    void              ResetDrawn() { fDrawn=kFALSE; }
    virtual void      Resize(Option_t *option="");
    void              ResizeOpaque(Int_t set=1);
@@ -204,14 +196,8 @@ public:
    virtual void      SetName(const char *name="");
    virtual void      SetFixedAspectRatio(Bool_t fixed = kTRUE);  // *TOGGLE*
    void              SetGrayscale(Bool_t set = kTRUE); // *TOGGLE* *GETTER=IsGrayscale
-   void              SetWindowPosition(Int_t x, Int_t y) { if (fCanvasImp) fCanvasImp->SetWindowPosition(x, y); }
-   void SetWindowSize(UInt_t ww, UInt_t wh)
-   {
-      if (fBatch)
-         SetCanvasSize((ww + fCw) / 2, (wh + fCh) / 2);
-      else if (fCanvasImp)
-         fCanvasImp->SetWindowSize(ww, wh);
-   }
+   void              SetWindowPosition(Int_t x, Int_t y);
+   void              SetWindowSize(UInt_t ww, UInt_t wh);
    void              SetCanvasImp(TCanvasImp *i) { fCanvasImp = i; }
    void              SetCanvasSize(UInt_t ww, UInt_t wh); // *MENU*
    void              SetHighLightColor(Color_t col) { fHighLightColor = col; }
@@ -219,11 +205,12 @@ public:
    void              SetClickSelected(TObject *obj) { fClickSelected = obj; }
    void              SetSelectedPad(TPad *pad) { fSelectedPad = pad; }
    void              SetClickSelectedPad(TPad *pad) { fClickSelectedPad = pad; }
-   void              Show() { if (fCanvasImp) fCanvasImp->Show(); }
+   void              Show();
    virtual void      Size(Float_t xsizeuser=0, Float_t ysizeuser=0);
    void              SetBatch(Bool_t batch=kTRUE);
    static  void      SetFolder(Bool_t isfolder=kTRUE);
    void              SetPadSave(TPad *pad) {fPadSave = pad;}
+   bool              SetRealAspectRatio(const Int_t axis = 1); // *MENU*
    void              SetRetained(Bool_t retained=kTRUE) { fRetained=retained;}
    void              SetTitle(const char *title="");
    virtual void      ToggleEventStatus();

@@ -41,6 +41,7 @@
 
 #include "TList.h"
 #include "TString.h"
+#include <vector>
 
 #include "TMVA/DataSetInfo.h"
 

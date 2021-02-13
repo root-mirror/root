@@ -367,4 +367,33 @@ const Atom_t kPrimarySelection = 1;  // magic values, must match the ones
 const Atom_t kCutBuffer        = 9;  // in /usr/include/X11/Xatom.h
 const Int_t  kMaxPixel         = 32000;
 
+const int kNumCursors = 19;
+enum ECursor { kBottomLeft, kBottomRight, kTopLeft, kTopRight,
+               kBottomSide, kLeftSide, kTopSide, kRightSide,
+               kMove, kCross, kArrowHor, kArrowVer, kHand, kRotate,
+               kPointer, kArrowRight, kCaret, kWatch, kNoDrop };
+
+//---- types of frames (and borders), moved from TGFrame.h
+
+enum EFrameType {
+   kChildFrame      = 0,
+   kMainFrame       = BIT(0),
+   kVerticalFrame   = BIT(1),
+   kHorizontalFrame = BIT(2),
+   kSunkenFrame     = BIT(3),
+   kRaisedFrame     = BIT(4),
+   kDoubleBorder    = BIT(5),
+   kFitWidth        = BIT(6),
+   kFixedWidth      = BIT(7),
+   kFitHeight       = BIT(8),
+   kFixedHeight     = BIT(9),
+   kFixedSize       = (kFixedWidth | kFixedHeight),
+   kOwnBackground   = BIT(10),
+   kTransientFrame  = BIT(11),
+   kTempFrame       = BIT(12),
+   kMdiMainFrame    = BIT(13),
+   kMdiFrame        = BIT(14)
+};
+
+
 #endif

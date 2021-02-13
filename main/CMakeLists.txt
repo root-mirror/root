@@ -35,7 +35,7 @@ ROOT_EXECUTABLE(rootnb.exe nbmain.cxx LIBRARIES Core)
 #---CreateHaddCommandLineOptions------------------------------------------------------------------
 generateHeader(hadd
   ${CMAKE_SOURCE_DIR}/main/src/hadd-argparse.py
-  ${CMAKE_BINARY_DIR}/include/haddCommandLineOptionsHelp.h
+  ${CMAKE_BINARY_DIR}/ginclude/haddCommandLineOptionsHelp.h
 )
 
 if(fortran AND CMAKE_Fortran_COMPILER)
@@ -44,36 +44,34 @@ if(fortran AND CMAKE_Fortran_COMPILER)
   ROOT_EXECUTABLE(h2root h2root.cxx LIBRARIES Core RIO Net Hist Graf Graf3d Gpad Tree Matrix MathCore Thread minicern)
 endif()
 
-if(python)
-  file(GLOB utils RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} python/root*)
-  foreach(rawUtilName ${utils})
-    get_filename_component(utilName ${rawUtilName} NAME)
-    if(NOT WIN32)
-      # We need the .py only on Windows
-      string(REPLACE ".py" "" utilName ${utilName})
-    endif()
-    get_filename_component(python ${PYTHON_EXECUTABLE} NAME)
-    configure_file(${rawUtilName} ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/${utilName} @ONLY)
-
-    install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/${utilName}
-                                 DESTINATION ${CMAKE_INSTALL_BINDIR}
-                                 RENAME ${utilName}
-                                 PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-                                             GROUP_EXECUTE GROUP_READ
-                                             WORLD_EXECUTE WORLD_READ
-                                 COMPONENT applications)
-  endforeach()
-
-  install(FILES python/cmdLineUtils.py DESTINATION ${runtimedir})
-  if(IS_ABSOLUTE ${runtimedir})
-    set(absruntimedir ${runtimedir})
-  else()
-    set(absruntimedir \${CMAKE_INSTALL_PREFIX}/${runtimedir})
+file(GLOB utils RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} python/root*)
+foreach(rawUtilName ${utils})
+  get_filename_component(utilName ${rawUtilName} NAME)
+  if(NOT WIN32)
+    # We need the .py only on Windows
+    string(REPLACE ".py" "" utilName ${utilName})
   endif()
-  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} -m py_compile \$ENV{DESTDIR}${absruntimedir}/cmdLineUtils.py)")
-  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} -O -m py_compile \$ENV{DESTDIR}${absruntimedir}/cmdLineUtils.py)")
-  configure_file(python/cmdLineUtils.py ${localruntimedir}/cmdLineUtils.py @ONLY)
+  set(python ${PYTHON_EXECUTABLE_Development_Main})
+  configure_file(${rawUtilName} ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/${utilName} @ONLY)
+
+  install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/${utilName}
+                               DESTINATION ${CMAKE_INSTALL_BINDIR}
+                               RENAME ${utilName}
+                               PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                                           GROUP_EXECUTE GROUP_READ
+                                           WORLD_EXECUTE WORLD_READ
+                               COMPONENT applications)
+endforeach()
+
+install(FILES python/cmdLineUtils.py DESTINATION ${runtimedir})
+if(IS_ABSOLUTE ${runtimedir})
+  set(absruntimedir ${runtimedir})
+else()
+  set(absruntimedir \${CMAKE_INSTALL_PREFIX}/${runtimedir})
 endif()
+install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE_Development_Main} -m py_compile \$ENV{DESTDIR}${absruntimedir}/cmdLineUtils.py)")
+install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE_Development_Main} -O -m py_compile \$ENV{DESTDIR}${absruntimedir}/cmdLineUtils.py)")
+configure_file(python/cmdLineUtils.py ${localruntimedir}/cmdLineUtils.py @ONLY)
 
 
 if(NOT MSVC)
@@ -90,9 +88,9 @@ ROOT_EXECUTABLE(rootcling src/rootcling.cxx LIBRARIES RIO Cling Core)
 add_dependencies(rootcling complexDict)
 
 target_include_directories(rootcling PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../core/metacling/res
-        ${CMAKE_CURRENT_SOURCE_DIR}/../core/dictgen/res
-        ${CMAKE_CURRENT_SOURCE_DIR}/../io/rootpcm/res)
+        ${CMAKE_SOURCE_DIR}/core/metacling/res
+        ${CMAKE_SOURCE_DIR}/core/dictgen/res
+        ${CMAKE_SOURCE_DIR}/io/rootpcm/res)
 if(WIN32)
   set_target_properties(rootcling PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 endif()

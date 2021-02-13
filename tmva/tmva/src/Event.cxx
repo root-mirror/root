@@ -31,7 +31,6 @@
 #include "TMVA/Event.h"
 #include "TMVA/Tools.h"
 #include <iostream>
-#include "assert.h"
 #include <iomanip>
 #include <cassert>
 #include "TCut.h"

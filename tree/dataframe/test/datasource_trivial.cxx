@@ -132,6 +132,15 @@ TEST(RTrivialDS, SkipEntries)
    EXPECT_EQ(*tdfAll.Count(), 20ULL);
 }
 
+// Test for issue #6455, "RDS does not early-quit event loops when all Ranges are exhausted"
+TEST(RTrivialDS, EarlyQuitWithRange)
+{
+   // this is a data-source that returns an infinite amount of entries
+   auto df = ROOT::RDF::MakeTrivialDataFrame();
+   // here we check that the event loop early-quits when the Range is exhausted
+   EXPECT_EQ(df.Range(10).Count().GetValue(), 10);
+}
+
 #ifdef R__B64
 
 TEST(RTrivialDS, FromARDFWithJitting)

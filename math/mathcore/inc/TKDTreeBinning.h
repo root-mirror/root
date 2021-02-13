@@ -16,7 +16,7 @@
 //
 
 #include <map>
-#include <utility>
+#include <vector>
 
 #include "TKDTree.h"
 
@@ -60,7 +60,6 @@ private:
    void ReadjustMaxBinEdges(Double_t* binEdges);
 
 
-
 public:
 
    // flag bits
@@ -98,7 +97,7 @@ public:
    void FillBinData(ROOT::Fit::BinData & data) const;
    UInt_t FindBin(const Double_t * point) const;
    std::vector<std::vector<Double_t> > GetPointsInBin(UInt_t bin) const;
-   
+
    ClassDef(TKDTreeBinning, 1)
 
 };

@@ -15,7 +15,8 @@
 #include "TNamed.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
-#include "TList.h"
+
+class TList;
 
 class TPrincipal : public TNamed {
 

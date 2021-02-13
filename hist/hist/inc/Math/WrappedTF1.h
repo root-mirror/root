@@ -17,6 +17,8 @@
 #include "Math/IParamFunction.h"
 
 #include "TF1.h"
+#include <string>
+#include <vector>
 
 namespace ROOT {
 

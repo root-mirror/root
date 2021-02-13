@@ -61,29 +61,11 @@ TGeoBuilder::TGeoBuilder()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Copy constructor.
-
-TGeoBuilder::TGeoBuilder(const TGeoBuilder& other)
-            :TObject(other), fGeometry(nullptr)
-{
-   Error("copy constructor","copying not allowed for TGeoBuilder");
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Destructor.
 
 TGeoBuilder::~TGeoBuilder()
 {
    fgInstance = nullptr;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Assignment.
-
-TGeoBuilder &TGeoBuilder::operator=(const TGeoBuilder&)
-{
-   Error("Assignment","assignment not allowed for TGeoBuilder");
-   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

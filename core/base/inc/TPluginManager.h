@@ -94,7 +94,6 @@ class TEnv;
 class TList;
 class THashTable;
 class TFunction;
-class TMethodCall;
 class TPluginManager;
 
 #include <atomic>
@@ -120,12 +119,12 @@ private:
 
    TPluginHandler() :
       fBase(), fRegexp(), fClass(), fPlugin(), fCtor(), fOrigin(),
-      fCallEnv(0), fMethod(0), fCanCall(0), fIsMacro(kTRUE), fIsGlobal(kTRUE) { }
+      fCallEnv(nullptr), fMethod(nullptr), fCanCall(0), fIsMacro(kTRUE), fIsGlobal(kTRUE) { }
    TPluginHandler(const char *base, const char *regexp,
                   const char *className, const char *pluginName,
                   const char *ctor, const char *origin);
-   TPluginHandler(const TPluginHandler&);            // not implemented
-   TPluginHandler& operator=(const TPluginHandler&); // not implemented
+   TPluginHandler(const TPluginHandler &) = delete;
+   TPluginHandler& operator=(const TPluginHandler &) = delete;
 
    ~TPluginHandler();
 
@@ -186,8 +185,8 @@ private:
    THashTable *fBasesLoaded;  //! table of base classes already checked or loaded
    Bool_t      fReadingDirs;  //! true if we are running LoadHandlersFromPluginDirs
 
-   TPluginManager(const TPluginManager& pm);              // not implemented
-   TPluginManager& operator=(const TPluginManager& pm);   // not implemented
+   TPluginManager(const TPluginManager &) = delete;
+   TPluginManager& operator=(const TPluginManager &) = delete;
    void   LoadHandlerMacros(const char *path);
 
 public:

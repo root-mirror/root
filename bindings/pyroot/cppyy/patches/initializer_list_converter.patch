@@ -1,0 +1,13 @@
+diff --git a/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx b/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
+index 8dbd9e5fa1..bc6c42efeb 100644
+--- a/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
++++ b/bindings/pyroot/cppyy/CPyCppyy/src/Converters.cxx
+@@ -2725,7 +2725,7 @@ CPyCppyy::Converter* CPyCppyy::CreateConverter(const std::string& fullType, dims
+     }
+ 
+ //-- special case: initializer list
+-    if (realType.compare(0, 21, "std::initializer_list") == 0) {
++    if (realType.compare(0, 16, "initializer_list") == 0) {
+     // get the type of the list and create a converter (TODO: get hold of value_type?)
+         auto pos = realType.find('<');
+         std::string value_type = realType.substr(pos+1, realType.size()-pos-2);

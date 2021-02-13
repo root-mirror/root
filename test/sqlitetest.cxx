@@ -112,7 +112,9 @@ int main() {
    std::cout << std::endl;
 
    std::cout << "Alternate way using GetTablesList:" << std::endl;
-   serv->GetTablesList()->Print();
+   TList *tables = serv->GetTablesList();
+   tables->Print();
+   delete tables;
 
    std::cout << "Completed listing tables. Now selecting * from testtable, first using Query() and string output:" << std::endl;
    row=NULL;

@@ -27,7 +27,6 @@ in the GNU scientific library (v0.99).
 #include "RooFit.h"
 
 #include "RooBrentRootFinder.h"
-#include "RooBrentRootFinder.h"
 #include "RooAbsFunc.h"
 #include <math.h>
 #include "Riostream.h"

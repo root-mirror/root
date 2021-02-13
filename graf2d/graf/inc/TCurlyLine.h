@@ -11,14 +11,12 @@
 #ifndef ROOT_TCurlyLine
 #define ROOT_TCurlyLine
 
-
 #include "TPolyLine.h"
 #include "TAttBBox2D.h"
-#include "GuiTypes.h"
 
 class TPoint;
 
-class TCurlyLine : public TPolyLine , public TAttBBox2D {
+class TCurlyLine : public TPolyLine, public TAttBBox2D {
 
 protected:
    Double_t fX1;             ///< start x, center for arc

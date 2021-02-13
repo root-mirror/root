@@ -45,7 +45,6 @@ by Olivier Couet (package X11INT).
 #include "TStorage.h"
 #include "TStyle.h"
 #include "TSystem.h"
-#include "TGFrame.h"
 #include "TError.h"
 #include "TException.h"
 #include "TClassTable.h"
@@ -59,7 +58,7 @@ by Olivier Couet (package X11INT).
 #include "TExMap.h"
 #include "TEnv.h"
 #include "RStipples.h"
-#include "TEnv.h"
+#include "GuiTypes.h"
 
 // DND protocol version
 #define XDND_PROTOCOL_VERSION   5
@@ -662,6 +661,60 @@ void TGWin32MainThread::UnlockMSG()
    if (fMessageMutex) ::LeaveCriticalSection(fMessageMutex);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+/// Windows timer handling events while moving/resizing windows
+
+VOID CALLBACK MyTimerProc(HWND hwnd, UINT message, UINT idTimer, DWORD dwTime)
+{
+   gSystem->ProcessEvents();
+   //gVirtualX->UpdateWindow(1); // cause problems with OpenGL in pad...
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Message processing function for the GUI thread.
+/// Kicks in once TGWin32 becomes active, and "replaces" the dummy one
+/// in TWinNTSystem; see TWinNTSystem.cxx's GUIThreadMessageProcessingLoop().
+
+Bool_t GUIThreadMessageFunc(MSG *msg)
+{
+   Bool_t ret = kFALSE;
+   static Int_t m_timer = 0;
+
+   if ( (msg->message == WM_NCLBUTTONDOWN) ) {
+      if (m_timer == 0)
+         m_timer = SetTimer(NULL, 1, 20, (TIMERPROC) MyTimerProc);
+   }
+   else if (msg->message == WM_NCMOUSELEAVE ) {
+      if (m_timer) {
+         KillTimer(NULL, m_timer);
+      }
+      m_timer = 0;
+   }
+
+   if (msg->message == TGWin32ProxyBase::fgPostMessageId) {
+      if (msg->wParam) {
+         TGWin32ProxyBase *proxy = (TGWin32ProxyBase*)msg->wParam;
+         proxy->ExecuteCallBack(kTRUE);
+      } else {
+         ret = kTRUE;
+      }
+   } else if (msg->message == TGWin32ProxyBase::fgPingMessageId) {
+      TGWin32ProxyBase::GlobalUnlock();
+   } else {
+      //if ( (msg->message >= WM_NCMOUSEMOVE) &&
+      //     (msg->message <= WM_NCMBUTTONDBLCLK) ) {
+      //   TGWin32ProxyBase::GlobalLock();
+      //}
+      TGWin32MainThread::LockMSG();
+      TranslateMessage(msg);
+      DispatchMessage(msg);
+      TGWin32MainThread::UnlockMSG();
+   }
+   return ret;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 class TGWin32RefreshTimer : public TTimer {
 
@@ -678,7 +731,7 @@ public:
          if (!gVirtualX)
             Sleep(200); // avoid start-up race
          if (gVirtualX)
-            ((TGWin32*)gVirtualX)->GUIThreadMessageFunc(&msg);
+            GUIThreadMessageFunc(&msg);
       }
       return kFALSE;
    }
@@ -727,15 +780,6 @@ static DWORD WINAPI MessageProcessingLoop(void *p)
 }
 */
 
-Bool_t GUIThreadMessageWrapper(MSG* msg)
-{
-   // Static wrapper for handling GUI messages.
-   // Forwards from TWinNTSystem's GUIThreadMessageProcessingLoop()
-   // to TGWin32::GUIThreadMessageFunc()
-
-   return ((TGWin32*)gVirtualX)->GUIThreadMessageFunc(msg);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 /// constructor
 
@@ -747,7 +791,7 @@ TGWin32MainThread::TGWin32MainThread()
    ::InitializeCriticalSection(fMessageMutex);
    fHandle = ((TWinNTSystem*)gSystem)->GetGUIThreadHandle();
    fId = ((TWinNTSystem*)gSystem)->GetGUIThreadId();
-   ((TWinNTSystem*)gSystem)->SetGUIThreadMsgHandler(GUIThreadMessageWrapper);
+   ((TWinNTSystem*)gSystem)->SetGUIThreadMsgHandler(GUIThreadMessageFunc);
 }
 
 } // unnamed namespace
@@ -828,58 +872,6 @@ TGWin32::~TGWin32()
       delete col;
    }
    delete fColors;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Windows timer handling events while moving/resizing windows
-
-VOID CALLBACK MyTimerProc(HWND hwnd, UINT message, UINT idTimer, DWORD dwTime)
-{
-   gSystem->ProcessEvents();
-   //gVirtualX->UpdateWindow(1); // cause problems with OpenGL in pad...
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Message processing function for the GUI thread.
-/// Kicks in once TGWin32 becomes active, and "replaces" the dummy one
-/// in TWinNTSystem; see TWinNTSystem.cxx's GUIThreadMessageProcessingLoop().
-
-Bool_t TGWin32::GUIThreadMessageFunc(MSG* msg)
-{
-   Bool_t ret = kFALSE;
-   static Int_t m_timer = 0;
-
-   if ( (msg->message == WM_NCLBUTTONDOWN) ) {
-      if (m_timer == 0)
-         m_timer = SetTimer(NULL, 1, 20, (TIMERPROC) MyTimerProc);
-   }
-   else if (msg->message == WM_NCMOUSELEAVE ) {
-      if (m_timer) {
-         KillTimer(NULL, m_timer);
-      }
-      m_timer = 0;
-   }
-
-   if (msg->message == TGWin32ProxyBase::fgPostMessageId) {
-      if (msg->wParam) {
-         TGWin32ProxyBase *proxy = (TGWin32ProxyBase*)msg->wParam;
-         proxy->ExecuteCallBack(kTRUE);
-      } else {
-         ret = kTRUE;
-      }
-   } else if (msg->message == TGWin32ProxyBase::fgPingMessageId) {
-      TGWin32ProxyBase::GlobalUnlock();
-   } else {
-      //if ( (msg->message >= WM_NCMOUSEMOVE) &&
-      //     (msg->message <= WM_NCMBUTTONDBLCLK) ) {
-      //   TGWin32ProxyBase::GlobalLock();
-      //}
-      TGWin32MainThread::LockMSG();
-      TranslateMessage(msg);
-      DispatchMessage(msg);
-      TGWin32MainThread::UnlockMSG();
-   }
-   return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3199,8 +3191,11 @@ void TGWin32::UpdateFillStyle()
             gFillPattern = NULL;
          }
          int stn = (fasi >= 1 && fasi <=25) ? fasi : 2;
+         char pattern[32];
+         for (int i=0;i<32;++i)
+            pattern[i] = ~gStipples[stn][i];
          gFillPattern = gdk_bitmap_create_from_data(GDK_ROOT_PARENT(),
-                                                    (const char *)gStipples[stn], 16, 16);
+                                                    (const char *)&pattern, 16, 16);
          gdk_gc_set_stipple(gGCfill, gFillPattern);
          current_fasi = fasi;
       }
@@ -3411,17 +3406,23 @@ void TGWin32::SetMarkerStyle(Style_t markerstyle)
 
 void TGWin32::UpdateMarkerStyle()
 {
-   gMarkerLineWidth = TMath::Max(1, Int_t(TAttMarker::GetMarkerLineWidth(fMarkerStyle)));
-   gdk_gc_set_line_attributes(gGCmark, gMarkerLineWidth,
-			      (GdkLineStyle)gMarkerLineStyle,
-			      (GdkCapStyle) gMarkerCapStyle,
-			      (GdkJoinStyle) gMarkerJoinStyle);
+   Style_t markerstyle = TAttMarker::GetMarkerStyleBase(fMarkerStyle);
+   gMarkerLineWidth = TAttMarker::GetMarkerLineWidth(fMarkerStyle);
+
+   // The fast pixel markers need to be treated separately
+   if (markerstyle == 1 || markerstyle == 6 || markerstyle == 7) {
+       gdk_gc_set_line_attributes(gGCmark, 0, GDK_LINE_SOLID, GDK_CAP_BUTT, GDK_JOIN_MITER);
+   } else {
+       gdk_gc_set_line_attributes(gGCmark, gMarkerLineWidth,
+                                  (GdkLineStyle) gMarkerLineStyle,
+                                  (GdkCapStyle)  gMarkerCapStyle,
+                                  (GdkJoinStyle) gMarkerJoinStyle);
+   }
 
    static GdkPoint shape[30];
 
-   Float_t MarkerSizeReduced = fMarkerSize - TMath::Floor(TAttMarker::GetMarkerLineWidth(fMarkerStyle)/2.)/4.;
+   Float_t MarkerSizeReduced = fMarkerSize - TMath::Floor(gMarkerLineWidth/2.)/4.;
    Int_t im = Int_t(4 * MarkerSizeReduced + 0.5);
-   Style_t markerstyle = TAttMarker::GetMarkerStyleBase(fMarkerStyle);
 
    if (markerstyle == 2) {
       // + shaped marker

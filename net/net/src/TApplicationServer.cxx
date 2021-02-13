@@ -20,15 +20,16 @@
 
 #include "RConfigure.h"
 #include <ROOT/RConfig.hxx>
-#include "Riostream.h"
+#include "snprintf.h"
+#include <iostream>
 
 #ifdef WIN32
    #include <io.h>
    typedef long off_t;
 #endif
-#include <stdlib.h>
-#include <errno.h>
-#include <time.h>
+#include <cstdlib>
+#include <cerrno>
+#include <ctime>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -61,7 +62,6 @@
 #include "TSystem.h"
 #include "TRemoteObject.h"
 #include "TUrl.h"
-#include "TObjString.h"
 #include "compiledata.h"
 #include "TClass.h"
 
@@ -923,11 +923,13 @@ Int_t TApplicationServer::BrowseDirectory(const char *dirname)
    if (!fWorkingDir || !dirname || !*dirname) {
       if (!fWorkingDir)
          fWorkingDir = new TRemoteObject(fWorkDir, fWorkDir, "TSystemDirectory");
-      fWorkingDir->Browse();
+      TList *list = fWorkingDir->Browse();
       mess.Reset(kMESS_OBJECT);
       mess.WriteObject(fWorkingDir);
       fSocket->Send(mess);
       nc++;
+      list->Delete();
+      delete list;
    }
    else if (fWorkingDir) {
       TRemoteObject dir(dirname, dirname, "TSystemDirectory");
@@ -936,6 +938,8 @@ Int_t TApplicationServer::BrowseDirectory(const char *dirname)
       mess.WriteObject(list);
       fSocket->Send(mess);
       nc++;
+      list->Delete();
+      delete list;
    }
    return nc;
 }
@@ -993,6 +997,10 @@ Int_t TApplicationServer::BrowseFile(const char *fname)
          }
       }
    }
+
+   list->Delete();
+   delete list;
+
    return nc;
 }
 

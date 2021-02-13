@@ -36,6 +36,8 @@
 
 #include "TMVA/VariableTransformBase.h"
 
+#include <vector>
+
 namespace TMVA {
 
    class VariableRearrangeTransform : public VariableTransformBase {

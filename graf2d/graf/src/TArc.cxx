@@ -9,10 +9,10 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TArc.h"
-#include "TVirtualPad.h"
+
+#include <iostream>
 
 ClassImp(TArc);
 

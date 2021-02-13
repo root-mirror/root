@@ -82,6 +82,7 @@ via the command gObjectTable->Print()
 */
 
 #include "TObjectTable.h"
+#include "TList.h"
 #include "TROOT.h"
 #include "TClass.h"
 #include "TError.h"

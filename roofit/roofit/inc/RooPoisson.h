@@ -30,7 +30,9 @@ public:
   Int_t getGenerator(const RooArgSet& directVars, RooArgSet &generateVars, Bool_t staticInitOK=kTRUE) const override;
   void generateEvent(Int_t code) override;
   
+  /// Switch off/on rounding of `x` to the nearest integer.
   void setNoRounding(bool flag = kTRUE) {_noRounding = flag;}
+  /// Switch on or off protection against negative means.
   void protectNegativeMean(bool flag = kTRUE) {_protectNegative = flag;}
 
 protected:
@@ -38,10 +40,10 @@ protected:
   RooRealProxy x ;
   RooRealProxy mean ;
   Bool_t  _noRounding ;
-  Bool_t  _protectNegative ;
+  Bool_t  _protectNegative{true};
   
   Double_t evaluate() const override;
-  RooSpan<double> evaluateBatch(std::size_t begin, std::size_t batchSize) const override;
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const override;
 
   ClassDefOverride(RooPoisson,3) // A Poisson PDF
 };

@@ -1,11 +1,10 @@
 sap.ui.define([
     "sap/ui/model/json/JSONModel",
-    "rootui5/browser/model/BrowserListBinding",
-    "sap/base/Log"
-], function(JSONModel, BrowserListBinding, Log) {
+    "rootui5/browser/model/BrowserListBinding"
+], function(JSONModel, BrowserListBinding) {
    "use strict";
 
-    var hRootModel = JSONModel.extend("rootui5.browser.model.BrowserModel", {
+    let hRootModel = JSONModel.extend("rootui5.browser.model.BrowserModel", {
 
         constructor: function() {
             JSONModel.apply(this);
@@ -20,10 +19,14 @@ sap.ui.define([
                expanded: true
             };
 
+            this.useIndexSuffix = true; // use index suffix in path for handling name duplication
+
             this.loadDataCounter = 0; // counter of number of nodes
 
-            this.sortOrder = "";
+            this.sortMethod = "name"; // "name", "size"
+            this.reverseOrder = false;
             this.itemsFilter = "";
+            this.showHidden = false;
 
             this.threshold = 100; // default threshold to prefetch items
         },
@@ -32,7 +35,26 @@ sap.ui.define([
            this.treeTable = t;
         },
 
-        /* Method can be used when complete hierarchy is ready and can be used directly */
+        /** @summary Set sort method */
+        setSortMethod: function(arg) { this.sortMethod = arg; },
+
+        /** @summary Get sort method */
+        getSortMethod: function() { return this.sortMethod; },
+
+        /** @summary Set show hidden flag */
+        setShowHidden: function(flag) { this.showHidden = flag; },
+
+        /** @summary Is show hidden flag set */
+        isShowHidden: function() { return this.showHidden; },
+
+        /** @summary Set reverse order */
+        setReverseOrder: function(on) { this.reverseOrder = on; },
+
+        /** @summary Is reverse order */
+        isReverseOrder: function() { return this.reverseOrder; },
+
+        /** @summary Set full model
+          * @desc Method can be used when complete hierarchy is ready and can be used directly */
         setFullModel: function(topnode) {
            this.fullModel = true;
            if (topnode.length) {
@@ -57,6 +79,7 @@ sap.ui.define([
               this.oBinding.checkUpdate(true);
         },
 
+        /** @summary Clear full model */
         clearFullModel: function() {
            if (!this.fullModel) return;
 
@@ -76,8 +99,6 @@ sap.ui.define([
         },
 
         bindTree: function(sPath, oContext, aFilters, mParameters, aSorters) {
-           Log.warning("root.model.hModel#bindTree() " + sPath);
-
            console.log('BINDING TREE!!!!!!!!!!!!! ' + sPath);
 
            this.oBinding = new BrowserListBinding(this, sPath, oContext, aFilters, mParameters, aSorters);
@@ -89,21 +110,50 @@ sap.ui.define([
            return this.getProperty("/length");
         },
 
-        getNodeByPath: function(path) {
-           var curr = this.h;
-           if (!path || (typeof path !== "string") || (path == "/")) return curr;
+        /** @summary Code index as string */
+        codeIndex: function(indx) {
+           return this.useIndexSuffix ? "###" + indx + "$$$" : "";
+        },
 
-           var names = path.split("/");
+        /** @summary Extract index from string */
+        extractIndex: function(name) {
+           if (!name || typeof name != "string") return "";
+           let p1 = name.lastIndexOf("###"), p2 = name.lastIndexOf("$$$");
+           if ((p1 < 0) || (p2 < 0) || (p1 >= p2) || (p2 != name.length - 3)) return name;
+
+           let indx = parseInt(name.substr(p1+3, p2-p1-3));
+           if (isNaN(indx) || (indx < 0)) return name;
+           return { n: name.substr(0, p1), i: indx };
+        },
+
+        /** @summary Get node by path which is array of strings, optionally includes indicies */
+        getNodeByPath: function(path) {
+           let curr = this.h;
+           if (!path || (path.length == 0)) return curr;
+
+           let names = path.slice(); // make copy to avoid changes in argument
 
            while (names.length > 0) {
-              var name = names.shift(), find = false;
-              if (!name) continue; // ignore start or stop slash
+              let name = this.extractIndex(names.shift()), find = false, indx = -1;
 
-              for (var k=0;k<curr.childs.length;++k) {
+              if (typeof name != "string") {
+                 indx = name.i;
+                 name = name.n;
+              }
+
+              if (indx >= 0) {
+                 indx -= (curr.first || 0);
+                 if (curr.childs[indx] && (curr.childs[indx].name == name)) {
+                    curr = curr.childs[indx];
+                    find = true;
+                    console.log(`Match index ${indx} with name ${name}`);
+                 }
+              }
+
+              for (let k = 0; !find && (k < curr.childs.length); ++k) {
                  if (curr.childs[k].name == name) {
                     curr = curr.childs[k];
                     find = true;
-                    break;
                  }
               }
 
@@ -112,14 +162,15 @@ sap.ui.define([
            return curr;
         },
 
-        /** expand node by given path, when path not exists - try to send request */
+        /** @summary expand node by given path
+          * @desc When path not exists - try to send request */
         expandNodeByPath: function(path) {
            if (!path || (typeof path !== "string") || (path == "/")) return -1;
 
-           var names = path.split("/"), curr = this.h, currpath = "/";
+           let names = path.split("/"), curr = this.h, currpath = [];
 
            while (names.length > 0) {
-              var name = names.shift(), find = false;
+              let name = names.shift(), find = false;
               if (!name) continue; // ignore start or stop slash
 
               if (!curr.childs) {
@@ -129,13 +180,13 @@ sap.ui.define([
                     curr.expanded = true;
                     this.reset_nodes = true;
                     this._expanding_path = path;
-                    this.submitRequest(curr, currpath, "expanding");
+                    this.submitRequest(false, curr, currpath, "expanding");
                     break;
                  }
                  return -1;
               }
 
-              for (var k=0;k<curr.childs.length;++k) {
+              for (let k=0;k<curr.childs.length;++k) {
                  if (curr.childs[k].name == name) {
                     this.reset_nodes = true;
                     curr.expanded = true;
@@ -147,7 +198,7 @@ sap.ui.define([
 
               if (!find) return -1;
 
-              currpath += curr.name + "/";
+              currpath.push(curr.name);
            }
 
            return this.scanShifts(curr);
@@ -156,51 +207,56 @@ sap.ui.define([
         sendFirstRequest: function(websocket) {
            this._websocket = websocket;
            // submit top-level request already when construct model
-           this.submitRequest(this.h, "/");
+           this.submitRequest(false, this.h);
         },
 
-        reloadMainModel: function(force, path = "/") {
-           if (this.mainModel && !force) {
+        /** @summary Reload main model
+          * One can force to submit new request while settings were changed
+          * One also can force to reload items on the server side if they can be potentially changed */
+        reloadMainModel: function(force_request, force_reload, path) {
+           if (this.mainModel && !force_request && !force_reload) {
               this.h.nchilds = this.mainModel.length;
               this.h.childs = this.mainModel;
               this.h.expanded = true;
               this.reset_nodes = true;
               this.fullModel = this.mainFullModel;
-              console.log('assign this.fullModel = ' + this.fullModel);
               delete this.noData;
               this.scanShifts();
               if (this.oBinding)
                  this.oBinding.checkUpdate(true);
            } else if (!this.fullModel) {
               // send request, content will be reassigned
-              this.submitRequest(this.h, path);
+              this.submitRequest(force_reload, this.h, path);
            }
 
         },
 
-        // submit next request to the server
-        // directly use web socket, later can be dedicated channel
-        submitRequest: function(elem, path, first, number) {
+        /** @summary submit next request to the server
+          * @param {Array} path - path as array of strings
+          * @desc directly use web socket, later can be dedicated channel */
+        submitRequest: function(force_reload, elem, path, first, number) {
            if (first === "expanding") {
               first = 0;
            } else {
               delete this._expanding_path;
            }
 
-
            if (!this._websocket || elem._requested || this.fullModel) return;
            elem._requested = true;
 
            this.loadDataCounter++;
 
-           var request = {
-              path: path,
+           let request = {
+              path: path || [],
               first: first || 0,
               number: number || this.threshold || 100,
-              sort: this.sortOrder || "",
+              sort: this.sortMethod || "",
+              reverse: this.reverseOrder || false,
+              hidden: this.showHidden ? true : false,
+              reload: force_reload ? true : false,  // rescan items by server even when path was not changed
               regex: this.itemsFilter ? "^(" + this.itemsFilter + ".*)$" : ""
            };
-           this._websocket.Send("BRREQ:" + JSON.stringify(request));
+           this._websocket.send("BRREQ:" + JSON.stringify(request));
         },
 
         // process reply from server
@@ -209,15 +265,14 @@ sap.ui.define([
 
            this.loadDataCounter--;
 
-           var elem = this.getNodeByPath(reply.path);
-
+           let elem = this.getNodeByPath(reply.path);
 
            if (!elem) { console.error('DID NOT FOUND ' + reply.path); return; }
 
            if (!elem._requested) console.error('ELEMENT WAS NOT REQUESTED!!!!', reply.path);
            delete elem._requested;
 
-           var smart_merge = false;
+           let smart_merge = false;
 
            if ((elem.nchilds === reply.nchilds) && elem.childs && reply.nodes) {
               if (elem.first + elem.childs.length == reply.first) {
@@ -237,7 +292,7 @@ sap.ui.define([
            }
 
            // remember main model
-           if ((reply.path === "/") && !this.mainModel) {
+           if ((reply.path.length === 0) && !this.mainModel) {
               this.mainModel = elem.childs;
               this.mainFullModel = false;
            }
@@ -253,9 +308,9 @@ sap.ui.define([
                  this.oBinding.checkUpdate(true);
 
            if (this._expanding_path) {
-              var d = this._expanding_path;
+              let d = this._expanding_path;
               delete this._expanding_path;
-              var index = this.expandNodeByPath(d);
+              let index = this.expandNodeByPath(d);
               if ((index > 0) && this.treeTable)
                  this.treeTable.setFirstVisibleRow(Math.max(0, index - Math.round(this.treeTable.getVisibleRowCount()/2)));
            }
@@ -263,13 +318,13 @@ sap.ui.define([
         },
 
         getNodeByIndex: function(indx) {
-           var nodes = this.getProperty("/nodes");
+           let nodes = this.getProperty("/nodes");
            return nodes ? nodes[indx] : null;
         },
 
         // return element of hierarchical structure by TreeTable index
         getElementByIndex: function(indx) {
-           var node = this.getNodeByIndex(indx);
+           let node = this.getNodeByIndex(indx);
            return node ? node._elem : null;
         },
 
@@ -277,7 +332,7 @@ sap.ui.define([
         // if element specified - returns index of that element
         scanShifts: function(for_elem) {
 
-           var id = 0, full = this.fullModel, res = -1;
+           let id = 0, full = this.fullModel, res = -1;
 
            function scan(lvl, elem) {
 
@@ -285,7 +340,7 @@ sap.ui.define([
 
               if (lvl >= 0) id++;
 
-              var before_id = id;
+              let before_id = id;
 
               if (elem.expanded) {
                  if (elem.childs === undefined) {
@@ -299,13 +354,13 @@ sap.ui.define([
                        id += elem.first;
 
                     // jump over all childs
-                    for (var k=0;k<elem.childs.length;++k)
+                    for (let k = 0; k < elem.childs.length; ++k)
                        scan(lvl+1, elem.childs[k]);
 
                     // gap at the end
                     if (!full) {
-                       var _last = (elem.first || 0) + elem.childs.length;
-                       var _remains = elem.nchilds  - _last;
+                       let _last = (elem.first || 0) + elem.childs.length,
+                           _remains = elem.nchilds  - _last;
                        if (_remains > 0) id += _remains;
                     }
                  }
@@ -332,35 +387,34 @@ sap.ui.define([
 
            if (this.noData) return null;
 
-           var pthis = this,
-               id = 0,            // current id, at the same time number of items
+           let id = 0,            // current id, at the same time number of items
                threshold = args.threshold || this.threshold || 100,
                threshold2 = Math.round(threshold/2),
                nodes = this.reset_nodes ? {} : this.getProperty("/nodes");
 
            // main method to scan through all existing sub-folders
-           function scan(lvl, elem, path) {
+           let scan = (lvl, elem, path) => {
 
               // create elements with safety margin
               if ((lvl >= 0) && (nodes !== null) && !nodes[id] && (id >= args.begin - threshold2) && (id < args.end + threshold2)) {
                  nodes[id] = {
                     name: elem.name,
-                    fullpath: path,
+                    path: path.slice(), // make array copy
                     index: id,
                     _elem: elem,
                     isLeaf: !elem.nchilds,
                     // these are required by list binding, should be eliminated in the future
                     type: elem.nchilds ? "folder" : "file",
                     level: lvl,
-                    context: pthis.getContext("/nodes/" + id),
+                    context: this.getContext("/nodes/" + id),
                     nodeState: {
                        expanded: !!elem.expanded,
                        selected: !!elem.selected,
                        sum: false // ????
                     }
                  };
-                 if (typeof pthis.addNodeAttributes == 'function')
-                    pthis.addNodeAttributes(nodes[id], elem);
+                 if (typeof this.addNodeAttributes == 'function')
+                    this.addNodeAttributes(nodes[id], elem);
               }
 
               if (lvl >= 0) id++;
@@ -372,7 +426,7 @@ sap.ui.define([
 
                  // TODO: probably one could guess more precise request
                  if ((elem.nchilds === undefined) || (elem.nchilds !== 0))
-                   pthis.submitRequest(elem, path);
+                   this.submitRequest(false, elem, path);
 
                  return;
               }
@@ -384,34 +438,38 @@ sap.ui.define([
               }
 
               // when not all childs from very beginning is loaded, but may be required
-              if (elem.first && !pthis.fullModel) {
+              if (elem.first && !this.fullModel) {
 
                  // check if requests are needed to load part in the begin of the list
                  if (args.begin - id - threshold2 < elem.first) {
 
-                    var first = Math.max(args.begin - id - threshold2, 0),
+                    let first = Math.max(args.begin - id - threshold2, 0),
                         number = Math.min(elem.first - first, threshold);
 
-                    pthis.submitRequest(elem, path, first, number);
+                    this.submitRequest(false, elem, path, first, number);
                  }
 
                  id += elem.first;
               }
 
 
-              for (var k=0;k<elem.childs.length;++k)
-                 scan(lvl+1, elem.childs[k], path + elem.childs[k].name + "/");
+              let subpath = path.slice(), // make copy to avoid changes in argument
+                  subindx = subpath.push("") - 1;
+              for (let k = 0; k < elem.childs.length; ++k) {
+                 subpath[subindx] = elem.childs[k].name + this.codeIndex((elem.first || 0) + k);
+                 scan(lvl+1, elem.childs[k], subpath);
+              }
 
               // check if more elements are required
 
-              if (!pthis.fullModel) {
-                 var _last = (elem.first || 0) + elem.childs.length;
-                 var _remains = elem.nchilds  - _last;
+              if (!this.fullModel) {
+                 let _last = (elem.first || 0) + elem.childs.length;
+                 let _remains = elem.nchilds  - _last;
 
                  if (_remains > 0) {
                     if (args.end + threshold2 > id) {
 
-                       var first = _last, number = args.end + threshold2 - id;
+                       let first = _last, number = args.end + threshold2 - id;
                        if (number < threshold) number = threshold; // always request much
                        if (number > _remains) number = _remains; // but not too much
                        if (number > threshold) {
@@ -419,9 +477,7 @@ sap.ui.define([
                           number = threshold;
                        }
 
-                       console.log('submit request for last', path, first,number)
-
-                       pthis.submitRequest(elem, path, first, number);
+                       this.submitRequest(false, elem, path, first, number);
                     }
 
                     id += _remains;
@@ -430,7 +486,7 @@ sap.ui.define([
            }
 
            // start scan from very top
-           scan(-1, this.h, "/");
+           scan(-1, this.h, []);
 
            if (this.getProperty("/length") != id) {
               // console.error('LENGTH MISMATCH', this.getProperty("/length"), id);
@@ -448,7 +504,7 @@ sap.ui.define([
         // toggle expand state of specified node
         toggleNode: function(index) {
 
-           var node = this.getNodeByIndex(index),
+           let node = this.getNodeByIndex(index),
                elem = node ? node._elem : null;
 
            if (!node || !elem) return;
@@ -478,29 +534,6 @@ sap.ui.define([
            }
         },
 
-        // change sorting method, for now server supports default, "direct" and "reverse"
-        changeSortOrder: function(newValue) {
-           if (newValue === undefined)
-               newValue = this.getProperty("/sortOrder") || "";
-
-           if ((newValue !== "") && (newValue !=="direct") && (newValue !== "reverse")) {
-              console.error('WRONG sorting order ', newValue, 'use default');
-              newValue = "";
-           }
-
-           // ignore same value
-           if (newValue === this.sortOrder)
-              return;
-
-
-           this.sortOrder = newValue;
-
-           // now we should request values once again
-
-           this.submitRequest(this.h, "/");
-
-        },
-
         changeItemsFilter: function(newValue) {
            if (newValue === undefined)
               newValue = this.getProperty("/itemsFilter") || "";
@@ -512,9 +545,7 @@ sap.ui.define([
            this.itemsFilter = newValue;
 
            // now we should request values once again
-
-           this.submitRequest(this.h, "/");
-
+           this.submitRequest(false, this.h);
         }
 
     });

@@ -27,8 +27,8 @@ class REveScene;
 class REveViewer : public REveElement
 {
 private:
-   REveViewer(const REveViewer&);            // Not implemented
-   REveViewer& operator=(const REveViewer&); // Not implemented
+   REveViewer(const REveViewer&) = delete;
+   REveViewer& operator=(const REveViewer&) = delete;
 
 public:
    REveViewer(const std::string &n="REveViewer", const std::string &t="");
@@ -52,8 +52,8 @@ public:
 class REveViewerList : public REveElement
 {
 private:
-   REveViewerList(const REveViewerList&);            // Not implemented
-   REveViewerList& operator=(const REveViewerList&); // Not implemented
+   REveViewerList(const REveViewerList&) = delete;
+   REveViewerList& operator=(const REveViewerList&) = delete;
 
 protected:
    Bool_t        fShowTooltip;

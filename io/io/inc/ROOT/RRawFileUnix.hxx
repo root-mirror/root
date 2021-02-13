@@ -19,8 +19,7 @@
 #include <cstdint>
 
 namespace ROOT {
-namespace Experimental {
-namespace Detail {
+namespace Internal {
 
 /**
  * \class RRawFileUnix RRawFileUnix.hxx
@@ -36,6 +35,7 @@ private:
 protected:
    void OpenImpl() final;
    size_t ReadAtImpl(void *buffer, size_t nbytes, std::uint64_t offset) final;
+   void ReadVImpl(RIOVec *ioVec, unsigned int nReq) final;
    std::uint64_t GetSizeImpl() final;
    void *MapImpl(size_t nbytes, std::uint64_t offset, std::uint64_t &mapdOffset) final;
    void UnmapImpl(void *region, size_t nbytes) final;
@@ -44,11 +44,11 @@ public:
    RRawFileUnix(std::string_view url, RRawFile::ROptions options);
    ~RRawFileUnix();
    std::unique_ptr<RRawFile> Clone() const final;
-   int GetFeatures() const final { return kFeatureHasSize | kFeatureHasMmap; }
+   int GetFeatures() const final;
+   int GetFd() const { return fFileDes; }
 };
 
-} // namespace Detail
-} // namespace Experimental
+} // namespace Internal
 } // namespace ROOT
 
 #endif

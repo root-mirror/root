@@ -23,6 +23,7 @@
 #include "TEnv.h"
 #include "TInterpreter.h"
 #include "TObjString.h"
+#include "TObjArray.h"
 #include "TPRegexp.h"
 #include "TRegexp.h"
 #include "TROOT.h"
@@ -1874,7 +1875,7 @@ void THtml::CreateListOfClasses(const char* filter)
       fProductName = "ROOT";
 
    if (fProductName == "(UNKNOWN PRODUCT)") {
-      Warning("CreateListOfClasses", "Product not set. You should call gHtml->SetProduct(\"MyProductName\");");
+      Warning("CreateListOfClasses", "Product not set. You should call gHtml->SetProductName(\"MyProductName\");");
    } else if (fProductName != "ROOT") {
       if (GetViewCVS().Contains("http://root.cern.ch/"))
          SetViewCVS("");

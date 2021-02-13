@@ -12,6 +12,7 @@
 #include "TBranchClones.h"
 
 #include "TBasket.h"
+#include "TBuffer.h"
 #include "TClass.h"
 #include "TClonesArray.h"
 #include "TDataMember.h"

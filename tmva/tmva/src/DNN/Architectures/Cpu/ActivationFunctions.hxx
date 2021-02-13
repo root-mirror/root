@@ -19,9 +19,6 @@
 
 #ifdef R__HAS_VDT
 #include "vdt/tanh.h"
-#define TANH_IMPL_X   vdt::fast_tanhf(x)
-#else 
-#define TANH_IMPL_X    tanh(x)
 #endif
 
 
@@ -32,8 +29,8 @@ namespace DNN
 
 //______________________________________________________________________________
 template<typename AFloat>
-void TCpu<AFloat>::ActivationFunctionForward(Tensor_t & X, EActivationFunction activFunct, 
-                                             const ActivationDescriptor_t /* activationDescr */,  
+void TCpu<AFloat>::ActivationFunctionForward(Tensor_t & X, EActivationFunction activFunct,
+                                             const ActivationDescriptor_t /* activationDescr */,
                                              const double /* coef */, const AFloat /*alpha */, const AFloat /*beta*/)
 {
    // scaling and translation is not yet implemented
@@ -41,7 +38,7 @@ void TCpu<AFloat>::ActivationFunctionForward(Tensor_t & X, EActivationFunction a
 }
 //______________________________________________________________________________
 template<typename AFloat>
-void TCpu<AFloat>::ActivationFunctionBackward(Tensor_t & dX, const Tensor_t & /* Y */,  
+void TCpu<AFloat>::ActivationFunctionBackward(Tensor_t & dX, const Tensor_t & /* Y */,
                                                 const Tensor_t & dY, const Tensor_t & X,
                                                 EActivationFunction activFunct,
                                                 const ActivationDescriptor_t /* activationDescr */,
@@ -50,7 +47,7 @@ void TCpu<AFloat>::ActivationFunctionBackward(Tensor_t & dX, const Tensor_t & /*
    // scaling and translation not yet implemented
    // output tensor (Y) could also be used to speed up derivative calculation
    // compute dx = f'(x)
-   TMVA::DNN::evaluateDerivative<TCpu<AFloat>>(dX, activFunct, X); 
+   TMVA::DNN::evaluateDerivative<TCpu<AFloat>>(dX, activFunct, X);
     // Compute element-wise product.  dx = f'(x) * dY
    Hadamard(dX, dY);
 }
@@ -104,7 +101,7 @@ void TCpu<AFloat>::SigmoidDerivative(TCpuTensor<AFloat> & B,
 template<typename AFloat>
 void TCpu<AFloat>::Tanh(TCpuTensor<AFloat> & B)
 {
-   auto f = [](AFloat x) {return TANH_IMPL_X;};
+   auto f = [](AFloat x) {return tanh(x);};
    B.Map(f);
 }
 
@@ -114,11 +111,62 @@ void TCpu<AFloat>::TanhDerivative(TCpuTensor<AFloat> & B,
                                   const TCpuTensor<AFloat> &A)
 {
    auto f = [](AFloat x) {
-      AFloat t = TANH_IMPL_X;
+      AFloat t = tanh(x);
       return 1 - t * t;
    };
    B.MapFrom(f, A);
 }
+
+#ifdef R__HAS_VDT
+//______________________________________________________________________________
+template <>
+void TCpu<float>::FastTanh(TCpuTensor<float> &B)
+{
+   auto f = [](float x) { return vdt::fast_tanhf(x); };
+   B.Map(f);
+}
+template <>
+void TCpu<double>::FastTanh(TCpuTensor<double> &B)
+{
+   auto f = [](double x) { return vdt::fast_tanh(x); };
+   B.Map(f);
+}
+
+//______________________________________________________________________________
+template <>
+void TCpu<float>::FastTanhDerivative(TCpuTensor<float> &B, const TCpuTensor<float> &A)
+{
+   auto f = [](float x) {
+      double t = vdt::fast_tanhf(x);
+      return 1 - t * t;
+   };
+   B.MapFrom(f, A);
+}
+template <>
+void TCpu<double>::FastTanhDerivative(TCpuTensor<double> &B, const TCpuTensor<double> &A)
+{
+   auto f = [](double x) {
+      double t = vdt::fast_tanh(x);
+      return 1 - t * t;
+   };
+   B.MapFrom(f, A);
+}
+
+#else   // when VDT is not available
+//______________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::FastTanh(TCpuTensor<AFloat> &B)
+{
+   TCpu<AFloat>::Tanh(B);
+}
+
+//______________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::FastTanhDerivative(TCpuTensor<AFloat> &B, const TCpuTensor<AFloat> &A)
+{
+   TCpu<AFloat>::TanhDerivative(B, A);
+}
+#endif
 
 //______________________________________________________________________________
 template<typename AFloat>

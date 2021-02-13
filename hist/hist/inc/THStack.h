@@ -21,9 +21,16 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TH1.h"
+#include "TNamed.h"
 #include "TObjArray.h"
 
+#ifdef R__LESS_INCLUDES
+class TH1;
+class TList;
+class TAxis;
+#else
+#include "TH1.h"
+#endif
 
 class TBrowser;
 class TFileMergeInfo;

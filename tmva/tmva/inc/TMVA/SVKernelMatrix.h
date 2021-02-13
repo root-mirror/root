@@ -28,7 +28,7 @@
 #ifndef ROOT_TMVA_SVKernelMatrix
 #define ROOT_TMVA_SVKernelMatrix
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 #include <vector>
 

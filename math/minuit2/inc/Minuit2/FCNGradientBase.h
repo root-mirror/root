@@ -12,9 +12,11 @@
 
 #include "Minuit2/FCNBase.h"
 
+#include <vector>
+
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
 //________________________________________________________________________
 /** Extension of the FCNBase for providing the analytical Gradient of the
@@ -32,17 +34,15 @@ namespace ROOT {
 class FCNGradientBase : public FCNBase {
 
 public:
-
    virtual ~FCNGradientBase() {}
 
-   virtual std::vector<double> Gradient(const std::vector<double>&) const = 0;
+   virtual std::vector<double> Gradient(const std::vector<double> &) const = 0;
 
-   virtual bool CheckGradient() const {return true;}
-
+   virtual bool CheckGradient() const { return true; }
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_FCNGradientBase
+#endif // ROOT_Minuit2_FCNGradientBase

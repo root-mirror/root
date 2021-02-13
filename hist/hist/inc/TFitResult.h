@@ -27,6 +27,8 @@
 
 #include "TMatrixDSym.h"
 
+#include <string>
+
 class TGraph;
 
 class TFitResult:public TNamed, public ROOT::Fit::FitResult {

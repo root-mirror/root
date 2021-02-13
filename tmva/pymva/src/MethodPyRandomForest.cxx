@@ -37,14 +37,7 @@
 #include "TMVA/Timer.h"
 #include "TMVA/VariableTransformBase.h"
 
-#include "Riostream.h"
-#include "TMath.h"
 #include "TMatrix.h"
-#include "TMatrixD.h"
-#include "TVectorD.h"
-
-#include <iomanip>
-#include <fstream>
 
 using namespace TMVA;
 

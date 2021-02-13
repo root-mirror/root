@@ -29,6 +29,7 @@
 
 #include "TMVA/DNN/GeneralLayer.h"
 #include "TMVA/DNN/DeepNet.h"
+#include <vector>
 
 namespace TMVA {
 namespace DNN {
@@ -73,7 +74,10 @@ public:
    void IncrementGlobalStep() { this->fGlobalStep++; }
 
    /*! Getters */
-   Scalar_t GetLearningRate() const { return fLearningRate; }
+   Scalar_t GetLearningRate() const
+   {
+      return fLearningRate;
+   }
    size_t GetGlobalStep() const { return fGlobalStep; }
    std::vector<Layer_t *> &GetLayers() { return fDeepNet.GetLayers(); }
    Layer_t *GetLayerAt(size_t i) { return fDeepNet.GetLayerAt(i); }

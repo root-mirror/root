@@ -851,8 +851,9 @@ void FillData ( BinData  & dv, const TMultiGraph * mg, TF1 * func ) {
    }
    // adjust option according to type
    fitOpt.fErrors1 = (type == BinData::kNoError);
-   fitOpt.fCoordErrors = (type ==  BinData::kCoordError);
-   fitOpt.fAsymErrors = (type ==  BinData::kAsymError);
+   // use coordinate or asym  errors in case option is set  and type is consistent
+   fitOpt.fCoordErrors &= (type == BinData::kCoordError) || (type == BinData::kAsymError);
+   fitOpt.fAsymErrors &= (type == BinData::kAsymError);
 
 
 #ifdef DEBUG
@@ -982,4 +983,3 @@ bool GetConfidenceIntervals(const TH1 * h1, const ROOT::Fit::FitResult  & result
 } // end namespace Fit
 
 } // end namespace ROOT
-

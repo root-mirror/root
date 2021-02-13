@@ -25,14 +25,14 @@ Begin_Macro(source)
 End_Macro
 */
 
-#include "Riostream.h"
 #include "TCurlyLine.h"
 #include "TROOT.h"
 #include "TVirtualPad.h"
 #include "TVirtualX.h"
 #include "TMath.h"
-#include "TLine.h"
 #include "TPoint.h"
+
+#include <iostream>
 
 Double_t TCurlyLine::fgDefaultWaveLength = 0.02;
 Double_t TCurlyLine::fgDefaultAmplitude  = 0.01;

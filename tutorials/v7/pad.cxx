@@ -17,6 +17,7 @@
  *************************************************************************/
 
 #include "ROOT/RCanvas.hxx"
+#include "ROOT/RPad.hxx"
 #include "ROOT/RLine.hxx"
 
 void pad()

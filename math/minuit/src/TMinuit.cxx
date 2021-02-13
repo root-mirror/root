@@ -9,19 +9,9 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-/**
 
-   \defgroup MinuitOld TMinuit
-   \ingroup Math
-
-   The Minuit Minimization package.
-   Direct C++ implementation of the Minuit minimization package.
-   This package was originally written in Fortran by Fred James
-   and part of PACKLIB (patch D506)
-   It has been converted to a C++ class, TMinuit, by R.Brun.
-*/
-
-/** \class TMinuit
+/*! \class TMinuit
+\ingroup MinuitOld
 
 Implementation in C++ of the Minuit package written by Fred James.
 This is a straightforward conversion of the original Fortran version.
@@ -187,11 +177,11 @@ the error matrix, or setting of exact confidence levels see:
 
   1. F.James.
      Determining the statistical Significance of experimental Results.
-     Technical Report DD/81/02 and CERN Report 81-03, CERN, 1981.</li>
+     Technical Report DD/81/02 and CERN Report 81-03, CERN, 1981.
 
   2. W.T.Eadie, D.Drijard, F.James, M.Roos, and B.Sadoulet.
      Statistical Methods in Experimental Physics.
-     North-Holland, 1971.</li>
+     North-Holland, 1971.
 
 ### Reliability of MINUIT error estimates.
 
@@ -328,13 +318,13 @@ necessary, and you are sensitive to the difference between the two ways of
 calculating the errors, it is suggested to use Minos errors which take
 into account the non-linearities much more precisely.
 
-@ingroup MinuitOld
 */
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "TROOT.h"
+#include "TList.h"
 #include "TMinuit.h"
 #include "TMath.h"
 #include "TError.h"
@@ -5555,7 +5545,9 @@ void TMinuit::mnmnot(Int_t ilax, Int_t ilax2, Double_t &val2pl, Double_t &val2mi
       fU[ilax-1] = TMath::Max(fU[ilax-1],fAlim[ilax-1]);
       delu = fU[ilax-1] - ut;
 //        stop if already at limit with negligible step size
-      if (TMath::Abs(delu) / (TMath::Abs(ut) + TMath::Abs(fU[ilax-1])) < fEpsmac) goto L440;
+//        add also a check if both numerator and denominarot are not zero (ROOT-10835)(LM)
+      if ( (delu == 0 && ut == 0) ||
+         (TMath::Abs(delu) / (TMath::Abs(ut) + TMath::Abs(fU[ilax-1])) < fEpsmac)) goto L440;
       fac = delu / fMNOTw[it-1];
       for (i = 1; i <= fNpar; ++i) {
          fX[i-1] = fXt[i-1] + fac*fMNOTxdev[i-1];

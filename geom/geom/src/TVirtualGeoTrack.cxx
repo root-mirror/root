@@ -53,38 +53,6 @@ TVirtualGeoTrack::TVirtualGeoTrack(Int_t id, Int_t pdgcode, TVirtualGeoTrack *pa
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Copy ctor. NOT TO BE CALLED.
-
-TVirtualGeoTrack::TVirtualGeoTrack(const TVirtualGeoTrack& other)
-                 :TObject(other), TGeoAtt(other), TAttLine(other), TAttMarker(other),
-                  fPDG(other.fPDG),
-                  fId(other.fId),
-                  fParent(other.fParent),
-                  fParticle(other.fParticle),
-                  fTracks(other.fTracks)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Assignment operator. NOT TO BE CALLED.
-
-TVirtualGeoTrack& TVirtualGeoTrack::operator=(const TVirtualGeoTrack& gv)
-{
-   if(this!=&gv) {
-      TObject::operator=(gv);
-      TGeoAtt::operator=(gv);
-      TAttLine::operator=(gv);
-      TAttMarker::operator=(gv);
-      fPDG=gv.fPDG;
-      fId=gv.fId;
-      fParent=gv.fParent;
-      fParticle=gv.fParticle;
-      fTracks=gv.fTracks;
-   }
-   return *this;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Destructor.
 
 TVirtualGeoTrack::~TVirtualGeoTrack()

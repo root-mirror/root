@@ -1,9 +1,8 @@
 /// \file
 /// \ingroup tutorial_matrix
 /// \notebook -nodraw
-///
-/// This tutorial shows how to decompose a matrix A in an orthogonal matrix Q and an uppper triangular matrix R
-/// uisng QR Householder decomposition with the TDecompQRH class
+/// This tutorial shows how to decompose a matrix A in an orthogonal matrix Q and an upper
+/// triangular matrix R using QR Householder decomposition with the TDecompQRH class.
 /// The matrix same matrix as in this example is used: https://en.wikipedia.org/wiki/QR_decomposition#Example_2
 
 #include <iostream>

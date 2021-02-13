@@ -17,6 +17,7 @@
 #include <TH1.h>
 #include "canvsave.h"
 #include <TCanvas.h>
+#include <snprintf.h>
 
 #if !defined S_ISDIR
 #define S_ISDIR(m) (((m)&(0170000)) == (0040000))

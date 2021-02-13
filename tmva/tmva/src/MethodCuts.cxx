@@ -103,7 +103,6 @@
 #include "TMVA/TSpline1.h"
 #include "TMVA/VariableTransformBase.h"
 
-#include "Riostream.h"
 #include "TH1F.h"
 #include "TObjString.h"
 #include "TDirectory.h"
@@ -114,6 +113,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 
 using std::atof;
 

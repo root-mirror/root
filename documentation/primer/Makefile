@@ -8,13 +8,7 @@ MDFILESMOD=abstract_preprocessed.md Introduction_preprocessed.md ROOT_as_calcula
 	   functions_and_parameter_estimation_preprocessed.md filio_preprocessed.md root_in_python_preprocessed.md \
 	   concludingRemarks_preprocessed.md references_preprocessed.md
 
-# define the pandoc options according to the pandoc version.
-PANDOC_VERSION=$(shell pandoc -v | grep "pandoc "  | sed -e "s/pandoc //")
-ifeq ($(PANDOC_VERSION),2.2)
 OPTIONS=-s -f markdown+smart --toc --toc-depth=2 --top-level-division=chapter --number-sections --bibliography=bibliography.bib
-else
-OPTIONS=-s -S -f markdown --toc --chapters --number-sections --bibliography=bibliography.bib
-endif
 
 OPTIONSHTML=-H css/github.css --mathjax
 OPTIONSEPUB=--mathml --epub-cover-image=figures/Cover.png

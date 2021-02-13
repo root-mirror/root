@@ -9,9 +9,10 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
+#include <iostream>
 #include "TROOT.h"
 #include "TExec.h"
+#include "snprintf.h"
 
 ClassImp(TExec);
 

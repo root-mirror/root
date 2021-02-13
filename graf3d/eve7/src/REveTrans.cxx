@@ -16,8 +16,6 @@
 #include "TClass.h"
 #include "TMath.h"
 
-#include "Riostream.h"
-
 #include <cctype>
 
 #define F00  0
@@ -41,7 +39,6 @@
 #define F33 15
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveTrans
 \ingroup REve
@@ -772,8 +769,8 @@ TVector3 REveTrans::Multiply(const TVector3& v, Double_t w) const
 void REveTrans::Multiply(const Double_t *vin, Double_t* vout, Double_t w) const
 {
    vout[0] = fM[F00]*vin[0] + fM[F01]*vin[1] + fM[F02]*vin[2] + fM[F03]*w;
-   vout[1] = fM[F10]*vin[0] + fM[F11]*vin[1] + fM[F12]*vin[1] + fM[F13]*w;
-   vout[2] = fM[F20]*vin[0] + fM[F21]*vin[1] + fM[F22]*vin[1] + fM[F23]*w;
+   vout[1] = fM[F10]*vin[0] + fM[F11]*vin[1] + fM[F12]*vin[2] + fM[F13]*w;
+   vout[2] = fM[F20]*vin[0] + fM[F21]*vin[1] + fM[F22]*vin[2] + fM[F23]*w;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

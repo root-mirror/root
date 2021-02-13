@@ -10,6 +10,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wconditional-uninitialized"
@@ -43,7 +44,7 @@ namespace Internal {
 
 // We do not have explicit vectorisation support enabled. Fall back to regular ROOT types.
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 namespace ROOT {
    using Float_v  = Float_t;

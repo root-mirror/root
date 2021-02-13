@@ -5,7 +5,7 @@
 ##
 ## \macro_code
 ##
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -26,7 +26,7 @@ data = gauss.generate(ROOT.RooArgSet(x), 1000)
 # Fit pdf to data
 gauss.fitTo(data)
 
-# Plot p.d.f. and data
+# Plot pdf and data
 # -------------------------------------
 
 # Overlay projection of gauss on data

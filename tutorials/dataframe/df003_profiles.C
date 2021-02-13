@@ -1,6 +1,8 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -draw
+/// Use TProfiles with RDataFrame.
+///
 /// This tutorial illustrates how to use TProfiles in combination with the
 /// RDataFrame. See the documentation of TProfile and TProfile2D to better
 /// understand the analogy of this code with the example one.
@@ -9,7 +11,7 @@
 /// \macro_code
 ///
 /// \date February 2017
-/// \author Danilo Piparo
+/// \author Danilo Piparo (CERN)
 
 // A simple helper function to fill a test tree: this makes the example
 // stand-alone.
@@ -33,7 +35,7 @@ void df003_profiles()
    ROOT::RDataFrame d(treeName, fileName, {"px", "py", "pz"});
 
    // Create the profiles
-   auto hprof1d = d.Profile1D({"hprof1d", "Profile of pz versus px", 64, -4, 4});
+   auto hprof1d = d.Profile1D({"hprof1d", "Profile of py versus px", 64, -4, 4});
    auto hprof2d = d.Profile2D({"hprof2d", "Profile of pz versus px and py", 40, -4, 4, 40, -4, 4, 0, 20});
 
    // And Draw

@@ -46,6 +46,7 @@
 #include "TGTextBuffer.h"
 #include "TGString.h"
 #include "TROOT.h"
+#include "TVirtualX.h"
 
 
 ClassImp(TGPasswdDialog);

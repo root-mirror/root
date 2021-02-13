@@ -35,7 +35,6 @@ Class that contains all the data information
 #include <algorithm>
 #include <cstdlib>
 #include <stdexcept>
-#include <algorithm>
 
 #include "TMVA/DataSetInfo.h"
 #include "TMVA/DataSet.h"
@@ -51,6 +50,7 @@ Class that contains all the data information
 #include "TMVA/VariableInfo.h"
 
 #include "TRandom3.h"
+#include "strlcpy.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// constructor

@@ -14,35 +14,30 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class FlatRandomGen {
 
 public:
+   FlatRandomGen() : fMean(0.5), fDelta(0.5) {}
 
-  FlatRandomGen() : fMean(0.5), fDelta(0.5) {}
+   FlatRandomGen(double mean, double delta) : fMean(mean), fDelta(delta) {}
 
-  FlatRandomGen(double mean, double delta) : fMean(mean), fDelta(delta) {}
+   ~FlatRandomGen() {}
 
-  ~FlatRandomGen() {}
+   double Mean() const { return fMean; }
 
-  double Mean() const {return fMean;}
+   double Delta() const { return fDelta; }
 
-  double Delta() const {return fDelta;}
-
-  double operator()() const {
-    return 2.*Delta()*(std::rand()/double(RAND_MAX) - 0.5) + Mean();
-  }
+   double operator()() const { return 2. * Delta() * (std::rand() / double(RAND_MAX) - 0.5) + Mean(); }
 
 private:
-
-  double fMean;
-  double fDelta;
+   double fMean;
+   double fDelta;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif //MN_FlatRandomGen_H_
+#endif // MN_FlatRandomGen_H_

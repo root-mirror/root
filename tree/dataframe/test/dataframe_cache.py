@@ -17,7 +17,7 @@ class Cache(unittest.TestCase):
         # Take['float']()
         # instead of:
         # Take('float')()
-        cls.exp_pyroot = os.environ.get('EXP_PYROOT') != 'OFF'
+        cls.legacy_pyroot = os.environ.get('LEGACY_PYROOT').lower() == 'on'
 
         code = ''' {
         const char* treeName = "t";
@@ -42,12 +42,12 @@ class Cache(unittest.TestCase):
     def test_TakeArrays(self):
         rdf = RDataFrame("t", "fileName.root")
         ColType_t = "ROOT::RVec<float>"
-        if self.exp_pyroot:
-            vrp = rdf.Take[ColType_t]("arr")
-            drp = rdf.Take[ColType_t+", std::deque<"+ColType_t+">"]("arr")
-        else:
+        if self.legacy_pyroot:
             vrp = rdf.Take(ColType_t)("arr")
             drp = rdf.Take(ColType_t+", std::deque<"+ColType_t+">")("arr")
+        else:
+            vrp = rdf.Take[ColType_t]("arr")
+            drp = rdf.Take[ColType_t+", std::deque<"+ColType_t+">"]("arr")
         # Workaround until we do not understand why we cannot directly use the __getitem__ operator
         v = vrp.GetValue()
         d = drp.GetValue()
@@ -65,10 +65,10 @@ class Cache(unittest.TestCase):
     def test_Carrays(self):
         rdf = RDataFrame("t", "fileName.root")
         cache = rdf.Cache("arr")
-        if self.exp_pyroot:
-            arrrp = cache.Take['ROOT::RVec<float>']("arr")
-        else:
+        if self.legacy_pyroot:
             arrrp = cache.Take('ROOT::RVec<float>')("arr")
+        else:
+            arrrp = cache.Take['ROOT::RVec<float>']("arr")
         # Workaround for iteration on osx
         arr = arrrp.GetValue()
         for ievt, e in enumerate(arr):
@@ -78,19 +78,19 @@ class Cache(unittest.TestCase):
     def test_EntryAndSlotColumns(self):
         rdf = RDataFrame(8)
         c = rdf.Filter("rdfentry_ % 2 == 0").Define("myEntry","rdfentry_").Cache()
-        if self.exp_pyroot:
-            ds_entriesrp = c.Take['ULong64_t']('rdfentry_')
-        else:
+        if self.legacy_pyroot:
             ds_entriesrp = c.Take('ULong64_t')('rdfentry_')
+        else:
+            ds_entriesrp = c.Take['ULong64_t']('rdfentry_')
         # Workaround for iteration on osx
         ds_entries = ds_entriesrp.GetValue()
         ref_ds_entries = [0,1,2,3]
         for e, eref in zip (ds_entries, ref_ds_entries):
             self.assertEqual(e, eref)
-        if self.exp_pyroot:
-            old_entriesrp = c.Take['ULong64_t']('myEntry')
-        else:
+        if self.legacy_pyroot:
             old_entriesrp = c.Take('ULong64_t')('myEntry')
+        else:
+            old_entriesrp = c.Take['ULong64_t']('myEntry')
         # Workaround for iteration on osx
         old_entries = old_entriesrp.GetValue()
         ref_old_entries = [0,2,4,6]

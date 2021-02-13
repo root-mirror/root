@@ -23,18 +23,17 @@
 //     the list of TLeaves (branch description)                         //
 //////////////////////////////////////////////////////////////////////////
 
-#include <memory>
-
-#include "Compression.h"
+#include "TNamed.h"
 #include "TAttFill.h"
+#include "TObjArray.h"
 #include "TBranchCacheInfo.h"
 #include "TDataType.h"
-#include "TNamed.h"
-#include "TObjArray.h"
+#include "Compression.h"
 #include "ROOT/TIOFeatures.hxx"
 
 class TTree;
 class TBasket;
+class TBranchElement;
 class TLeaf;
 class TBrowser;
 class TDirectory;
@@ -94,6 +93,7 @@ protected:
    friend class TTreeCache;
    friend class TTreeCloner;
    friend class TTree;
+   friend class TBranchElement;
    friend class ROOT::Experimental::Internal::TBulkBranchRead;
 
    // TBranch status bits
@@ -166,11 +166,13 @@ protected:
    void     SetSkipZip(Bool_t skip = kTRUE) { fSkipZip = skip; }
    void     Init(const char *name, const char *leaflist, Int_t compress);
 
-   TBasket *GetFreshBasket(TBuffer *user_buffer);
+   TBasket *GetFreshBasket(Int_t basketnumber, TBuffer *user_buffer);
    TBasket *GetFreshCluster();
    Int_t    WriteBasket(TBasket* basket, Int_t where) { return WriteBasketImpl(basket, where, nullptr); }
 
    TString  GetRealFileName() const;
+
+   virtual void SetAddressImpl(void *addr, Bool_t /* implied */) { SetAddress(addr); }
 
 private:
    Int_t    GetBasketAndFirst(TBasket*& basket, Long64_t& first, TBuffer* user_buffer);
@@ -220,6 +222,7 @@ public:
    virtual Int_t     GetEntryExport(Long64_t entry, Int_t getall, TClonesArray *list, Int_t n);
            Int_t     GetEntryOffsetLen() const { return fEntryOffsetLen; }
            Int_t     GetEvent(Long64_t entry=0) {return GetEntry(entry);}
+   virtual TString   GetFullName() const;
    const char       *GetIconName() const;
    virtual Int_t     GetExpectedType(TClass *&clptr,EDataType &type);
    virtual TLeaf    *GetLeaf(const char *name) const;

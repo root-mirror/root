@@ -36,7 +36,6 @@ Rearrangement of input variables
 #include "TMVA/Types.h"
 
 #include <iostream>
-#include <iomanip>
 #include <stdexcept>
 
 ClassImp(TMVA::VariableRearrangeTransform);

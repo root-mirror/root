@@ -20,6 +20,7 @@
 
 #include "Math/VirtualIntegrator.h"
 
+#include <vector>
 
 namespace ROOT {
 namespace Math {

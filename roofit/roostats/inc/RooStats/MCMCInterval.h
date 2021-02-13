@@ -19,6 +19,8 @@
 #include "RooArgList.h"
 #include "RooStats/MarkovChain.h"
 
+#include <vector>
+
 class RooNDKeysPdf;
 class RooProduct;
 

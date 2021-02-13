@@ -28,7 +28,6 @@ derivator class.
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include <math.h>
 
 #include "RooAbsMoment.h"

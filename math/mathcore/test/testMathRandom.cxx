@@ -5,9 +5,9 @@
 //#include "Math/MyMixMaxEngine.h"
 //#include "Math/GSLRndmEngines.h"
 #include "Math/GoFTest.h"
-#include "Math/ProbFunc.h"
+#include "Math/ProbFuncMathCore.h"
 #include "TH1.h"
-#include "TCanvas.h"
+#include "TVirtualPad.h"
 
 #include "TRandom1.h"
 #include "TRandom2.h"

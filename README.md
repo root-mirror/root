@@ -27,19 +27,11 @@ an open system that can be dynamically extended by linking external
 libraries. This makes ROOT a premier platform on which to build data
 acquisition, simulation and data analysis systems.
 
-[![License: LGPL v2.1+](https://img.shields.io/badge/License-LGPL%20v2.1+-blue.svg)](https://www.gnu.org/licenses/lgpl.html) [![Test coverage](https://root.cern/files/img/coverage-badge.svg)](https://epsft-jenkins.cern.ch/job/root-nightly-master-coverage/cobertura)
-
-## Build Status
-| Branch | Nightly build status |
-|--------|------------|
-| master | [![Build Status](https://epsft-jenkins.cern.ch/buildStatus/icon?job=root-nightly-master)](https://epsft-jenkins.cern.ch/view/ROOT/job/root-nightly-master/) |
-| v6-18-00-patches | [![Build Status](https://epsft-jenkins.cern.ch/buildStatus/icon?job=root-nightly-v6-18-00-patches)](https://epsft-jenkins.cern.ch/view/ROOT/job/root-nightly-v6-18-00-patches/) |
-| v6-16-00-patches | [![Build Status](https://epsft-jenkins.cern.ch/buildStatus/icon?job=root-nightly-v6-16-00-patches)](https://epsft-jenkins.cern.ch/view/ROOT/job/root-nightly-v6-16-00-patches/) |
+[![License: LGPL v2.1+](https://img.shields.io/badge/License-LGPL%20v2.1+-blue.svg)](https://www.gnu.org/licenses/lgpl.html)
 
 ## Cite
-We are [![DOI](https://zenodo.org/badge/10994345.svg)](https://zenodo.org/badge/latestdoi/10994345)
 
-Please cite us as
+When citing ROOT, please use both the reference reported below and the DOI specific to your ROOT version available [on Zenodo](https://zenodo.org/badge/latestdoi/10994345) [![DOI](https://zenodo.org/badge/10994345.svg)](https://zenodo.org/badge/latestdoi/10994345). For example, you can copy-paste and fill in the following citation:
 
     Rene Brun and Fons Rademakers, ROOT - An Object Oriented Data Analysis Framework,
     Proceedings AIHENP'96 Workshop, Lausanne, Sep. 1996,
@@ -53,16 +45,16 @@ Please cite us as
 ## Screenshots
 These screenshots shows some of the plots (produced using ROOT) presented when the Higgs boson discovery was [announced at CERN](http://home.cern/topics/higgs-boson):
 
-![CMS Data MC Ratio Plot](https://d35c7d8c.web.cern.ch/sites/d35c7d8c.web.cern.ch/files/CMS04_1.png)
+![CMS Data MC Ratio Plot](https://root.cern/gallery/higgs_plots/CMS_Data_MC_Ratio_Plot.png)
 
-![Atlas P0 Trends](https://d35c7d8c.web.cern.ch/sites/d35c7d8c.web.cern.ch/files/Atlas06_0.png)
+![Atlas P0 Trends](https://root.cern/gallery/higgs_plots/Atlas_P0_Trends.png)
 
 See more screenshots on our [gallery](https://root.cern/gallery).
 
 ## Download and Getting Started
 See [root.cern download page](https://root.cern/downloading-root) for the latest binary releases.
 
-[Getting started with ROOT.](https://root.cern/getting-started)
+[Getting started with ROOT.](https://root.cern/get_started)
 
 ## Building
 Clone the repo
@@ -88,14 +80,13 @@ Setup and run ROOT
 
 ## Help and Support
 - [Forum](https://root.cern/forum/)
-- [Issue tracker](https://sft.its.cern.ch/jira/projects/ROOT/issues/ROOT-5820?filter=allopenissues)
-- [Report a bug](https://root.cern/bugs) (Requires a [CERN lightweight account](https://account.cern.ch/account/Externals/RegisterAccount.aspx))
+- [Issue tracker](https://github.com/root-project/root/issues)
+  * [Previous now read-only Jira issue tracker](https://sft.its.cern.ch/jira/projects/ROOT/issues/ROOT-5820?filter=allopenissues)
 - [Mailing lists](https://groups.cern.ch/group/root-dev/default.aspx)
 - [Documentation](https://root.cern/guides/reference-guide)
 - [Tutorials](https://root.cern/doc/master/group__Tutorials.html)
 
 ## Contribution Guidelines
 - [How to contribute](https://github.com/root-project/root/blob/master/CONTRIBUTING.md)
-- [Bug reporting guidelines](https://root.cern/guidelines-submitting-bug)
 - [Coding conventions](https://root.cern/coding-conventions)
 - [Meetings](https://root.cern/meetings)

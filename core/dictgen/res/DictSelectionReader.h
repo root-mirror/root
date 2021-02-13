@@ -60,34 +60,32 @@ namespace clang {
  * By default, the Name of the selection class is then
  * @c ROOT::Meta::Selection::C.  If you have such a class, it will be found
  * automatically.  If @c C is in a namespace, @c NS::C, then
- * the selection class should be in the same namespace: @c
-ROOT::Selection::NS::C.
+ * the selection class should be in the same namespace:
+ * @c ROOT::Meta::Selection::NS::C.
+ *
  * Examples:
  *
-
-**/
-
-/**
  * The DictSelectionReader is used to create selection rules starting from
  * C++ the constructs of the @c ROOT::Meta::Selection namespace. All rules
  * are matching by name.
  * A brief description of the operations that lead to class selection:
- *    1. If a class declaration is present in the selection namespace, a class
- * with the same name is selected outside the selection namespace.
- *    2. If a template class declaration and a template instantiation is present
- * in the selection namespace, all the instances of the template are
- * selected outside the namespace.
+ * 1. If a class declaration is present in the selection namespace, a class
+ *    with the same name is selected outside the selection namespace.
+ * 2. If a template class declaration and a template instantiation is present
+ *    in the selection namespace, all the instances of the template are
+ *    selected outside the namespace.
+ *
  * For example:
  * @code
  * [...]
  * class classVanilla{};
  * template <class A> class classTemplateVanilla {};
  * classTemplateVanilla<char> t0;
- * namespace ROOT{
+ * namespace ROOT {
  *    namespace Meta {
- *       namespace Selection{
- *          class classVanilla{};
- *          template <typename A> class classTemplateVanilla{};
+ *       namespace Selection {
+ *          class classVanilla {};
+ *          template <typename A> class classTemplateVanilla {};
  *          classTemplateVanilla<char> st0;
  *       }
  *    }
@@ -98,14 +96,15 @@ ROOT::Selection::NS::C.
  *
  * A brief description of the properties that can be assigned to classes
  * with the @c ROOT::Meta::Selection::ClassAttributes class.
- *    1. @c kNonSplittable : Makes the class non splittable
+ * 1. @c kNonSplittable : Makes the class non splittable
+ *
  * The class properties can be assigned via a traits mechanism. For example:
  * @code
  * [...]
- * class classWithAttributes{};
- * namespace ROOT{
+ * class classWithAttributes {};
+ * namespace ROOT {
  *    namespace Meta {
- *       namespace Selection{
+ *       namespace Selection {
  *          class classWithAttributes : ClassAttributes <kNonSplittable> {};
  *       }
  *    }
@@ -116,16 +115,15 @@ ROOT::Selection::NS::C.
  * properties can be assigned to a single class with this syntax:
  * @code
  * [...]
- * namespace ROOT{
+ * namespace ROOT {
  *    namespace Meta {
- *       namespace Selection{
+ *       namespace Selection {
  *          class classWithAttributes :
  *             ClassAttributes <kProperty1 + kProperty2 + ... + kPropertyN> {};
  *       }
  *    }
  * }
  * @endcode
- *
  *
  * The @c ROOT::Meta::Selection syntax allows to alter the number of template
  * parameters of a certain template class within the ROOT type system, TClass.
@@ -137,23 +135,21 @@ ROOT::Selection::NS::C.
  * a long explaination in this case:
  * @code
  * [...]
- * template <class T, class U=int, int V=3> class A{...};
- * template <class T, class Alloc= myAllocator<T> > class myVector{...};
+ * template <class T, class U = int, int V = 3> class A {...};
+ * template <class T, class Alloc = myAllocator<T> > class myVector {...};
  * A<char> a1;
- * A<char,float> a2;
+ * A<char, float> a2;
  * myVector<float> v1;
  * myVector<A<char>> v2;
  *
- * namespace ROOT{
+ * namespace ROOT {
  *    namespace Meta {
- *       namespace Selection{
- *          template <class T, class U=int, int V=3> class A
- *            :KeepFirstTemplateArguments<1>{};
- *
- *          A<double> ;
- *          template <class T, class Alloc= myAllocator<T> > class myVector
- *            :KeepFirstTemplateArguments<1>{};
- *
+ *       namespace Selection {
+ *          template <class T, class U = int, int V = 3> class A
+ *            : KeepFirstTemplateArguments<1> {};
+ *          A<double> a;
+ *          template <class T, class Alloc = myAllocator<T> > class myVector
+ *            : KeepFirstTemplateArguments<1> {};
  *          myVector<double> vd;
  *       }
  *    }
@@ -165,53 +161,55 @@ ROOT::Selection::NS::C.
  * will be kept.
  * In absence of any @c KeepFirstTemplateArguments trait, the normalization
  * would be:
- * @c A<char>           &rarr @c A<char,float,3>
- * @c A<char,float>     &rarr @c A<char,int,3>
- * @c myVector<float>   &rarr @c myVector<A<char,int,3>,myAllocator<A<char,int,3>>>
- * @c myVector<A<char>> &rarr @c myVector<float,myAllocator<float>>
+ * - @c A<char>           &rarr; @c A<char,float,3>
+ * - @c A<char,float>     &rarr; @c A<char,int,3>
+ * - @c myVector<float>   &rarr; @c myVector<A<char,int,3>,myAllocator<A<char,int,3>>>
+ * - @c myVector<A<char>> &rarr; @c myVector<float,myAllocator<float>>
  *
  * Now, deciding to keep just one argument (@c KeepFirstTemplateArguments<1>):
- * @c A<char>           &rarr @c A<char,float>
- * @c A<char,float>     &rarr @c A<char>
- * @c myVector<float>   &rarr @c myVector<A<char>,myAllocator<A<char>>>
- * @c myVector<A<char>> &rarr @c myVector<float,myAllocator<float>>
+ * - @c A<char>           &rarr; @c A<char,float>
+ * - @c A<char,float>     &rarr; @c A<char>
+ * - @c myVector<float>   &rarr; @c myVector<A<char>,myAllocator<A<char>>>
+ * - @c myVector<A<char>> &rarr; @c myVector<float,myAllocator<float>>
  *
  * And deciding to keep two arguments (@c KeepFirstTemplateArguments<2>):
- * @c A<char>           &rarr @c A<char,float>
- * @c A<char,float>     &rarr @c A<char,int>
- * @c myVector<float>   &rarr @c myVector<A<char,int>,myAllocator<A<char,int>>>
- * @c myVector<A<char>> &rarr @c myVector<float,myAllocator<float>>
+ * - @c A<char>           &rarr; @c A<char,float>
+ * - @c A<char,float>     &rarr; @c A<char,int>
+ * - @c myVector<float>   &rarr; @c myVector<A<char,int>,myAllocator<A<char,int>>>
+ * - @c myVector<A<char>> &rarr; @c myVector<float,myAllocator<float>>
  *
  * A brief description of the properties that can be assigned to data members
  * with the @c ROOT::Meta::Selection MemberAttributes class:
- *    1. @c kTransient : the data member is transient, not persistified by the
- * ROOT I/O.
- *    2. @c kAutoSelected : the type of the data member is selected without the
- * need of specifying its class explicitely.
+ * 1. @c kTransient : the data member is transient, not persistified by the
+ *    ROOT I/O.
+ * 2. @c kAutoSelected : the type of the data member is selected without the
+ *    need of specifying its class explicitely.
+ *
  * For example:
  * @code
  * [...]
- * class classTransientMember{
+ * class classTransientMember {
  *  private:
  *    int transientMember;
  * };
- * class classAutoselected{};
- * class classTestAutoselect{
+ * class classAutoselected {};
+ * class classTestAutoselect {
  *  private:
  *    classAutoselected autoselected;
  * };
  *
- * namespace ROOT{
+ * namespace ROOT {
  *    namespace Meta {
- *       namespace Selection{
- *          class classTestAutoselect{
+ *       namespace Selection {
+ *          class classTestAutoselect {
  *             MemberAttributes<kAutoSelected> autoselected;
  *          };
-
-    class classTransientMember{
-       MemberAttributes<kTransient> transientMember;
-       };
- *
+ *          class classTransientMember {
+ *             MemberAttributes<kTransient> transientMember;
+ *          };
+ *       }
+ *    }
+ * }
  * @endcode
  * would lead to the creation of selection rules for @c classTransientMember
  * specifying that @c transientMember is transient, @c classTestAutoselect and
@@ -229,10 +227,10 @@ ROOT::Selection::NS::C.
  * template< class T, class BASE >
  * class MyDataVector : KeepFirstTemplateArguments< 1 >, SelectNoInstance {
  *     MemberAttributes< kTransient + kAutoSelected > m_isMostDerived;
- *     MemberAttributes< kNonSplittable+ kAutoSelected > m_isNonSplit;
- *  };
+ *     MemberAttributes< kNonSplittable + kAutoSelected > m_isNonSplit;
+ * };
  * [...]
- *
+ * @endcode
  **/
 namespace ROOT {
 namespace Internal {
@@ -265,12 +263,9 @@ private:
    inline bool
    InSelectionNamespace(const clang::RecordDecl &,
                         const std::string &str =
-                           ""); ///< Check if in the ROOT::Selection namespace
+                           ""); ///< Check if in the ROOT::Meta::Selection namespace
    inline bool FirstPass(const clang::RecordDecl &); ///< First pass on the AST
-   inline bool SecondPass(const clang::RecordDecl &); ///< Second pass on the
-   ///AST, using the
-   ///information of the first
-   ///one
+   inline bool SecondPass(const clang::RecordDecl &); ///< Second pass on the AST, using the information of the first one
    inline void
    ManageFields(const clang::RecordDecl &,
                 const std::string &,
@@ -285,8 +280,7 @@ private:
    inline const clang::TemplateArgumentList *GetTmplArgList(
       const clang::CXXRecordDecl &); ///< Get the template arguments list if any
 
-   std::string PatternifyName(const std::string &className); ///< Transform instance
-   ///< name in pattern for selection
+   std::string PatternifyName(const std::string &className); ///< Transform instance name in pattern for selection
    void GetPointeeType(std::string &typeName); ///< Get name of the pointee type
 
    SelectionRules &fSelectionRules; ///< The selection rules to be filled
@@ -300,9 +294,9 @@ private:
    fNoAutoSelectedClassFieldNames; ///< Collect the autoexcluded classes
    std::unordered_map<std::string, TemplateInfo> fTemplateInfoMap; ///< List template name - properties map
    llvm::StringMap<ClassSelectionRule>
-   fClassNameSelectionRuleMap; /// < Map of the already built sel rules
+   fClassNameSelectionRuleMap; ///< Map of the already built sel rules
    bool fIsFirstPass; ///< Keep trance of the number of passes through the AST
-   ROOT::TMetaUtils::TNormalizedCtxt &fNormCtxt; /// < The reference to the normalized context
+   ROOT::TMetaUtils::TNormalizedCtxt &fNormCtxt; ///< The reference to the normalized context
 };
 }
 }

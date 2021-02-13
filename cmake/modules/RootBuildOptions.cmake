@@ -93,7 +93,9 @@ ROOT_BUILD_OPTION(builtin_gsl OFF "Build GSL internally (requires network)")
 ROOT_BUILD_OPTION(builtin_llvm ON "Build bundled copy of LLVM")
 ROOT_BUILD_OPTION(builtin_lz4 OFF "Build bundled copy of lz4")
 ROOT_BUILD_OPTION(builtin_lzma OFF "Build bundled copy of lzma")
+ROOT_BUILD_OPTION(builtin_nlohmannjson ON "Use nlohmann/json.hpp file distributed with ROOT")
 ROOT_BUILD_OPTION(builtin_openssl OFF "Build OpenSSL internally (requires network)")
+ROOT_BUILD_OPTION(builtin_openui5 ON "Use openui5 bundle distributed with ROOT")
 ROOT_BUILD_OPTION(builtin_pcre OFF "Build bundled copy of PCRE")
 ROOT_BUILD_OPTION(builtin_tbb OFF "Build TBB internally (requires network)")
 ROOT_BUILD_OPTION(builtin_unuran OFF "Build bundled copy of unuran")
@@ -105,15 +107,18 @@ ROOT_BUILD_OPTION(builtin_xxhash OFF "Build bundled copy of xxHash")
 ROOT_BUILD_OPTION(builtin_zlib OFF "Build bundled copy of zlib")
 ROOT_BUILD_OPTION(builtin_zstd OFF "Build included libzstd, or use system libzstd")
 ROOT_BUILD_OPTION(ccache OFF "Enable ccache usage for speeding up builds")
+ROOT_BUILD_OPTION(distcc OFF "Enable distcc usage for speeding up builds (ccache is called first if enabled)")
 ROOT_BUILD_OPTION(cefweb OFF "Enable support for CEF (Chromium Embedded Framework) web-based display")
 ROOT_BUILD_OPTION(clad ON "Build clad, the cling automatic differentiation plugin (requires network)")
 ROOT_BUILD_OPTION(cocoa OFF "Use native Cocoa/Quartz graphics backend (MacOS X only)")
 ROOT_BUILD_OPTION(coverage OFF "Enable compile flags for coverage testing")
 ROOT_BUILD_OPTION(cuda OFF "Enable support for CUDA (requires CUDA toolkit >= 7.5)")
+ROOT_BUILD_OPTION(cudnn ON "Enable support for cuDNN (default when Cuda is enabled)")
 ROOT_BUILD_OPTION(cxxmodules OFF "Enable support for C++ modules")
 ROOT_BUILD_OPTION(dataframe ON "Enable ROOT RDataFrame")
 ROOT_BUILD_OPTION(davix ON "Enable support for Davix (HTTP/WebDAV access)")
 ROOT_BUILD_OPTION(dcache OFF "Enable support for dCache (requires libdcap from DESY)")
+ROOT_BUILD_OPTION(dev OFF "Enable recommended developer compilation flags, reduce exposed includes")
 ROOT_BUILD_OPTION(exceptions ON "Enable compiler exception handling")
 ROOT_BUILD_OPTION(fftw3 ON "Enable support for FFTW3")
 ROOT_BUILD_OPTION(fitsio ON "Enable support for reading FITS images")
@@ -141,11 +146,11 @@ ROOT_BUILD_OPTION(odbc OFF "Enable support for ODBC databases (requires libiodbc
 ROOT_BUILD_OPTION(opengl ON "Enable support for OpenGL (requires libGL and libGLU)")
 ROOT_BUILD_OPTION(oracle ON "Enable support for Oracle databases (requires Oracle Instant Client)")
 ROOT_BUILD_OPTION(pgsql ON "Enable support for PostgreSQL")
-ROOT_BUILD_OPTION(pyroot_experimental OFF "Use experimental Python bindings for ROOT")
+ROOT_BUILD_OPTION(pyroot ON "Enable support for automatic Python bindings (PyROOT)")
+ROOT_BUILD_OPTION(pyroot_legacy OFF "Use legacy Python bindings for ROOT")
 ROOT_BUILD_OPTION(pythia6_nolink OFF "Delayed linking of Pythia6 library")
 ROOT_BUILD_OPTION(pythia6 ON "Enable support for Pythia 6.x")
 ROOT_BUILD_OPTION(pythia8 ON "Enable support for Pythia 8.x")
-ROOT_BUILD_OPTION(python ON "Enable support for automatic Python bindings (PyROOT)")
 ROOT_BUILD_OPTION(qt5web OFF "Enable support for Qt5 web-based display (requires Qt5WebEngine)")
 ROOT_BUILD_OPTION(r OFF "Enable support for R bindings (requires R, Rcpp, and RInside)")
 ROOT_BUILD_OPTION(roofit ON "Build RooFit advanced fitting package")
@@ -166,6 +171,7 @@ ROOT_BUILD_OPTION(tmva-pymva ON "Enable support for Python in TMVA (requires num
 ROOT_BUILD_OPTION(tmva-rmva OFF "Enable support for R in TMVA")
 ROOT_BUILD_OPTION(spectrum ON "Enable support for TSpectrum")
 ROOT_BUILD_OPTION(unuran OFF "Enable support for UNURAN (package for generating non-uniform random numbers)")
+ROOT_BUILD_OPTION(uring OFF "Enable support for io_uring (requires liburing and Linux kernel >= 5.1)")
 ROOT_BUILD_OPTION(vc OFF "Enable support for Vc (SIMD Vector Classes for C++)")
 ROOT_BUILD_OPTION(vmc OFF "Build VMC simulation library")
 ROOT_BUILD_OPTION(vdt ON "Enable support for VDT (fast and vectorisable mathematical functions)")
@@ -176,6 +182,7 @@ ROOT_BUILD_OPTION(winrtdebug OFF "Link against the Windows debug runtime library
 ROOT_BUILD_OPTION(x11 ON "Enable support for X11/Xft")
 ROOT_BUILD_OPTION(xml ON "Enable support for XML (requires libxml2)")
 ROOT_BUILD_OPTION(xrootd ON "Enable support for XRootD file server and client")
+ROOT_BUILD_OPTION(xproofd OFF "Enable LEGACY support for XProofD file server and client (requires XRootD v4 with private-devel)")
 
 option(all "Enable all optional components by default" OFF)
 option(clingtest "Enable cling tests (Note: that this makes llvm/clang symbols visible in libCling)" OFF)
@@ -185,6 +192,8 @@ option(minimal "Enable only required options by default" OFF)
 option(rootbench "Build rootbench if rootbench exists in root or if it is a sibling directory." OFF)
 option(roottest "Build roottest if roottest exists in root or if it is a sibling directory." OFF)
 option(testing "Enable testing with CTest" OFF)
+option(asan "Build ROOT with address sanitizer instrumentation" OFF)
+option(asserts "Enable asserts (is ON for CMAKE_BUILD_TYPE=Debug and dev=ON)" OFF)
 
 set(gcctoolchain "" CACHE PATH "Set path to GCC toolchain used to build llvm/clang")
 
@@ -234,7 +243,7 @@ if(all)
  set(pgsql_defvalue ON)
  set(pythia6_defvalue ON)
  set(pythia8_defvalue ON)
- set(python_defvalue ON)
+ set(pyroot_defvalue ON)
  set(qt5web_defvalue ON)
  set(r_defvalue ON)
  set(roofit_defvalue ON)
@@ -257,6 +266,7 @@ if(all)
  set(x11_defvalue ON)
  set(xml_defvalue ON)
  set(xrootd_defvalue ON)
+ set(xproofd_defvalue OFF)
 endif()
 
 #--- The 'builtin_all' option swithes ON old the built in options-------------------------------
@@ -274,7 +284,9 @@ if(builtin_all)
   set(builtin_llvm_defvalue ON)
   set(builtin_lz4_defvalue ON)
   set(builtin_lzma_defvalue ON)
+  set(builtin_nlohmannjson_defvalue ON)
   set(builtin_openssl_defvalue ON)
+  set(builtin_openui5_defvalue ON)
   set(builtin_pcre_defvalue ON)
   set(builtin_tbb_defvalue ON)
   set(builtin_unuran_defvalue ON)
@@ -294,6 +306,7 @@ if(WIN32)
   set(davix_defvalue OFF)
   set(imt_defvalue OFF)
   set(memstat_defvalue OFF)
+  set(pyroot_legacy_defvalue ON)
   set(roofit_defvalue OFF)
   set(roottest_defvalue OFF)
   set(runtime_cxxmodules_defvalue OFF)
@@ -301,10 +314,19 @@ if(WIN32)
   set(tmva_defvalue OFF)
   set(vdt_defvalue OFF)
   set(x11_defvalue OFF)
+  set(xrootd_defvalue OFF)
+  set(xproofd_defvalue OFF)
 elseif(APPLE)
   set(cocoa_defvalue ON)
-  set(runtime_cxxmodules_defvalue OFF)
   set(x11_defvalue OFF)
+endif()
+
+# Pyroot requires python-dev package; force to OFF if it was not found
+# PYTHONLIBS_FOUND is used for cmake < 3.12
+if(NOT PYTHONLIBS_FOUND AND NOT Python3_Interpreter_Development_FOUND AND (NOT Python2_Interpreter_Development_FOUND OR "${Python2_VERSION}" VERSION_LESS "2.7"))
+  set(pyroot_defvalue OFF)
+  set(pyroot_legacy_defvalue OFF)
+  set(tmva-pymva_defvalue OFF)
 endif()
 
 # Current limitations for modules:
@@ -342,8 +364,13 @@ endif()
 #---webgui by default always build together with root7-----------------------------------------
 set(webgui_defvalue ${root7_defvalue})
 
-#---Define at moment the options with the selected default values-----------------------------
+#---Define at moment the options with the selected default values------------------------------
 ROOT_APPLY_OPTIONS()
+
+#---Enable asserts for Debug builds and for the dev mode---------------------------------------
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR dev)
+  set(asserts ON CACHE BOOL "" FORCE)
+endif()
 
 #---roottest option implies testing
 if(roottest OR rootbench)
@@ -371,18 +398,23 @@ endif()
 
 #---Removed options------------------------------------------------------------
 foreach(opt afdsmgrd afs bonjour castor chirp geocad glite globus hdfs ios
-            krb5 ldap qt qtgsi rfio ruby sapdb srp table)
+            krb5 ldap qt qtgsi rfio ruby sapdb srp table python)
   if(${opt})
     message(FATAL_ERROR ">>> Option '${opt}' is no longer supported in ROOT ${ROOT_VERSION}.")
   endif()
 endforeach()
 
-#---Deprecated options---------------------------------------------------------
+#---Deprecated options------------------------------------------------------------------------
 foreach(opt memstat vmc)
   if(${opt})
     message(DEPRECATION ">>> Option '${opt}' is deprecated and will be removed in the next release of ROOT. Please contact root-dev@cern.ch should you still need it.")
   endif()
 endforeach()
+
+#---Replaced options--------------------------------------------------------------------------
+if(python)
+  message(STATUS ">>> INFO: 'python' option was removed. Instead, please check, that it was enabled a 'pyroot' option (by default it is ON).")
+endif()
 
 #---Avoid creating dependencies to 'non-standard' header files -------------------------------
 include_regular_expression("^[^.]+$|[.]h$|[.]icc$|[.]hxx$|[.]hpp$")
@@ -399,7 +431,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the b
 
 # Check whether to add RPATH to the installation (the build tree always has the RPATH enabled)
 if(rpath)
-  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR} CACHE INTERNAL "") # install LIBDIR
   set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
 elseif(APPLE)
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
@@ -417,10 +449,28 @@ endif()
 if(macos_native)
   if(APPLE)
     set(CMAKE_IGNORE_PATH)
-    foreach(_prefix /sw /opt/local /usr/local) # Fink installs in /sw, and MacPort in /opt/local and Brew in /usr/local
+    foreach(_prefix /sw /opt/local /usr/local /opt/homebrew) # Fink installs in /sw, and MacPort in /opt/local and Brew in /usr/local (x86-64) and /opt/homebrew (arm64)
       list(APPEND CMAKE_IGNORE_PATH ${_prefix}/bin ${_prefix}/include ${_prefix}/lib)
     endforeach()
+    if(CMAKE_VERSION VERSION_GREATER 3.15)
+      # Bug was reported on newer version of CMake on Mac OS X:
+      # https://gitlab.kitware.com/cmake/cmake/-/issues/19662
+      # https://github.com/microsoft/vcpkg/pull/7967
+      set(builtin_glew_defvalue ON)
+    endif()
   else()
     message(STATUS "Option 'macos_native' is only for MacOS systems. Ignoring it.")
+  endif()
+endif()
+
+# Print message saying with which versions of Python are used to build
+if(NOT Python3_Interpreter_Development_FOUND OR NOT Python2_Interpreter_Development_FOUND)
+  message(STATUS "PyROOT will be built for version ${PYTHON_VERSION_STRING_Development_Main}")
+elseif(Python3_Interpreter_Development_FOUND AND Python2_Interpreter_Development_FOUND)
+  if(NOT pyroot_legacy)
+    # In new PyROOT, if we found two Python versions we build for both
+    message(STATUS "PyROOT will be built for versions ${PYTHON_VERSION_STRING_Development_Main} (Main) and ${PYTHON_VERSION_STRING_Development_Other}")
+  elseif(pyroot)
+    message(STATUS "PyROOT will be built for version ${PYTHON_VERSION_STRING_Development_Main}")
   endif()
 endif()

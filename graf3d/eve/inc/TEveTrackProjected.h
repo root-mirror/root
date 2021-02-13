@@ -14,7 +14,7 @@
 
 #include "TEveTrack.h"
 #include "TEveProjectionBases.h"
-
+#include <vector>
 
 class TEveTrackProjected : public TEveTrack,
                            public TEveProjected
@@ -22,8 +22,8 @@ class TEveTrackProjected : public TEveTrack,
    friend class TEveTrackProjectedGL;
 
 private:
-   TEveTrackProjected(const TEveTrackProjected&);            // Not implemented
-   TEveTrackProjected& operator=(const TEveTrackProjected&); // Not implemented
+   TEveTrackProjected(const TEveTrackProjected&) = delete;
+   TEveTrackProjected& operator=(const TEveTrackProjected&) = delete;
 
    Int_t GetBreakPointIdx(Int_t start);
 

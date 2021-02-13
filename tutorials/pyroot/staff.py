@@ -14,7 +14,7 @@
 
 import re, array, os
 import ROOT
-from ROOT import TFile, TTree, gROOT, AddressOf
+from ROOT import TFile, TTree, gROOT, addressof
 
 ## A C/C++ structure is required, to allow memory based access
 gROOT.ProcessLine(
@@ -43,8 +43,8 @@ def staff():
     f = TFile( 'staff.root', 'RECREATE' )
     tree = TTree( 'T', 'staff data from ascii file' )
     tree.Branch( 'staff', staff, 'Category/I:Flag:Age:Service:Children:Grade:Step:Hrweek:Cost' )
-    tree.Branch( 'Divisions', AddressOf( staff, 'Division' ), 'Division/C' )
-    tree.Branch( 'Nation', AddressOf( staff, 'Nation' ), 'Nation/C' )
+    tree.Branch( 'Divisions', addressof( staff, 'Division' ), 'Division/C' )
+    tree.Branch( 'Nation', addressof( staff, 'Nation' ), 'Nation/C' )
 
     # note that the branches Division and Nation cannot be on the first branch
     fname = os.path.join(str(ROOT.gROOT.GetTutorialDir()), 'tree', 'cernstaff.dat')

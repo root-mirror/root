@@ -13,7 +13,6 @@
 #include "TAttPad.h"
 #include "TBuffer.h"
 #include "TStyle.h"
-#include "TClass.h"
 
 ClassImp(TAttPad);
 

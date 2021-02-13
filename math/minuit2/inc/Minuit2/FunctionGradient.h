@@ -10,54 +10,47 @@
 #ifndef ROOT_Minuit2_FunctionGradient
 #define ROOT_Minuit2_FunctionGradient
 
-#include "Minuit2/MnRefCountedPointer.h"
 #include "Minuit2/BasicFunctionGradient.h"
+
+#include <memory>
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class FunctionGradient {
 
 private:
-
 public:
+   explicit FunctionGradient(unsigned int n) : fData(std::make_shared<BasicFunctionGradient>(n)) {}
 
-  explicit FunctionGradient(unsigned int n) :
-   fData(MnRefCountedPointer<BasicFunctionGradient>(new BasicFunctionGradient(n)))  {}
+   // HD: this deep-copies, inconsistent to assignment?
+   explicit FunctionGradient(const MnAlgebraicVector &grd) : fData(std::make_shared<BasicFunctionGradient>(grd)) {}
 
-  explicit FunctionGradient(const MnAlgebraicVector& grd) :
-   fData(MnRefCountedPointer<BasicFunctionGradient>(new BasicFunctionGradient(grd))) {}
+   FunctionGradient(const MnAlgebraicVector &grd, const MnAlgebraicVector &g2, const MnAlgebraicVector &gstep)
+      : fData(std::make_shared<BasicFunctionGradient>(grd, g2, gstep))
+   {
+   }
 
-  FunctionGradient(const MnAlgebraicVector& grd, const MnAlgebraicVector& g2,
-                   const MnAlgebraicVector& gstep) :
-   fData(MnRefCountedPointer<BasicFunctionGradient>(new BasicFunctionGradient(grd, g2, gstep))) {}
+   FunctionGradient(const FunctionGradient &grad) : fData(grad.fData) {}
 
-  ~FunctionGradient() {}
+   // HD: assignment shares the pointer
+   FunctionGradient &operator=(const FunctionGradient & /*grad*/) = default;
 
-  FunctionGradient(const FunctionGradient& grad) : fData(grad.fData) {}
+   const MnAlgebraicVector &Grad() const { return fData->Grad(); }
+   const MnAlgebraicVector &Vec() const { return fData->Vec(); }
+   bool IsValid() const { return fData->IsValid(); }
 
-  FunctionGradient& operator=(const FunctionGradient& grad) {
-    fData = grad.fData;
-    return *this;
-  }
-
-  const MnAlgebraicVector& Grad() const {return fData->Grad();}
-  const MnAlgebraicVector& Vec() const {return fData->Vec();}
-  bool IsValid() const {return fData->IsValid();}
-
-  bool IsAnalytical() const {return fData->IsAnalytical();}
-  const MnAlgebraicVector& G2() const {return fData->G2();}
-  const MnAlgebraicVector& Gstep() const {return fData->Gstep();}
+   bool IsAnalytical() const { return fData->IsAnalytical(); }
+   const MnAlgebraicVector &G2() const { return fData->G2(); }
+   const MnAlgebraicVector &Gstep() const { return fData->Gstep(); }
 
 private:
-
-  MnRefCountedPointer<BasicFunctionGradient> fData;
+   std::shared_ptr<BasicFunctionGradient> fData;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_FunctionGradient
+#endif // ROOT_Minuit2_FunctionGradient

@@ -35,8 +35,8 @@ friend class TThread;
 private:
    TMutexImp  *fMutexImp;   // pointer to mutex implementation
 
-   TMutex(const TMutex&);              // not implemented
-   TMutex& operator=(const TMutex&);   // not implemented
+   TMutex(const TMutex&) = delete;
+   TMutex& operator=(const TMutex&) = delete;
 
 public:
    TMutex(Bool_t recursive = kFALSE);

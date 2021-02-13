@@ -17,9 +17,10 @@
 
 #include "Rtypes.h"
 
+#include <vector>
+#include <string>
+
 class TMinuit;
-
-
 
 namespace ROOT {
 
@@ -192,6 +193,12 @@ public:
    /// minos error for variable i, return false if Minos failed
    virtual bool GetMinosError(unsigned int i, double & errLow, double & errUp, int = 0);
 
+   /// minos status code of last Minos run
+   /// minos status = -1   : Minos is not run
+   ///              =  0   : last MINOS run was succesfull
+   ///              >  0   : some problems encountered when running MINOS
+   virtual int MinosStatus() const { return fMinosStatus; }
+
    /**
       perform a full calculation of the Hessian matrix for error calculation
     */
@@ -267,6 +274,7 @@ private:
    bool fUsed;
    bool fMinosRun;
    unsigned int fDim;
+   int fMinosStatus = -1;         // Minos status code
    std::vector<double> fParams;   // vector of output values
    std::vector<double> fErrors;   // vector of output errors
    std::vector<double> fCovar;    // vector storing the covariance matrix

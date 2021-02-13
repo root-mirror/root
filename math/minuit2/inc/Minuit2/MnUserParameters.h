@@ -12,13 +12,12 @@
 
 #include "Minuit2/MnUserTransformation.h"
 
-
 #include <vector>
+#include <string>
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MnMachinePrecision;
 
@@ -37,36 +36,33 @@ class MnMachinePrecision;
 class MnUserParameters {
 
 public:
-
    MnUserParameters() : fTransformation(MnUserTransformation()) {}
 
-   MnUserParameters(const std::vector<double>&, const std::vector<double>&);
+   MnUserParameters(const std::vector<double> &, const std::vector<double> &);
 
    ~MnUserParameters() {}
 
-   MnUserParameters(const MnUserParameters& par) :
-      fTransformation(par.fTransformation) {}
+   MnUserParameters(const MnUserParameters &par) : fTransformation(par.fTransformation) {}
 
-   MnUserParameters& operator=(const MnUserParameters& par) {
+   MnUserParameters &operator=(const MnUserParameters &par)
+   {
       fTransformation = par.fTransformation;
       return *this;
    }
 
-   const MnUserTransformation& Trafo() const {return fTransformation;}
+   const MnUserTransformation &Trafo() const { return fTransformation; }
 
-   unsigned int VariableParameters() const {
-      return fTransformation.VariableParameters();
-   }
+   unsigned int VariableParameters() const { return fTransformation.VariableParameters(); }
 
    /// access to parameters (row-wise)
-   const std::vector<ROOT::Minuit2::MinuitParameter>& Parameters() const;
+   const std::vector<ROOT::Minuit2::MinuitParameter> &Parameters() const;
 
    /// access to parameters and errors in column-wise representation
    std::vector<double> Params() const;
    std::vector<double> Errors() const;
 
    /// access to single Parameter
-   const MinuitParameter& Parameter(unsigned int) const;
+   const MinuitParameter &Parameter(unsigned int) const;
 
    /// Add free Parameter Name, Value, Error
    bool Add(const std::string &, double, double);
@@ -102,23 +98,22 @@ public:
    double Value(const std::string &) const;
    double Error(const std::string &) const;
 
-   //convert Name into external number of Parameter
+   // convert Name into external number of Parameter
    unsigned int Index(const std::string &) const;
-   //convert external number into Name of Parameter
-   const std::string & GetName(unsigned int) const;
+   // convert external number into Name of Parameter
+   const std::string &GetName(unsigned int) const;
    // mantain interface with const char * for backward compatibility
-   const char* Name(unsigned int) const;
+   const char *Name(unsigned int) const;
 
-   const MnMachinePrecision& Precision() const;
-   void SetPrecision(double eps) {fTransformation.SetPrecision(eps);}
+   const MnMachinePrecision &Precision() const;
+   void SetPrecision(double eps) { fTransformation.SetPrecision(eps); }
 
 private:
-
    MnUserTransformation fTransformation;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnUserParameters
+#endif // ROOT_Minuit2_MnUserParameters

@@ -17,10 +17,10 @@ a TStreamerInfo (i.e. using TBranchElement).
 */
 
 #include "TLeafElement.h"
-//#include "TMethodCall.h"
 
 #include "TVirtualStreamerInfo.h"
 #include "Bytes.h"
+#include "TBuffer.h"
 
 ClassImp(TLeafElement);
 
@@ -157,6 +157,18 @@ TMethodCall *TLeafElement::GetMethodCall(const char * /*name*/)
    return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Return the full name (including the parent's branch names) of the leaf.
+
+TString TLeafElement::GetFullName() const
+{
+   TBranchElement *br = static_cast<TBranchElement*>(GetBranch());
+   if (br->GetType() == 3 || br->GetType() == 4) {
+      //      return TString(br->GetFullName()) + "." + GetName() +  "_";
+      return TString(br->GetFullName()) + "_";
+   } else
+      return GetBranch()->GetFullName();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Copy/set fMinimum and fMaximum to include/be wide than those of the parameter

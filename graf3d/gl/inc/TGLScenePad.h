@@ -15,7 +15,8 @@
 #include "TGLScene.h"
 #include "TVirtualViewer3D.h"
 #include "CsgOps.h"
-
+#include <vector>
+#include <utility>
 
 class TGLViewer;
 class TGLFaceSet;
@@ -25,8 +26,8 @@ class TList;
 class TGLScenePad : public TVirtualViewer3D,  public TGLScene {
 
 private:
-   TGLScenePad(const TGLScenePad&);            // Not implemented
-   TGLScenePad& operator=(const TGLScenePad&); // Not implemented
+   TGLScenePad(const TGLScenePad&) = delete;
+   TGLScenePad& operator=(const TGLScenePad&) = delete;
 
 protected:
    TVirtualPad*       fPad;

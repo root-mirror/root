@@ -12,14 +12,12 @@
 #ifndef ROOT_TBox
 #define ROOT_TBox
 
-
 #include "TObject.h"
 #include "TAttLine.h"
 #include "TAttFill.h"
 #include "TAttBBox2D.h"
-#include "TPoint.h"
-#include "GuiTypes.h"
 
+class TPoint;
 
 class TBox : public TObject, public TAttLine, public TAttFill, public TAttBBox2D {
 

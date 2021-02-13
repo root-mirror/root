@@ -23,8 +23,6 @@
 
 #include "Riostream.h"
 
-#include "TClass.h"
-
 #include "TObject.h"
 
 #include "TCollection.h"

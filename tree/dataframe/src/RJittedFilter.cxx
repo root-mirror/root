@@ -9,14 +9,14 @@
  *************************************************************************/
 
 #include "ROOT/RDF/RCutFlowReport.hxx"
-#include "ROOT/RDF/RBookedCustomColumns.hxx"
+#include "ROOT/RDF/RBookedDefines.hxx"
 #include "ROOT/RDF/RLoopManager.hxx"
 #include "ROOT/RDF/RJittedFilter.hxx"
 
 using namespace ROOT::Detail::RDF;
 
 RJittedFilter::RJittedFilter(RLoopManager *lm, std::string_view name)
-   : RFilterBase(lm, name, lm->GetNSlots(), RDFInternal::RBookedCustomColumns()) { }
+   : RFilterBase(lm, name, lm->GetNSlots(), RDFInternal::RBookedDefines()) { }
 
 void RJittedFilter::SetFilter(std::unique_ptr<RFilterBase> f)
 {
@@ -83,16 +83,10 @@ void RJittedFilter::ResetReportCount()
    fConcreteFilter->ResetReportCount();
 }
 
-void RJittedFilter::ClearValueReaders(unsigned int slot)
+void RJittedFilter::FinaliseSlot(unsigned int slot)
 {
    R__ASSERT(fConcreteFilter != nullptr);
-   fConcreteFilter->ClearValueReaders(slot);
-}
-
-void RJittedFilter::ClearTask(unsigned int slot)
-{
-   R__ASSERT(fConcreteFilter != nullptr);
-   fConcreteFilter->ClearTask(slot);
+   fConcreteFilter->FinaliseSlot(slot);
 }
 
 void RJittedFilter::InitNode()

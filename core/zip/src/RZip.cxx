@@ -16,10 +16,8 @@
 
 #include "zlib.h"
 
-#include <stdio.h>
-#include <assert.h>
-
-#include <iostream>
+#include <cstdio>
+#include <cassert>
 
 // The size of the ROOT block framing headers for compression:
 // - 3 bytes to identify the compression algorithm and version.
@@ -52,7 +50,7 @@ static void R__unzipZLIB(int *srcsize, unsigned char *src, int *tgtsize, unsigne
 */
 #ifdef R__HAS_DEFAULT_ZSTD
 ROOT::RCompressionSetting::EAlgorithm::EValues R__ZipMode = ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD;
-#elif R__HAS_DEFAULT_LZ4
+#elif defined(R__HAS_DEFAULT_LZ4)
 ROOT::RCompressionSetting::EAlgorithm::EValues R__ZipMode = ROOT::RCompressionSetting::EAlgorithm::EValues::kLZ4;
 #else
 ROOT::RCompressionSetting::EAlgorithm::EValues R__ZipMode = ROOT::RCompressionSetting::EAlgorithm::EValues::kZLIB;

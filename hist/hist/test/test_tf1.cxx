@@ -1,6 +1,7 @@
 #include "TF1.h"
 #include "TF1NormSum.h"
 #include "TObjString.h"
+#include "TObjArray.h"
 
 #include "gtest/gtest.h"
 

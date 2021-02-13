@@ -270,18 +270,18 @@ void SelectionRules::Optimize(){
    fClassSelectionRules.remove_if(predicate);
 }
 
-const ClassSelectionRule *SelectionRules::IsDeclSelected(const clang::RecordDecl *D) const
+const ClassSelectionRule *SelectionRules::IsDeclSelected(const clang::RecordDecl *D, bool includeTypedefRule) const
 {
    std::string qual_name;
    GetDeclQualName(D,qual_name);
-   return IsClassSelected(D, qual_name);
+   return IsClassSelected(D, qual_name, includeTypedefRule);
 }
 
 const ClassSelectionRule *SelectionRules::IsDeclSelected(const clang::TypedefNameDecl *D) const
 {
    std::string qual_name;
    GetDeclQualName(D,qual_name);
-   return IsClassSelected(D, qual_name);
+   return IsClassSelected(D, qual_name, true);
 }
 
 const ClassSelectionRule *SelectionRules::IsDeclSelected(const clang::NamespaceDecl *D) const
@@ -662,7 +662,7 @@ const ClassSelectionRule *SelectionRules::IsNamespaceSelected(const clang::Decl*
 }
 
 
-const ClassSelectionRule *SelectionRules::IsClassSelected(const clang::Decl* D, const std::string& qual_name) const
+const ClassSelectionRule *SelectionRules::IsClassSelected(const clang::Decl* D, const std::string& qual_name, bool includeTypedefRule) const
 {
    const clang::TagDecl* tagDecl = llvm::dyn_cast<clang::TagDecl> (D); //TagDecl has methods to understand of what kind is the Decl
    const clang::TypedefNameDecl* typeDefNameDecl = llvm::dyn_cast<clang::TypedefNameDecl> (D);
@@ -699,6 +699,8 @@ const ClassSelectionRule *SelectionRules::IsClassSelected(const clang::Decl* D, 
    const ClassSelectionRule* retval = nullptr;
    const clang::NamedDecl* nDecl(llvm::dyn_cast<clang::NamedDecl>(D));
    for(auto& rule : fClassSelectionRules) {
+      if (!includeTypedefRule && rule.IsFromTypedef())
+         continue;
       BaseSelectionRule::EMatchType match = rule.Match(nDecl, qual_name, "", isLinkDefFile);
       if (match != BaseSelectionRule::kNoMatch) {
          // Check if the template must have its arguments manipulated

@@ -38,20 +38,18 @@ automatic PDF optimization.
 **/
 
 #include "RooFit.h"
-#include "Riostream.h"
 
 #include "TClass.h"
 
+#include <iostream>
 #include <fstream>
 #include <iomanip>
-#include "TH1.h"
 #include "TH2.h"
 #include "TMarker.h"
 #include "TGraph.h"
 #include "TStopwatch.h"
 #include "TFitter.h"
 #include "TMinuit.h"
-#include "TDirectory.h"
 #include "TMatrixDSym.h"
 #include "RooMinuit.h"
 #include "RooArgSet.h"
@@ -66,7 +64,6 @@ automatic PDF optimization.
 #include "RooPlot.h"
 
 
-
 #if (__GNUC__==3&&__GNUC_MINOR__==2&&__GNUC_PATCHLEVEL__==3)
 char* operator+( streampos&, char* );
 #endif
@@ -74,9 +71,8 @@ char* operator+( streampos&, char* );
 using namespace std;
 
 ClassImp(RooMinuit);
-;
 
-TVirtualFitter *RooMinuit::_theFitter = 0 ;
+TVirtualFitter *RooMinuit::_theFitter = nullptr;
 
 
 

@@ -2,7 +2,6 @@
 /// \ingroup tutorial_tree
 /// \notebook -nodraw
 /// Read data (CERN staff) from an ascii file and create a root file with a Tree.
-/// See also a variant in staff.C
 ///
 /// \macro_code
 ///

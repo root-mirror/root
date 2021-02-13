@@ -18,6 +18,7 @@
 #include "Rtypes.h"
 
 #include <vector>
+#include <string>
 
 class TLinearFitter;
 

@@ -18,10 +18,10 @@
 
 #include "RooAbsCategory.h"
 #include "RooRealProxy.h"
-#include "RooCatType.h"
-
 #include <vector>
 #include <utility>
+
+#include "RooFitLegacy/RooCatTypeLegacy.h"
 
 class RooThresholdCategory : public RooAbsCategory {
 
@@ -44,12 +44,14 @@ public:
 protected:
   
   RooRealProxy _inputVar ;
-  const RooCatType* _defCat{nullptr};
-  std::vector<std::pair<double,RooCatType>> _threshList;
+  const value_type _defIndex{std::numeric_limits<value_type>::min()};
+  std::vector<std::pair<double,value_type>> _threshList;
 
-  virtual RooCatType evaluate() const ; 
+  virtual value_type evaluate() const ;
+  /// No shape recomputation is necessary. This category does not depend on other categories.
+  void recomputeShape() { }
 
-  ClassDef(RooThresholdCategory, 2) // Real-to-Category function defined by series of thresholds
+  ClassDef(RooThresholdCategory, 3) // Real-to-Category function defined by series of thresholds
 };
 
 #endif

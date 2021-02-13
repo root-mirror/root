@@ -11,17 +11,20 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
+double MnTiny::One() const
+{
+   return fOne;
+}
 
-double MnTiny::One() const {return fOne;}
-
-double MnTiny::operator()(volatile double epsp1) const {
+double MnTiny::operator()(volatile double epsp1) const
+{
    // evaluate minimal diference between two floating points
    double result = epsp1 - One();
    return result;
 }
 
-   }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT

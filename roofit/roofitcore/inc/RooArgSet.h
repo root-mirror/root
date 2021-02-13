@@ -17,6 +17,7 @@
 #define ROO_ARG_SET
 
 #include "RooAbsCollection.h"
+#include "RooAbsArg.h"
 
 class RooArgList ;
 
@@ -36,74 +37,65 @@ public:
  
   // Constructors, assignment etc.
   RooArgSet();
+
+  /// Construct a (non-owning) RooArgSet from one or more
+  /// RooFit objects. The set will not own its contents.
+  /// \tparam Ts Parameter pack of objects that derive from RooAbsArg or RooFit collections; or a name.
+  /// \param arg A RooFit object.
+  /// \param moreArgsOrName Arbitrary number of
+  /// - Further RooFit objects that derive from RooAbsArg
+  /// - RooFit collections of such objects
+  /// - A name for the set. Given multiple names, the last-given name prevails.
+  template<typename... Ts>
+  RooArgSet(const RooAbsArg& arg, const Ts&... moreArgsOrName) {
+    add(arg);
+    // Expand parameter pack in C++ 11 way:
+    int dummy[] = { 0, (processArg(moreArgsOrName), 0) ... };
+    (void)dummy;
+  };
+
+  /// Construct from iterators.
+  /// \tparam Iterator_t An iterator pointing to RooFit objects or references thereof.
+  /// \param beginIt Iterator to first element to add.
+  /// \param end Iterator to end of range to be added.
+  /// \param name Optional name of the collection.
+  template<typename Iterator_t,
+      typename value_type = typename std::iterator_traits<Iterator_t>::value_type,
+      typename = std::enable_if<std::is_convertible<const value_type*, const RooAbsArg*>::value> >
+  RooArgSet(Iterator_t beginIt, Iterator_t endIt, const char* name="") :
+  RooArgSet(name) {
+    for (auto it = beginIt; it != endIt; ++it) {
+      add(*it);
+    }
+  }
+
+  RooArgSet(const RooArgSet& other, const char *name="");
+
+  RooArgSet(const RooArgSet& set1, const RooArgSet& set2,
+            const char *name="");
+
   RooArgSet(const RooArgList& list) ;
-  RooArgSet(const RooArgList& list, const RooAbsArg* var1) ;
+  RooArgSet(const RooAbsCollection& collection, const RooAbsArg* var1);
   explicit RooArgSet(const TCollection& tcoll, const char* name="") ;
   explicit RooArgSet(const char *name);
-  RooArgSet(const RooArgSet& set1, const RooArgSet& set2,
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, 
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, const RooAbsArg& var2, 
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, const RooAbsArg& var2,
-	    const RooAbsArg& var3, 
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, const RooAbsArg& var2,
-	    const RooAbsArg& var3, const RooAbsArg& var4, 
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, const RooAbsArg& var2,
-	    const RooAbsArg& var3, const RooAbsArg& var4, 
-	    const RooAbsArg& var5, 
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, const RooAbsArg& var2,
-	    const RooAbsArg& var3, const RooAbsArg& var4, 
-	    const RooAbsArg& var5, const RooAbsArg& var6, 
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, const RooAbsArg& var2,
-            const RooAbsArg& var3, const RooAbsArg& var4, 
-	    const RooAbsArg& var5, const RooAbsArg& var6, 
-	    const RooAbsArg& var7, 
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, const RooAbsArg& var2,
-            const RooAbsArg& var3, const RooAbsArg& var4, 
-	    const RooAbsArg& var5, const RooAbsArg& var6, 
-	    const RooAbsArg& var7, const RooAbsArg& var8, 
-	    const char *name="");
-  RooArgSet(const RooAbsArg& var1, const RooAbsArg& var2,
-            const RooAbsArg& var3, const RooAbsArg& var4, 
-	    const RooAbsArg& var5, const RooAbsArg& var6, 
-	    const RooAbsArg& var7, const RooAbsArg& var8, 
-	    const RooAbsArg& var9, const char *name="");
 
-  virtual ~RooArgSet();
-  // Create a copy of an existing list. New variables cannot be added
-  // to a copied list. The variables in the copied list are independent
-  // of the original variables.
-  RooArgSet(const RooArgSet& other, const char *name="");
-  virtual TObject* clone(const char* newname) const { return new RooArgSet(*this,newname); }
-  virtual TObject* create(const char* newname) const { return new RooArgSet(newname); }
+  ~RooArgSet() override;
+  TObject* clone(const char* newname) const override { return new RooArgSet(*this,newname); }
+  TObject* create(const char* newname) const override { return new RooArgSet(newname); }
   RooArgSet& operator=(const RooArgSet& other) { RooAbsCollection::operator=(other) ; return *this ;}
 
-  virtual Bool_t add(const RooAbsCollection& col, Bool_t silent=kFALSE) {
-    // Add all elements in list to collection
-    return RooAbsCollection::add(col, silent);
-  }
-  virtual Bool_t addOwned(const RooAbsCollection& col, Bool_t silent=kFALSE) {
-    // Add all elements in list as owned components to collection
-    return RooAbsCollection::addOwned(col, silent);
-  }
-  virtual void addClone(const RooAbsCollection& col, Bool_t silent=kFALSE) {
-    // Add owned clone of all elements of list to collection
-    RooAbsCollection::addClone(col, silent);
-  }
+  using RooAbsCollection::add;
+  Bool_t add(const RooAbsArg& var, Bool_t silent=kFALSE) override;
 
-  virtual Bool_t add(const RooAbsArg& var, Bool_t silent=kFALSE) ;
-  virtual Bool_t addOwned(RooAbsArg& var, Bool_t silent=kFALSE);
-  virtual RooAbsArg *addClone(const RooAbsArg& var, Bool_t silent=kFALSE) ;
+  using RooAbsCollection::addOwned;
+  Bool_t addOwned(RooAbsArg& var, Bool_t silent=kFALSE) override;
+
+  using RooAbsCollection::addClone;
+  RooAbsArg *addClone(const RooAbsArg& var, Bool_t silent=kFALSE) override;
 
   using RooAbsCollection::operator[];
-  RooAbsArg& operator[](const char* name) const;
+  RooAbsArg& operator[](const TString& str) const;
+
 
   /// Shortcut for readFromStream(std::istream&, Bool_t, const char*, const char*, Bool_t), setting
   /// `flagReadAtt` and `section` to 0.
@@ -135,13 +127,19 @@ public:
     return static_cast<RooArgSet*>(RooAbsCollection::snapshot(deepCopy));
   }
 
+  /// \copydoc RooAbsCollection::snapshot()
   Bool_t snapshot(RooAbsCollection& output, Bool_t deepCopy=kTRUE) const {
     return RooAbsCollection::snapshot(output, deepCopy);
   }
 
 protected:
-
   Bool_t checkForDup(const RooAbsArg& arg, Bool_t silent) const ;
+
+private:
+  void processArg(const RooAbsArg& var) { add(var); }
+  void processArg(const RooArgSet& set) { add(set); if (_name.Length() == 0) _name = set.GetName(); }
+  void processArg(const RooArgList& list);
+  void processArg(const char* name) { _name = name; }
 
 #ifdef USEMEMPOOLFORARGSET
 private:
@@ -152,7 +150,7 @@ private:
   static MemPool* memPool();
 #endif
   
-  ClassDef(RooArgSet,1) // Set of RooAbsArg objects
+  ClassDefOverride(RooArgSet,1) // Set of RooAbsArg objects
 };
 
 #endif

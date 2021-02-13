@@ -118,7 +118,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Riostream.h"
 #include "TApplication.h"
 #include "TError.h"
 #include "TTimer.h"
@@ -127,7 +126,8 @@
 #include "TCanvas.h"
 #include "THashList.h"
 
-#include <time.h>
+#include <ctime>
+#include <iostream>
 
 class TMutex;
 class TTree;

@@ -43,7 +43,9 @@
 //*  ROOTMARKS = 810.9   *  Root5.09/01   20051216/1229
 //****************************************************************************
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
+#include "snprintf.h"
 #include "TApplication.h"
 #include "TBenchmark.h"
 #include "TCanvas.h"
@@ -53,7 +55,6 @@
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
 #include "TStyle.h"
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TMath.h"
 

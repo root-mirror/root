@@ -14,10 +14,6 @@
 
 #include "TVirtualGeoTrack.h"
 
-#include "TPolyLine3D.h"
-
-class TPolyMarker3D;
-
 /////////////////////////////////////////////////////////////////////////////
 // TGeoTrack - Tracks attached to a geometry.                              //
 //             Tracks are 3D objects made of points and they store a       //
@@ -45,8 +41,8 @@ private :
    Double_t      *fPoints;     //[fNpoints] array of points (x,y,z,t) belonging to this track
 
 protected:
-   TGeoTrack(const TGeoTrack&);
-   TGeoTrack& operator=(const TGeoTrack&);
+   TGeoTrack(const TGeoTrack&) = delete;
+   TGeoTrack& operator=(const TGeoTrack&) = delete;
 
 public:
    TGeoTrack();

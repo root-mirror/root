@@ -19,6 +19,7 @@
 
 #include "TPosixThread.h"
 
+#include "TThread.h"
 
 ClassImp(TPosixThread);
 

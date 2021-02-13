@@ -281,23 +281,12 @@ IncrementalJIT::IncrementalJIT(IncrementalExecutor& exe,
                 m_NotifyObjectLoaded, NotifyFinalizedT(*this)),
   m_CompileLayer(m_ObjectLayer, llvm::orc::SimpleCompiler(*m_TM)),
   m_LazyEmitLayer(m_CompileLayer) {
-
-  // Force the JIT to query for symbols local to itself, i.e. if it resides in a
-  // shared library it will resolve symbols from there first. This is done to
-  // implement our proto symbol versioning protection. Namely, if some other
-  // library provides llvm symbols, we want out JIT to avoid looking at them.
-  //
-  // FIXME: In general, this approach causes numerous issues when cling is
-  // embedded and the framework needs to provide its own set of symbols which
-  // exist in llvm. Most notably if the framework links against different
-  // versions of linked against llvm libraries. For instance, if we want to provide
-  // a custom zlib in the framework the JIT will still resolve to llvm's version
-  // of libz causing hard-to-debug bugs. In order to work around such cases we
-  // need to swap the llvm system libraries, which can be tricky for two
-  // reasons: (a) llvm's cmake doesn't really support it; (b) only works if we
-  // build llvm from sources.
+  // Libraries might get exposed through ExposeHiddenSharedLibrarySymbols(),
+  // make them available to the JIT, even though their symbols cannot be
+  // resolved through the process.
   llvm::sys::DynamicLibrary::SearchOrder
-    = llvm::sys::DynamicLibrary::SO_LoadedFirst;
+    = llvm::sys::DynamicLibrary::SO_LoadedLast;
+
   // Enable JIT symbol resolution from the binary.
   llvm::sys::DynamicLibrary::LoadLibraryPermanently(0, 0);
 
@@ -398,6 +387,21 @@ void IncrementalJIT::addModule(const std::shared_ptr<llvm::Module>& module) {
   // If this module doesn't have a DataLayout attached then attach the
   // default.
   module->setDataLayout(m_TMDataLayout);
+
+  // Reset the sections of all functions so that they end up in the same text
+  // section. This is important for TCling on macOS to catch exceptions raised
+  // by constructors, which requires unwinding information. The addresses in
+  // the __eh_frame table are relocated against a single __text section when
+  // loading the MachO binary, which breaks if the call sites of constructors
+  // end up in a separate init section.
+  // (see clang::TargetInfo::getStaticInitSectionSpecifier())
+  for (auto &Fn : module->functions()) {
+    if (Fn.hasSection()) {
+      // dbgs() << "Resetting section '" << Fn.getSection() << "' of function "
+      //        << Fn.getName() << "\n";
+      Fn.setSection("");
+    }
+  }
 
   // LLVM MERGE FIXME: update this to use new interfaces.
   auto Resolver = llvm::orc::createLambdaResolver(

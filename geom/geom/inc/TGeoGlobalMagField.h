@@ -19,12 +19,12 @@ class TGeoGlobalMagField : public TObject
 {
 private:
    static TGeoGlobalMagField *fgInstance;     // Static pointer to the field manager;
-   TVirtualMagField       *fField;            // Magnetic field
-   Bool_t                  fLock;             // Lock flag for global field.
+   TVirtualMagField       *fField{nullptr};   // Magnetic field
+   Bool_t                  fLock{kFALSE};     // Lock flag for global field.
 
 protected:
-   TGeoGlobalMagField(const TGeoGlobalMagField&);
-   TGeoGlobalMagField& operator=(const TGeoGlobalMagField&);
+   TGeoGlobalMagField(const TGeoGlobalMagField&) = delete;
+   TGeoGlobalMagField& operator=(const TGeoGlobalMagField&) = delete;
    void                    Unlock() {fLock = kFALSE;}
 
 public:

@@ -8,9 +8,12 @@
 # CMakeLists.txt file for building ROOT graf2d/win32gdk package
 # @author Pere Mato, CERN
 ############################################################################
-include_directories(${FREETYPE_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/gdk/src 
-					${CMAKE_CURRENT_SOURCE_DIR}/gdk/src/gdk
-					${CMAKE_CURRENT_SOURCE_DIR}/gdk/src/glib)
+
+# use relative paths to avoid filtering in dictionary generator
+include_directories(${FREETYPE_INCLUDE_DIRS}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/gdk/src
+                    ${CMAKE_CURRENT_SOURCE_DIR}/gdk/src/gdk
+                    ${CMAKE_CURRENT_SOURCE_DIR}/gdk/src/glib)
 
 set(iconvlib  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/iconv-1.3.lib)
 set(iconvdll  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/iconv-1.3.dll)
@@ -111,7 +114,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Win32gdk
     Glu32.lib
     Opengl32.lib
   DEPENDENCIES
-    Cling
     Core
     Graf
   BUILTINS

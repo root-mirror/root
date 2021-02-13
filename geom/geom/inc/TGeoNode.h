@@ -51,8 +51,8 @@ protected:
    void              CopyOverlaps(Int_t *ovlp, Int_t novlp);
 
 private:
-   TGeoNode(const TGeoNode&);    // not implemented
-   TGeoNode& operator=(const TGeoNode&);  // not implemented
+   TGeoNode(const TGeoNode&) = delete;
+   TGeoNode& operator=(const TGeoNode&) = delete;
 
 public:
    enum {
@@ -154,8 +154,8 @@ class TGeoNodeMatrix : public TGeoNode
 private:
    TGeoMatrix       *fMatrix = nullptr; // transf. matrix of fNode in fMother system
 
-   TGeoNodeMatrix(const TGeoNodeMatrix& gnm); // not implemented
-   TGeoNodeMatrix& operator=(const TGeoNodeMatrix& gnm); // not implemented
+   TGeoNodeMatrix(const TGeoNodeMatrix& gnm) = delete;
+   TGeoNodeMatrix& operator=(const TGeoNodeMatrix& gnm) = delete;
 
 public:
    // constructors
@@ -187,8 +187,8 @@ private:
    Int_t             fIndex = 0;         // index of this node in the division
    TGeoPatternFinder *fFinder = nullptr; // finder for this node
 
-   TGeoNodeOffset(const TGeoNodeOffset&);  // not implemented
-   TGeoNodeOffset& operator=(const TGeoNodeOffset&); // not implemented
+   TGeoNodeOffset(const TGeoNodeOffset&) = delete;
+   TGeoNodeOffset& operator=(const TGeoNodeOffset&) = delete;
 
 public:
    // constructors

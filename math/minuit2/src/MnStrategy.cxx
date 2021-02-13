@@ -11,24 +11,27 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-
-      MnStrategy::MnStrategy() : fStoreLevel(1) {
-   //default strategy
+MnStrategy::MnStrategy() : fStoreLevel(1)
+{
+   // default strategy
    SetMediumStrategy();
 }
 
-
-      MnStrategy::MnStrategy(unsigned int stra) : fStoreLevel(1) {
-   //user defined strategy (0, 1, >=2)
-   if(stra == 0) SetLowStrategy();
-   else if(stra == 1) SetMediumStrategy();
-   else SetHighStrategy();
+MnStrategy::MnStrategy(unsigned int stra) : fStoreLevel(1)
+{
+   // user defined strategy (0, 1, >=2)
+   if (stra == 0)
+      SetLowStrategy();
+   else if (stra == 1)
+      SetMediumStrategy();
+   else
+      SetHighStrategy();
 }
 
-void MnStrategy::SetLowStrategy() {
+void MnStrategy::SetLowStrategy()
+{
    // set low strategy (0) values
    fStrategy = 0;
    SetGradientNCycles(2);
@@ -40,7 +43,8 @@ void MnStrategy::SetLowStrategy() {
    SetHessianGradientNCycles(1);
 }
 
-void MnStrategy::SetMediumStrategy() {
+void MnStrategy::SetMediumStrategy()
+{
    // set minimum strategy (1) the default
    fStrategy = 1;
    SetGradientNCycles(3);
@@ -52,7 +56,8 @@ void MnStrategy::SetMediumStrategy() {
    SetHessianGradientNCycles(2);
 }
 
-void MnStrategy::SetHighStrategy() {
+void MnStrategy::SetHighStrategy()
+{
    // set high strategy (2)
    fStrategy = 2;
    SetGradientNCycles(5);
@@ -64,6 +69,6 @@ void MnStrategy::SetHighStrategy() {
    SetHessianGradientNCycles(6);
 }
 
-   }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT

@@ -67,11 +67,12 @@ into the local file by default.
 
 #include "RConfigure.h"
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
 
+#include "strlcpy.h"
 #include "TEnv.h"
 #include "TROOT.h"
 #include "TSystem.h"
@@ -387,10 +388,9 @@ TString TEnvRec::ExpandValue(const char *value)
 ClassImp(TEnv);
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Create a resource table and read the (possibly) three resource files, i.e
-/// `$ROOTSYS/etc/system``<name>` (or `ROOTETCDIR/system``<name>`),
-/// `$HOME/``<name>` and
-/// `./``<name>`.
+/// Create a resource table and read the (possibly) three resource files,
+/// i.e.\ `$ROOTSYS/etc/system<name>` (or `ROOTETCDIR/system<name>`),
+/// `$HOME/<name>` and `$PWD/<name>`.
 /// ROOT always reads ".rootrc" (in TROOT::InitSystem()). You can
 /// read additional user defined resource files by creating additional TEnv
 /// objects. By setting the shell variable ROOTENV_NO_HOME=1 the reading of
@@ -781,7 +781,7 @@ void TEnv::SetValue(const char *name, Int_t value)
 ////////////////////////////////////////////////////////////////////////////////
 /// Set or create a double resource value.
 
-void TEnv::SetValue(const char *name, double value)
+void TEnv::SetValue(const char *name, Double_t value)
 {
    SetValue(name, Form("%g", value));
 }

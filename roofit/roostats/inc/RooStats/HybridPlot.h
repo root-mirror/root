@@ -69,6 +69,7 @@ namespace RooStats {
       {return GetHistoCenter(fB_histo,n_sigmas,display);};
 
       /// Get B histo integration extremes to obtain the requested area fraction
+      /// call delete [] res to release memory
       double* GetBIntExtremes(double frac)
       {return GetHistoPvals(fB_histo,frac);};
 
@@ -83,6 +84,7 @@ namespace RooStats {
       double GetSBrms(){return fSb_histo->GetRMS();};
 
       /// Get SB histo integration extremes to obtain the requested area fraction
+      /// call delete [] res to release memory
       double* GetSBIntExtremes(double frac)
       {return GetHistoPvals(fSb_histo,frac);};
 
@@ -99,7 +101,7 @@ namespace RooStats {
       /// Get the center of the histo
       double GetHistoCenter(TH1* histo, double n_rms=1,bool display_result=false);
 
-      /// Get the "effective sigmas" of the histo
+      /// Get the "effective sigmas" of the histo, call delete [] res to release memory
       double* GetHistoPvals (TH1* histo, double percentage);
 
       /// Get the median of an histogram

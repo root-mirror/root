@@ -234,13 +234,12 @@ in order to enhance rays.
 \image html geom_random2.jpg
 */
 
-#include <stdlib.h>
-
-#include "Riostream.h"
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
 
 #include "TROOT.h"
 #include "TGeoManager.h"
-#include "TSystem.h"
 #include "TStyle.h"
 #include "TVirtualPad.h"
 #include "TBrowser.h"
@@ -258,7 +257,6 @@ in order to enhance rays.
 #include "TGeoMatrix.h"
 #include "TGeoNode.h"
 #include "TGeoPhysicalNode.h"
-#include "TGeoManager.h"
 #include "TGeoPara.h"
 #include "TGeoParaboloid.h"
 #include "TGeoTube.h"
@@ -288,7 +286,7 @@ in order to enhance rays.
 
 // statics and globals
 
-TGeoManager *gGeoManager = 0;
+TGeoManager *gGeoManager = nullptr;
 
 ClassImp(TGeoManager);
 
@@ -303,6 +301,7 @@ Int_t  TGeoManager::fgNumThreads      = 0;
 UInt_t TGeoManager::fgExportPrecision = 17;
 TGeoManager::EDefaultUnits TGeoManager::fgDefaultUnits = TGeoManager::kG4Units;
 TGeoManager::ThreadsMap_t *TGeoManager::fgThreadId = 0;
+static Bool_t gGeometryLocked = kTRUE;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Default constructor.
@@ -365,7 +364,6 @@ TGeoManager::TGeoManager()
       fNsegments = 20;
       fNLevel = 0;
       fUniqueVolumes = 0;
-      fNodeIdArray = 0;
       fClippingShape = 0;
       fMatrixTransform = kFALSE;
       fMatrixReflection = kFALSE;
@@ -472,7 +470,6 @@ void TGeoManager::Init()
    fNsegments = 20;
    fNLevel = 0;
    fUniqueVolumes = new TObjArray(256);
-   fNodeIdArray = 0;
    fClippingShape = 0;
    fMatrixTransform = kFALSE;
    fMatrixReflection = kFALSE;
@@ -492,178 +489,6 @@ void TGeoManager::Init()
    fUsePWNav = kFALSE;
    fParallelWorld = 0;
    ClearThreadsMap();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///copy constructor
-
-TGeoManager::TGeoManager(const TGeoManager& gm) :
-  TNamed(gm),
-  fPhimin(gm.fPhimin),
-  fPhimax(gm.fPhimax),
-  fTmin(gm.fTmin),
-  fTmax(gm.fTmax),
-  fNNodes(gm.fNNodes),
-  fParticleName(gm.fParticleName),
-  fVisDensity(gm.fVisDensity),
-  fExplodedView(gm.fExplodedView),
-  fVisOption(gm.fVisOption),
-  fVisLevel(gm.fVisLevel),
-  fNsegments(gm.fNsegments),
-  fNtracks(gm.fNtracks),
-  fMaxVisNodes(gm.fMaxVisNodes),
-  fCurrentTrack(gm.fCurrentTrack),
-  fNpdg(gm.fNpdg),
-  fClosed(gm.fClosed),
-  fLoopVolumes(gm.fLoopVolumes),
-  fStreamVoxels(gm.fStreamVoxels),
-  fIsGeomReading(gm.fIsGeomReading),
-  fIsGeomCleaning(kFALSE),
-  fPhiCut(gm.fPhiCut),
-  fTimeCut(gm.fTimeCut),
-  fDrawExtra(gm.fDrawExtra),
-  fMatrixTransform(gm.fMatrixTransform),
-  fMatrixReflection(gm.fMatrixReflection),
-  fActivity(gm.fActivity),
-  fIsNodeSelectable(gm.fIsNodeSelectable),
-  fPainter(gm.fPainter),
-  fMatrices(gm.fMatrices),
-  fShapes(gm.fShapes),
-  fVolumes(gm.fVolumes),
-  fPhysicalNodes(gm.fPhysicalNodes),
-  fGShapes(gm.fGShapes),
-  fGVolumes(gm.fGVolumes),
-  fTracks(gm.fTracks),
-  fPdgNames(gm.fPdgNames),
-  fGDMLMatrices(gm.fGDMLMatrices),
-  fOpticalSurfaces(gm.fOpticalSurfaces),
-  fSkinSurfaces(gm.fSkinSurfaces),
-  fBorderSurfaces(gm.fBorderSurfaces),
-  fMaterials(gm.fMaterials),
-  fMedia(gm.fMedia),
-  fNodes(gm.fNodes),
-  fOverlaps(gm.fOverlaps),
-  fRegions(gm.fRegions),
-  fBits(gm.fBits),
-  fCurrentNavigator(gm.fCurrentNavigator),
-  fCurrentVolume(gm.fCurrentVolume),
-  fTopVolume(gm.fTopVolume),
-  fTopNode(gm.fTopNode),
-  fMasterVolume(gm.fMasterVolume),
-  fGLMatrix(gm.fGLMatrix),
-  fUniqueVolumes(gm.fUniqueVolumes),
-  fClippingShape(gm.fClippingShape),
-  fElementTable(gm.fElementTable),
-  fNodeIdArray(gm.fNodeIdArray),
-  fNLevel(gm.fNLevel),
-  fPaintVolume(gm.fPaintVolume),
-  fUserPaintVolume(gm.fUserPaintVolume),
-  fHashVolumes(gm.fHashVolumes),
-  fHashGVolumes(gm.fHashGVolumes),
-  fHashPNE(gm.fHashPNE),
-  fArrayPNE(gm.fArrayPNE),
-  fSizePNEId(0),
-  fNPNEId(0),
-  fKeyPNEId(0),
-  fValuePNEId(0),
-  fMaxThreads(0),
-  fMultiThread(kFALSE),
-  fRaytraceMode(0),
-  fUsePWNav(kFALSE),
-  fParallelWorld(0)
-{
-   for(Int_t i=0; i<1024; i++)
-      fPdgId[i]=gm.fPdgId[i];
-   if (!fgThreadId) fgThreadId = new TGeoManager::ThreadsMap_t;
-   ClearThreadsMap();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///assignment operator
-
-TGeoManager& TGeoManager::operator=(const TGeoManager& gm)
-{
-   if (!fgThreadId) fgThreadId = new TGeoManager::ThreadsMap_t;
-   if(this!=&gm) {
-      TNamed::operator=(gm);
-      fPhimin=gm.fPhimin;
-      fPhimax=gm.fPhimax;
-      fTmin=gm.fTmin;
-      fTmax=gm.fTmax;
-      fNNodes=gm.fNNodes;
-      fParticleName=gm.fParticleName;
-      fVisDensity=gm.fVisDensity;
-      fExplodedView=gm.fExplodedView;
-      fVisOption=gm.fVisOption;
-      fVisLevel=gm.fVisLevel;
-      fNsegments=gm.fNsegments;
-      fNtracks=gm.fNtracks;
-      fMaxVisNodes=gm.fMaxVisNodes;
-      fCurrentTrack=gm.fCurrentTrack;
-      fNpdg=gm.fNpdg;
-      for(Int_t i=0; i<1024; i++)
-         fPdgId[i]=gm.fPdgId[i];
-      fClosed=gm.fClosed;
-      fLoopVolumes=gm.fLoopVolumes;
-      fStreamVoxels=gm.fStreamVoxels;
-      fIsGeomReading=gm.fIsGeomReading;
-      fIsGeomCleaning = kFALSE;
-      fPhiCut=gm.fPhiCut;
-      fTimeCut=gm.fTimeCut;
-      fDrawExtra=gm.fDrawExtra;
-      fMatrixTransform=gm.fMatrixTransform;
-      fMatrixReflection=gm.fMatrixReflection;
-      fActivity=gm.fActivity;
-      fIsNodeSelectable=gm.fIsNodeSelectable;
-      fPainter=gm.fPainter;
-      fMatrices=gm.fMatrices;
-      fShapes=gm.fShapes;
-      fVolumes=gm.fVolumes;
-      fPhysicalNodes=gm.fPhysicalNodes;
-      fGShapes=gm.fGShapes;
-      fGVolumes=gm.fGVolumes;
-      fTracks=gm.fTracks;
-      fPdgNames=gm.fPdgNames;
-      fGDMLMatrices=gm.fGDMLMatrices;
-      fOpticalSurfaces = gm.fOpticalSurfaces;
-      fSkinSurfaces = gm.fSkinSurfaces;
-      fBorderSurfaces = gm.fBorderSurfaces;
-      fMaterials=gm.fMaterials;
-      fMedia=gm.fMedia;
-      fNodes=gm.fNodes;
-      fOverlaps=gm.fOverlaps;
-      fRegions=gm.fRegions;
-      fBits=gm.fBits;
-      fCurrentNavigator=gm.fCurrentNavigator;
-      fCurrentVolume = gm.fCurrentVolume;
-      fTopVolume=gm.fTopVolume;
-      fTopNode=gm.fTopNode;
-      fMasterVolume=gm.fMasterVolume;
-      fGLMatrix=gm.fGLMatrix;
-      fUniqueVolumes=gm.fUniqueVolumes;
-      fClippingShape=gm.fClippingShape;
-      fElementTable=gm.fElementTable;
-      fNodeIdArray=gm.fNodeIdArray;
-      fNLevel=gm.fNLevel;
-      fPaintVolume=gm.fPaintVolume;
-      fUserPaintVolume=gm.fUserPaintVolume;
-      fHashVolumes=gm.fHashVolumes;
-      fHashGVolumes=gm.fHashGVolumes;
-      fHashPNE=gm.fHashPNE;
-      fArrayPNE=gm.fArrayPNE;
-      fSizePNEId = 0;
-      fNPNEId = 0;
-      fKeyPNEId = 0;
-      fValuePNEId = 0;
-      fMultiThread = kFALSE;
-      fRaytraceMode = 0;
-      fMaxThreads = 0;
-      fUsePWNav = kFALSE;
-      fParallelWorld = 0;
-      ClearThreadsMap();
-      ClearThreadData();
-   }
-   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -781,7 +606,7 @@ Double_t TGeoManager::GetProperty(const char *property, Bool_t *error) const
 
 Double_t TGeoManager::GetProperty(size_t i, TString &name, Bool_t *error) const
 {
-   // This is a quite inefficient way to access map elements, but needed for the GDML writer to 
+   // This is a quite inefficient way to access map elements, but needed for the GDML writer to
    if (i >= fProperties.size()) {
       if (error) *error = kTRUE;
       return 0.;
@@ -2861,15 +2686,20 @@ Int_t TGeoManager::GetByteCount(Option_t * /*option*/)
 TVirtualGeoPainter *TGeoManager::GetGeomPainter()
 {
    if (!fPainter) {
-      TPluginHandler *h;
-      if ((h = gROOT->GetPluginManager()->FindHandler("TVirtualGeoPainter"))) {
-         if (h->LoadPlugin() == -1)
-            return 0;
+      const char *kind = "root";
+      if (gROOT->IsWebDisplay() && !gROOT->IsWebDisplayBatch()) kind = "web";
+      if (auto h = gROOT->GetPluginManager()->FindHandler("TVirtualGeoPainter", kind)) {
+         if (h->LoadPlugin() == -1) {
+            Error("GetGeomPainter", "could not load plugin for %s geo_painter", kind);
+            return nullptr;
+         }
          fPainter = (TVirtualGeoPainter*)h->ExecPlugin(1,this);
          if (!fPainter) {
-            Error("GetGeomPainter", "could not create painter");
-            return 0;
+            Error("GetGeomPainter", "could not create %s geo_painter", kind);
+            return nullptr;
          }
+      } else {
+         Error("GetGeomPainter", "not found plugin %s for geo_painter", kind);
       }
    }
    return fPainter;
@@ -4177,7 +4007,32 @@ void TGeoManager::SetUseParallelWorldNav(Bool_t flag)
    if (fParallelWorld->CloseGeometry()) fUsePWNav=kTRUE;
 }
 
+Bool_t TGeoManager::LockDefaultUnits(Bool_t new_value)    {
+  Bool_t val = gGeometryLocked;
+  gGeometryLocked = new_value;
+  return val;
+}
+
 TGeoManager::EDefaultUnits TGeoManager::GetDefaultUnits()
 {
   return fgDefaultUnits;
+}
+
+void TGeoManager::SetDefaultUnits(EDefaultUnits new_value)
+{
+   if ( fgDefaultUnits == new_value )   {
+      return;
+   }
+   else if ( gGeometryLocked )    {
+      ::Fatal("TGeoManager","The system of units may only be changed once, \n"
+	      "BEFORE any elements and materials are created! \n"
+	      "Alternatively unlock the default units at own risk.");
+   }
+   else if ( new_value == kG4Units )   {
+      ::Warning("TGeoManager","Changing system of units to Geant4 units (mm, ns, MeV).");
+   }
+   else if ( new_value == kRootUnits )   {
+      ::Warning("TGeoManager","Changing system of units to ROOT units (cm, s, GeV).");
+   }
+   fgDefaultUnits = new_value;
 }

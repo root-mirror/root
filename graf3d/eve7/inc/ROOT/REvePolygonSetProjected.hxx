@@ -31,18 +31,18 @@ class REvePolygonSetProjected : public REveShape,
                                 public REveProjected
 {
 private:
-   REvePolygonSetProjected(const REvePolygonSetProjected &);            // Not implemented
-   REvePolygonSetProjected &operator=(const REvePolygonSetProjected &); // Not implemented
+   REvePolygonSetProjected(const REvePolygonSetProjected &) = delete;
+   REvePolygonSetProjected &operator=(const REvePolygonSetProjected &) = delete;
 
 protected:
    struct Polygon_t {
-      std::vector<int> fPnts; // point indices
+      std::vector<UInt_t> fPnts; // point indices
 
       Polygon_t() = default;
-      Polygon_t(std::vector<int> &&pnts) : fPnts(pnts){};
+      Polygon_t(std::vector<UInt_t> &&pnts) : fPnts(pnts){};
       ~Polygon_t() = default;
 
-      int NPoints() const { return (int)fPnts.size(); }
+      int NPoints() const { return (UInt_t)fPnts.size(); }
 
       int FindPoint(int pi)
       {
@@ -57,11 +57,11 @@ private:
    std::unique_ptr<TBuffer3D> fBuff; // buffer of projectable object
 
    Bool_t IsFirstIdxHead(Int_t s0, Int_t s1);
-   Float_t AddPolygon(std::list<Int_t> &pp, std::list<Polygon_t> &p);
+   Float_t AddPolygon(std::list<UInt_t> &pp, std::list<Polygon_t> &p);
 
-   std::vector<Int_t> ProjectAndReducePoints();
-   Float_t MakePolygonsFromBP(std::vector<Int_t> &idxMap);
-   Float_t MakePolygonsFromBS(std::vector<Int_t> &idxMap);
+   std::vector<UInt_t> ProjectAndReducePoints();
+   Float_t MakePolygonsFromBP(std::vector<UInt_t> &idxMap);
+   Float_t MakePolygonsFromBS(std::vector<UInt_t> &idxMap);
 
 protected:
    vpPolygon_t fPols;   ///<! polygons

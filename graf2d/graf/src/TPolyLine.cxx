@@ -9,12 +9,13 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
+#include <iostream>
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TMath.h"
 #include "TVirtualPad.h"
+#include "TVirtualX.h"
 #include "TPolyLine.h"
-#include "TClass.h"
 
 ClassImp(TPolyLine);
 
@@ -124,14 +125,7 @@ TPolyLine::TPolyLine(Int_t n, Double_t *x, Double_t *y, Option_t *option)
 TPolyLine& TPolyLine::operator=(const TPolyLine& pl)
 {
    if(this!=&pl) {
-      TObject::operator=(pl);
-      TAttLine::operator=(pl);
-      TAttFill::operator=(pl);
-      fN=pl.fN;
-      fLastPoint=pl.fLastPoint;
-      fX=pl.fX;
-      fY=pl.fY;
-      fOption=pl.fOption;
+      pl.Copy(*this);
    }
    return *this;
 }
@@ -166,6 +160,8 @@ void TPolyLine::Copy(TObject &obj) const
    TAttLine::Copy(((TPolyLine&)obj));
    TAttFill::Copy(((TPolyLine&)obj));
    ((TPolyLine&)obj).fN = fN;
+   delete [] ((TPolyLine&)obj).fX;
+   delete [] ((TPolyLine&)obj).fY;
    if (fN > 0) {
       ((TPolyLine&)obj).fX = new Double_t[fN];
       ((TPolyLine&)obj).fY = new Double_t[fN];
@@ -547,6 +543,7 @@ void TPolyLine::Paint(Option_t *option)
 
 void TPolyLine::PaintPolyLine(Int_t n, Double_t *x, Double_t *y, Option_t *option)
 {
+   if (!gPad) return;
    if (n <= 0) return;
    TAttLine::Modify();  //Change line attributes only if necessary
    TAttFill::Modify();  //Change fill area attributes only if necessary

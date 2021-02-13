@@ -4,10 +4,10 @@
 //New Gui for easier plotting of scatter corelations
 // L. Ancu 04/04/07
 ////////////
-#include <iostream>
 
 #include "TControlBar.h"
 #include "tmvaglob.h"
+
 namespace TMVA{
 
    //   static TControlBar* CorrGuiMultiClass_Global__cbar = 0;

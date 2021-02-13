@@ -10,7 +10,7 @@
  *************************************************************************/
 
 
-#include "Riostream.h"
+#include <iostream>
 
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
@@ -49,7 +49,8 @@ TGeoScaledShape::TGeoScaledShape(const char *name, TGeoShape *shape, TGeoScale *
    fShape = shape;
    fScale = scale;
    if (!fScale->IsRegistered()) fScale->RegisterYourself();
-   ComputeBBox();
+   TGeoScaledShape::ComputeBBox();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +61,7 @@ TGeoScaledShape::TGeoScaledShape(TGeoShape *shape, TGeoScale *scale)
    fShape = shape;
    fScale = scale;
    if (!fScale->IsRegistered()) fScale->RegisterYourself();
-   ComputeBBox();
+   TGeoScaledShape::ComputeBBox();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,18 +274,23 @@ TBuffer3D *TGeoScaledShape::MakeBuffer3D() const
 
 TGeoShape *TGeoScaledShape::MakeScaledShape(const char *name, TGeoShape *shape, TGeoScale *scale)
 {
-   TGeoShape *new_shape;
+   TGeoShape *old_shape = shape;
+   TGeoShape *new_shape = nullptr;
    if (shape->IsA() == TGeoScaledShape::Class()) {
       TGeoScaledShape *sshape = (TGeoScaledShape*)shape;
       TGeoScale *old_scale = sshape->GetScale();
-      TGeoShape *old_shape = sshape->GetShape();
+      old_shape = sshape->GetShape();
       scale->SetScale(scale->GetScale()[0]*old_scale->GetScale()[0],
                       scale->GetScale()[1]*old_scale->GetScale()[1],
                       scale->GetScale()[2]*old_scale->GetScale()[2]);
-      new_shape = new TGeoScaledShape(name, old_shape, scale);
-      return new_shape;
    }
-   new_shape = new TGeoScaledShape(name, shape, scale);
+   if (old_shape->IsAssembly()) {
+      // The shape is owned by the assembly, so make sure it does not register to TGeoManager
+      new_shape = new TGeoScaledShape(old_shape, scale);
+      new_shape->SetName(name);
+   } else {
+      new_shape = new TGeoScaledShape(name, old_shape, scale);
+   }
    return new_shape;
 }
 

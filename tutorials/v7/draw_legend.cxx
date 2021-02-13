@@ -26,6 +26,7 @@
 // macro must be here while cling is not capable to load
 // library automatically for outlined function see ROOT-10336
 R__LOAD_LIBRARY(libROOTHistDraw)
+R__LOAD_LIBRARY(libROOTGraphicsPrimitives)
 
 using namespace ROOT::Experimental;
 
@@ -46,19 +47,24 @@ void draw_legend()
 
    // draw histogram
    auto draw1 = canvas->Draw(pHist);
-   draw1->AttrLine().SetWidth(2).Color().SetAuto();
+   draw1->AttrLine().SetWidth(2).AttrColor().SetAuto();
 
    // draw histogram
    auto draw2 = canvas->Draw(pHist2);
-   draw2->AttrLine().SetWidth(4).Color().SetAuto();
+   draw2->AttrLine().SetWidth(4).AttrColor().SetAuto();
 
    canvas->AssignAutoColors();
-   
-   auto legend = canvas->Draw<RLegend>(RPadPos(0.5_normal, 0.6_normal), RPadPos(0.9_normal,0.9_normal), "Legend title");
-   legend->AttrBox().AttrFill().SetStyle(5).SetColor(RColor::kWhite);
-   legend->AttrBox().AttrBorder().SetWidth(2).SetColor(RColor::kRed);
-   legend->AddEntry(draw1, "histo1").SetLine("line_");
-   legend->AddEntry(draw2, "histo2").SetLine("line_");
 
+   auto legend = canvas->Draw<RLegend>("Legend title");
+   legend->AttrFill().SetStyle(5).SetColor(RColor::kWhite);
+   legend->AttrBorder().SetWidth(2).SetColor(RColor::kRed);
+   legend->AddEntry(draw1, "histo1");
+   legend->AddEntry(draw2, "histo2");
+
+   legend->AddEntry("test").SetAttrLine(RAttrLine().SetColor(RColor::kGreen).SetWidth(5))
+                           .SetAttrFill(RAttrFill().SetColor(RColor::kBlue).SetStyle(3004))
+                           .SetAttrMarker(RAttrMarker().SetColor(RColor::kRed).SetSize(3).SetStyle(28));
+
+   canvas->SetSize(1000, 700);
    canvas->Show();
 }

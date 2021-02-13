@@ -19,7 +19,7 @@ Extensive documentation about Regular expressions in Perl can be
 found at : http://perldoc.perl.org/perlre.html
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include "TPRegexp.h"
 #include "TObjArray.h"
 #include "TObjString.h"

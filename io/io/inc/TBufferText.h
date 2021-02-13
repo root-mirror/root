@@ -13,7 +13,6 @@
 #define ROOT_TBufferText
 
 #include "TBufferIO.h"
-#include "TString.h"
 
 class TStreamerBase;
 class TExMap;

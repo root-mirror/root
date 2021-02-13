@@ -31,7 +31,6 @@ and it has a protected version of getVal()
 #include "Riostream.h"
 
 #include "RooArgSet.h"
-#include "RooArgSet.h"
 #include "RooAbsHiddenReal.h"
 #include "RooCategory.h"
 #include "RooMsgService.h"

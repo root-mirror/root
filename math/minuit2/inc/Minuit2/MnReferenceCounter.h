@@ -16,48 +16,41 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-//extern StackAllocator gStackAllocator;
+// extern StackAllocator gStackAllocator;
 
 class MnReferenceCounter {
 
 public:
+   MnReferenceCounter() : fReferences(0) {}
 
-  MnReferenceCounter() : fReferences(0) {}
+   MnReferenceCounter(const MnReferenceCounter &other) : fReferences(other.fReferences) {}
 
-  MnReferenceCounter(const MnReferenceCounter& other) :
-    fReferences(other.fReferences) {}
+   MnReferenceCounter &operator=(const MnReferenceCounter &other)
+   {
+      fReferences = other.fReferences;
+      return *this;
+   }
 
-  MnReferenceCounter& operator=(const MnReferenceCounter& other) {
-    fReferences = other.fReferences;
-    return *this;
-  }
+   ~MnReferenceCounter() { assert(fReferences == 0); }
 
-  ~MnReferenceCounter() {assert(fReferences == 0);}
+   void *operator new(size_t nbytes) { return StackAllocatorHolder::Get().Allocate(nbytes); }
 
-  void* operator new(size_t nbytes) {
-    return StackAllocatorHolder::Get().Allocate(nbytes);
-  }
+   void operator delete(void *p, size_t /*nbytes */) { StackAllocatorHolder::Get().Deallocate(p); }
 
-  void operator delete(void* p, size_t /*nbytes */) {
-    StackAllocatorHolder::Get().Deallocate(p);
-  }
+   unsigned int References() const { return fReferences; }
 
-  unsigned int References() const {return fReferences;}
+   void AddReference() const { fReferences++; }
 
-  void AddReference() const {fReferences++;}
-
-  void RemoveReference() const {fReferences--;}
+   void RemoveReference() const { fReferences--; }
 
 private:
-
-  mutable unsigned int fReferences;
+   mutable unsigned int fReferences;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnReferenceCounter
+#endif // ROOT_Minuit2_MnReferenceCounter

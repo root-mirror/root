@@ -55,6 +55,7 @@
 #include "TMVA/DecisionTree.h"
 #include "TMVA/Event.h"
 #include "TMVA/IPruneTool.h"
+#include <vector>
 
 namespace TMVA {
 

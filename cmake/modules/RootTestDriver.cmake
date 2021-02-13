@@ -72,10 +72,9 @@ endif()
 
 #---Set environment --------------------------------------------------------------------------------
 if(ENV)
-  string(REPLACE "@" "=" _env ${ENV})
-  string(REPLACE "#" ";" _env ${_env})
+  string(REPLACE "#" ";" _env ${ENV})
   foreach(pair ${_env})
-    string(REPLACE "=" ";" pair ${pair})
+    string(REGEX REPLACE "^([^=]+)=(.*)$" "\\1;\\2" pair ${pair})
     list(GET pair 0 var)
     list(GET pair 1 val)
     set(ENV{${var}} ${val})

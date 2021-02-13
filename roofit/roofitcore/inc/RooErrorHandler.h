@@ -17,7 +17,8 @@
 #define ROO_ERROR_HANDLER
 
 #include <signal.h>
-#include "Rtypes.h"
+#include <cstdlib>
+#include "RtypesCore.h"
 
 class RooErrorHandler
 {

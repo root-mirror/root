@@ -325,18 +325,6 @@ namespace TGeant4Unit {
   static constexpr double perCent = 0.01;
   static constexpr double perThousand = 0.001;
   static constexpr double perMillion = 0.000001;
-
-  /// System of units flavor. Must be kept in sync with TGeoUnits::UnitType
-  enum  UnitType {
-    kTGeoUnits   = 1<<0,
-    kTGeant4Units = 1<<1
-  };
-
-  /// Access the currently set units type
-  UnitType unitType();
-  /// Set the currently used unit type (Only ONCE possible)
-  UnitType setUnitType(UnitType new_type);
-  
 } // namespace TGeoUnit
 
 #endif /* TGEANT4_SYSTEM_OF_UNITS_H */

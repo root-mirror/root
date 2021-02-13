@@ -10,11 +10,9 @@
  *************************************************************************/
 
 #include "TROOT.h"
-#include "TApplication.h"
 #include "TSystem.h"
 #include "TGMenu.h"
 #include "TGComboBox.h"
-#include "TGFrame.h"
 #include "TGButton.h"
 #include "TGTextBuffer.h"
 #include "TGTextEntry.h"
@@ -26,10 +24,11 @@
 #include "TString.h"
 #include "TUrl.h"
 #include "TSocket.h"
-#include "Riostream.h"
 #include "TGHtmlBrowser.h"
 #include "TGText.h"
 #include "TError.h"
+#include "TVirtualX.h"
+#include "snprintf.h"
 #ifdef R__SSL
 #include "TSSLSocket.h"
 #endif
@@ -37,7 +36,7 @@
 #include "TWin32SplashThread.h"
 #endif
 
-#include <stdlib.h>
+#include <cstdlib>
 
 //_____________________________________________________________________________
 //

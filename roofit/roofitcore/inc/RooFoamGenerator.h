@@ -30,7 +30,7 @@ class RooNumGenFactory ;
 
 class RooFoamGenerator : public RooAbsNumGenerator {
 public:
-  RooFoamGenerator() : _binding(0), _tfoam(0), _xmin(0), _range(0), _vec(0), _rvIter(0) {} ; 
+  RooFoamGenerator() : _binding(0), _tfoam(0), _xmin(0), _range(0), _vec(0) {} ;
   RooFoamGenerator(const RooAbsReal &func, const RooArgSet &genVars, const RooNumGenConfig& config, Bool_t verbose=kFALSE, const RooAbsReal* maxFuncVal=0);
   RooAbsNumGenerator* clone(const RooAbsReal& func, const RooArgSet& genVars, const RooArgSet& /*condVars*/, 
 			    const RooNumGenConfig& config, Bool_t verbose=kFALSE, const RooAbsReal* maxFuncVal=0) const {
@@ -55,7 +55,6 @@ protected:
   Double_t*        _xmin ;    // Lower bound of observables to be generated ;
   Double_t*        _range ;   // Range of observables to be generated ;
   Double_t*        _vec ;     // Transfer array for FOAM output
-  TIterator*       _rvIter ;  // Iteratator over _realVars ;
 
 
   ClassDef(RooFoamGenerator,0) // Context for generating a dataset from a PDF using the TFoam class

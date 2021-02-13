@@ -32,7 +32,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
+#include "Rtypes.h"
 #include "TString.h"
 
 namespace TMVA {

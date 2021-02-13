@@ -9,13 +9,11 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TError.h"
 
 #include "TGLText.h"
 #include "TGLUtil.h"
-#include "TColor.h"
 #include "TSystem.h"
 #include "TEnv.h"
 #include "TGLIncludes.h"

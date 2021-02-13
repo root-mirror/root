@@ -24,7 +24,6 @@
 #include "TError.h"
 #include "TGLabel.h"
 #include "TGButton.h"
-#include "TGTextBuffer.h"
 #include "TGTextEntry.h"
 #include "TGProgressBar.h"
 #include "TGSpeedo.h"
@@ -35,13 +34,14 @@
 #include "TGraph.h"
 #include "TNtuple.h"
 #include "TCanvas.h"
-#include "TColor.h"
 #include "TLine.h"
 #include "TAxis.h"
 #include "TPaveText.h"
 #include "TMath.h"
 #include "TH1F.h"
 #include "THLimitsFinder.h"
+#include "TVirtualX.h"
+
 
 #ifdef PPD_SRV_NEWER
 #undef PPD_SRV_NEWER

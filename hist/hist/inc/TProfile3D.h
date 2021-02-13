@@ -28,6 +28,7 @@ class TProfile3D : public TH3D {
 
 public:
    friend class TProfileHelper;
+   friend class TH1Merger;
 
 protected:
    TArrayD       fBinEntries;      //number of entries per bin
@@ -122,6 +123,9 @@ public:
    virtual void      GetStats(Double_t *stats) const;
    virtual Double_t  GetTmin() const {return fTmin;}
    virtual Double_t  GetTmax() const {return fTmax;}
+   virtual void      LabelsDeflate(Option_t *axis="X");
+   virtual void      LabelsInflate(Option_t *axis="X");
+   virtual void      LabelsOption(Option_t *option="h", Option_t *axis="X");
    virtual Long64_t  Merge(TCollection *list);
    virtual Bool_t    Multiply(TF1 *h1, Double_t c1=1);
    virtual Bool_t    Multiply(const TH1 *h1);

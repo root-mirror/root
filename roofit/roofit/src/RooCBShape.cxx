@@ -25,8 +25,7 @@ PDF implementing the Crystal Ball line shape.
 #include "RooAbsReal.h"
 #include "RooRealVar.h"
 #include "RooMath.h"
-#include "BatchHelpers.h"
-#include "RooVDTHeaders.h"
+#include "RooBatchCompute.h"
 
 #include "TMath.h"
 
@@ -92,59 +91,9 @@ Double_t RooCBShape::evaluate() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-namespace {
-//Author: Emmanouil Michalainas, CERN 21 August 2019
-
-template<class Tm, class Tm0, class Tsigma, class Talpha, class Tn>
-void compute(	size_t batchSize,
-	double * __restrict output,
-	Tm M, Tm0 M0, Tsigma S, Talpha A, Tn N)
-{
-  for (size_t i=0; i<batchSize; i++) {
-    const double t = (M[i]-M0[i]) / S[i];
-    if ((A[i]>0 && t>=-A[i])   ||   (A[i]<0 && -t>=A[i])) {
-      output[i] = -0.5*t*t;
-    } else {
-      output[i] = N[i] / (N[i] -A[i]*A[i] -A[i]*t);
-      output[i] = _rf_fast_log(output[i]);
-      output[i] *= N[i];
-      output[i] -= 0.5*A[i]*A[i];
-    }
-  }
-  
-  for (size_t i=0; i<batchSize; i++) {
-    output[i] = _rf_fast_exp(output[i]);
-  }
-}
-};
-
-RooSpan<double> RooCBShape::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  using namespace BatchHelpers;
-
-  EvaluateInfo info = getInfo( {&m, &m0, &sigma, &alpha, &n}, begin, batchSize );
-  if (info.nBatches == 0) {
-    return {};
-  }
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-  auto mData = m.getValBatch(begin, info.size);
-
-  if (info.nBatches==1 && !mData.empty()) {
-    compute(info.size, output.data(), mData.data(),
-    BracketAdapter<double> (m0),
-    BracketAdapter<double> (sigma),
-    BracketAdapter<double> (alpha),
-    BracketAdapter<double> (n));
-  }
-  else {
-    compute(info.size, output.data(),
-    BracketAdapterWithMask (m,m.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (m0,m0.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (sigma,sigma.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (alpha,alpha.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (n,n.getValBatch(begin,info.size)));
-  }
-  return output;
+/// Compute multiple values of Crystal ball Shape distribution.  
+RooSpan<double> RooCBShape::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  return RooBatchCompute::dispatch->computeCBShape(this, evalData, m->getValues(evalData, normSet), m0->getValues(evalData, normSet), sigma->getValues(evalData, normSet), alpha->getValues(evalData, normSet), n->getValues(evalData, normSet));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -228,11 +177,11 @@ Double_t RooCBShape::analyticalIntegral(Int_t code, const char* rangeName) const
 
 Int_t RooCBShape::getMaxVal(const RooArgSet& vars) const
 {
-  RooArgSet dummy ;
+   RooArgSet dummy ;
 
   if (matchArgs(vars,dummy,m)) {
-    return 1 ;
-  }
+     return 1 ;
+   }
   return 0 ;
 }
 
@@ -243,5 +192,6 @@ Double_t RooCBShape::maxVal(Int_t code) const
   R__ASSERT(code==1) ;
 
   // The maximum value for given (m0,alpha,n,sigma)
-  return 1.0 ;
+  // is 1./ Integral in the variable range
+  return 1.0/analyticalIntegral(1) ;
 }

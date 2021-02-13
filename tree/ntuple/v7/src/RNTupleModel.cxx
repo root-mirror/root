@@ -13,54 +13,67 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
+#include <ROOT/RError.hxx>
 #include <ROOT/RField.hxx>
 #include <ROOT/RNTupleModel.hxx>
 #include <ROOT/RNTuple.hxx>
-
-#include <TError.h>
 
 #include <cstdlib>
 #include <memory>
 #include <utility>
 
 
+void ROOT::Experimental::RNTupleModel::EnsureValidFieldName(std::string_view fieldName)
+{
+   RResult<void> nameValid = Detail::RFieldBase::EnsureValidFieldName(fieldName);
+   if (!nameValid) {
+      nameValid.Throw();
+   }
+   auto fieldNameStr = std::string(fieldName);
+   if (fFieldNames.insert(fieldNameStr).second == false) {
+      throw RException(R__FAIL("field name '" + fieldNameStr + "' already exists in NTuple model"));
+   }
+}
+
 ROOT::Experimental::RNTupleModel::RNTupleModel()
-  : fRootField(std::make_unique<RFieldRoot>())
+  : fFieldZero(std::make_unique<RFieldZero>())
   , fDefaultEntry(std::make_unique<REntry>())
 {}
 
-ROOT::Experimental::RNTupleModel* ROOT::Experimental::RNTupleModel::Clone()
+std::unique_ptr<ROOT::Experimental::RNTupleModel> ROOT::Experimental::RNTupleModel::Clone() const
 {
-   auto cloneModel = new RNTupleModel();
-   auto cloneRootField = static_cast<RFieldRoot*>(fRootField->Clone(""));
-   cloneModel->fRootField = std::unique_ptr<RFieldRoot>(cloneRootField);
-   cloneModel->fDefaultEntry = std::unique_ptr<REntry>(cloneRootField->GenerateEntry());
+   auto cloneModel = std::make_unique<RNTupleModel>();
+   auto cloneFieldZero = fFieldZero->Clone("");
+   cloneModel->fFieldZero = std::unique_ptr<RFieldZero>(static_cast<RFieldZero *>(cloneFieldZero.release()));
+   cloneModel->fDefaultEntry = cloneModel->fFieldZero->GenerateEntry();
    return cloneModel;
 }
 
 
 void ROOT::Experimental::RNTupleModel::AddField(std::unique_ptr<Detail::RFieldBase> field)
 {
+   EnsureValidFieldName(field->GetName());
    fDefaultEntry->AddValue(field->GenerateValue());
-   fRootField->Attach(std::move(field));
+   fFieldZero->Attach(std::move(field));
 }
 
 
 std::shared_ptr<ROOT::Experimental::RCollectionNTuple> ROOT::Experimental::RNTupleModel::MakeCollection(
    std::string_view fieldName, std::unique_ptr<RNTupleModel> collectionModel)
 {
+   EnsureValidFieldName(fieldName);
    auto collectionNTuple = std::make_shared<RCollectionNTuple>(std::move(collectionModel->fDefaultEntry));
-   auto field = std::make_unique<RFieldCollection>(fieldName, collectionNTuple, std::move(collectionModel));
+   auto field = std::make_unique<RCollectionField>(fieldName, collectionNTuple, std::move(collectionModel));
    fDefaultEntry->CaptureValue(field->CaptureValue(collectionNTuple->GetOffsetPtr()));
-   fRootField->Attach(std::move(field));
+   fFieldZero->Attach(std::move(field));
    return collectionNTuple;
 }
 
 std::unique_ptr<ROOT::Experimental::REntry> ROOT::Experimental::RNTupleModel::CreateEntry()
 {
    auto entry = std::make_unique<REntry>();
-   for (auto& f : *fRootField) {
-      if (f.GetParent() != GetRootField())
+   for (auto& f : *fFieldZero) {
+      if (f.GetParent() != GetFieldZero())
          continue;
       entry->AddValue(f.GenerateValue());
    }

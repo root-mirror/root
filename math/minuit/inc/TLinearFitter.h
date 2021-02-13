@@ -144,9 +144,11 @@
 
 #include "TVectorD.h"
 #include "TMatrixD.h"
+#include "TObjArray.h"
 #include "TFormula.h"
 #include "TVirtualFitter.h"
 
+#include <map>
 
 class TLinearFitter: public TVirtualFitter {
 

@@ -8,7 +8,7 @@
 # CMakeLists.txt file for building ROOT core/multiproc package
 ############################################################################
 
-ROOT_STANDARD_LIBRARY_PACKAGE(MultiProc
+ROOT_STANDARD_LIBRARY_PACKAGE(MultiProc STAGE1
   HEADERS
     MPCode.h
     MPSendRecv.h

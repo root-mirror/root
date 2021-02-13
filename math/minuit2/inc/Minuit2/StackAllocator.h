@@ -21,25 +21,19 @@
 #define _MN_NO_THREAD_SAVE_
 #endif
 
-//#include <iostream>
-
-
-
 #include <cstdlib>
 #include <new>
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
+namespace Minuit2 {
 
 /// define stack allocator symbol
 
-
-
-class StackOverflow {};
-class StackError {};
+class StackOverflow {
+};
+class StackError {
+};
 //  using namespace std;
 
 /** StackAllocator controls the memory allocation/deallocation of Minuit. If
@@ -52,40 +46,44 @@ class StackError {};
 class StackAllocator {
 
 public:
+   //   enum {default_size = 1048576};
+   enum { default_size = 524288 };
 
-//   enum {default_size = 1048576};
-  enum {default_size = 524288};
-
-   StackAllocator() :   fStack(0)  {
+   StackAllocator() : fStack(0)
+   {
 #ifdef _MN_NO_THREAD_SAVE_
-    //std::cout<<"StackAllocator Allocate "<<default_size<<std::endl;
-    fStack = new unsigned char[default_size];
+      // std::cout<<"StackAllocator Allocate "<<default_size<<std::endl;
+      fStack = new unsigned char[default_size];
 #endif
-    fStackOffset = 0;
-    fBlockCount = 0;
-  }
+      fStackOffset = 0;
+      fBlockCount = 0;
+   }
 
-  ~StackAllocator() {
+   ~StackAllocator()
+   {
 #ifdef _MN_NO_THREAD_SAVE_
-    //std::cout<<"StackAllocator destruct "<<fStackOffset<<std::endl;
-    if(fStack) delete [] fStack;
+      // std::cout<<"StackAllocator destruct "<<fStackOffset<<std::endl;
+      if (fStack)
+         delete[] fStack;
 #endif
-  }
+   }
 
-  void* Allocate( size_t nBytes) {
+   void *Allocate(size_t nBytes)
+   {
 #ifdef _MN_NO_THREAD_SAVE_
-    if(fStack == 0) fStack = new unsigned char[default_size];
+      if (fStack == 0)
+         fStack = new unsigned char[default_size];
       int nAlloc = AlignedSize(nBytes);
       CheckOverflow(nAlloc);
 
-//       std::cout << "Allocating " << nAlloc << " bytes, requested = " << nBytes << std::endl;
+      //       std::cout << "Allocating " << nAlloc << " bytes, requested = " << nBytes << std::endl;
 
       // write the start position of the next block at the start of the block
-      WriteInt( fStackOffset, fStackOffset+nAlloc);
+      WriteInt(fStackOffset, fStackOffset + nAlloc);
       // write the start position of the new block at the end of the block
-      WriteInt( fStackOffset + nAlloc - sizeof(int), fStackOffset);
+      WriteInt(fStackOffset + nAlloc - sizeof(int), fStackOffset);
 
-      void* result = fStack + fStackOffset + sizeof(int);
+      void *result = fStack + fStackOffset + sizeof(int);
       fStackOffset += nAlloc;
       fBlockCount++;
 
@@ -94,29 +92,30 @@ public:
 #endif
 
 #else
-      void* result = malloc(nBytes);
-      if (!result) throw std::bad_alloc();
+      void *result = malloc(nBytes);
+      if (!result)
+         throw std::bad_alloc();
 #endif
 
       return result;
-  }
+   }
 
-  void Deallocate( void* p) {
+   void Deallocate(void *p)
+   {
 #ifdef _MN_NO_THREAD_SAVE_
       // int previousOffset = ReadInt( fStackOffset - sizeof(int));
       int delBlock = ToInt(p);
-      int nextBlock = ReadInt( delBlock);
-      int previousBlock = ReadInt( nextBlock - sizeof(int));
-      if ( nextBlock == fStackOffset) {
-          // deallocating last allocated
+      int nextBlock = ReadInt(delBlock);
+      int previousBlock = ReadInt(nextBlock - sizeof(int));
+      if (nextBlock == fStackOffset) {
+         // deallocating last allocated
          fStackOffset = previousBlock;
-      }
-      else {
-          // overwrite previous adr of next block
+      } else {
+         // overwrite previous adr of next block
          int nextNextBlock = ReadInt(nextBlock);
-         WriteInt( nextNextBlock - sizeof(int), previousBlock);
+         WriteInt(nextNextBlock - sizeof(int), previousBlock);
          // overwrite head of deleted block
-         WriteInt( previousBlock, nextNextBlock);
+         WriteInt(previousBlock, nextNextBlock);
       }
       fBlockCount--;
 
@@ -128,109 +127,108 @@ public:
 #endif
       // std::cout << "Block at " << delBlock
       //   << " deallocated, fStackOffset = " << fStackOffset << std::endl;
-  }
+   }
 
-  int ReadInt( int offset) {
-      int* ip = (int*)(fStack+offset);
+   int ReadInt(int offset)
+   {
+      int *ip = (int *)(fStack + offset);
 
       // std::cout << "read " << *ip << " from offset " << offset << std::endl;
 
       return *ip;
-  }
+   }
 
-  void WriteInt( int offset, int Value) {
+   void WriteInt(int offset, int Value)
+   {
 
       // std::cout << "writing " << Value << " to offset " << offset << std::endl;
 
-      int* ip = reinterpret_cast<int*>(fStack+offset);
+      int *ip = reinterpret_cast<int *>(fStack + offset);
       *ip = Value;
-  }
+   }
 
-  int ToInt( void* p) {
-      unsigned char* pc = static_cast<unsigned char*>(p);
+   int ToInt(void *p)
+   {
+      unsigned char *pc = static_cast<unsigned char *>(p);
 
-     // std::cout << "toInt: p = " << p << " fStack = " << (void*) fStack << std::endl;
-     // VC 7.1 warning:conversin from __w64 int to int
+      // std::cout << "toInt: p = " << p << " fStack = " << (void*) fStack << std::endl;
+      // VC 7.1 warning:conversin from __w64 int to int
       int userBlock = pc - fStack;
       return userBlock - sizeof(int); // correct for starting int
-  }
+   }
 
-  int AlignedSize( int nBytes) {
+   int AlignedSize(int nBytes)
+   {
       const int fAlignment = 4;
-      int needed = nBytes % fAlignment == 0 ? nBytes : (nBytes/fAlignment+1)*fAlignment;
-      return needed + 2*sizeof(int);
-  }
+      int needed = nBytes % fAlignment == 0 ? nBytes : (nBytes / fAlignment + 1) * fAlignment;
+      return needed + 2 * sizeof(int);
+   }
 
-  void CheckOverflow( int n) {
+   void CheckOverflow(int n)
+   {
       if (fStackOffset + n >= default_size) {
-         //std::cout << " no more space on stack allocator" << std::endl;
+         // std::cout << " no more space on stack allocator" << std::endl;
          throw StackOverflow();
       }
-  }
+   }
 
-  bool CheckConsistency() {
+   bool CheckConsistency()
+   {
 
-    //std::cout << "checking consistency for " << fBlockCount << " blocks"<< std::endl;
+      // std::cout << "checking consistency for " << fBlockCount << " blocks"<< std::endl;
 
       // loop over all blocks
       int beg = 0;
       int end = fStackOffset;
       int nblocks = 0;
       while (beg < fStackOffset) {
-         end = ReadInt( beg);
+         end = ReadInt(beg);
 
          // std::cout << "beg = " << beg << " end = " << end
          //     << " fStackOffset = " << fStackOffset << std::endl;
 
-         int beg2 = ReadInt( end - sizeof(int));
-         if ( beg != beg2) {
-            //std::cout << "  beg != beg2 " << std::endl;
+         int beg2 = ReadInt(end - sizeof(int));
+         if (beg != beg2) {
+            // std::cout << "  beg != beg2 " << std::endl;
             return false;
          }
          nblocks++;
          beg = end;
       }
-     if (end != fStackOffset) {
-        //std::cout << " end != fStackOffset" << std::endl;
-        return false;
-     }
-     if (nblocks != fBlockCount) {
-        //std::cout << "nblocks != fBlockCount" << std::endl;
-        return false;
-     }
-     //std::cout << "Allocator is in consistent state, nblocks = " << nblocks << std::endl;
-     return true;
-  }
+      if (end != fStackOffset) {
+         // std::cout << " end != fStackOffset" << std::endl;
+         return false;
+      }
+      if (nblocks != fBlockCount) {
+         // std::cout << "nblocks != fBlockCount" << std::endl;
+         return false;
+      }
+      // std::cout << "Allocator is in consistent state, nblocks = " << nblocks << std::endl;
+      return true;
+   }
 
 private:
-
-  unsigned char* fStack;
-//   unsigned char fStack[default_size];
-  int            fStackOffset;
-  int            fBlockCount;
-
+   unsigned char *fStack;
+   //   unsigned char fStack[default_size];
+   int fStackOffset;
+   int fBlockCount;
 };
-
-
 
 class StackAllocatorHolder {
 
-  // t.b.d need to use same trick as  Boost singleton.hpp to be sure that
-  // StackAllocator is created before main()
+   // t.b.d need to use same trick as  Boost singleton.hpp to be sure that
+   // StackAllocator is created before main()
 
- public:
-
-
-  static StackAllocator & Get() {
-    static StackAllocator gStackAllocator;
-    return gStackAllocator;
-  }
+public:
+   static StackAllocator &Get()
+   {
+      static StackAllocator gStackAllocator;
+      return gStackAllocator;
+   }
 };
 
+} // namespace Minuit2
 
-
-  }  // namespace Minuit2
-
-}  // namespace ROOT
+} // namespace ROOT
 
 #endif

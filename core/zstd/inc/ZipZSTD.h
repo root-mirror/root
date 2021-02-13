@@ -7,6 +7,9 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
+#ifndef ROOT_ZipZSTD
+#define ROOT_ZipZSTD
+
 // NOTE: the ROOT compression libraries aren't consistently written in C++; hence the
 // #ifdef's to avoid problems with C code.
 #ifdef __cplusplus
@@ -16,4 +19,6 @@ void R__zipZSTD(int cxlevel, int *srcsize, char *src, int *tgtsize, char *tgt, i
 void R__unzipZSTD(int *srcsize, unsigned char *src, int *tgtsize, unsigned char *tgt, int *irep);
 #ifdef __cplusplus
 }
+#endif
+
 #endif

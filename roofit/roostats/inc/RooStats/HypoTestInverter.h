@@ -21,7 +21,7 @@ class RooRealVar;
 class TGraphErrors;
 
 #include <memory>
-
+#include <string>
 
 namespace RooStats {
 

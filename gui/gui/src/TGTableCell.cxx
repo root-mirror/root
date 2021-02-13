@@ -9,19 +9,14 @@
  *************************************************************************/
 
 #include "TGFrame.h"
-#include "TClass.h"
 #include "TGWidget.h"
 #include "TGWindow.h"
 #include "TGResourcePool.h"
-#include "Riostream.h"
-#include "TSystem.h"
-#include "TImage.h"
-#include "TEnv.h"
 #include "TGToolTip.h"
 #include "TGPicture.h"
 #include "TGTable.h"
 #include "TVirtualTableInterface.h"
-#include "TColor.h"
+#include "TVirtualX.h"
 
 ClassImp(TGTableCell);
 

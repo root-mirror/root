@@ -223,9 +223,9 @@ $line"
          else
             echo 'The crash is most likely caused by a problem in your script.'
             echo 'Try to compile it (.L myscript.C+g) and fix any errors.'
-            echo 'You may get help by asking at the ROOT forum http://root.cern.ch/forum'
+            echo 'You may get help by asking at the ROOT forum https://root.cern.ch/forum'
             echo 'If you are really convinced it is a bug in ROOT then please submit a report'
-            echo 'at http://root.cern.ch/bugs Please post the ENTIRE stack trace'
+            echo 'at https://root.cern.ch/bugs Please post the ENTIRE stack trace'
             echo 'from above as an attachment in addition to anything else'
             echo 'that might help us fixing this issue.'
          fi
@@ -236,9 +236,9 @@ $line"
             cat $messfile | tr '%' '\n'
          else
             echo 'The lines below might hint at the cause of the crash.'
-            echo 'You may get help by asking at the ROOT forum http://root.cern.ch/forum'
+            echo 'You may get help by asking at the ROOT forum https://root.cern.ch/forum'
             echo 'Only if you are really convinced it is a bug in ROOT then please submit a'
-            echo 'report at http://root.cern.ch/bugs Please post the ENTIRE stack trace'
+            echo 'report at https://root.cern.ch/bugs Please post the ENTIRE stack trace'
             echo 'from above as an attachment in addition to anything else'
             echo 'that might help us fixing this issue.'
          fi

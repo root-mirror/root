@@ -27,7 +27,12 @@
 #include "TVirtualMutex.h"
 #include <XrdCl/XrdClFileSystem.hh>
 #include <XrdCl/XrdClXRootDResponses.hh>
+#include <XrdVersion.hh>
+#if XrdVNUMBER >= 40000
+#include <XrdNet/XrdNetAddr.hh>
+#else
 #include <XrdSys/XrdSysDNS.hh>
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -352,6 +357,16 @@ Int_t TNetXNGSystem::Locate(const char *path, TString &endurl)
    TNamed *hn = 0;
    if (fgAddrFQDN.GetSize() <= 0 ||
        !(hn = dynamic_cast<TNamed *>(fgAddrFQDN.FindObject(loc)))) {
+#if XrdVNUMBER >= 40000
+      XrdNetAddr netaddr;
+      netaddr.Set(loc.Data());
+      const char* name = netaddr.Name();
+      if (name) {
+         hn = new TNamed(loc.Data(), name);
+      } else {
+         hn = new TNamed(loc, loc);
+      }
+#else
       char *addr[1] = {0}, *name[1] = {0};
       int naddr = XrdSysDNS::getAddrName(loc.Data(), 1, addr, name);
       if (naddr == 1) {
@@ -359,9 +374,10 @@ Int_t TNetXNGSystem::Locate(const char *path, TString &endurl)
       } else {
          hn = new TNamed(loc, loc);
       }
-      fgAddrFQDN.Add(hn);
       free(addr[0]);
       free(name[0]);
+#endif
+      fgAddrFQDN.Add(hn);
       if (gDebug > 0)
          Info("Locate","caching host name: %s", hn->GetTitle());
    }

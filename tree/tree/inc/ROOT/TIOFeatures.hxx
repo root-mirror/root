@@ -11,14 +11,21 @@
 #ifndef ROOT_TIO_FEATURES
 #define ROOT_TIO_FEATURES
 
-#include "TBasket.h"
+#include "Rtypes.h"
 
-#include <initializer_list>
-#include <memory>
-#include <string>
-#include <sstream>
-#include <typeinfo>
-#include <type_traits> // is_same, enable_if
+class TBasket;
+class TBranch;
+class TTree;
+
+// keep it here to have a note that was removed
+// #ifndef R__LESS_INCLUDES
+// #include "TBasket.h"
+// #include <memory>
+// #include <sstream>
+// #include <initializer_list>
+// #include <typeinfo>
+// #include <type_traits> // is_same, enable_if
+// #endif
 
 namespace ROOT {
 

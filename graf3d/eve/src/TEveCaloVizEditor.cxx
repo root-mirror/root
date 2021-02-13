@@ -22,7 +22,6 @@
 #include "TGLabel.h"
 #include "TGNumberEntry.h"
 #include "TGDoubleSlider.h"
-#include "TGNumberEntry.h"
 #include "TG3DLine.h"
 #include "TGButtonGroup.h"
 #include "TColor.h"

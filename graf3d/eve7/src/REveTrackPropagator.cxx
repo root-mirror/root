@@ -16,23 +16,23 @@
 #include "TMath.h"
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveMagField
 \ingroup REve
 Abstract base-class for interfacing to magnetic field needed by the
 REveTrackPropagator.
-See sub-classes for two simple implementations.
 
-NOTE: Magnetic field direction convention is inverted.
+To implement your own version, redefine the following virtual functions:
+   virtual Double_t    GetMaxFieldMag() const;
+   virtual TEveVectorD GetField(Double_t x, Double_t y, Double_t z) const;
+
+See sub-classes REveMagFieldConst and REveMagFieldDuo for two simple implementations.
 */
 
 
 /** \class REveMagFieldConst
 \ingroup REve
 Implements constant magnetic field, given by a vector fB.
-
-NOTE: Magnetic field direction convention is inverted.
 */
 
 
@@ -40,8 +40,6 @@ NOTE: Magnetic field direction convention is inverted.
 \ingroup REve
 Implements constant magnetic filed that switches on given axial radius fR2
 from vector fBIn to fBOut.
-
-NOTE: Magnetic field direction convention is inverted.
 */
 
 namespace
@@ -94,7 +92,7 @@ void REveTrackPropagator::Helix_t::UpdateHelix(const REveVectorD& p, const REveV
 
    // helix parameters
    TMath::Cross(fE1.Arr(), fE2.Arr(), fE3.Arr());
-   if (fCharge < 0) fE3.NegateXYZ();
+   if (fCharge > 0) fE3.NegateXYZ();
 
    if (full_update)
    {
@@ -139,18 +137,7 @@ void REveTrackPropagator::Helix_t::UpdateRK(const REveVectorD& p, const REveVect
 {
    UpdateCommon(p, b);
 
-   if (fCharge)
-   {
-      fValid = kTRUE;
-
-      // cached values for propagator
-      fB = b;
-      fPlMag = p.Dot(fB);
-   }
-   else
-   {
-      fValid = kFALSE;
-   }
+   fValid = (fCharge != 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,9 +190,6 @@ default.
 Double_t             REveTrackPropagator::fgDefMagField = 0.5;
 const Double_t       REveTrackPropagator::fgkB2C        = 0.299792458e-2;
 REveTrackPropagator  REveTrackPropagator::fgDefault;
-
-Double_t             REveTrackPropagator::fgEditorMaxR  = 2000;
-Double_t             REveTrackPropagator::fgEditorMaxZ  = 4000;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Default constructor.
@@ -442,17 +426,17 @@ void REveTrackPropagator::Update(const REveVector4D& v, const REveVectorD& p,
 {
    if (fStepper == kHelix)
    {
-      fH.UpdateHelix(p, fMagFieldObj->GetFieldD(v), !fMagFieldObj->IsConst() || full_update, enforce_max_step);
+      fH.UpdateHelix(p, fMagFieldObj->GetField(v), !fMagFieldObj->IsConst() || full_update, enforce_max_step);
    }
    else
    {
-      fH.UpdateRK(p, fMagFieldObj->GetFieldD(v));
+      fH.UpdateRK(p, fMagFieldObj->GetField(v));
 
       if (full_update)
       {
          using namespace TMath;
 
-         Float_t a = fgkB2C * fMagFieldObj->GetMaxFieldMagD() * Abs(fH.fCharge);
+         Float_t a = fgkB2C * fMagFieldObj->GetMaxFieldMag() * Abs(fH.fCharge);
          if (a > kAMin)
          {
             fH.fR = p.Mag() / a;
@@ -842,7 +826,7 @@ Bool_t REveTrackPropagator::HelixIntersectPlane(const REveVectorD& p,
    REveVectorD pos(fV);
    REveVectorD mom(p);
    if (fMagFieldObj->IsConst())
-      fH.UpdateHelix(mom, fMagFieldObj->GetFieldD(pos), kFALSE, kFALSE);
+      fH.UpdateHelix(mom, fMagFieldObj->GetField(pos), kFALSE, kFALSE);
 
    REveVectorD n(normal);
    REveVectorD delta = pos - point;
@@ -868,8 +852,8 @@ Bool_t REveTrackPropagator::HelixIntersectPlane(const REveVectorD& p,
       }
       if (new_d > 0)
       {
-         delta = forwV - pos;
-         itsect = pos + delta * (d / (d - new_d));
+         delta  = forwV - pos4;
+         itsect = pos4 + delta * ((point - pos4).Dot(n) / delta.Dot(n));
          return kTRUE;
       }
       pos4 = forwV;
@@ -920,7 +904,7 @@ Bool_t REveTrackPropagator::IntersectPlane(const REveVectorD& p,
                                            const REveVectorD& normal,
                                                  REveVectorD& itsect)
 {
-   if (fH.fCharge && fMagFieldObj && p.Perp2() > kPtMinSqr)
+   if (fH.fCharge && fMagFieldObj)
       return HelixIntersectPlane(p, point, normal, itsect);
    else
       return LineIntersectPlane(p, point, normal, itsect);
@@ -1295,9 +1279,9 @@ void REveTrackPropagator::StepRungeKutta(Double_t step,
     if (TMath::Abs(h) > TMath::Abs(rest))
        h = rest;
 
-    f[0] = -fH.fB.fX;
-    f[1] = -fH.fB.fY;
-    f[2] = -fH.fB.fZ;
+    f[0] = fH.fB.fX;
+    f[1] = fH.fB.fY;
+    f[2] = fH.fB.fZ;
 
     // * start of integration
     x      = vout[0];
@@ -1336,10 +1320,10 @@ void REveTrackPropagator::StepRungeKutta(Double_t step,
     // xyzt[1] = yt;
     // xyzt[2] = zt;
 
-    fH.fB = fMagFieldObj->GetFieldD(xt, yt, zt);
-    f[0] = -fH.fB.fX;
-    f[1] = -fH.fB.fY;
-    f[2] = -fH.fB.fZ;
+    fH.fB = fMagFieldObj->GetField(xt, yt, zt);
+    f[0] = fH.fB.fX;
+    f[1] = fH.fB.fY;
+    f[2] = fH.fB.fZ;
 
     at     = a + secxs[0];
     bt     = b + secys[0];
@@ -1375,10 +1359,10 @@ void REveTrackPropagator::StepRungeKutta(Double_t step,
     // xyzt[1] = yt;
     // xyzt[2] = zt;
 
-    fH.fB = fMagFieldObj->GetFieldD(xt, yt, zt);
-    f[0] = -fH.fB.fX;
-    f[1] = -fH.fB.fY;
-    f[2] = -fH.fB.fZ;
+    fH.fB = fMagFieldObj->GetField(xt, yt, zt);
+    f[0] = fH.fB.fX;
+    f[1] = fH.fB.fY;
+    f[2] = fH.fB.fZ;
 
     z      = z + (c + (seczs[0] + seczs[1] + seczs[2]) * kthird) * h;
     y      = y + (b + (secys[0] + secys[1] + secys[2]) * kthird) * h;

@@ -15,6 +15,7 @@
 #include "TMath.h"
 
 #include <memory>
+#include <vector>
 
 /*
 */

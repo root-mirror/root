@@ -63,6 +63,7 @@ ROOT tutorials: `$ROOTSYS/tutorials/image/`
 #include "TASImage.h"
 #include "TASImagePlugin.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TMath.h"
 #include "TSystem.h"
 #include "TVirtualX.h"
@@ -78,7 +79,7 @@ ROOT tutorials: `$ROOTSYS/tutorials/image/`
 #include "TFrame.h"
 #include "TTF.h"
 #include "TRandom.h"
-#include "Riostream.h"
+#include <iostream>
 #include "THashTable.h"
 #include "TPluginManager.h"
 #include "TEnv.h"
@@ -86,6 +87,7 @@ ROOT tutorials: `$ROOTSYS/tutorials/image/`
 #include "TText.h"
 #include "RConfigure.h"
 #include "TVirtualPadPainter.h"
+#include "snprintf.h"
 
 #ifndef WIN32
 #ifndef R__HAS_COCOA

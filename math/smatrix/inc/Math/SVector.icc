@@ -91,11 +91,8 @@ SVector<T,D>::SVector(InputIterator begin, unsigned int size) {
 #else
 
 template <class T, unsigned int D>
-#ifdef NDEBUG
-SVector<T,D>::SVector(const T* a, unsigned int) {
-#else
 SVector<T,D>::SVector(const T* a, unsigned int len) {
-#endif
+   (void)len;
    assert(len == D);
    for(unsigned int i=0; i<D; ++i)
       fArray[i] = a[i];

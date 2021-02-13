@@ -55,6 +55,7 @@ public:
    TGraphErrors(const char *filename, const char *format="%lg %lg %lg %lg", Option_t *option="");
    virtual ~TGraphErrors();
    virtual void    Apply(TF1 *f);
+   virtual void    ApplyX(TF1 *f);
    static Int_t    CalculateScanfFields(const char *fmt);
    virtual void    ComputeRange(Double_t &xmin, Double_t &ymin, Double_t &xmax, Double_t &ymax) const;
    Double_t        GetErrorX(Int_t bin)     const;

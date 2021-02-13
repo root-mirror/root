@@ -47,13 +47,15 @@
 #include "TSystem.h"
 #include "TGMimeTypes.h"
 #include "TObjString.h"
-#include "Riostream.h"
+#include "TVirtualX.h"
 
-const TGFont *TGLVEntry::fgDefaultFont = 0;
-TGGC         *TGLVEntry::fgDefaultGC = 0;
+#include <iostream>
 
-const TGFont *TGListView::fgDefaultFont = 0;
-TGGC         *TGListView::fgDefaultGC = 0;
+const TGFont *TGLVEntry::fgDefaultFont = nullptr;
+TGGC         *TGLVEntry::fgDefaultGC = nullptr;
+
+const TGFont *TGListView::fgDefaultFont = nullptr;
+TGGC         *TGListView::fgDefaultGC = nullptr;
 
 
 ClassImp(TGLVEntry);
@@ -915,6 +917,7 @@ Bool_t TGLVContainer::HandleButton(Event_t* event)
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Get list of selected items in container.
+/// Returned TList object should be deleted by the user
 
 TList *TGLVContainer::GetSelectedEntries()
 {
@@ -932,6 +935,8 @@ TList *TGLVContainer::GetSelectedEntries()
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Get list of selected items in container.
+/// Returned TList object and its content should be deleted
+//   lst->Delete(); delete lst;
 
 TList *TGLVContainer::GetSelectedItems()
 {

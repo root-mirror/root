@@ -33,7 +33,6 @@
  * modification, are permitted according to the terms listed in LICENSE           *
  * (http://tmva.sourceforge.net/LICENSE)                                          *
  **********************************************************************************/
-#include <iostream>
 #include "TMath.h"
 #include "TMVA/RegressionVariance.h"
 

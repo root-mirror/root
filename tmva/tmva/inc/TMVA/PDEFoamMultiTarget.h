@@ -34,6 +34,9 @@
 
 #include "TMVA/PDEFoamEvent.h"
 
+#include <vector>
+#include <map>
+
 namespace TMVA
 {
 

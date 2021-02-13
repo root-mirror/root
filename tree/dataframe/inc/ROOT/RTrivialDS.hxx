@@ -34,6 +34,8 @@ protected:
 
 public:
    RTrivialDS(ULong64_t size, bool skipEvenEntries = false);
+   /// This ctor produces a data-source that returns infinite entries
+   RTrivialDS();
    ~RTrivialDS();
    const std::vector<std::string> &GetColumnNames() const;
    bool HasColumn(std::string_view colName) const;
@@ -45,7 +47,10 @@ public:
    std::string GetLabel();
 };
 
+// Make a RDF wrapping a RTrivialDS with the specified amount of entries
 RInterface<RDFDetail::RLoopManager, RTrivialDS> MakeTrivialDataFrame(ULong64_t size, bool skipEvenEntries = false);
+// Make a RDF wrapping a RTrivialDS with infinite entries
+RInterface<RDFDetail::RLoopManager, RTrivialDS> MakeTrivialDataFrame();
 
 } // ns RDF
 

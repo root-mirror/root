@@ -53,7 +53,7 @@
 //                                                                           //
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*_*//
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "TSystem.h"
 #include "TROOT.h"
 #include "TBenchmark.h"
@@ -62,6 +62,7 @@
 #include "Riostream.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
+#include "snprintf.h"
 
 #include "Math/Factory.h"
 #include "Math/Functor.h"

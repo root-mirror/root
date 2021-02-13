@@ -7,8 +7,8 @@
  * For the licensing terms see the LICENSE file.                         *
  *************************************************************************/
 
-#include <time.h>
-#include <Riostream.h>
+#include <ctime>
+#include <iostream>
 #include <string>
 
 #include <TROOT.h>
@@ -20,6 +20,7 @@
 
 #include <TFile.h>
 #include <TTree.h>
+#include <TBranch.h>
 #include <TFrame.h>
 #include <TH1.h>
 #include <TF1.h>

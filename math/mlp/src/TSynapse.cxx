@@ -20,7 +20,6 @@ In addition to the value, the synapse can return the DeDw
 
 #include "TSynapse.h"
 #include "TNeuron.h"
-#include "Riostream.h"
 
 ClassImp(TSynapse);
 

@@ -12,15 +12,7 @@
 #include "TEveWindowEditor.h"
 #include "TEveWindow.h"
 
-#include "TVirtualPad.h"
-#include "TColor.h"
-
-// Cleanup these includes:
-#include "TGLabel.h"
 #include "TGButton.h"
-#include "TGNumberEntry.h"
-#include "TGColorSelect.h"
-#include "TGDoubleSlider.h"
 
 /** \class TEveWindowEditor
 \ingroup TEve

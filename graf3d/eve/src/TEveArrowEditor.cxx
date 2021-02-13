@@ -11,7 +11,6 @@
 
 #include "TEveArrowEditor.h"
 #include "TEveArrow.h"
-#include "TVirtualPad.h"
 #include "TGLabel.h"
 #include "TEveGValuators.h"
 

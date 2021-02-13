@@ -35,7 +35,6 @@ public:
 protected:
 
   RooListProxy _list ;
-  mutable TIterator* _listIter ;  //! do not persist
 
   Double_t evaluate() const;
 

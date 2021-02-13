@@ -66,7 +66,7 @@ void TCpu<AFloat>::MultiplyTranspose(TCpuMatrix<AFloat> &output, const TCpuMatri
    ::TMVA::DNN::Blas::Gemm(&transa, &transb, &m, &n, &k, &alpha, A, &m, B, &n, &beta, C, &m);
 #else
    TMatrixT<AFloat> tmp(output.GetNrows(), output.GetNcols());
-   tmp.MultT( input,Weights);
+   tmp.MultT(input, Weights);
    output = tmp;
 #endif
 }
@@ -90,7 +90,7 @@ void TCpu<AFloat>::AddRowWise(TCpuMatrix<AFloat> &output, const TCpuMatrix<AFloa
 
    ::TMVA::DNN::Blas::Ger(&m, &n, &alpha, x, &inc, y, &inc, A, &m);
 #else
-   TMatrixT<AFloat> tmp;
+   TMatrixT<AFloat> tmp = output;
    TReference<AFloat>::AddRowWise(tmp, biases);
    output = tmp;
 #endif

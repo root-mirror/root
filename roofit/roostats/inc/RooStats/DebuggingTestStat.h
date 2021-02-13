@@ -22,8 +22,6 @@ for true statistical tests, but it is useful for debugging.
 
 #include "Rtypes.h"
 
-#include <vector>
-
 //#include "RooStats/DistributionCreator.h"
 #include "RooStats/TestStatistic.h"
 #include "RooStats/ToyMCSampler.h"

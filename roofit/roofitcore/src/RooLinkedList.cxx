@@ -41,6 +41,7 @@ Use RooAbsCollection derived objects for public use
 #include "ROOT/RMakeUnique.hxx"
 
 #include <algorithm>
+#include <list>
 
 using namespace std;
 

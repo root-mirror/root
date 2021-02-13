@@ -2,7 +2,7 @@
 // Author: Fons Rademakers   15/11/95
 
 /*************************************************************************
- * Copyright (C) 1995-2000, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2021, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -19,4 +19,26 @@ ABC describing GUI independent browser implementation protocol.
 
 ClassImp(TBrowserImp);
 
-void TBrowserImp::SetDrawOption(Option_t * /*option*/) {}
+///////////////////////////////////////////////////////////////////
+/// Default constructor
+
+TBrowserImp::TBrowserImp(TBrowser *b) :
+   fBrowser(b), fShowCycles(kFALSE)
+{
+}
+
+///////////////////////////////////////////////////////////////////
+/// Constructor with browser width and height
+
+TBrowserImp::TBrowserImp(TBrowser *, const char *, UInt_t, UInt_t, Option_t *) :
+   fBrowser(nullptr), fShowCycles(kFALSE)
+{
+}
+
+///////////////////////////////////////////////////////////////////
+/// Constructor with browser x, y, width and height
+
+TBrowserImp::TBrowserImp(TBrowser *, const char *, Int_t, Int_t, UInt_t, UInt_t, Option_t *)
+   : fBrowser(nullptr), fShowCycles(kFALSE)
+{
+}

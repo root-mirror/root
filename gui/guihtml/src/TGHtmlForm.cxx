@@ -33,9 +33,9 @@
 
 // Routines used for processing HTML makeup for forms.
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdarg>
 
 #include "TGHtml.h"
 #include "TGButton.h"
@@ -43,7 +43,7 @@
 #include "TGListBox.h"
 #include "TGTextEdit.h"
 #include "TGComboBox.h"
-
+#include "snprintf.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Unmap any input control that is currently mapped.

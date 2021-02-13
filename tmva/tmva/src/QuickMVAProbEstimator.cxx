@@ -10,8 +10,6 @@
 
 #include "TMath.h"
 
-#include <iostream>
-
 
 void TMVA::QuickMVAProbEstimator::AddEvent(Double_t val, Double_t weight, Int_t type){
    EventInfo ev;

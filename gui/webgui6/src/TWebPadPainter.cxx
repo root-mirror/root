@@ -9,12 +9,9 @@
  *************************************************************************/
 
 #include "TWebPadPainter.h"
-#include "TCanvas.h"
 #include "TError.h"
 #include "TImage.h"
-#include "TROOT.h"
-#include "TMath.h"
-#include "TPad.h"
+#include "TVirtualPad.h"
 #include "TWebCanvas.h"
 #include "TBufferJSON.h"
 
@@ -22,9 +19,12 @@
 
 
 /** \class TWebPadPainter
-\ingroup gpad
+\ingroup webgui6
+\brief Implement TVirtualPadPainter which abstracts painting operations.
 
-Implement TVirtualPadPainter which abstracts painting operations.
+TWebPadPainter tries to support old Paint methods of the ROOT classes.
+Main classes (like histograms or graphs) should be painted on JavaScript side
+
 */
 
 

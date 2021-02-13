@@ -16,8 +16,7 @@
 #include "Fit/FitData.h"
 #include "Math/Error.h"
 #include <cmath>
-
-
+#include <vector>
 
 namespace ROOT {
 
@@ -334,7 +333,7 @@ public :
 
          // in case of wrapped data the pointer stores the error and
          // not the inverse
-         if (fWrapped) 
+         if (fWrapped)
             return 1.0 / eval;
          else
             return (eval != 0.0) ? eval : 0.0;
@@ -508,18 +507,24 @@ public :
    const double* BinUpEdge( unsigned int ipoint ) const
    {
       if ( fBinEdge.empty() || ipoint > fBinEdge.front().size() )
-         return 0;
+         return nullptr;
 
-      assert( fpTmpBinEdgeVector );
-      assert( !fBinEdge.empty() );
-      assert( ipoint < fMaxPoints );
-
-      for ( unsigned int i=0; i < fDim; i++ )
-      {
-         fpTmpBinEdgeVector[i] = fBinEdge[i][ ipoint ];
-      }
+      GetBinUpEdgeCoordinates(ipoint, fpTmpBinEdgeVector);
 
       return fpTmpBinEdgeVector;
+   }
+
+   /**
+    * Thread save version of function retrieving the bin up-edge in case of multidimensions
+   */
+   void GetBinUpEdgeCoordinates(unsigned int ipoint, double * x) const
+   {
+      if (fBinEdge.empty() || ipoint > fBinEdge.front().size()) return;
+      assert(!fBinEdge.empty());
+      assert(ipoint < fMaxPoints);
+      for (unsigned int i = 0; i < fDim; i++) {
+         x[i] = fBinEdge[i][ipoint];
+      }
    }
 
    /**
@@ -560,7 +565,7 @@ public :
    double SumOfError2() const { return fSumError2;}
 
    /**
-      return true if the data set is weighted 
+      return true if the data set is weighted
       We cannot compute ourselfs because sometimes errors are filled with 1
       instead of zero (as in ROOT::Fit::FillData )
     */
@@ -578,7 +583,7 @@ protected:
    void UnWrap( );
 
    // compute sum of content and error squares
-   void ComputeSums(); 
+   void ComputeSums();
 
 private:
 

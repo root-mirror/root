@@ -42,12 +42,13 @@
 
 #include "TGComboBox.h"
 #include "TGScrollBar.h"
-#include "TGPicture.h"
 #include "TGResourcePool.h"
-#include "Riostream.h"
 #include "TGTextEntry.h"
 #include "KeySymbols.h"
+#include "TVirtualX.h"
 #include "RConfigure.h"
+
+#include <iostream>
 
 
 ClassImp(TGComboBoxPopup);
@@ -361,7 +362,7 @@ void TGComboBox::DrawBorder()
 void TGComboBox::EnableTextInput(Bool_t on)
 {
    // UInt_t w, h;
-   const char *text = "";
+   TString text = "";
    Pixel_t back = TGFrame::GetWhitePixel(); // default
 
    if (on) {
@@ -369,7 +370,7 @@ void TGComboBox::EnableTextInput(Bool_t on)
          back = fSelEntry->GetBackground();
          text = ((TGTextLBEntry*)fSelEntry)->GetText()->GetString();
          if (fTextEntry && fSelEntry->InheritsFrom(TGTextLBEntry::Class())) {
-            fTextEntry->SetText(text);
+            fTextEntry->SetText(text.Data());
          }
          RemoveFrame(fSelEntry);
          //w = fSelEntry->GetWidth();
@@ -379,7 +380,7 @@ void TGComboBox::EnableTextInput(Bool_t on)
          fSelEntry = 0;
       }
       if (!fTextEntry) {
-         fTextEntry = new TGTextEntry(this, text, 0);
+         fTextEntry = new TGTextEntry(this, text.Data(), 0);
          fTextEntry->SetFrameDrawn(kFALSE);
          fTextEntry->Connect("ReturnPressed()", "TGComboBox", this, "ReturnPressed()");
          AddFrame(fTextEntry, fLhs);
@@ -402,7 +403,7 @@ void TGComboBox::EnableTextInput(Bool_t on)
          fTextEntry = 0;
       }
       if (!fSelEntry) {
-         fSelEntry = new TGTextLBEntry(this, new TGString(text), 0);
+         fSelEntry = new TGTextLBEntry(this, new TGString(text.Data()), 0);
          fSelEntry->ChangeOptions(fSelEntry->GetOptions() | kOwnBackground);
          AddFrame(fSelEntry, fLhs);
          fSelEntry->SetEditDisabled(kEditDisable | kEditDisableGrab);

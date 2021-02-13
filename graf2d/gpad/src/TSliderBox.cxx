@@ -9,12 +9,12 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TSlider.h"
 #include "TSliderBox.h"
+#include "TVirtualX.h"
 
-#include <string.h>
+#include <cstring>
 
 ClassImp(TSliderBox);
 

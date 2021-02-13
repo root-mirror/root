@@ -14,27 +14,32 @@
 
 #include "THttpEngine.h"
 
-class TThread;
+#include <thread>
+#include <memory>
 
 class TFastCgi : public THttpEngine {
 protected:
-   Int_t fSocket;       ///<! socket used by fastcgi
-   Bool_t fDebugMode;   ///<! debug mode, may required for fastcgi debugging in other servers
-   TString fTopName;    ///<! name of top item
-   TThread *fThrd;      ///<! thread which takes requests, can be many later
-   Bool_t fTerminating; ///<! set when http server wants to terminate all engines
+   Int_t fSocket{0};            ///<! socket used by fastcgi
+   Bool_t fDebugMode{kFALSE};   ///<! debug mode, may required for fastcgi debugging in other servers
+   TString fTopName;            ///<! name of top item
+   std::unique_ptr<std::thread> fThrd;  ///<! thread which takes requests, can be many later
+   Bool_t fTerminating{kFALSE};     ///<! set when http server wants to terminate all engines
 
-   virtual void Terminate() { fTerminating = kTRUE; }
+   void Terminate() override { fTerminating = kTRUE; }
 
 public:
    TFastCgi();
    virtual ~TFastCgi();
 
+   Bool_t Create(const char *args) override;
+
    Int_t GetSocket() const { return fSocket; }
 
-   virtual Bool_t Create(const char *args);
+   Bool_t IsTerminating() const { return fTerminating; }
 
-   static void *run_func(void *);
+   Bool_t IsDebugMode() const { return fDebugMode; }
+
+   const char *GetTopName() const { return fTopName.Length() > 0 ? fTopName.Data() : nullptr; }
 };
 
 #endif

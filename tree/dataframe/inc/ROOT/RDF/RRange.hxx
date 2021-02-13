@@ -115,7 +115,10 @@ public:
       }
       thisNode->SetPrevNode(prevNode);
 
-      // If there have been some defines before it, this node won't detect them.
+      // If there have been some defines between the last Filter and this Range node we won't detect them:
+      // Ranges don't keep track of Defines (they have no RBookedDefines data member).
+      // Let's pretend that the Defines of this node are the same as the node above, so that in the graph
+      // the Defines will just appear below the Range instead (no functional change).
       thisNode->AddDefinedColumns(prevColumns);
 
       return thisNode;

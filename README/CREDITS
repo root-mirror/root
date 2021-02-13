@@ -180,8 +180,12 @@ D: support and development of TTreeFormula and TTree query mechanism
 N: Federico Carminati
 E: Federico.Carminati@cern.ch
 D: updates in PDG codes and eventgenerator interface classes
-D: TSpline classes
+D: TSpline, TComplex classes
 D: Support for gcc option -weffc++
+
+N: James Carroll
+E: eloquism@gmail.com
+D: Original maintainer of the ROOT Snap
 
 N: Gian Paolo Ciceri
 E: gp.ciceri@acm.org
@@ -212,6 +216,10 @@ D: contributions to ROOT6 / meta and cling.
 N: David Dagenhart
 E: wdd@fnal.gov
 D: Support for LZMA compression in ROOT files
+
+N: Pratyush Das
+E: reikdas@gmail.com
+D: ROOTUnitTestSupport, various rootcling improvements
 
 N: Bastien Dallapiazza
 E: bastien.dallapiazza@epfl.ch
@@ -276,8 +284,8 @@ N: Denis Favre-Miville
 E: Denis.Favre-Miville@ensimag.imag.fr
 D: contribution to the GUI and graphics editors
 
-N: André Felipe
-E: (felipe.andre@gmail.com)
+N: Andre Felipe
+E: felipe.andre@gmail.com
 D: CINT contributions
 
 N: Jan Fiete Grosse-Oetringhaus
@@ -369,7 +377,7 @@ E: luca.giommi2@studio.unibo.it
 D: rootdrawtree and TSimpleAnalysis
 
 N: Enrico Guiraud
-E: enrico.guiraud@gmail.com
+E: enrico.guiraud@cern.ch
 D: Multiproc runtime, RDataFrame
 
 N: Thorsten Glebe
@@ -384,7 +392,7 @@ N: Masaharu Goto
 E: MXJ02154@niftyserve.or.jp
 D: CINT C/C++ interpreter
 
-N: Roberto Gracia Del Baño
+N: Roberto Gracia Del Bano
 E: cuboscombro@gmail.com
 D: Event Recorder
 
@@ -764,6 +772,10 @@ E: opocenska@gmail.com
 D: author of the Event Recorder
 D: author of the sub-merging technology in PROOF
 
+N: Vincenzo Eduardo Padulano
+E: v.e.padulano@gmail.com
+D: Contributions to distributed execution of RDataFrame
+
 N: Juan Palacios
 E: Juan.Palacios@cern.ch
 D: Contribution to symmetric representation of SMatrix classes
@@ -775,6 +787,11 @@ D: editor of the User's Guide
 N: Iulia Pasov
 E: iulia.pasov@gmail.com
 D: prototyping JavaScript graphics with d3.js
+
+N: Alexander Penev
+E: alexander_penev@yahoo.com
+D: Dyld symbol resolution facilities in cling and TCling
+D: runtime c++ modules on osx
 
 N: Marc Paterno
 E: paterno@fnal.gov
@@ -922,6 +939,14 @@ D: OpenLDAP interface
 N: Tomasz Sosnicki
 E: tom.sosnicki@gmail.com
 D: contribution to gviz3d/TStructViewer
+
+N: Thibault Souquet
+E: contact@thibaultsouquet.fr
+D: Image viewer for the ROOT Browser (v7)
+D: Breadcrumbs display for the ROOT Browser (v7)
+D: ROOT Browser (v7) drawing options
+D: Improvements in JavaScript ROOT GUI
+D: Improvements in the ROOT website Jekyll theme
 
 N: Marcelo Sousa
 E: marcelo.sousa@cern.ch

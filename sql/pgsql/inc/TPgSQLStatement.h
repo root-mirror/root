@@ -17,19 +17,16 @@
 #include <libpq-fe.h>
 #include <pg_config.h> // to get PG_VERSION_NUM
 
-#define pgsql_success(x) (((x) == PGRES_EMPTY_QUERY) \
-                        || ((x) == PGRES_COMMAND_OK) \
-                        || ((x) == PGRES_TUPLES_OK))
-
 struct PgSQL_Stmt_t {
    PGconn   *fConn;
    PGresult *fRes;
 };
 
-
 class TPgSQLStatement : public TSQLStatement {
 
 private:
+
+
    PgSQL_Stmt_t         *fStmt{nullptr};          //! executed statement
    Int_t                 fNumBuffers{0};          //! number of statement parameters
    char                **fBind{nullptr};          //! array of data for input
@@ -44,7 +41,7 @@ private:
    Bool_t      IsSetParsMode() const { return fWorkingMode==1; }
    Bool_t      IsResultSetMode() const { return fWorkingMode==2; }
 
-   Bool_t      SetSQLParamType(Int_t npar, int sqltype, bool sig, int sqlsize = 0);
+   Bool_t      SetSQLParamType(Int_t npar, Bool_t isbinary = kFALSE, Int_t param_len = 0, Int_t maxsize = 0);
 
    long double ConvertToNumeric(Int_t npar);
    const char *ConvertToString(Int_t npar);

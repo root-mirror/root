@@ -33,10 +33,11 @@ class TEnumConstant;
 class TEnum : public TDictionary {
 
 private:
-   THashList    fConstantList;  //list of constants the enum type
-   ClassInfo_t *fInfo;          //!interpreter information, owned by TEnum
-   TClass      *fClass;         //!owning class
-   std::string  fQualName;      // fully qualified type name
+   THashList    fConstantList;            // List of constants the enum type
+   ClassInfo_t *fInfo  = nullptr;         //!Interpreter information, owned by TEnum
+   TClass      *fClass = nullptr;         //!Owning class
+   std::string  fQualName;                // Fully qualified type name
+   EDataType    fUnderlyingType = kInt_t; // Type (size) used to store the enum in memory
 
    enum EBits {
      kBitIsScopedEnum = BIT(14) ///< The enum is an enum class.
@@ -50,7 +51,7 @@ public:
                        kALoadAndInterpLookup = 3
                       };
 
-   TEnum(): fInfo(nullptr), fClass(nullptr) {}
+   TEnum() = default;
    TEnum(const char *name, DeclId_t declid, TClass *cls);
    virtual ~TEnum();
 
@@ -59,7 +60,13 @@ public:
    const TSeqCollection *GetConstants() const { return &fConstantList; }
    const TEnumConstant  *GetConstant(const char *name) const { return (TEnumConstant *)fConstantList.FindObject(name); }
    DeclId_t              GetDeclId() const;
-   EDataType             GetUnderlyingType() const;
+
+   /// Get the unterlying integer type of the enum:
+   ///     enum E { kOne }; //  ==> int
+   ///     enum F: long; //  ==> long
+   /// Returns kNumDataTypes if the enum is unknown / invalid.
+   EDataType             GetUnderlyingType() const { return fUnderlyingType; };
+
    Bool_t                IsValid();
    Long_t                Property() const;
    void                  SetClass(TClass *cl) { fClass = cl; }

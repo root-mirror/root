@@ -15,7 +15,6 @@
 #include "ROOT/RDataSource.hxx"
 #include "ROOT/RStringView.hxx"
 
-#include <map>
 #include <memory>
 #include <mutex>
 #include <string>

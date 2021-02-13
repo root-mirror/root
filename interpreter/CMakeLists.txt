@@ -29,6 +29,7 @@ set(LLVM_TOOL_LLVM_AR_BUILD OFF CACHE BOOL "")
 set(CLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD OFF CACHE BOOL "")
 set(LLVM_FORCE_USE_OLD_TOOLCHAIN ON CACHE BOOL "")
 
+# will be set again in case NOT builtin_llvm
 set(LLVM_DIR "${CMAKE_BINARY_DIR}/interpreter/llvm/src")
 if (clad)
   set(CLING_BUILD_PLUGINS ON)
@@ -78,6 +79,8 @@ elseif(ROOT_ARCHITECTURE MATCHES linuxs390)
   set(ROOT_CLING_TARGET "SystemZ")
 elseif(ROOT_ARCHITECTURE MATCHES linux)
   set(ROOT_CLING_TARGET "X86")
+elseif(ROOT_ARCHITECTURE MATCHES macosxarm64)
+  set(ROOT_CLING_TARGET "AArch64")
 elseif(ROOT_ARCHITECTURE MATCHES macosx)
   set(ROOT_CLING_TARGET "X86")
 elseif(ROOT_ARCHITECTURE MATCHES win32)
@@ -91,6 +94,10 @@ if(NOT "${ROOT_CLING_TARGET}" STREQUAL "all")
 endif()
 
 if(MSVC)
+  # FIXME: since Visual Studio v16.4.0 the /O2 optimization flag make many (25%) of the tests failing
+  # Try to re-enable /O2 after the upgrade of llvm & clang
+  string(REPLACE "-O2" "-O1 -Oi" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+  string(REPLACE "-O2" "-O1 -Oi" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
   # replace dashes in the -EH* and -GR* flags with slashes (/EH* /GR*)
   string(REPLACE " -EH" " /EH" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   string(REPLACE " -GR" " /GR" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -133,6 +140,16 @@ endif(cxxmodules)
 
 if(gcctoolchain)
   ROOT_ADD_CXX_FLAG(CMAKE_CXX_FLAGS --gcc-toolchain=${gcctoolchain})
+endif()
+
+# We will not fix llvm or clang.
+string(REPLACE "-Werror " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ")
+
+if(LLVM_SHARED_LINKER_FLAGS)
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LLVM_SHARED_LINKER_FLAGS}")
+endif()
+if(LLVM_EXE_LINKER_FLAGS)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LLVM_EXE_LINKER_FLAGS}")
 endif()
 
 if(builtin_llvm)
@@ -389,12 +406,17 @@ Please install Python or specify the PYTHON_EXECUTABLE CMake variable.")
   set( CLANG_BUILT_STANDALONE 1 )
   set(BACKEND_PACKAGE_STRING "LLVM ${LLVM_PACKAGE_VERSION}")
 
+  # must be set before add_subdirectory(cling): it can change the value of LLVM_BINARY_DIR
+  set(LLVM_DIR "${LLVM_BINARY_DIR}")
+  if (builtin_clang)
+    # For builtin LLVM this is set in interpreter/llvm/src/CMakeLists.txt
+    set(Clang_DIR ${LLVM_BINARY_DIR}/tools/clang/)
+    add_subdirectory(llvm/src/tools/clang EXCLUDE_FROM_ALL)
+  else()
+    set(Clang_DIR ${LLVM_BINARY_DIR}/lib/cmake/clang/)
+    add_subdirectory(cling)
+  endif()
 
-if (builtin_clang)
-  add_subdirectory(llvm/src/tools/clang EXCLUDE_FROM_ALL)
-else()
-  add_subdirectory(cling)
-endif()
 endif(builtin_llvm)
 
 #---Export the include directories------------------------------------------------------------------

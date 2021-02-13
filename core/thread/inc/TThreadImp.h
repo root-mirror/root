@@ -25,7 +25,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-#include "TThread.h"
+
+class TThread;
 
 class TThreadImp : public TObject {
 public:

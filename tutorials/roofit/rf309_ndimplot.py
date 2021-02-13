@@ -1,13 +1,12 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
-## Multidimensional models: making 2/3 dimensional plots of p.d.f.s and datasets
+## Multidimensional models: making 2/3 dimensional plots of pdfs and datasets
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 

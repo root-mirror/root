@@ -7,21 +7,6 @@
 # TInterpreter implementation for cling. Only in libCling; needs to resolve
 # symbols from libCore.
 
-# Register the llvm include directories after clangs. This instructs the compiler to resolve
-# headers from our builtin clang. That's an issue when we are building with bultin_llvm=Off
-# and we have installed clang headers, too.
-include_directories(SYSTEM
-  ${CLANG_INCLUDE_DIRS}
-  ${LLVM_INCLUDE_DIRS}
-  ${CLAD_INCLUDE_DIRS}
-)
-
-include_directories(
-  ../res
-  ../../clingutils/res
-  ../../foundation/res
-  ${CLING_INCLUDE_DIRS}
-)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLING_CXXFLAGS}")
 
@@ -46,13 +31,14 @@ endif()
 
 ROOT_OBJECT_LIBRARY(MetaCling
   rootclingTCling.cxx
+  TCling.cxx
   TClingBaseClassInfo.cxx
   TClingCallbacks.cxx
   TClingCallFunc.cxx
   TClingClassInfo.cxx
-  TCling.cxx
   TClingDataMemberInfo.cxx
   TClingDeclInfo.cxx
+  TClingMemberIter.cxx
   TClingMethodArgInfo.cxx
   TClingMethodInfo.cxx
   TClingRdictModuleFileExtension.cxx
@@ -60,6 +46,39 @@ ROOT_OBJECT_LIBRARY(MetaCling
   TClingTypeInfo.cxx
   TClingValue.cxx
 )
+
+# Register the llvm include directories after clangs. This instructs the compiler to resolve
+# headers from our builtin clang. That's an issue when we are building with bultin_llvm=Off
+# and we have installed clang headers, too.
+target_include_directories(MetaCling SYSTEM PRIVATE
+  ${CLANG_INCLUDE_DIRS}
+  ${LLVM_INCLUDE_DIRS}
+  ${CLAD_INCLUDE_DIRS}
+)
+
+target_include_directories(MetaCling PRIVATE
+   ${CLING_INCLUDE_DIRS}
+   ${CMAKE_SOURCE_DIR}/core/metacling/res
+   ${CMAKE_SOURCE_DIR}/core/clingutils/res
+   ${CMAKE_SOURCE_DIR}/core/foundation/res
+   ${CMAKE_SOURCE_DIR}/core/zip/inc
+   ${CMAKE_SOURCE_DIR}/core/clib/res
+   ${CMAKE_SOURCE_DIR}/core/base/inc
+   ${CMAKE_SOURCE_DIR}/core/meta/inc
+   ${CMAKE_SOURCE_DIR}/core/clib/inc
+   ${CMAKE_SOURCE_DIR}/core/foundation/inc
+   ${CMAKE_SOURCE_DIR}/core/thread/inc
+   ${CMAKE_SOURCE_DIR}/core/cont/inc
+   ${CMAKE_SOURCE_DIR}/core/gui/inc
+   ${CMAKE_SOURCE_DIR}/io/io/inc
+   ${CMAKE_BINARY_DIR}/ginclude
+)
+
+if(MSVC)
+   target_include_directories(MetaCling PRIVATE
+      ${CMAKE_SOURCE_DIR}/core/winnt/inc
+   )
+endif()
 
 add_dependencies(MetaCling CLING)
 
@@ -95,7 +114,6 @@ ROOT_LINKER_LIBRARY(Cling
         $<TARGET_OBJECTS:Dictgen>
         $<TARGET_OBJECTS:MetaCling>
         LIBRARIES ${CLING_LIBRARIES} ${LINK_LIBS} ${CLING_PLUGIN_LINK_LIBS})
-
 
 if(MSVC)
   set_target_properties(Cling PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)

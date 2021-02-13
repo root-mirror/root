@@ -20,8 +20,10 @@
 
 #include "RConfigure.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
+#include "strlcpy.h"
+#include "snprintf.h"
 #include "TSecContext.h"
 #include "TSocket.h"
 #include "TUrl.h"

@@ -12,7 +12,7 @@
 #ifndef ROOT_TGeoAtt
 #define ROOT_TGeoAtt
 
-#include "TObject.h"
+#include "Rtypes.h"
 
 class TGeoAtt
 {

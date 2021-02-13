@@ -25,21 +25,17 @@ RooRangeBoolean
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include <math.h>
-#include "TMath.h"
 
 #include "RooRangeBoolean.h"
 #include "RooAbsReal.h"
 #include "RooRealVar.h"
 #include "RooArgList.h"
 #include "RooMsgService.h"
-#include "TMath.h"
 
 using namespace std;
 
 ClassImp(RooRangeBoolean);
-;
 
 
 ////////////////////////////////////////////////////////////////////////////////

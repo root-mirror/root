@@ -17,49 +17,62 @@
 #define ROO_ABS_CATEGORY
 
 #include "RooAbsArg.h"
-#include "RooCatType.h"
-#include "TIterator.h"
 
-class TTree ;
-class RooArgSet ;
-class RooDataSet ;
-class Roo1DTable ;
-class RooVectorDataStore ;
+#include <string>
+#include <map>
+#include <functional>
+#include <vector>
+
+#ifdef R__LESS_INCLUDES
+class RooCatType;
+#else
+#include "RooCatType.h"
+#endif
+
+class TTree;
+class RooVectorDataStore;
+class Roo1DTable;
+class TIterator;
 
 class RooAbsCategory : public RooAbsArg {
 public:
+  /// The type used to denote a specific category state.
+  using value_type = int;
+
   // Constructors, assignment etc.
-  RooAbsCategory() : _byteValue(0), _treeVar(false) { };
+  RooAbsCategory() { };
   RooAbsCategory(const char *name, const char *title);
   RooAbsCategory(const RooAbsCategory& other, const char* name=0) ;
   virtual ~RooAbsCategory();
   
   // Value accessors
-  virtual Int_t getIndex() const ;
-  virtual const char* getLabel() const ;
-  Bool_t operator==(Int_t index) const ;
-  Bool_t operator!=(Int_t index) {  return !operator==(index);}
+  virtual value_type getCurrentIndex() const ;
+  virtual const char* getCurrentLabel() const ;
+
+  const std::map<std::string, value_type>::value_type& getOrdinal(unsigned int n) const;
+  unsigned int getCurrentOrdinalNumber() const;
+
+  Bool_t operator==(value_type index) const ;
+  Bool_t operator!=(value_type index) {  return !operator==(index);}
   Bool_t operator==(const char* label) const ;
   Bool_t operator!=(const char* label) { return !operator==(label);}
-  virtual Bool_t operator==(const RooAbsArg& other) ;
+  virtual Bool_t operator==(const RooAbsArg& other) const ;
   Bool_t         operator!=(const RooAbsArg& other) { return !operator==(other);}
-  virtual Bool_t isIdentical(const RooAbsArg& other, Bool_t assumeSameType=kFALSE)  ;
+  virtual Bool_t isIdentical(const RooAbsArg& other, Bool_t assumeSameType=kFALSE) const;
   
-  Bool_t isValidIndex(Int_t index) const ;
-  Bool_t isValidLabel(const char* label) const ;  
-  const RooCatType* lookupType(Int_t index, Bool_t printError=kFALSE) const ;
-  const RooCatType* lookupType(const char* label, Bool_t printError=kFALSE) const ;
-  const RooCatType* lookupType(const RooCatType& type, Bool_t printError=kFALSE) const ;
-  /// \deprecated Iterator over types. Use range-based for loops instead.
-  TIterator*
-  R__SUGGEST_ALTERNATIVE("Use begin(), end() or range-based for loops.")
-  typeIterator() const {
-    return new LegacyIterator(_types);
+  /// Check if a state with name `label` exists.
+  bool hasLabel(const std::string& label) const {
+    return stateNames().find(label) != stateNames().end();
   }
-  /// Return number of types defined (in range named rangeName if rangeName!=0)
-  Int_t numTypes(const char* /*rangeName*/=0) const { 
-    return _types.size();
-  }
+  /// Check if a state with index `index` exists.
+  bool hasIndex(value_type index) const;
+
+  /// Get the name corresponding to the given index.
+  /// \return Name or empty string if index is invalid.
+  const std::string& lookupName(value_type index) const;
+  value_type lookupIndex(const std::string& stateName) const;
+
+
   Bool_t isSignType(Bool_t mustHaveZero=kFALSE) const ;
 
   Roo1DTable *createTable(const char *label) const ;
@@ -78,38 +91,113 @@ public:
 
   RooAbsArg *createFundamental(const char* newname=0) const;
 
-  std::vector<RooCatType*>::const_iterator begin() const {
-    return _types.cbegin();
+  /// Iterator for category state names. Points to pairs of index and name.
+  std::map<std::string, value_type>::const_iterator begin() const {
+    return stateNames().cbegin();
   }
-
-  std::vector<RooCatType*>::const_iterator end() const {
-    return _types.cend();
+  /// Iterator for category state names. Points to pairs of index and name.
+  std::map<std::string, value_type>::const_iterator end() const {
+    return stateNames().cend();
   }
-
+  /// Number of states defined.
   std::size_t size() const {
-    return _types.size();
+    return stateNames().size();
   }
+
+
+  /// \name Legacy interface
+  /// Previous versions of RooAbsCategory were based on RooCatType, a class containing a state and a label.
+  /// It has been replaced by integers, which use less space and allow for faster access. The following part of the interface
+  /// should not be used if possible.
+  /// Since RooCatType in essence is only an index and a state name, equivalent functionality can be achieved using begin()
+  /// and end() to iterate through pairs of <index, stateName> and by using using lookupName() and lookupIndex().
+  /// @{
+  const RooCatType*
+  R__SUGGEST_ALTERNATIVE("This interface is inefficient. Use lookupName()")
+  lookupType(value_type index, Bool_t printError=kFALSE) const;
+  const RooCatType*
+  R__SUGGEST_ALTERNATIVE("This interface is inefficient. Use lookupIndex()")
+  lookupType(const char* label, Bool_t printError=kFALSE) const;
+  const RooCatType*
+  R__SUGGEST_ALTERNATIVE("This interface is inefficient. Use lookupName() / lookupIndex()")
+  lookupType(const RooCatType& type, Bool_t printError=kFALSE) const;
+  TIterator*
+  R__SUGGEST_ALTERNATIVE("This interface is inefficient. Use begin(), end() or range-based for loops.")
+  typeIterator() const;
+  /// Return number of types defined (in range named rangeName if rangeName!=0)
+  Int_t numTypes(const char* /*rangeName*/=0) const {
+    return stateNames().size();
+  }
+  /// Retrieve the current index. Use getCurrentIndex() for more clarity.
+  Int_t getIndex() const { return getCurrentIndex(); }
+  /// Retrieve current label. Use getCurrentLabel() for more clarity.
+  const char* getLabel() const { return getCurrentLabel(); }
+protected:
+  virtual Bool_t
+  R__SUGGEST_ALTERNATIVE("This interface is inefficient. Use hasIndex() or hasLabel().")
+  isValid(const RooCatType& value) const ;
+  /// \deprecated Use defineState(const std::string& label)
+  const RooCatType*
+  R__SUGGEST_ALTERNATIVE("This interface is inefficient. Use defineState().")
+  defineType(const char* label);
+  /// \deprecated Use defineState(const std::string& label, value_type index)
+  const RooCatType*
+  R__SUGGEST_ALTERNATIVE("This interface is inefficient. Use defineState().")
+  defineType(const char* label, int index);
+  /// \deprecated Use defineStateUnchecked(const std::string& label, value_type index)
+  const RooCatType*
+  R__SUGGEST_ALTERNATIVE("This interface is inefficient. Use defineTypeUnchecked().")
+  defineTypeUnchecked(const char* label, value_type index);
+  /// @}
+
 
 protected:
+  /// Access the map of state names to index numbers. Triggers a recomputation
+  /// if the shape is dirty.
+  const std::map<std::string, value_type>& stateNames() const {
+    if (isShapeDirty()) {
+      _legacyStates.clear();
+      const_cast<RooAbsCategory*>(this)->recomputeShape();
+      clearShapeDirty();
+    }
 
-  // Function evaluation and error tracing
-  RooCatType traceEval() const ;
-  // coverity[PASS_BY_VALUE]
-  virtual Bool_t traceEvalHook(RooCatType /*value*/) const { 
-    // Hook function for trace evaluation (dummy)
-    return kFALSE ;
+    return _stateNames;
   }
-  virtual RooCatType evaluate() const = 0 ;
+  /// \copydoc stateNames() const
+  std::map<std::string, value_type>& stateNames() {
+    if (isShapeDirty()) {
+      _legacyStates.clear();
+      recomputeShape();
+      clearShapeDirty();
+    }
+
+    //Somebody might modify the states
+    setShapeDirty();
+
+    return _stateNames;
+  }
+
+  /// Evaluate the category state and return.
+  /// The returned state index should correspond to a state name that has been defined via e.g. defineType().
+  virtual value_type evaluate() const = 0;
 
   // Type definition management
-  const RooCatType* defineType(const char* label) ;
-  const RooCatType* defineType(const char* label, Int_t index) ;
-  const RooCatType* defineTypeUnchecked(const char* label, Int_t index) ;
-  const RooCatType* getOrdinal(UInt_t n, const char* rangeName=0) const;
+  virtual const std::map<std::string, RooAbsCategory::value_type>::value_type& defineState(const std::string& label);
+  virtual const std::map<std::string, RooAbsCategory::value_type>::value_type& defineState(const std::string& label, value_type index);
+
+  void defineStateUnchecked(const std::string& label, value_type index);
   void clearTypes() ;
 
-  virtual Bool_t isValid() const ;
-  virtual Bool_t isValid(const RooCatType& value) const ;
+  virtual bool isValid() const {
+    return hasIndex(_currentIndex);
+  }
+
+  /// If a category depends on the shape of others, i.e.\ its state numbers or names depend
+  /// on the states of other categories, this function has to be implemented to recompute
+  /// _stateNames and _insertionOrder.
+  /// If one of these two changes, setShapeDirty() has to be called to propagate this information
+  /// to possible users of this category.
+  virtual void recomputeShape() = 0;
 
   friend class RooVectorDataStore ;
   virtual void syncCache(const RooArgSet* set=0) ;
@@ -119,46 +207,20 @@ protected:
   virtual void setTreeBranchStatus(TTree& t, Bool_t active) ;
   virtual void fillTreeBranch(TTree& t) ;
 
-  mutable UChar_t    _byteValue ; //! Transient cache for byte values from tree branches
-  mutable RooCatType _value ; // Current value
-  // These need to be pointers, unfortunately, since other classes are holding pointers to the categories.
-  // That's not safe in case of reallocations.
-  std::vector<RooCatType*> _types; // Vector of allowed values.
+  RooCatType* retrieveLegacyState(value_type index) const;
+  value_type nextAvailableStateIndex() const;
 
-  Bool_t _treeVar ;           //! do not persist
 
-  class LegacyIterator : public TIterator {
-    public:
-      LegacyIterator(const std::vector<RooCatType*>& vec) : _vec(&vec), index(-1) { }
-      const TCollection *GetCollection() const override {
-        return nullptr;
-      }
-      TObject* Next() override {
-        ++index;
-        return this->operator*();
-      }
-      void Reset() override {
-        index = -1;
-      }
-      TObject* operator*() const override {
-        // Need to const_cast, unfortunately because TIterator interface is too permissive
-        return 0 <= index && index < (int)_vec->size() ? const_cast<RooCatType*>((*_vec)[index]) : nullptr;
-      }
-      LegacyIterator& operator=(const LegacyIterator&) = default;
-      TIterator& operator=(const TIterator& other) override {
-        auto otherLeg = dynamic_cast<LegacyIterator*>(*other);
-        if (otherLeg)
-          return this->operator=(*otherLeg);
+  mutable value_type _currentIndex{std::numeric_limits<int>::min()}; /// Current category state
+  std::map<std::string, value_type> _stateNames; /// Map state names to index numbers. Make sure state names are updated in recomputeShape().
+  std::vector<std::string> _insertionOrder; /// Keeps track in which order state numbers have been inserted. Make sure this is updated in recomputeShape().
+  mutable UChar_t _byteValue{0}; //! Transient cache for byte values from tree branches
+  mutable std::map<value_type, std::unique_ptr<RooCatType, std::function<void(RooCatType*)>> > _legacyStates; //! Map holding pointers to RooCatType instances. Only for legacy interface. Don't use if possible.
+  bool _treeVar{false}; /// Is this category attached to a tree?
 
-        throw std::logic_error("Cannot assign to category iterators from incompatible types.");
-      }
+  static const decltype(_stateNames)::value_type& invalidCategory();
 
-    private:
-      const std::vector<RooCatType*>* _vec;
-      int index;
-  };
-
-  ClassDef(RooAbsCategory, 2) // Abstract discrete variable
+  ClassDef(RooAbsCategory, 3) // Abstract discrete variable
 };
 
 #endif

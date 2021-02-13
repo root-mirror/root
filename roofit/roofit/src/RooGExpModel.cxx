@@ -34,7 +34,6 @@ for analytical convolutions with classes inheriting from RooAbsAnaConvPdf.
 #include "RooMath.h"
 #include "RooRealConstant.h"
 #include "RooRandom.h"
-#include "RooMath.h"
 #include "TMath.h"
 
 
@@ -49,10 +48,10 @@ ClassImp(RooGExpModel);
 ///
 /// \param[in] name Name of this instance.
 /// \param[in] title Title (e.g. for plotting)
-/// \param[in] x The convolution observable.
-/// \param[in] mean The mean of the Gaussian.
-/// \param[in] sigma Width of the Gaussian.
-/// \param[in] rlife Lifetime constant \f$ \tau \f$.
+/// \param[in] xIn The convolution observable.
+/// \param[in] meanIn The mean of the Gaussian.
+/// \param[in] sigmaIn Width of the Gaussian.
+/// \param[in] rlifeIn Lifetime constant \f$ \tau \f$.
 /// \param[in] meanSF  Scale factor for mean.
 /// \param[in] sigmaSF Scale factor for sigma.
 /// \param[in] rlifeSF Scale factor for rlife.
@@ -82,9 +81,9 @@ RooGExpModel::RooGExpModel(const char *name, const char *title, RooAbsRealLValue
 ///
 /// \param[in] name Name of this instance.
 /// \param[in] title Title (e.g. for plotting)
-/// \param[in] x The convolution observable.
-/// \param[in] sigma Width of the Gaussian.
-/// \param[in] rlife Lifetime constant \f$ \tau \f$.
+/// \param[in] xIn The convolution observable.
+/// \param[in] _sigma Width of the Gaussian.
+/// \param[in] _rlife Lifetime constant \f$ \tau \f$.
 /// \param[in] nlo   Include next-to-leading order for higher accuracy of convolution.
 /// \param[in] type  Switch between normal and flipped model.
 RooGExpModel::RooGExpModel(const char *name, const char *title, RooAbsRealLValue& xIn,
@@ -106,10 +105,10 @@ RooGExpModel::RooGExpModel(const char *name, const char *title, RooAbsRealLValue
 ///
 /// \param[in] name Name of this instance.
 /// \param[in] title Title (e.g. for plotting)
-/// \param[in] x The convolution observable.
-/// \param[in] sigma Width of the Gaussian.
-/// \param[in] rlife Lifetime constant \f$ \tau \f$.
-/// \param[in] srSF Scale factor for both sigma and tau.
+/// \param[in] xIn The convolution observable.
+/// \param[in] _sigma Width of the Gaussian.
+/// \param[in] _rlife Lifetime constant \f$ \tau \f$.
+/// \param[in] _rsSF Scale factor for both sigma and tau.
 /// \param[in] nlo   Include next-to-leading order for higher accuracy of convolution.
 /// \param[in] type  Switch between normal and flipped model.
 RooGExpModel::RooGExpModel(const char *name, const char *title, RooAbsRealLValue& xIn,
@@ -135,11 +134,11 @@ RooGExpModel::RooGExpModel(const char *name, const char *title, RooAbsRealLValue
 ///
 /// \param[in] name Name of this instance.
 /// \param[in] title Title (e.g. for plotting)
-/// \param[in] x The convolution observable.
-/// \param[in] sigma Width of the Gaussian.
-/// \param[in] rlife Lifetime constant \f$ \tau \f$.
-/// \param[in] sigmaSF Scale factor for sigma.
-/// \param[in] rlifeSF Scale factor for rlife.
+/// \param[in] xIn The convolution observable.
+/// \param[in] _sigma Width of the Gaussian.
+/// \param[in] _rlife Lifetime constant \f$ \tau \f$.
+/// \param[in] _sigmaSF Scale factor for sigma.
+/// \param[in] _rlifeSF Scale factor for rlife.
 /// \param[in] nlo   Include next-to-leading order for higher accuracy of convolution.
 /// \param[in] type  Switch between normal and flipped model.
 RooGExpModel::RooGExpModel(const char *name, const char *title, RooAbsRealLValue& xIn,

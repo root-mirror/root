@@ -75,7 +75,8 @@
 #include "TGFrame.h"
 #include "TList.h"
 #include "Rtypes.h"
-#include "Riostream.h"
+
+#include <iostream>
 
 
 ClassImp(TGTableLayout);

@@ -34,12 +34,10 @@ there to inform buffered values are outdated.
 #include "TTreeFormula.h"
 #include "TFormula.h"
 #include "TBranch.h"
-#include "TCanvas.h"
 #include "TROOT.h"
 #include "TH1D.h"
 #include "TRegexp.h"
 #include "TMath.h"
-#include "Riostream.h"
 
 ClassImp(TNeuron);
 

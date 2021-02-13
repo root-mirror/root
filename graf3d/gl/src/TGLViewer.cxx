@@ -23,7 +23,6 @@
 #include "TGLLogicalShape.h"
 #include "TGLPhysicalShape.h"
 #include "TGLObject.h"
-#include "TGLStopwatch.h"
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 
@@ -38,8 +37,6 @@
 #include "TMath.h"
 #include "TColor.h"
 #include "TError.h"
-#include "TClass.h"
-#include "TROOT.h"
 #include "TEnv.h"
 
 // For event type translation ExecuteEvent

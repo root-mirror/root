@@ -138,6 +138,9 @@ but also in Dump() and Inspect() methods and by the THtml class.
 #include "TDataMember.h"
 
 #include "Strlen.h"
+#include "strtok.h"
+#include "strlcpy.h"
+#include "TBuffer.h"
 #include "TClass.h"
 #include "TClassEdit.h"
 #include "TDataType.h"
@@ -156,7 +159,7 @@ but also in Dump() and Inspect() methods and by the THtml class.
 
 #include <cassert>
 #include <cctype>
-#include <stdlib.h>
+#include <cstdlib>
 
 
 ClassImp(TDataMember);
@@ -191,22 +194,16 @@ TDataMember::TDataMember(DataMemberInfo_t *info, TClass *cl) : TDictionary()
 
 void TDataMember::Init(bool afterReading)
 {
-   const char *t = 0;
    if (!afterReading) {
       // Initialize from fInfo
-      if (!fInfo || !gInterpreter->DataMemberInfo_IsValid(fInfo)) return;
-
-      fFullTypeName = TClassEdit::GetLong64_Name(gCling->DataMemberInfo_TypeName(fInfo));
-      fTrueTypeName = TClassEdit::GetLong64_Name(gCling->DataMemberInfo_TypeTrueName(fInfo));
-      fTypeName     = TClassEdit::GetLong64_Name(gCling->TypeName(fTrueTypeName));
-      SetName(gCling->DataMemberInfo_Name(fInfo));
-      t = gCling->DataMemberInfo_Title(fInfo);
-      SetTitle(t);
-   } else {
-      // We have read the persistent data members.
-      t = GetTitle();
+      if (!fInfo || !gInterpreter->DataMemberInfo_IsValid(fInfo))
+         return;
+      // Also sets names.
+      Property();
    }
-   if (t && t[0] != '!') SetBit(kObjIsPersistent);
+   const char *t = GetTitle();
+   if (t && t[0] != '!')
+      SetBit(kObjIsPersistent);
    fDataType = 0;
    if (IsBasic() || IsEnum()) {
       if (IsBasic()) {
@@ -240,200 +237,9 @@ void TDataMember::Init(bool afterReading)
       return;
    }
 
-
-   // If option string exist in comment - we'll parse it and create
-   // list of options
-
-   // Option-list string has a form:
-   // *OPTION={GetMethod="GetXXX";SetMethod="SetXXX";
-   //          Items=(0="NULL ITEM","one"="First Item",kRed="Red Item")}
-   //
-   // As one can see it is possible to specify value as either numerical
-   // value , string  or enum.
-   // One can also specify implicitly names of Getter/Setter methods.
-
-   char cmt[2048];
-   char opt[2048];
-   char *opt_ptr = 0;
-   const char *ptr1    = 0;
-   char *ptr2    = 0;
-   char *ptr3    = 0;
-   char *tok     = 0;
-   Int_t cnt     = 0;
-   Int_t token_cnt;
-   Int_t i;
-
-   strlcpy(cmt,GetTitle(),2048);
-
-   if ((opt_ptr=strstr(cmt,"*OPTION={"))) {
-
-      // If we found it - parsing...
-
-      //let's cut the part lying between {}
-      char *rest;
-      ptr1 = R__STRTOK_R(opt_ptr, "{}", &rest); // starts tokenizing:extracts "*OPTION={"
-      if (ptr1 == 0) {
-         Fatal("TDataMember","Internal error, found \"*OPTION={\" but not \"{}\" in %s.",GetTitle());
-         return;
-      }
-      ptr1 = R__STRTOK_R(nullptr, "{}", &rest); // And now we have what we need in ptr1!!!
-      if (ptr1 == 0) {
-         Fatal("TDataMember","Internal error, found \"*OPTION={\" but not \"{}\" in %s.",GetTitle());
-         return;
-      }
-
-      //and save it:
-      strlcpy(opt,ptr1,2048);
-
-      // Let's extract sub-tokens extracted by ';' sign.
-      // We'll put'em in an array for convenience;
-      // You have to do it in this manner because you cannot use nested tokenizing
-
-      char *tokens[256];           // a storage for these sub-tokens.
-      token_cnt = 0;
-      cnt       = 0;
-
-      do {                          //tokenizing loop
-         ptr1 = R__STRTOK_R((char *)(cnt++ ? nullptr : opt), ";", &rest);
-         if (ptr1){
-            Int_t nch = strlen(ptr1)+1;
-            tok=new char[nch];
-            strlcpy(tok,ptr1,nch);
-            tokens[token_cnt]=tok;
-            token_cnt++;
-         }
-      } while (ptr1);
-
-      // OK! Now let's check whether we have Get/Set methods encode in any string
-      for (i=0;i<token_cnt;i++) {
-         if (strstr(tokens[i],"GetMethod")) {
-            ptr1 = R__STRTOK_R(tokens[i], "\"", &rest); // tokenizing-strip text "GetMethod"
-            if (ptr1 == 0) {
-               Fatal("TDataMember","Internal error, found \"GetMethod\" but not \"\\\"\" in %s.",GetTitle());
-               return;
-            }
-            ptr1 = R__STRTOK_R(nullptr, "\"", &rest); // tokenizing - name is in ptr1!
-            if (ptr1 == 0) {
-               Fatal("TDataMember","Internal error, found \"GetMethod\" but not \"\\\"\" in %s.",GetTitle());
-               return;
-            }
-
-            if (!afterReading &&  GetClass()->GetMethod(ptr1,"")) // check whether such method exists
-               // FIXME: wrong in case called derives via multiple inheritance from this class
-               fValueGetter = new TMethodCall(GetClass(),ptr1,"");
-
-            continue; //next item!
-         }
-
-         if (strstr(tokens[i],"SetMethod")) {
-            ptr1 = R__STRTOK_R(tokens[i], "\"", &rest);
-            if (ptr1 == 0) {
-               Fatal("TDataMember","Internal error, found \"SetMethod\" but not \"\\\"\" in %s.",GetTitle());
-               return;
-            }
-            ptr1 = R__STRTOK_R(nullptr, "\"", &rest); // name of Setter in ptr1
-            if (ptr1 == 0) {
-               Fatal("TDataMember","Internal error, found \"SetMethod\" but not \"\\\"\" in %s.",GetTitle());
-               return;
-            }
-            if (GetClass()->GetMethod(ptr1,"1"))
-               // FIXME: wrong in case called derives via multiple inheritance from this class
-               fValueSetter = new TMethodCall(GetClass(),ptr1,"1");
-         }
-      }
-
-      //Now let's parse option strings...
-
-      Int_t  opt_cnt    = 0;
-      std::unique_ptr<TList> optionlist{new TList()};       //storage for options strings
-
-      for (i=0;i<token_cnt;i++) {
-         if (strstr(tokens[i],"Items")) {
-            ptr1 = R__STRTOK_R(tokens[i], "()", &rest);
-            if (ptr1 == 0) {
-               Fatal("TDataMember","Internal error, found \"Items\" but not \"()\" in %s.",GetTitle());
-               return;
-            }
-            ptr1 = R__STRTOK_R(nullptr, "()", &rest);
-            if (ptr1 == 0) {
-               Fatal("TDataMember","Internal error, found \"Items\" but not \"()\" in %s.",GetTitle());
-               return;
-            }
-
-            char opts[2048];  //and save it!
-            strlcpy(opts,ptr1,2048);
-
-            //now parse it...
-            //firstly we just store strings like: xxx="Label Name"
-            //We'll store it in TOptionListItem objects, because they're derived
-            //from TObject and thus can be stored in TList.
-            //It's not elegant but works.
-            do {
-               ptr1 = R__STRTOK_R(opt_cnt++ ? nullptr : opts, ",", &rest); // options extraction
-               if (ptr1) {
-                  TOptionListItem *it = new TOptionListItem(this,1,0,0,ptr1,"");
-                  optionlist->Add(it);
-               }
-            } while(ptr1);
-
-         }
-      }
-
-      //having all options extracted and put into list, we finally can parse
-      //them to create a list of options...
-
-      fOptions = new TList();                //create the list
-
-      TIter next(optionlist.get());                //we'll iterate through all
-                                             //strings containing options
-      TOptionListItem *it  = 0;
-      TOptionListItem *it1 = 0;
-      while ((it=(TOptionListItem*)next())) {
-
-         ptr1 = it->fOptName;  // We will change the value of OptName ... but it is fine since we delete the object at the end of the loop.
-         Bool_t islabel = (ptr1[0]=='\"');   // value is label or numerical?
-         ptr2 = R__STRTOK_R((char *)ptr1, "=\"", &rest); // extract LeftHandeSide
-         ptr3 = R__STRTOK_R(nullptr, "=\"", &rest);            // extract RightHandedSize
-
-         if (islabel) {
-            it1=new TOptionListItem(this,-9999,0,0,ptr3,ptr2);
-            fOptions->Add(it1);
-         }  else {
-
-            char *strtolResult;
-            Long_t l = std::strtol(ptr1, &strtolResult, 10);
-            bool isnumber = (strtolResult != ptr1);
-
-            if (!isnumber) {
-               TGlobal *enumval = gROOT->GetGlobal(ptr1, kTRUE);
-               if (enumval) {
-                  Int_t *value = (Int_t *)(enumval->GetAddress());
-                  // We'll try to find global enum existing in ROOT...
-                  l = (Long_t)(*value);
-               } else if (IsEnum()) {
-                  TObject *obj = fClass->GetListOfDataMembers(false)->FindObject(ptr1);
-                  if (obj)
-                     l = ((TEnumConstant *)obj)->GetValue();
-                  else
-                     l = gInterpreter->Calc(Form("%s;", ptr1));
-               } else {
-                  Fatal("TDataMember", "Internal error, couldn't recognize enum/global value %s.", ptr1);
-               }
-            }
-
-            it1 = new TOptionListItem(this,l,0,0,ptr3,ptr1);
-            fOptions->Add(it1);
-         }
-
-         optionlist->Remove(it);         //delete this option string from list
-         delete it;                      // and dispose of it.
-
-      }
-
-      // Garbage collection
-
-      //And dispose tokens string...
-      for (i=0;i<token_cnt;i++) if(tokens[i]) delete [] tokens[i];
+   if (strstr(GetTitle(), "*OPTION={")) {
+      // Delay setting fOptions until it's used: the enum constants might
+      // not have been added as members yet.
 
    // if option string does not exist but it's an Enum - parse it!!!!
    } else if (IsEnum()) {
@@ -792,11 +598,223 @@ Long_t TDataMember::Property() const
    return fProperty;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+/// Build TOptionListItems from the member comment `*OPTION={`
+
+void TDataMember::ExtractOptionsFromComment()
+{
+   if (fOptions)
+      return;
+
+   const char *optTitle = strstr(GetTitle(), "*OPTION={");
+   if (!optTitle)
+      return;
+
+   // If option string exist in comment - we'll parse it and create
+   // list of options
+
+   // Option-list string has a form:
+   // *OPTION={GetMethod="GetXXX";SetMethod="SetXXX";
+   //          Items=(0="NULL ITEM","one"="First Item",kRed="Red Item")}
+   //
+   // As one can see it is possible to specify value as either numerical
+   // value , string  or enum.
+   // One can also specify implicitly names of Getter/Setter methods.
+
+   char cmt[2048];
+   char opt[2048];
+   const char *ptr1    = 0;
+   char *ptr2    = 0;
+   char *ptr3    = 0;
+   char *tok     = 0;
+   Int_t cnt     = 0;
+   Int_t token_cnt;
+   Int_t i;
+
+   strlcpy(cmt,GetTitle(),2048);
+
+   char *opt_ptr = strstr(cmt, "*OPTION={");
+
+   // If we found it - parsing...
+
+   //let's cut the part lying between {}
+   char *rest;
+   ptr1 = R__STRTOK_R(opt_ptr, "{}", &rest); // starts tokenizing:extracts "*OPTION={"
+   if (ptr1 == 0) {
+      Fatal("TDataMember","Internal error, found \"*OPTION={\" but not \"{}\" in %s.",GetTitle());
+      return;
+   }
+   ptr1 = R__STRTOK_R(nullptr, "{}", &rest); // And now we have what we need in ptr1!!!
+   if (ptr1 == 0) {
+      Fatal("TDataMember","Internal error, found \"*OPTION={\" but not \"{}\" in %s.",GetTitle());
+      return;
+   }
+
+   //and save it:
+   strlcpy(opt,ptr1,2048);
+
+   // Let's extract sub-tokens extracted by ';' sign.
+   // We'll put'em in an array for convenience;
+   // You have to do it in this manner because you cannot use nested tokenizing
+
+   char *tokens[256];           // a storage for these sub-tokens.
+   token_cnt = 0;
+   cnt       = 0;
+
+   do {                          //tokenizing loop
+      ptr1 = R__STRTOK_R((char *)(cnt++ ? nullptr : opt), ";", &rest);
+      if (ptr1){
+         Int_t nch = strlen(ptr1)+1;
+         tok=new char[nch];
+         strlcpy(tok,ptr1,nch);
+         tokens[token_cnt]=tok;
+         token_cnt++;
+      }
+   } while (ptr1);
+
+   // OK! Now let's check whether we have Get/Set methods encode in any string
+   for (i=0;i<token_cnt;i++) {
+      if (strstr(tokens[i],"GetMethod")) {
+         ptr1 = R__STRTOK_R(tokens[i], "\"", &rest); // tokenizing-strip text "GetMethod"
+         if (ptr1 == 0) {
+            Fatal("TDataMember","Internal error, found \"GetMethod\" but not \"\\\"\" in %s.",GetTitle());
+            return;
+         }
+         ptr1 = R__STRTOK_R(nullptr, "\"", &rest); // tokenizing - name is in ptr1!
+         if (ptr1 == 0) {
+            Fatal("TDataMember","Internal error, found \"GetMethod\" but not \"\\\"\" in %s.",GetTitle());
+            return;
+         }
+
+         if (GetClass()->GetMethod(ptr1,"")) // check whether such method exists
+            // FIXME: wrong in case called derives via multiple inheritance from this class
+            fValueGetter = new TMethodCall(GetClass(),ptr1,"");
+
+         continue; //next item!
+      }
+
+      if (strstr(tokens[i],"SetMethod")) {
+         ptr1 = R__STRTOK_R(tokens[i], "\"", &rest);
+         if (ptr1 == 0) {
+            Fatal("TDataMember","Internal error, found \"SetMethod\" but not \"\\\"\" in %s.",GetTitle());
+            return;
+         }
+         ptr1 = R__STRTOK_R(nullptr, "\"", &rest); // name of Setter in ptr1
+         if (ptr1 == 0) {
+            Fatal("TDataMember","Internal error, found \"SetMethod\" but not \"\\\"\" in %s.",GetTitle());
+            return;
+         }
+         if (GetClass()->GetMethod(ptr1,"1"))
+            // FIXME: wrong in case called derives via multiple inheritance from this class
+            fValueSetter = new TMethodCall(GetClass(),ptr1,"1");
+      }
+   }
+
+   //Now let's parse option strings...
+
+   Int_t  opt_cnt    = 0;
+   std::unique_ptr<TList> optionlist{new TList()};       //storage for options strings
+
+   for (i=0;i<token_cnt;i++) {
+      if (strstr(tokens[i],"Items")) {
+         ptr1 = R__STRTOK_R(tokens[i], "()", &rest);
+         if (ptr1 == 0) {
+            Fatal("TDataMember","Internal error, found \"Items\" but not \"()\" in %s.",GetTitle());
+            return;
+         }
+         ptr1 = R__STRTOK_R(nullptr, "()", &rest);
+         if (ptr1 == 0) {
+            Fatal("TDataMember","Internal error, found \"Items\" but not \"()\" in %s.",GetTitle());
+            return;
+         }
+
+         char opts[2048];  //and save it!
+         strlcpy(opts,ptr1,2048);
+
+         //now parse it...
+         //firstly we just store strings like: xxx="Label Name"
+         //We'll store it in TOptionListItem objects, because they're derived
+         //from TObject and thus can be stored in TList.
+         //It's not elegant but works.
+         do {
+            ptr1 = R__STRTOK_R(opt_cnt++ ? nullptr : opts, ",", &rest); // options extraction
+            if (ptr1) {
+               TOptionListItem *it = new TOptionListItem(this,1,0,0,ptr1,"");
+               optionlist->Add(it);
+            }
+         } while(ptr1);
+
+      }
+   }
+
+   //having all options extracted and put into list, we finally can parse
+   //them to create a list of options...
+
+   fOptions = new TList();                //create the list
+
+   TIter next(optionlist.get());                //we'll iterate through all
+                                          //strings containing options
+   TOptionListItem *it  = 0;
+   TOptionListItem *it1 = 0;
+   while ((it=(TOptionListItem*)next())) {
+
+      ptr1 = it->fOptName;  // We will change the value of OptName ... but it is fine since we delete the object at the end of the loop.
+      Bool_t islabel = (ptr1[0]=='\"');   // value is label or numerical?
+      ptr2 = R__STRTOK_R((char *)ptr1, "=\"", &rest); // extract LeftHandeSide
+      ptr3 = R__STRTOK_R(nullptr, "=\"", &rest);            // extract RightHandedSize
+
+      if (islabel) {
+         it1=new TOptionListItem(this,-9999,0,0,ptr3,ptr2);
+         fOptions->Add(it1);
+      }  else {
+
+         char *strtolResult;
+         Long_t l = std::strtol(ptr1, &strtolResult, 10);
+         bool isnumber = (strtolResult != ptr1);
+
+         if (!isnumber) {
+            TGlobal *enumval = gROOT->GetGlobal(ptr1, kTRUE);
+            if (enumval) {
+               Int_t *value = (Int_t *)(enumval->GetAddress());
+               // We'll try to find global enum existing in ROOT...
+               l = (Long_t)(*value);
+            } else if (IsEnum()) {
+               TObject *obj = fClass->GetListOfDataMembers(false)->FindObject(ptr1);
+               if (obj)
+                  l = ((TEnumConstant *)obj)->GetValue();
+               else
+                  l = gInterpreter->Calc(Form("%s;", ptr1));
+            } else {
+               Fatal("TDataMember", "Internal error, couldn't recognize enum/global value %s.", ptr1);
+            }
+         }
+
+         it1 = new TOptionListItem(this,l,0,0,ptr3,ptr1);
+         fOptions->Add(it1);
+      }
+
+      optionlist->Remove(it);         //delete this option string from list
+      delete it;                      // and dispose of it.
+
+   }
+
+   // Garbage collection
+
+   //And dispose tokens string...
+   for (i=0;i<token_cnt;i++)
+      if(tokens[i])
+         delete [] tokens[i];
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns list of options - list of TOptionListItems
 
-TList *TDataMember::GetOptions() const
+TList *TDataMember::GetOptions()
 {
+   if (!fOptions)
+      ExtractOptionsFromComment();
    return fOptions;
 }
 

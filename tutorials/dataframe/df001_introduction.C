@@ -1,6 +1,8 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -nodraw
+/// Basic RDataFrame usage.
+///
 /// This tutorial illustrates the basic features of the RDataFrame class,
 /// a utility which allows to interact with data stored in TTrees following
 /// a functional-chain like approach.
@@ -9,7 +11,7 @@
 /// \macro_output
 ///
 /// \date December 2016
-/// \author Enrico Guiraud
+/// \author Enrico Guiraud (CERN)
 
 // ## Preparation
 
@@ -136,7 +138,7 @@ int df001_introduction()
    // Often, operations need to be carried out on quantities calculated starting
    // from the ones present in the columns. We'll create in this example a third
    // column the values of which are the sum of the *b1* and *b2* ones, entry by
-   // entry. The way in which the new quantity is defined is via a runable.
+   // entry. The way in which the new quantity is defined is via a callable.
    // It is important to note two aspects at this point:
    // - The value is created on the fly only if the entry passed the existing
    // filters.
@@ -159,12 +161,12 @@ int df001_introduction()
    // It is possible at any moment to read the entry number and the processing
    // slot number. The latter may change when implicit multithreading is active.
    // The special columns which provide the entry number and the slot index are
-   // called "tdfentry_" and "tdfslot_" respectively. Their types are an unsigned
+   // called "rdfentry_" and "rdfslot_" respectively. Their types are an unsigned
    // 64 bit integer and an unsigned integer.
    auto printEntrySlot = [](ULong64_t iEntry, unsigned int slot) {
       std::cout << "Entry: " << iEntry << " Slot: " << slot << std::endl;
    };
-   d.Foreach(printEntrySlot, {"tdfentry_", "tdfslot_"});
+   d.Foreach(printEntrySlot, {"rdfentry_", "rdfslot_"});
 
    return 0;
 }

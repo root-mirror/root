@@ -212,18 +212,10 @@ def fetch_llvm(llvm_revision):
         return
 
     def checkout():
-        if LLVM_BRANCH:
-            exec_subprocess_call('git checkout %s' % LLVM_BRANCH, srcdir)
-        else:
-            exec_subprocess_call('git checkout cling-patches-r%s' % llvm_revision, srcdir)
+        exec_subprocess_call('git checkout cling-patches-r%s' % llvm_revision, srcdir)
 
     def get_fresh_llvm():
-        if LLVM_BRANCH:
-            exec_subprocess_call('git clone --depth=10 --branch %s %s %s'
-                                 % (LLVM_BRANCH, LLVM_GIT_URL, srcdir), workdir)
-        else:
-            exec_subprocess_call('git clone %s %s' % (LLVM_GIT_URL, srcdir), workdir)
-
+        exec_subprocess_call('git clone %s %s' % (LLVM_GIT_URL, srcdir), workdir)
         checkout()
 
     def update_old_llvm():
@@ -232,26 +224,14 @@ def fetch_llvm(llvm_revision):
         # exec_subprocess_call('git clean -f -x -d', srcdir)
 
         checkout()
-
-        if LLVM_BRANCH:
-            exec_subprocess_call('git pull origin %s' % LLVM_BRANCH, srcdir)
-        else:
-            exec_subprocess_call('git fetch --tags', srcdir)
-            exec_subprocess_call('git pull origin refs/tags/cling-patches-r%s'
-                                 % llvm_revision, srcdir)
+        exec_subprocess_call('git fetch --tags', srcdir)
+        exec_subprocess_call('git pull origin refs/tags/cling-patches-r%s'
+                                % llvm_revision, srcdir)
 
     if os.path.isdir(srcdir):
         update_old_llvm()
     else:
         get_fresh_llvm()
-
-def is_llvm_binary_compatible():
-    if DIST == 'Ubuntu':
-        return True
-    if DIST == 'MacOSX':
-        return True
-    return False
-
 
 def download_llvm_binary():
     global llvm_flags, tar_required
@@ -270,7 +250,7 @@ def download_llvm_binary():
                            os.path.join(llvm_dir, 'bin'))
         else:
             tar_required = True
-    if DIST == 'MacOSX':
+    elif DIST == 'MacOSX':
         subprocess.call("sudo -H pip install lit", shell=True)
         if tar_required is False:
             llvm_dir = os.path.join("/opt", "local", "libexec", "llvm-"+llvm_vers)
@@ -281,6 +261,8 @@ def download_llvm_binary():
                           -DLLVM_TOOLS_BINARY_DIR={5} -DLLVM_TOOL_CLING_BUILD=ON".format(llvm_dir, llvm_config_path,
                           os.path.join(llvm_dir, 'lib'), os.path.join(llvm_dir, 'include'), os.path.join(llvm_dir, 'bin', 'llvm-tblgen'),
                           os.path.join(llvm_dir, 'bin'))
+    else:
+        raise Exception("Building clang using LLVM binary not possible. Please invoke cpt without --with-binary-llvm and --with-llvm-tar flags")
     if tar_required:
         llvm_flags = "-DLLVM_BINARY_DIR={0} -DLLVM_CONFIG={1} -DLLVM_LIBRARY_DIR={2} -DLLVM_MAIN_INCLUDE_DIR={3} -DLLVM_TABLEGEN_EXE={4} \
                       -DLLVM_TOOLS_BINARY_DIR={5} -DLLVM_TOOL_CLING_BUILD=ON".format(srcdir, os.path.join(srcdir, 'bin', 'llvm-config'),
@@ -302,7 +284,7 @@ def download_llvm_binary():
             exec_subprocess_call('tar xvf clang+llvm-5.0.2-x86_64-apple-darwin.tar.xz', workdir)
             exec_subprocess_call('sudo mv clang+llvm-5.0.2-x86_64-apple-darwin %s' % srcdir, workdir)
         else:
-            raise Exception("Building clang using LLVM binary not possible")
+            raise Exception("Building clang using LLVM binary not possible. Please invoke cpt without --with-binary-llvm and --with-llvm-tar flags")
     # FIXME: Add Fedora and SUSE support
 
 # TODO Refactor all fetch_ functions to use this class will remove a lot of dup
@@ -345,25 +327,17 @@ def fetch_clang(llvm_revision):
         print()
         return
 
-    if is_llvm_binary_compatible() and args["with_binary_llvm"]:
+    if args["with_binary_llvm"]:
         dir = workdir
     else:
         dir = os.path.join(srcdir, 'tools')
     global clangdir
     clangdir = os.path.join(dir, 'clang')
     def checkout():
-       if CLANG_BRANCH:
-           exec_subprocess_call('git checkout %s' % CLANG_BRANCH, clangdir)
-       else:
-           exec_subprocess_call('git checkout cling-patches-r%s' % llvm_revision, clangdir)
+        exec_subprocess_call('git checkout cling-patches-r%s' % llvm_revision, clangdir)
 
     def get_fresh_clang():
-        if CLANG_BRANCH:
-            exec_subprocess_call('git clone --depth=10 --branch %s %s'
-                                 % (CLANG_BRANCH, CLANG_GIT_URL), dir)
-        else:
-            exec_subprocess_call('git clone %s' % CLANG_GIT_URL, dir)
-
+        exec_subprocess_call('git clone %s' % CLANG_GIT_URL, dir)
         checkout()
 
     def update_old_clang():
@@ -374,12 +348,9 @@ def fetch_clang(llvm_revision):
         exec_subprocess_call('git fetch --tags', clangdir)
 
         checkout()
-        if CLANG_BRANCH:
-            exec_subprocess_call('git pull origin %s' % CLANG_BRANCH, clangdir)
-        else:
-            exec_subprocess_call('git fetch --tags', clangdir)
-            exec_subprocess_call('git pull origin refs/tags/cling-patches-r%s' % llvm_revision,
-                                  clangdir)
+        exec_subprocess_call('git fetch --tags', clangdir)
+        exec_subprocess_call('git pull origin refs/tags/cling-patches-r%s' % llvm_revision,
+                                clangdir)
 
     if os.path.isdir(clangdir):
         update_old_clang()
@@ -388,7 +359,7 @@ def fetch_clang(llvm_revision):
 
 def fetch_cling(arg):
 
-    if is_llvm_binary_compatible() and args["with_binary_llvm"]:
+    if args["with_binary_llvm"]:
         global CLING_SRC_DIR
         CLING_SRC_DIR = os.path.join(clangdir, 'tools', 'cling')
         dir = clangdir
@@ -397,10 +368,10 @@ def fetch_cling(arg):
 
     def get_fresh_cling():
         if CLING_BRANCH:
-            exec_subprocess_call('git clone --depth=10 --branch %s %s'
+            exec_subprocess_call('git clone --depth=10 --branch %s %s cling'
                                  % (CLING_BRANCH, CLING_GIT_URL), os.path.join(dir, 'tools'))
         else:
-            exec_subprocess_call('git clone %s' % CLING_GIT_URL, os.path.join(dir, 'tools'))
+            exec_subprocess_call('git clone %s cling' % CLING_GIT_URL, os.path.join(dir, 'tools'))
 
         # if arg == 'last-stable':
         #    checkout_branch = exec_subprocess_check_output('git describe --match v* --abbrev=0 --tags | head -n 1',
@@ -588,9 +559,8 @@ def compile(arg):
 
     build.make('clang cling' if CLING_BRANCH else 'cling')
 
-    if not CLING_BRANCH:
-        box_draw("Install compiled binaries to prefix (using %d cores)" % build.cores)
-        build.make('install')
+    box_draw("Install compiled binaries to prefix (using %d cores)" % build.cores)
+    build.make('install')
 
     if TRAVIS_BUILD_DIR:
         ### Run cling once, dumping the include paths, helps debug issues
@@ -628,9 +598,8 @@ def compile_for_binary(arg):
     box_draw('Building %s (using %d cores)' % ("cling", multiprocessing.cpu_count()))
     exec_subprocess_call('make -j%d %s' % (multiprocessing.cpu_count(), "cling"), LLVM_OBJ_ROOT)
 
-    if not CLING_BRANCH:
-        box_draw("Install compiled binaries to prefix (using %d cores)" % build.cores)
-        build.make('install')
+    box_draw("Install compiled binaries to prefix (using %d cores)" % build.cores)
+    build.make('install')
 
     if TRAVIS_BUILD_DIR:
         ### Run cling once, dumping the include paths, helps debug issues
@@ -838,7 +807,8 @@ def check_ubuntu(pkg):
             return True
     elif pkg == "cmake":
         CMAKE = os.environ.get('CMAKE', 'cmake')
-        if not check_version_string_ge(exec_subprocess_check_output('{cmake} --version'.format(cmake=CMAKE), '/').strip().split('\n')[0].split()[-1], '3.4.3'):
+        output = exec_subprocess_check_output('{cmake} --version'.format(cmake=CMAKE), '/').strip().split('\n')[0].split()
+        if (output == []) or (not check_version_string_ge(output[-1], '3.4.3')):
             print(pkg.ljust(20) + '[OUTDATED VERSION (<3.4.3)]'.ljust(30))
             return False
         else:
@@ -878,7 +848,14 @@ def check_ubuntu(pkg):
         else:
             print(pkg.ljust(20) + '[NOT INSTALLED]'.ljust(30))
             return False
-    elif pkg == "svn":
+    elif pkg == "python3-pip":
+        if exec_subprocess_check_output('pip --version', workdir) != '':
+            print(pkg.ljust(20) + '[OK]'.ljust(30))
+            return True
+        else:
+            print(pkg.ljust(20) + '[NOT INSTALLED]'.ljust(30))
+            return False
+    elif pkg == "subversion":
         if exec_subprocess_check_output('which svn', workdir) != '':
             print(pkg.ljust(20) + '[OK]'.ljust(30))
             return True
@@ -1884,6 +1861,7 @@ parser.add_argument('--with-clang-url', action='store', help='Specify an alterna
                     default='http://root.cern.ch/git/clang.git')
 parser.add_argument('--with-cling-url', action='store', help='Specify an alternate URL of Cling repo',
                     default='https://github.com/root-project/cling.git')
+parser.add_argument('--cling-branch', help='Specify a particular Cling branch')
 
 parser.add_argument('--with-binary-llvm', help='Download LLVM binary and use it to build Cling in dev mode', action='store_true')
 parser.add_argument('--with-llvm-tar', help='Download and use LLVM binary release tar to build Cling for debugging', action='store_true')
@@ -1923,6 +1901,40 @@ def custom_input(prompt, always_yes=False):
         return input(prompt)
 
 ###############################################################################
+#                               Global variables                              #
+###############################################################################
+
+workdir = os.path.abspath(os.path.expanduser(args['with_workdir']))
+srcdir = os.path.join(workdir, 'cling-src')
+CLING_SRC_DIR = os.path.join(srcdir, 'tools', 'cling')
+CPT_SRC_DIR = os.path.join(CLING_SRC_DIR, 'tools', 'packaging')
+LLVM_OBJ_ROOT = os.path.join(workdir, 'builddir')
+
+prefix = ''
+tar_required = False
+llvm_revision = urlopen(
+                "https://raw.githubusercontent.com/root-project/cling/master/LastKnownGoodLLVMSVNRevision.txt").readline().strip().decode(
+                'utf-8')
+llvm_vers = "{0}.{1}".format(llvm_revision[-2], llvm_revision[-1])
+LLVM_GIT_URL = ""
+CLANG_GIT_URL = args['with_clang_url']
+CLING_GIT_URL = args['with_cling_url']
+EXTRA_CMAKE_FLAGS = args.get('with_cmake_flags')
+CMAKE = os.environ.get('CMAKE', None)
+
+# llvm_revision = urlopen(
+#    "https://raw.githubusercontent.com/root-project/cling/master/LastKnownGoodLLVMSVNRevision.txt").readline().strip().decode(
+#   'utf-8')
+VERSION = ''
+REVISION = ''
+# Travis needs some special behaviour
+TRAVIS_BUILD_DIR = os.environ.get('TRAVIS_BUILD_DIR', None)
+APPVEYOR_BUILD_FOLDER = os.environ.get('APPVEYOR_BUILD_FOLDER', None)
+
+# Make sure git log is invoked without a pager.
+os.environ['GIT_PAGER']=''
+
+###############################################################################
 #                           Platform initialization                           #
 ###############################################################################
 
@@ -1940,8 +1952,33 @@ if OS == 'Windows':
     TMP_PREFIX = 'C:\\Windows\\Temp\\cling-obj\\'
 
 elif OS == 'Linux':
-    subprocess.call("sudo pip install distro", shell=True)
-    import distro
+    try:
+        import distro
+    except:
+        yes = {'yes', 'y', 'ye', ''}
+        choice = custom_input('''
+            CPT will now attempt to install the distro (and pip) package automatically.
+            Do you want to continue? [yes/no]: ''', args['y']).lower()
+        if choice in yes:
+            if sys.version_info[0] == 3:
+                pipver = 'python3-pip'
+            else:
+                pipver = 'python2-pip'
+            if check_ubuntu(pipver) is False:
+                subprocess.Popen(['sudo apt-get install {0}'.format(pipver)],
+                                shell=True,
+                                stdin=subprocess.PIPE,
+                                stdout=None,
+                                stderr=subprocess.STDOUT).communicate('yes'.encode('utf-8'))
+            if sys.version_info[0] == 3:
+                subprocess.call("sudo pip3 install distro", shell=True)
+            else:
+                subprocess.call("sudo pip install distro", shell=True)
+            import distro
+        else:
+            print('Install/update the distro package from pip')
+            import distro
+
     DIST = distro.linux_distribution()[0]
     RELEASE = distro.linux_distribution()[2]
     REV = distro.linux_distribution()[1]
@@ -1969,26 +2006,7 @@ else:
     # TODO: Need to test this in other platforms
     TMP_PREFIX = os.path.join(os.sep, 'tmp', 'cling-obj' + os.sep)
 
-###############################################################################
-#                               Global variables                              #
-###############################################################################
 
-workdir = os.path.abspath(os.path.expanduser(args['with_workdir']))
-srcdir = os.path.join(workdir, 'cling-src')
-CLING_SRC_DIR = os.path.join(srcdir, 'tools', 'cling')
-CPT_SRC_DIR = os.path.join(CLING_SRC_DIR, 'tools', 'packaging')
-LLVM_OBJ_ROOT = os.path.join(workdir, 'builddir')
-prefix = ''
-tar_required = False
-llvm_revision = urlopen(
-                "https://raw.githubusercontent.com/root-project/cling/master/LastKnownGoodLLVMSVNRevision.txt").readline().strip().decode(
-                'utf-8')
-llvm_vers = "{0}.{1}".format(llvm_revision[-2], llvm_revision[-1])
-LLVM_GIT_URL = ""
-CLANG_GIT_URL = args['with_clang_url']
-CLING_GIT_URL = args['with_cling_url']
-EXTRA_CMAKE_FLAGS = args.get('with_cmake_flags')
-CMAKE = os.environ.get('CMAKE', None)
 if not CMAKE:
     if platform.system() == 'Windows':
         CMAKE = os.path.join(TMP_PREFIX, 'bin', 'cmake', 'bin', 'cmake.exe')
@@ -2001,25 +2019,9 @@ if args.get('stdlib') and EXTRA_CMAKE_FLAGS.find('-DLLVM_ENABLE_LIBCXX=') != -1:
     parser.print_help()
     raise SystemExit
 
-CLING_BRANCH = CLANG_BRANCH = LLVM_BRANCH = None
-if args['current_dev']:
-    cDev = args['current_dev']
-    if cDev.startswith('branch:'):
-      CLING_BRANCH = CLANG_BRANCH = LLVM_BRANCH = cDev[7:]
-    elif cDev.startswith('branches:'):
-      CLING_BRANCH, CLANG_BRANCH, LLVM_BRANCH = cDev[9:].split(',')
-
-# llvm_revision = urlopen(
-#    "https://raw.githubusercontent.com/root-project/cling/master/LastKnownGoodLLVMSVNRevision.txt").readline().strip().decode(
-#   'utf-8')
-VERSION = ''
-REVISION = ''
-# Travis needs some special behaviour
-TRAVIS_BUILD_DIR = os.environ.get('TRAVIS_BUILD_DIR', None)
-APPVEYOR_BUILD_FOLDER = os.environ.get('APPVEYOR_BUILD_FOLDER', None)
-
-# Make sure git log is invoked without a pager.
-os.environ['GIT_PAGER']=''
+CLING_BRANCH = None
+if args['current_dev'] and args['cling_branch']:
+    CLING_BRANCH = args['cling_branch']
 
 print('Cling Packaging Tool (CPT)')
 print('Arguments vector: ' + str(sys.argv))
@@ -2054,16 +2056,20 @@ elif args['with_binary_llvm'] is False and args['with_llvm_url']:
 else:
     LLVM_GIT_URL = "http://root.cern.ch/git/llvm.git"
 
+if args['with_llvm_tar']:
+    tar_required = True
+
 if args['check_requirements']:
     llvm_binary_name = ""
     box_draw('Check availability of required softwares')
     if DIST == 'Ubuntu':
         install_line = ""
-        prerequisite = ['git', 'cmake', 'gcc', 'g++', 'debhelper', 'devscripts', 'gnupg', 'python', 'SSL']
-        if is_llvm_binary_compatible():
-            prerequisite.extend(['svn', 'zlib*'])
+        prerequisite = ['git', 'cmake', 'gcc', 'g++', 'debhelper', 'devscripts', 'gnupg', 'python', 'SSL', 'zlib1g-dev']
+        if args["with_binary_llvm"] or args["with_llvm_tar"]:
+            prerequisite.extend(['subversion'])
             if check_ubuntu('lit') is False:
                 prerequisite.extend(['python-pip'])
+        if args["with_binary_llvm"] and not args["with_llvm_tar"]:        
             if check_ubuntu('llvm-'+llvm_vers+'-dev') is False:
                 llvm_binary_name = 'llvm-{0}-dev'.format(llvm_vers)
         for pkg in prerequisite:
@@ -2102,18 +2108,15 @@ if args['check_requirements']:
                 else:
                     choice = custom_input("Please respond with 'yes' or 'no': ", args['y'])
                     continue
-        if no_install is False and llvm_binary_name != "":
-            if args["with_llvm_tar"]:
+        if no_install is False and llvm_binary_name != "" and tar_required is False:
+            try:
+                subprocess.Popen(['sudo apt-get install llvm-{0}-dev'.format(llvm_vers)],
+                                 shell=True,
+                                 stdin=subprocess.PIPE,
+                                 stdout=None,
+                                 stderr=subprocess.STDOUT).communicate('yes'.encode('utf-8'))
+            except:
                 tar_required = True
-            else:
-                try:
-                    subprocess.Popen(['sudo apt-get install llvm-{0}-dev'.format(llvm_vers)],
-                                     shell=True,
-                                     stdin=subprocess.PIPE,
-                                     stdout=None,
-                                     stderr=subprocess.STDOUT).communicate('yes'.encode('utf-8'))
-                except:
-                    tar_required = True
 
     elif OS == 'Windows':
         check_win('git')
@@ -2209,8 +2212,8 @@ Refer to the documentation of CPT for information on setting up your Windows env
                              stdout=None,
                              stderr=subprocess.STDOUT).communicate('yes'.encode('utf-8'))
 
-    if is_llvm_binary_compatible():
-        download_llvm_binary()
+if args["with_llvm_tar"] or args["with_binary_llvm"]:
+    download_llvm_binary()
 
 if args['current_dev']:
     travis_fold_start("git-clone")
@@ -2218,7 +2221,7 @@ if args['current_dev']:
         "https://raw.githubusercontent.com/root-project/cling/master/LastKnownGoodLLVMSVNRevision.txt").readline().strip().decode(
         'utf-8')
 
-    if is_llvm_binary_compatible() and args['with_binary_llvm']:
+    if args['with_binary_llvm']:
         compile = compile_for_binary
         install_prefix = install_prefix_for_binary
         fetch_clang(llvm_revision)
@@ -2267,7 +2270,7 @@ if args['current_dev']:
                                      'cling-' + DIST + '-' + REV + '-' + platform.machine().lower() + '-' + VERSION))
         install_prefix()
         if not args['no_test']:
-            if is_llvm_binary_compatible() and args['with_binary_llvm']:
+            if args['with_binary_llvm']:
                 build_filecheck()
             test_cling()
         tarball()
@@ -2277,7 +2280,7 @@ if args['current_dev']:
         compile(os.path.join(workdir, 'cling-' + VERSION))
         install_prefix()
         if not args['no_test']:
-            if is_llvm_binary_compatible() and args['with_binary_llvm']:
+            if args['with_binary_llvm']:
                 build_filecheck()
             test_cling()
         tarball_deb()
@@ -2307,24 +2310,17 @@ if args['current_dev']:
         compile(os.path.join(workdir, 'cling-' + DIST + '-' + REV + '-' + platform.machine().lower() + '-' + VERSION))
         install_prefix()
         if not args['no_test']:
-            if is_llvm_binary_compatible() and args['with_binary_llvm']:
+            if args['with_binary_llvm']:
                 build_filecheck()
             test_cling()
         make_dmg()
-        cleanup()
-
-    elif args['current_dev'].startswith('branch'):
-        compile(os.path.join(workdir, 'cling-' + VERSION.replace('-' + REVISION[:7], '')))
-        #install_prefix()
-        if not args['no_test']:
-            test_cling()
         cleanup()
 
     elif args['current_dev'] == 'pkg':
         compile(os.path.join(workdir, 'cling-' + DIST + '-' + REV + '-' + platform.machine().lower() + '-' + VERSION))
         install_prefix()
         if not args['no_test']:
-            if is_llvm_binary_compatible() and args['with_binary_llvm']:
+            if args['with_binary_llvm']:
                 build_filecheck()
             test_cling()
         tarball()
@@ -2346,7 +2342,7 @@ if args['last_stable']:
 
     args["with_binary_llvm"] = True
 
-    if is_llvm_binary_compatible() and args["with_binary_llvm"]:
+    if args["with_binary_llvm"]:
         compile = compile_for_binary
         install_prefix = install_prefix_for_binary
         fetch_clang(llvm_revision)
@@ -2371,7 +2367,7 @@ if args['last_stable']:
                                      'cling-' + DIST + '-' + REV + '-' + platform.machine().lower() + '-' + VERSION))
         install_prefix()
         if not args['no_test']:
-            if is_llvm_binary_compatible() and args['with_binary_llvm']:
+            if args['with_binary_llvm']:
                 build_filecheck()
             test_cling()
         tarball()
@@ -2382,7 +2378,7 @@ if args['last_stable']:
         compile(os.path.join(workdir, 'cling-' + VERSION))
         install_prefix()
         if not args['no_test']:
-            if is_llvm_binary_compatible() and args['with_binary_llvm']:
+            if args['with_binary_llvm']:
                 build_filecheck()
             test_cling()
         tarball_deb()
@@ -2415,7 +2411,7 @@ if args['last_stable']:
         compile(os.path.join(workdir, 'cling-' + DIST + '-' + REV + '-' + platform.machine().lower() + '-' + VERSION))
         install_prefix()
         if not args['no_test']:
-            if is_llvm_binary_compatible() and args['with_binary_llvm']:
+            if args['with_binary_llvm']:
                 build_filecheck()
             test_cling()
         make_dmg()
@@ -2426,7 +2422,7 @@ if args['last_stable']:
         compile(os.path.join(workdir, 'cling-' + DIST + '-' + REV + '-' + platform.machine().lower() + '-' + VERSION))
         install_prefix()
         if not args['no_test']:
-            if is_llvm_binary_compatible() and args['with_binary_llvm']:
+            if args['with_binary_llvm']:
                 build_filecheck()
             test_cling()
         tarball()
@@ -2437,7 +2433,7 @@ if args['tarball_tag']:
         "https://raw.githubusercontent.com/root-project/cling/%s/LastKnownGoodLLVMSVNRevision.txt" % args[
             'tarball_tag']).readline().strip().decode(
         'utf-8')
-    if is_llvm_binary_compatible() and args["with_binary_llvm"]:
+    if args["with_binary_llvm"]:
         compile = compile_for_binary
         install_prefix = install_prefix_for_binary
         fetch_clang(llvm_revision)
@@ -2461,7 +2457,7 @@ if args['tarball_tag']:
 
     install_prefix()
     if not args['no_test']:
-        if is_llvm_binary_compatible() and args['with_binary_llvm']:
+        if args['with_binary_llvm']:
             build_filecheck()
         test_cling()
     tarball()

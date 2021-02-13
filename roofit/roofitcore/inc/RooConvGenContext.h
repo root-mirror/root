@@ -24,7 +24,6 @@ class RooDataSet;
 class RooRealIntegral;
 class RooAcceptReject;
 class TRandom;
-class TIterator;
 class RooRealVar ;
 class RooNumConvPdf ;
 class RooFFTConvPdf ;
@@ -61,9 +60,9 @@ protected:
   RooArgSet* _modelVars ;       // Holder of resModel event
   RooArgSet* _pdfCloneSet ;     // Owner of PDF clone
   RooArgSet* _modelCloneSet ;   // Owner of resModel clone
-  RooRealVar* _cvModel ;         // Convolution variable in resModel event
-  RooRealVar* _cvPdf ;           // Convolution variable in PDFxTruth event
-  RooRealVar* _cvOut ;           // Convolution variable in output event
+  RooRealVar* _cvModel{nullptr};         // Convolution variable in resModel event
+  RooRealVar* _cvPdf{nullptr};           // Convolution variable in PDFxTruth event
+  RooRealVar* _cvOut{nullptr};           // Convolution variable in output event
 
   ClassDef(RooConvGenContext,0) // Context for generating a dataset from a PDF
 };

@@ -24,8 +24,9 @@
 #include "THashTable.h"
 #include "TColor.h"
 #include "TROOT.h"
-#include "Riostream.h"
-#include <string.h>
+
+#include <iostream>
+#include <cstring>
 
 
 ClassImp(TGGC);

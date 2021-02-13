@@ -1,15 +1,6 @@
-#include "gtest/gtest.h"
+#include "ntuple_test.hxx"
 
-#include <ROOT/RNTupleMetrics.hxx>
-
-#include <chrono>
-#include <thread>
-
-using RNTuplePlainCounter = ROOT::Experimental::Detail::RNTuplePlainCounter;
-using RNTupleAtomicCounter = ROOT::Experimental::Detail::RNTupleAtomicCounter;
-using RNTuplePlainTimer = ROOT::Experimental::Detail::RNTuplePlainTimer;
-using RNTupleAtomicTimer = ROOT::Experimental::Detail::RNTupleAtomicTimer;
-using RNTupleMetrics = ROOT::Experimental::Detail::RNTupleMetrics;
+#include <cmath>
 
 TEST(Metrics, Counters)
 {
@@ -36,6 +27,48 @@ TEST(Metrics, Counters)
    EXPECT_EQ(1, ctrTwo->XAdd(5));
    EXPECT_EQ(1, ctrOne->GetValue());
    EXPECT_EQ(6, ctrTwo->GetValue());
+
+   RNTupleCalcPerf *ctrCalc = metrics.MakeCounter<RNTupleCalcPerf *>("calc", "s/s", "example 1/example2",
+      metrics, [](const RNTupleMetrics &met) -> std::pair<bool, double> {
+         auto ctr1 = met.GetCounter("test.plain");
+         EXPECT_NE(ctr1, nullptr);
+         auto ctr2 = met.GetCounter("test.atomic");
+         EXPECT_NE(ctr2, nullptr);
+         EXPECT_NE(ctr2->GetValueAsInt(), 0);
+         return {true, (1.*ctr1->GetValueAsInt()) / ctr2->GetValueAsInt()};
+      }
+   );
+   EXPECT_NE(ctrCalc, nullptr);
+   EXPECT_DOUBLE_EQ(ctrCalc->GetValue(), 1./6.);
+   EXPECT_NE(ctrCalc->ToString().find("calc"), std::string::npos);
+
+   RNTupleCalcPerf *ctrCalcBad = metrics.MakeCounter<RNTupleCalcPerf *>("calcBad", "apples or oranges", "just bad",
+      metrics, [](const RNTupleMetrics &) -> std::pair<bool, double> {
+         return {false, 42.};
+      }
+   );
+   EXPECT_NE(ctrCalcBad, nullptr);
+   EXPECT_TRUE(std::isnan(ctrCalcBad->GetValue()));
+   EXPECT_NE(ctrCalcBad->ToString(), ""); // whatever it is, it should not be empty or crash.
+}
+
+TEST(Metrics, Nested)
+{
+   RNTupleMetrics inner("inner");
+   auto ctr = inner.MakeCounter<RNTuplePlainCounter *>("plain", "s", "example 1");
+
+   RNTupleMetrics outer("outer");
+   outer.ObserveMetrics(inner);
+
+   outer.Enable();
+   EXPECT_TRUE(ctr->IsEnabled());
+   ctr->SetValue(42);
+
+   EXPECT_EQ(nullptr, outer.GetCounter("a.b.c.d"));
+   EXPECT_EQ(nullptr, outer.GetCounter("outer.xyz"));
+   auto ctest = outer.GetCounter("outer.inner.plain");
+   ASSERT_EQ(ctr, ctest);
+   EXPECT_EQ(std::string("42"), ctest->GetValueAsString());
 }
 
 TEST(Metrics, Timer)

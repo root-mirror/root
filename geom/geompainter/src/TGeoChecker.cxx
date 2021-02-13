@@ -83,7 +83,7 @@ volume by material sampling. Accepts as input the desired precision.
 #include "TBuffer3DTypes.h"
 #include "TMath.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 // statics and globals
 
@@ -941,6 +941,7 @@ void TGeoChecker::CheckGeometry(Int_t nrays, Double_t startx, Double_t starty, D
    }
    delete [] array1;
    delete [] array2;
+   delete pma; // markers are drawn on the pad
 }
 
 ////////////////////////////////////////////////////////////////////////////////

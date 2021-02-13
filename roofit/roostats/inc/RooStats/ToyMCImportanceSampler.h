@@ -13,6 +13,7 @@
 #define ROOSTATS_ToyMCImportanceSampler
 
 #include "RooStats/ToyMCSampler.h"
+#include <vector>
 
 namespace RooStats {
 

@@ -20,6 +20,7 @@
 #include "RConfigure.h"
 #include "TError.h"
 #include <ROOT/RConfig.hxx>
+#include "strlcpy.h"
 
 #include <ctype.h>
 #include <fcntl.h>

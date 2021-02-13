@@ -8,8 +8,6 @@
 # CMakeLists.txt file for building ROOT graf3d/gl package
 ############################################################################
 
-include_directories(${OPENGL_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
-
 if(WIN32 OR cocoa)
   set(installoptions FILTER "TX11GL")
 endif()
@@ -19,11 +17,9 @@ if(x11)
   set(RGL_EXTRA_SOURCES TX11GL.cxx)
 endif()
 
+
 if(builtin_gl2ps)
-  include_directories(src/gl2ps)
   set(RGL_EXTRA_SOURCES ${RGL_EXTRA_SOURCES} src/gl2ps.cxx)
-else()
-  include_directories(${GL2PS_INCLUDE_DIRS})
 endif()
 
 set_source_files_properties(src/TGLFontManager.cxx PROPERTIES COMPILE_FLAGS "${FTGL_CFLAGS}")
@@ -208,10 +204,10 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RGL
   LIBRARIES
     OpenGL::GL
     OpenGL::GLU
-    GLEW
     ${FTGL_LIBRARIES}
     ${GL2PS_LIBRARIES}
     ${X11_LIBRARIES}
+    RGlew
   DEPENDENCIES
     Hist
     Gui
@@ -220,6 +216,23 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RGL
   INSTALL_OPTIONS
     ${installoptions}
 )
+
+target_include_directories(RGL PRIVATE
+     ${OPENGL_INCLUDE_DIR}
+     ${FTGL_INCLUDE_DIR}
+     ${FREETYPE_INCLUDE_DIRS}
+)
+
+if(builtin_gl2ps)
+  target_include_directories(RGL PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/gl2ps)
+else()
+  target_include_directories(RGL PRIVATE ${GL2PS_INCLUDE_DIRS})
+endif()
+
+
+if(MSVC)
+  target_compile_definitions (RGL PRIVATE "GLEW_STATIC")
+endif()
 
 if(MACOSX_GLU_DEPRECATED)
   target_compile_options(RGL PRIVATE -Wno-deprecated-declarations)

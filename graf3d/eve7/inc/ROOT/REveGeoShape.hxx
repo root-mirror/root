@@ -34,8 +34,8 @@ class REveGeoShape : public REveShape,
                      public REveProjectable
 {
 private:
-   REveGeoShape(const REveGeoShape &);            // Not implemented
-   REveGeoShape &operator=(const REveGeoShape &); // Not implemented
+   REveGeoShape(const REveGeoShape &) = delete;
+   REveGeoShape &operator=(const REveGeoShape &) = delete;
 
 protected:
    Int_t fNSegments{0};
@@ -84,8 +84,8 @@ public:
 
 class REveGeoShapeProjected : public REveShape, public REveProjected {
 private:
-   REveGeoShapeProjected(const REveGeoShapeProjected &);            // Not implemented
-   REveGeoShapeProjected &operator=(const REveGeoShapeProjected &); // Not implemented
+   REveGeoShapeProjected(const REveGeoShapeProjected &) = delete;
+   REveGeoShapeProjected &operator=(const REveGeoShapeProjected &) = delete;
 
 protected:
    std::unique_ptr<TBuffer3D> fBuff;    //! 3d buffer

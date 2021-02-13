@@ -22,7 +22,6 @@
 //
 ///////////////////////////////////////////////////////////////////
 
-#include <TROOT.h>
 #include <TSystem.h>
 #include "Hello.h"
 #include "TList.h"

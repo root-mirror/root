@@ -10,6 +10,7 @@
 /// This macro was created for the evaluation of Computational Physics course in 2006.
 /// We thank to Prof. Inkyu Park for his special lecture on ROOT and to all of ROOT team
 ///
+/// \image html geom_south_gate.png width=800px
 /// \macro_code
 ///
 /// \author Lan Hee Yang(yangd5d5@hotmail.com), Dept. of Physics, Univ. of Seoul

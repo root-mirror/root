@@ -227,15 +227,15 @@ UInt_t TMVA::CvSplitKFoldsExpr::GetSpectatorIndexForName(DataSetInfo &dsi, TStri
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief Splits a dataset into k folds, ready for use in cross validation.
-/// \param numFolds[in] Number of folds to split data into
-/// \param stratified[in] If true, use stratified splitting, balancing the
+/// \param[in] numFolds Number of folds to split data into
+/// \param[in] stratified If true, use stratified splitting, balancing the
 ///                       number of events across classes and folds. If false,
 ///                       no such balancing is done. For
-/// \param splitExpr[in] Expression used to split data into folds. If `""` a
+/// \param[in] splitExpr Expression used to split data into folds. If `""` a
 ///                      random assignment will be done. Otherwise the
 ///                      expression is fed into a TFormula and evaluated per
 ///                      event. The resulting value is the the fold assignment.
-/// \param seed[in] Used only when using random splitting (i.e. when
+/// \param[in] seed Used only when using random splitting (i.e. when
 ///                 `splitExpr` is `""`). Seed is used to initialise the random
 ///                 number generator when assigning events to folds.
 ///
@@ -282,9 +282,9 @@ void TMVA::CvSplitKFolds::MakeKFoldDataSet(DataSetInfo &dsi)
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief Generates a vector of fold assignments
-/// \param nEntires[in] Number of events in range
-/// \param numFolds[in] Number of folds to split data into
-/// \param seed[in] Random seed
+/// \param[in] nEntries Number of events in range
+/// \param[in] numFolds Number of folds to split data into
+/// \param[in] seed Random seed
 ///
 /// Randomly assigns events to `numFolds` folds. Each fold will hold at most
 /// `nEntries / numFolds + 1` events.
@@ -311,8 +311,8 @@ std::vector<UInt_t> TMVA::CvSplitKFolds::GetEventIndexToFoldMapping(UInt_t nEntr
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief Split sets for into k-folds
-/// \param oldSet[in] Original, unsplit, events
-/// \param numFolds[in] Number of folds to split data into
+/// \param[in] oldSet Original, unsplit, events
+/// \param[in] numFolds Number of folds to split data into
 ///
 
 std::vector<std::vector<TMVA::Event *>>

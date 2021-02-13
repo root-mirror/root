@@ -103,7 +103,7 @@ TTree *genTree(Int_t nPoints, Double_t offset, Double_t scale, UInt_t seed = 100
    return data;
 }
 
-int TMVACrossValidation()
+int TMVACrossValidation(bool useRandomSplitting = false)
 {
    // This loads the library
    TMVA::Tools::Instance();
@@ -174,8 +174,8 @@ int TMVACrossValidation()
    //
    UInt_t numFolds = 2;
    TString analysisType = "Classification";
-   TString splitType = "Random";
-   TString splitExpr = "";
+   
+   TString splitType = (useRandomSplitting) ? "Random" : "Deterministic";
 
    //
    // One can also use a custom splitting function for producing the folds.
@@ -190,10 +190,11 @@ int TMVACrossValidation()
    // a technique that can simplify statistical analysis.
    // 
    // If you want to run TMVACrossValidationApplication, make sure you have 
-   // run this tutorial with the below line uncommented first.
+   // run this tutorial with Deterministic splitting type, i.e.
+   // with the option useRandomSPlitting = false
    // 
 
-   // TString splitExpr = "int(fabs([eventID]))%int([NumFolds])";
+   TString splitExpr = (!useRandomSplitting) ? "int(fabs([eventID]))%int([NumFolds])" : "";
 
    TString cvOptions = Form("!V"
                             ":!Silent"

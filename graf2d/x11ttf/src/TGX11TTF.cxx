@@ -21,13 +21,12 @@ shared library containing this class is loaded the global gVirtualX
 is redirected to point to this class.
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 
-#  include <ft2build.h>
-#  include FT_FREETYPE_H
-#  include FT_GLYPH_H
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
 #include "TGX11TTF.h"
-#include "TClass.h"
 #include "TEnv.h"
 
 #include <X11/Xlib.h>

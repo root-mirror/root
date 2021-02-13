@@ -24,6 +24,8 @@
 
 #include "Math/GSLRndmEngines.h"
 
+#include <vector>
+
 namespace ROOT {
 namespace Math {
 

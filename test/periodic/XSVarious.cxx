@@ -11,6 +11,7 @@
 #include <TGClient.h>
 #include <TGWindow.h>
 #include <TGWindow.h>
+#include <TVirtualX.h>
 
 #include "XSGraph.h"
 #include "XSVarious.h"

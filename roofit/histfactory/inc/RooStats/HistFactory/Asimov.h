@@ -12,7 +12,6 @@
 #define HISTFACTORY_ASIMOV_H
 
 #include <string>
-#include <vector>
 #include <map>
 
 #include "RooWorkspace.h"

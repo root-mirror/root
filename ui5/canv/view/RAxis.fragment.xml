@@ -1,0 +1,58 @@
+<core:FragmentDefinition xmlns="sap.m"
+   xmlns:l="sap.ui.layout" xmlns:jsroot="rootui5.canv.controller"
+   xmlns:core="sap.ui.core">
+   <VBox>
+      <HBox class="sapUiTinyMargin" justifyContent="SpaceBetween"
+         alignItems="Center">
+         <Label text="Log scale" wrapping="true" />
+         <ComboBox selectedKey="{/logbase}">
+            <core:Item key="0" text="none" />
+            <core:Item key="10" text="log10" />
+            <core:Item key="2" text="log2" />
+            <core:Item key="3" text="ln" />
+         </ComboBox>
+      </HBox>
+      <jsroot:ColorButton text="Ticks"
+         attrcolor="{/handle/ticksColor}" tooltip="Ticks color" />
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+         <Label text="Size:" wrapping="true" />
+         <StepInput min="0" max="0.05" step="0.01"
+            value="{/ticks_size}" editable="true"
+            displayValuePrecision="3" />
+      </HBox>
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+         <Label text="Side:" wrapping="true" />
+         <ComboBox selectedKey="{/handle/ticksSide}">
+            <core:Item key="normal" text="normal" />
+            <core:Item key="invert" text="invert" />
+            <core:Item key="both" text="both" />
+         </ComboBox>
+      </HBox>
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+         <Label text="Labels offset:" wrapping="true" />
+         <StepInput min="-0.05" max="0.05" step="0.001"
+            value="{/labels_offset}" editable="true"
+            displayValuePrecision="3" />
+      </HBox>
+      <CheckBox text="Rotate labels"
+         selected="{/labels_rotate}" />
+      <Input type="Text" placeholder="Enter axis title ..."
+         valueStateText="Edit axis title" valueLiveUpdate="true"
+         value="{/handle/fTitle}" />
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+         <Label text="Title offset:" wrapping="true" />
+         <StepInput min="-0.05" max="0.05" step="0.001"
+            value="{/title_offset}" editable="true"
+            displayValuePrecision="3" />
+      </HBox>
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+         <Label text="Pos:" wrapping="true" />
+         <ComboBox selectedKey="{/handle/titlePos}">
+            <core:Item key="left" text="left" />
+            <core:Item key="center" text="center" />
+            <core:Item key="right" text="right" />
+         </ComboBox>
+      </HBox>
+      <CheckBox text="Rotate title" selected="{/title_rotate}" />
+   </VBox>
+</core:FragmentDefinition>

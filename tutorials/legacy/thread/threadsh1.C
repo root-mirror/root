@@ -17,6 +17,7 @@
 TCanvas *c[4];
 TH1F    *hpx[4];
 TThread *t[5];
+TRandom * rng[4];
 Bool_t finished;
 
 void *handle(void *ptr)
@@ -32,9 +33,9 @@ void *handle(void *ptr)
    hpx[nr]->SetFillColor(48);
    TThread::UnLock();
    Float_t px, py, pz;
-   gRandom->SetSeed();
+   rng[nr]->SetSeed(0);
    for (Int_t i = 0; i < nfills; i++) {
-      gRandom->Rannor(px,py);
+      rng[nr]->Rannor(px,py);
       pz = px*px + py*py;
       hpx[nr]->Fill(px);
       if (i && (i%upd) == 0) {
@@ -104,6 +105,11 @@ void threadsh1()
    c[2]->Connect("Closed()", 0, 0, "closed(Int_t=2)");
    c[3]->Connect("Closed()", 0, 0, "closed(Int_t=3)");
 
+   rng[0] = new TRandom3(1);
+   rng[1] = new TRandom3(2);
+   rng[2] = new TRandom3(3);
+   rng[3] = new TRandom3(4);
+
    printf("Starting Thread 0\n");
    t[0] = new TThread("t0", handle, (void*) 0);
    t[0]->Run();
@@ -141,4 +147,9 @@ void threadsh1()
    delete t[2];
    delete t[3];
    delete t[4];
+
+   delete rng[0];
+   delete rng[1];
+   delete rng[2];
+   delete rng[3];
 }

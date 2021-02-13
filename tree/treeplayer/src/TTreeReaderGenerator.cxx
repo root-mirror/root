@@ -28,6 +28,7 @@
 #include "TStreamerElement.h"
 #include "TStreamerInfo.h"
 #include "TTree.h"
+#include "TObjString.h"
 #include "TVirtualCollectionProxy.h"
 #include "TVirtualStreamerInfo.h"
 

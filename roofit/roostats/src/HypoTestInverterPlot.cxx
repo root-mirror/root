@@ -11,9 +11,9 @@
 /** \class RooStats::HypoTestInverterPlot
     \ingroup Roostats
 
-Class to plot an HypoTestInverterResult,  result of the HypoTestInverter calculator
+Class to plot a HypoTestInverterResult, the output of the HypoTestInverter calculator.
 
-It can be used to plot the obtained p-values ( CLb, CLs+b or CLs) for each scanned point and
+It can be used to plot the obtained p-values ( CLb, CLs+b or CLs) for each scanned point, as well as
 the test statistic distributions (when a calculator based on pseudo-experiments is used) for the two
 hypotheses.
 
@@ -35,8 +35,8 @@ hypotheses.
 #include "TLine.h"
 #include "TAxis.h"
 #include "TLegend.h"
-#include "TH1.h"
-#include "TPad.h"
+#include "TVirtualPad.h"
+#include "TError.h"
 #include "Math/DistFuncMathCore.h"
 
 #include <cmath>
@@ -69,22 +69,25 @@ HypoTestInverterPlot::HypoTestInverterPlot( const char* name,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Make the plot of the result of the scan
-/// using the observed data
-/// By default plot CLs or CLsb depending if the flag UseCLs is set
+/// Make the plot of the result of the scan using the observed data.
+/// By default plot CLs or CLsb depending if the flag UseCLs is set for the results
+/// that are passed to this instance.
 ///
-///  - If Option = "CLb"  return  CLb plot
-///  -           = "CLs+b" return  CLs+b plot  independently of the flag
-///  -           = "CLs"   return  CLs plot  independently of the flag
+/// \param opt Options according to following list:
+///  - Empty: Return CLs or CLs+b depending on the value of UseCLs.ƒ
+///  - "CLB":  return  CLb plot
+///  - "CLS+B" / "CLSPLUSB": return  CLs+b plot  independently of the flag
+///  - "CLS":  return  CLs plot  independently of the flag
 
 TGraphErrors* HypoTestInverterPlot::MakePlot(Option_t * opt)
 {
    TString option(opt);
    option.ToUpper();
-   int type = 0; // use default
-   if (option.Contains("CLB")) type = 1; // CLb
-   else if (option.Contains("CLS+B") || option.Contains("CLSPLUSB")) type = 2; // CLs+b
-   else if (option.Contains("CLS" )) type = 3; // CLs
+   enum Mode_t { Default, CLb, CLsPlusb, CLs };
+   Mode_t type = Default;
+   if (option.Contains("CLB")) type = CLb;
+   else if (option.Contains("CLS+B") || option.Contains("CLSPLUSB")) type = CLsPlusb;
+   else if (option.Contains("CLS" )) type = CLs;
 
    const int nEntries = fResults->ArraySize();
 
@@ -93,30 +96,40 @@ TGraphErrors* HypoTestInverterPlot::MakePlot(Option_t * opt)
    TMath::SortItr(fResults->fXValues.begin(), fResults->fXValues.end(), index.begin(), false);
 
    // copy result in sorted arrays
-   std::vector<Double_t> xArray(nEntries);
-   std::vector<Double_t> yArray(nEntries);
-   std::vector<Double_t> yErrArray(nEntries);
+   std::vector<Double_t> xArray;
+   std::vector<Double_t> yArray;
+   std::vector<Double_t> yErrArray;
+
    for (int i=0; i<nEntries; i++) {
-      xArray[i] = fResults->GetXValue(index[i]);
-      if (type == 0) {
-         yArray[i] = fResults->GetYValue(index[i]);
-         yErrArray[i] = fResults->GetYError(index[i]);
-      } else if (type == 1) {
-         yArray[i] = fResults->CLb(index[i]);
-         yErrArray[i] = fResults->CLbError(index[i]);
-      } else if (type == 2) {
-         yArray[i] = fResults->CLsplusb(index[i]);
-         yErrArray[i] = fResults->CLsplusbError(index[i]);
-      } else if (type == 3) {
-         yArray[i] = fResults->CLs(index[i]);
-         yErrArray[i] = fResults->CLsError(index[i]);
+      double CLVal = 0., CLErr = 0.;
+      if (type == Default) {
+         CLVal = fResults->GetYValue(index[i]);
+         CLErr = fResults->GetYError(index[i]);
+      } else if (type == CLb) {
+         CLVal = fResults->CLb(index[i]);
+         CLErr = fResults->CLbError(index[i]);
+      } else if (type == CLsPlusb) {
+         CLVal = fResults->CLsplusb(index[i]);
+         CLErr = fResults->CLsplusbError(index[i]);
+      } else if (type == CLs) {
+         CLVal = fResults->CLs(index[i]);
+         CLErr = fResults->CLsError(index[i]);
       }
+
+      if (CLVal < 0. || !std::isfinite(CLVal)) {
+         Warning("HypoTestInverterPlot::MakePlot", "Got a confidence level of %f at x=%f (failed fit?). Skipping this point.", CLVal, fResults->GetXValue(index[i]));
+         continue;
+      }
+
+      yArray.push_back(CLVal);
+      yErrArray.push_back(CLErr);
+      xArray.push_back(fResults->GetXValue(index[i]));
    }
 
-   TGraphErrors* graph = new TGraphErrors(nEntries,&xArray.front(),&yArray.front(),0,&yErrArray.front());
+   TGraphErrors* graph = new TGraphErrors(static_cast<Int_t>(xArray.size()),&xArray.front(),&yArray.front(),0,&yErrArray.front());
    TString pValueName = "CLs";
-   if (type == 1 ) pValueName = "CLb";
-   if (type == 2 || (type == 0 && !fResults->fUseCLs) ) pValueName = "CLs+b";
+   if (type == CLb ) pValueName = "CLb";
+   if (type == CLsPlusb || (type == Default && !fResults->fUseCLs) ) pValueName = "CLs+b";
    TString name = pValueName + TString("_observed");
    TString title = TString("Observed ") + pValueName;
    graph->SetName(name);

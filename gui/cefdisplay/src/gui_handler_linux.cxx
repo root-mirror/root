@@ -1,9 +1,6 @@
-/// \file gui_handler_linux.cxx
-/// \ingroup WebGui
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \date 2017-06-29
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Author: Sergey Linev <S.Linev@gsi.de>
+// Date: 2017-06-29
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 /*************************************************************************
  * Copyright (C) 1995-2017, Rene Brun and Fons Rademakers.               *
@@ -19,6 +16,10 @@
 #endif
 
 #include "gui_handler.h"
+
+#include "include/cef_config.h"
+
+#ifdef CEF_X11
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -47,15 +48,19 @@ int x11_errhandler( Display *dpy, XErrorEvent *err )
   return 0;
 }
 
-void GuiHandler::PlatformInit()
+bool GuiHandler::PlatformInit()
 {
    // install custom X11 error handler to avoid application exit in case of X11 failure
    XSetErrorHandler( x11_errhandler );
+
+   return false; // do not use view framework
 }
+
 
 
 void GuiHandler::PlatformTitleChange(CefRefPtr<CefBrowser> browser, const CefString &title)
 {
+
    std::string titleStr(title);
 
    // Retrieve the X11 display shared with Chromium.
@@ -82,3 +87,19 @@ void GuiHandler::PlatformTitleChange(CefRefPtr<CefBrowser> browser, const CefStr
    // fallback to the UTF8 property above.
    XStoreName(display, browser->GetHost()->GetWindowHandle(), titleStr.c_str());
 }
+
+#else
+
+bool GuiHandler::PlatformInit()
+{
+   return true; // use view framework
+}
+
+void GuiHandler::PlatformTitleChange(CefRefPtr<CefBrowser>, const CefString &)
+{
+   // do nothing
+}
+
+
+#endif
+

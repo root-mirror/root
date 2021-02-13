@@ -22,13 +22,8 @@
 #include <TMVA/VariableTransform.h>
 
 #include <TAxis.h>
-#include <TCanvas.h>
 #include <TFile.h>
-#include <TGraph.h>
-#include <TSystem.h>
 #include <TH2.h>
-
-#include <iostream>
 
 using namespace TMVA;
 
@@ -42,8 +37,8 @@ this is a generic one protected.
 \param file optional file to save the results.
 \param options extra options for the algorithm.
 */
-Envelope::Envelope(const TString &name, DataLoader *dalaloader, TFile *file, const TString options)
-   : Configurable(options), fDataLoader(dalaloader), fFile(file), fModelPersistence(kTRUE), fVerbose(kFALSE),
+Envelope::Envelope(const TString &name, DataLoader *dataloader, TFile *file, const TString options)
+   : Configurable(options), fDataLoader(dataloader), fFile(file), fModelPersistence(kTRUE), fVerbose(kFALSE),
      fTransformations("I"), fSilentFile(kFALSE), fJobs(1)
 {
     SetName(name.Data());
@@ -125,7 +120,7 @@ DataLoader *Envelope::GetDataLoader(){    return fDataLoader.get();}
 //_______________________________________________________________________
 /**
 Method to set the pointer to TMVA::DataLoader object.
-\param dalaloader pointer to TMVA::DataLoader object.
+\param dataloader pointer to TMVA::DataLoader object.
 */
 
 void Envelope::SetDataLoader(DataLoader *dataloader)
@@ -151,7 +146,7 @@ void TMVA::Envelope::SetModelPersistence(Bool_t status){fModelPersistence=status
 /**
 Method to book the machine learning method to perform the algorithm.
 \param method enum TMVA::Types::EMVA with the type of the mva method
-\param methodtitle String with the method title.
+\param methodTitle String with the method title.
 \param options String with the options for the method.
 */
 void TMVA::Envelope::BookMethod(Types::EMVA method, TString methodTitle, TString options){
@@ -161,8 +156,8 @@ void TMVA::Envelope::BookMethod(Types::EMVA method, TString methodTitle, TString
 //_______________________________________________________________________
 /**
 Method to book the machine learning method to perform the algorithm.
-\param methodname String with the name of the mva method
-\param methodtitle String with the method title.
+\param methodName String with the name of the mva method
+\param methodTitle String with the method title.
 \param options String with the options for the method.
 */
 void TMVA::Envelope::BookMethod(TString methodName, TString methodTitle, TString options){

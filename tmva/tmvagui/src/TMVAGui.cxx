@@ -9,8 +9,6 @@
 #include "TString.h"
 #include "TControlBar.h"
 #include "TObjString.h"
-#include "TClass.h"
-
 
 
 // some global lists

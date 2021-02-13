@@ -17,11 +17,11 @@ Created by the TControlBar. Not for general consumption.
 */
 
 #include "TControlBarButton.h"
-#include "TCanvas.h"
+#include "TVirtualPad.h"
 #include "TError.h"
 #include "TApplication.h"
 
-#include <ctype.h>
+#include <cctype>
 
 const char *kBStr = "BUTTON";
 const char *kDStr = "DRAWNBUTTON";

@@ -8,6 +8,7 @@
  *************************************************************************/
 
 #include <TSystem.h>
+#include <TVirtualX.h>
 #include <TRootHelpDialog.h>
 
 #include "RSMsgBox.h"

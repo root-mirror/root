@@ -12,163 +12,192 @@
 
 #include "Minuit2/MnConfig.h"
 
-//#define DEBUG
-//#define WARNINGMSG
-
-#include <iostream>
-
-#ifdef DEBUG
-#ifndef WARNINGMSG
-#define WARNINGMSG
-#endif
-#endif
-
-
-
+#include <sstream>
+#include <utility>
+#include <cassert>
+#include <string>
+#include <ios>
 
 namespace ROOT {
-
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 /**
     define std::ostream operators for output
 */
 
 class FunctionMinimum;
-std::ostream& operator<<(std::ostream&, const FunctionMinimum&);
+std::ostream &operator<<(std::ostream &, const FunctionMinimum &);
 
 class MinimumState;
-std::ostream& operator<<(std::ostream&, const MinimumState&);
+std::ostream &operator<<(std::ostream &, const MinimumState &);
 
 class LAVector;
-std::ostream& operator<<(std::ostream&, const LAVector&);
+std::ostream &operator<<(std::ostream &, const LAVector &);
 
 class LASymMatrix;
-std::ostream& operator<<(std::ostream&, const LASymMatrix&);
+std::ostream &operator<<(std::ostream &, const LASymMatrix &);
 
 class MnUserParameters;
-std::ostream& operator<<(std::ostream&, const MnUserParameters&);
+std::ostream &operator<<(std::ostream &, const MnUserParameters &);
 
 class MnUserCovariance;
-std::ostream& operator<<(std::ostream&, const MnUserCovariance&);
+std::ostream &operator<<(std::ostream &, const MnUserCovariance &);
 
 class MnGlobalCorrelationCoeff;
-std::ostream& operator<<(std::ostream&, const MnGlobalCorrelationCoeff&);
+std::ostream &operator<<(std::ostream &, const MnGlobalCorrelationCoeff &);
 
 class MnUserParameterState;
-std::ostream& operator<<(std::ostream&, const MnUserParameterState&);
+std::ostream &operator<<(std::ostream &, const MnUserParameterState &);
 
 class MnMachinePrecision;
-std::ostream& operator<<(std::ostream&, const MnMachinePrecision&);
+std::ostream &operator<<(std::ostream &, const MnMachinePrecision &);
 
 class MinosError;
-std::ostream& operator<<(std::ostream&, const MinosError&);
+std::ostream &operator<<(std::ostream &, const MinosError &);
 
 class ContoursError;
-std::ostream& operator<<(std::ostream&, const ContoursError&);
+std::ostream &operator<<(std::ostream &, const ContoursError &);
 
+// std::pair<double, double> is used by MnContour
+std::ostream &operator<<(std::ostream &os, const std::pair<double, double> &point);
 
-// class define static print level values
+/* Design notes: 1) We want to delay the costly conversion from object references to
+   strings to a point after we have decided whether or not to
+   show that string to the user at all. 2) We want to offer a customization point for
+   external libraries that want to replace the MnPrint logging. The actual
+   implementation is in a separate file, MnPrintImpl.cxx file that external libraries
+   can replace with their own implementation.
+*/
 
+// logging class for messages of varying severity
 class MnPrint {
-
 public:
+   // want this to be an enum class for strong typing...
+   enum class Verbosity { Error = 0, Warn = 1, Info = 2, Debug = 3 };
+
+   // ...but also want the values accessible from MnPrint scope for convenience
+   static constexpr auto eError = Verbosity::Error;
+   static constexpr auto eWarn = Verbosity::Warn;
+   static constexpr auto eInfo = Verbosity::Info;
+   static constexpr auto eDebug = Verbosity::Debug;
+
+   // used for one-line printing of fcn minimum state
+   class Oneline {
+   public:
+      Oneline(double fcn, double edm, int ncalls, int iter = -1);
+      Oneline(const MinimumState &state, int iter = -1);
+      Oneline(const FunctionMinimum &fmin, int iter = -1);
+
+   private:
+      double fFcn, fEdm;
+      int fNcalls, fIter;
+
+      friend std::ostream &operator<<(std::ostream &os, const Oneline &x);
+   };
+
+   MnPrint(const char *prefix, int level = MnPrint::GlobalLevel());
+   ~MnPrint();
+
+   // set global print level and return the previous one
+   static int SetGlobalLevel(int level);
+
+   // return current global print level
+   static int GlobalLevel();
+
+   // Whether to show the full prefix stack or only the end
+   static void ShowPrefixStack(bool yes);
+
+   static void AddFilter(const char *prefix);
+   static void ClearFilter();
+
    // set print level and return the previous one
-   static int SetLevel(int level);
+   int SetLevel(int level);
 
-   // return current level
-   static int Level();
+   // return current print level
+   int Level() const;
 
-   // print current minimization state
-   static void PrintState(std::ostream & os, const MinimumState & state, const char * msg, int iter = -1);
+   template <class... Ts>
+   void Error(const Ts &... args)
+   {
+      Log(eError, args...);
+   }
 
-   // print current minimization state
-   static void PrintState(std::ostream & os, double fcn, double edm, int ncalls, const char * msg, int iter = -1);
+   template <class... Ts>
+   void Warn(const Ts &... args)
+   {
+      Log(eWarn, args...);
+   }
 
-   // print FCN value with right precision adding optionally end line
-   static void PrintFcn(std::ostream & os, double value, bool endline = true);
+   template <class... Ts>
+   void Info(const Ts &... args)
+   {
+      Log(eInfo, args...);
+   }
+
+   template <class... Ts>
+   void Debug(const Ts &... args)
+   {
+      Log(eDebug, args...);
+   }
+
+private:
+   // low level logging
+   template <class... Ts>
+   void Log(Verbosity level, const Ts &... args)
+   {
+      if (Level() < static_cast<int>(level))
+         return;
+      if (Hidden())
+         return;
+
+      std::ostringstream os;
+      StreamPrefix(os);
+      StreamArgs(os, args...);
+      Impl(level, os.str());
+   }
+
+   static void StreamPrefix(std::ostringstream &os);
+
+   // returns true if filters are installed and message is not selected by any filter
+   static bool Hidden();
+
+   // see MnPrintImpl.cxx
+   static void Impl(Verbosity level, const std::string &s);
+
+   // TMP to handle lambda argument correctly, exploiting overload resolution rules
+   template <class T>
+   static auto HandleLambda(std::ostream &os, const T &t, int) -> decltype(t(os), void())
+   {
+      t(os);
+   }
+
+   template <class T>
+   static void HandleLambda(std::ostream &os, const T &t, float)
+   {
+      os << t;
+   }
+
+   static void StreamArgs(std::ostringstream &) {}
+
+   // end of recursion
+   template <class T>
+   static void StreamArgs(std::ostringstream &os, const T &t)
+   {
+      os << " ";
+      HandleLambda(os, t, 0);
+   }
+
+   template <class T, class... Ts>
+   static void StreamArgs(std::ostringstream &os, const T &t, const Ts &... ts)
+   {
+      os << " " << t;
+      StreamArgs(os, ts...);
+   }
+
+   int fLevel;
 };
 
+} // namespace Minuit2
+} // namespace ROOT
 
-
-  }  // namespace Minuit2
-
-}  // namespace ROOT
-
-
-// macro to report messages
-
-#ifndef USE_ROOT_ERROR
-
-#ifndef MNLOG
-#define MN_OS std::cerr
-#else
-#define MN_OS MNLOG
-#endif
-
-#define MN_INFO_MSG(str) \
-   if (MnPrint::Level() > 0) MN_OS << "Info: " << str    \
-       << std::endl;
-#define MN_ERROR_MSG(str) \
-   if (MnPrint::Level() >= 0) MN_OS << "Error: " << str \
-       << std::endl;
-# define MN_INFO_VAL(x) \
-   if (MnPrint::Level() > 0) MN_OS << "Info: " << #x << " = " << (x) << std::endl;
-# define MN_ERROR_VAL(x) \
-   if (MnPrint::Level() >= 0) MN_OS << "Error: " << #x << " = " << (x) << std::endl;
-
-
-// same giving a location
-
-#define MN_INFO_MSG2(loc,str) \
-  if (MnPrint::Level() > 0) MN_OS << "Info in " << loc << " : " << str \
-       << std::endl;
-#define MN_ERROR_MSG2(loc,str) \
-   if (MnPrint::Level() >= 0) MN_OS << "Error in " << loc << " : " << str \
-       << std::endl;
-# define MN_INFO_VAL2(loc,x) \
-   if (MnPrint::Level() > 0) MN_OS << "Info in " << loc << " : " << #x << " = " << (x) << std::endl;
-# define MN_ERROR_VAL2(loc,x) \
-   if (MnPrint::Level() >= 0) MN_OS << "Error in " << loc << " : " << #x << " = " << (x) << std::endl;
-
-
-
-#else
-// use ROOT error reporting system
-#include "TError.h"
-#include "Math/Util.h"
-
-// this first two should be used only with string literals to
-// avoid warning produced by the format in TError
-#define  MN_INFO_MSG(str) \
-   ::Info("Minuit2",str);
-#define  MN_ERROR_MSG(str) \
-   ::Error("Minuit2",str);
-# define MN_INFO_VAL(x) \
-   {std::string str = std::string(#x) + std::string(" = ") + ROOT::Math::Util::ToString(x); \
-      ::Info("Minuit2","%s",str.c_str() );}
-# define MN_ERROR_VAL(x) \
-   {std::string str = std::string(#x) + std::string(" = ") + ROOT::Math::Util::ToString(x); \
-   ::Error("Minuit2","%s",str.c_str() );}
-
-# define MN_INFO_MSG2(loc,txt) \
-   {std::string str = std::string(loc) + std::string(" : ") + std::string(txt); \
-   ::Info("Minuit2","%s",str.c_str() );}
-# define MN_ERROR_MSG2(loc,txt) \
-   {std::string str = std::string(loc) + std::string(" : ") + std::string(txt); \
-   ::Error("Minuit2","%s",str.c_str() );}
-
-# define MN_INFO_VAL2(loc,x) \
-   {std::string str = std::string(loc) + std::string(" : ") + std::string(#x) + std::string(" = ") + ROOT::Math::Util::ToString(x); \
-   ::Info("Minuit2","%s",str.c_str() );}
-# define MN_ERROR_VAL2(loc,x) \
-   {std::string str = std::string(loc) + std::string(" : ") + std::string(#x) + std::string(" = ") + ROOT::Math::Util::ToString(x); \
-   ::Error("Minuit2","%s",str.c_str() );}
-
-
-
-#endif
-
-
-#endif  // ROOT_Minuit2_MnPrint
+#endif // ROOT_Minuit2_MnPrint

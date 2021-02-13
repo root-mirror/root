@@ -36,10 +36,10 @@ class TMessageHandler : public TNamed, public TQObject {
 protected:
    const TClass   *fClass;      // class for which message has to be handled
    const TObject  *fMessObj;    // object generating message
-   Int_t           fMessId;     // message id (often matching specific enum in fClass)
+   Long_t          fMessId;     // message id (often matching specific enum in fClass)
    Int_t           fSize;       // number of different messages handled
    Int_t          *fCnts;       // count per message
-   Int_t          *fMessIds;    // message ids
+   Long_t         *fMessIds;    // message ids
    Bool_t          fDerived;    // if true handle messages also for derived classes
 
    void  *GetSender() { return this; }  //used to set gTQSender
@@ -50,10 +50,10 @@ public:
    virtual ~TMessageHandler();
 
    Int_t           GetSize() const { return fSize; }
-   virtual Int_t   GetMessageCount(Int_t messId) const;
+   virtual Int_t   GetMessageCount(Long_t messId) const;
    virtual Int_t   GetTotalMessageCount() const;
    Bool_t          HandleDerived() const { return fDerived; }
-   virtual void    HandleMessage(Int_t id, const TObject *obj);
+   virtual void    HandleMessage(Long_t id, const TObject *obj);
 
    virtual void    Print(Option_t *option= "") const;
 

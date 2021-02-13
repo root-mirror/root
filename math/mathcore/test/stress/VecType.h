@@ -6,6 +6,7 @@
 #include "Math/VectorUtil.h"
 #include "Math/Vector4Dfwd.h"
 #include "TrackMathCore.h"
+#include <string>
 
 template <class V>
 struct VecType {

@@ -16,23 +16,16 @@
 #include <ROOT/REveTrackProjected.hxx>
 
 #include "TParticle.h"
-#include "TPolyLine3D.h"
-#include "TMarker.h"
-#include "TPolyMarker3D.h"
-#include "TColor.h"
 #include "TParticlePDG.h"
 #include "TClass.h"
-#include "Riostream.h"
 
+#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <functional>
 
-#include "json.hpp"
-
 
 using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
 
 /** \class REveTrack
 \ingroup REve

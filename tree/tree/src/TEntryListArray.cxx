@@ -71,8 +71,7 @@ TEntryListArray's:
 #include "TEntryListArray.h"
 #include "TEntryListBlock.h"
 #include "TTree.h"
-#include "TFile.h"
-#include "TSystem.h"
+#include "TList.h"
 #include <iostream>
 
 ClassImp(TEntryListArray);

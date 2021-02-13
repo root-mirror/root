@@ -13,6 +13,7 @@
 #define ROOT_TRootSnifferFull
 
 #include "TRootSniffer.h"
+#include <string>
 
 class TMemFile;
 
@@ -21,25 +22,25 @@ protected:
    TMemFile *fMemFile{nullptr}; ///<! file used to manage streamer infos
    TList *fSinfo{nullptr};      ///<! last produced streamer info
 
-   virtual void ScanObjectProperties(TRootSnifferScanRec &rec, TObject *obj);
+   void ScanObjectProperties(TRootSnifferScanRec &rec, TObject *obj) override;
 
-   virtual void ScanKeyProperties(TRootSnifferScanRec &rec, TKey *key, TObject *&obj, TClass *&obj_class);
+   void ScanKeyProperties(TRootSnifferScanRec &rec, TKey *key, TObject *&obj, TClass *&obj_class) override;
 
-   virtual void ScanObjectChilds(TRootSnifferScanRec &rec, TObject *obj);
+   void ScanObjectChilds(TRootSnifferScanRec &rec, TObject *obj) override;
 
    void CreateMemFile();
 
-   virtual Bool_t CanDrawClass(TClass *cl) { return IsDrawableClass(cl); }
+   Bool_t CanDrawClass(TClass *cl) override { return IsDrawableClass(cl); }
 
-   virtual Bool_t HasStreamerInfo() const { return kTRUE; }
+   Bool_t HasStreamerInfo() const override { return kTRUE; }
 
-   virtual Bool_t ProduceBinary(const std::string &path, const std::string &options, std::string &res);
+   Bool_t ProduceBinary(const std::string &path, const std::string &options, std::string &res) override;
 
-   virtual Bool_t ProduceImage(Int_t kind, const std::string &path, const std::string &options, std::string &res);
+   Bool_t ProduceImage(Int_t kind, const std::string &path, const std::string &options, std::string &res) override;
 
-   virtual Bool_t ProduceXml(const std::string &path, const std::string &options, std::string &res);
+   Bool_t ProduceXml(const std::string &path, const std::string &options, std::string &res) override;
 
-   virtual Bool_t ProduceExe(const std::string &path, const std::string &options, Int_t reskind, std::string &res);
+   Bool_t ProduceExe(const std::string &path, const std::string &options, Int_t reskind, std::string &res) override;
 
 public:
    TRootSnifferFull(const char *name, const char *objpath = "Objects");
@@ -47,16 +48,15 @@ public:
 
    static Bool_t IsDrawableClass(TClass *cl);
 
-   virtual Bool_t IsStreamerInfoItem(const char *itemname);
+   Bool_t IsStreamerInfoItem(const char *itemname) override;
 
-   virtual ULong_t GetStreamerInfoHash();
+   ULong_t GetStreamerInfoHash() override;
 
-   virtual ULong_t GetItemHash(const char *itemname);
+   ULong_t GetItemHash(const char *itemname) override;
 
-   virtual void *
-   FindInHierarchy(const char *path, TClass **cl = nullptr, TDataMember **member = nullptr, Int_t *chld = nullptr);
+   void *FindInHierarchy(const char *path, TClass **cl = nullptr, TDataMember **member = nullptr, Int_t *chld = nullptr) override;
 
-   ClassDef(TRootSnifferFull, 0) // Sniffer for many ROOT classes, including histograms, graphs, pads and tree
+   ClassDefOverride(TRootSnifferFull, 0) // Sniffer for many ROOT classes, including histograms, graphs, pads and tree
 };
 
 #endif

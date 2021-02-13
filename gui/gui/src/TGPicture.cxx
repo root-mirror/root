@@ -39,9 +39,9 @@
 #include "TVirtualX.h"
 #include "TImage.h"
 #include "TROOT.h"
-#include <stdlib.h>
+#include <cstdlib>
 
-TGGC *TGSelectedPicture::fgSelectedGC = 0;
+TGGC *TGSelectedPicture::fgSelectedGC = nullptr;
 
 ClassImp(TGPicture);
 ClassImp(TGSelectedPicture);

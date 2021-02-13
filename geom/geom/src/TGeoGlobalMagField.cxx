@@ -8,8 +8,10 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "TROOT.h"
 #include "TGeoGlobalMagField.h"
+
+#include "TROOT.h"
+#include "TList.h"
 
 /** \class TGeoGlobalMagField
 \ingroup Geometry_classes
@@ -40,14 +42,14 @@ One can directly call the Field() method of a field via the global field manager
 
 ClassImp(TGeoGlobalMagField);
 
-TGeoGlobalMagField *TGeoGlobalMagField::fgInstance = NULL;
+TGeoGlobalMagField *TGeoGlobalMagField::fgInstance = nullptr;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Global field default constructor.
 
 TGeoGlobalMagField::TGeoGlobalMagField()
 {
-   fField = NULL;
+   fField = nullptr;
    fLock = kFALSE;
    if (fgInstance) {
       TVirtualMagField *field = fgInstance->GetField();
@@ -72,10 +74,10 @@ TGeoGlobalMagField::~TGeoGlobalMagField()
    gROOT->GetListOfGeometries()->Remove(this);
    if (fField) {
       TVirtualMagField *field = fField;
-      fField = NULL;
+      fField = nullptr;
       delete field;
    }
-   fgInstance = NULL;
+   fgInstance = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +95,7 @@ void TGeoGlobalMagField::SetField(TVirtualMagField *field)
       // We delete the old global field and notify user.
       Info("SetField", "Previous magnetic field <%s> will be deleted", fField->GetName());
       TVirtualMagField *oldfield = fField;
-      fField = NULL;
+      fField = nullptr;
       delete oldfield;
    }
    fField = field;

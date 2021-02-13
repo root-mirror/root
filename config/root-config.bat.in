@@ -1,0 +1,219 @@
+:: This script returns the machine dependent compile options needed
+:: to compile and link applications using the ROOT libraries.
+
+:: Author: Bertrand Bellenot, 28/10/2020
+
+@echo off
+setlocal EnableDelayedExpansion
+
+set "usage="
+for %%u in (
+   "Usage: root-config [--version] [--cflags] [--libs] [--glibs] [--evelibs]"
+   " [--bindir] [--libdir] [--incdir] [--etcdir] [--tutdir] [--has-<feature>]"
+   " [--arch] [--platform] [--config] [--features] [--ncpu] [--git-revision]"
+   " [--python-version] [--python2-version] [--python3-version] [--cc] [--cxx]"
+   " [--f77] [--ld ] [--help]"
+) do set usage=!usage!%%~u^
+
+
+if "%1"=="" (
+   echo !usage! 1>&2
+   exit /b 1
+)
+
+set arch=@architecture@
+set platform=@CMAKE_SYSTEM@
+set bindir=%ROOTSYS%\bin
+set libdir=%ROOTSYS%\lib
+set incdir=%ROOTSYS%\include
+set etcdir=%ROOTSYS%\etc
+set tutdir=%ROOTSYS%\tutorials
+set features=@features@
+set configargs="@configargs@"
+set altcc=@altcc@
+set altcxx=@altcxx@
+set altf77=@altf77@
+set altld=@altld@
+
+set srcdir=@top_srcdir@
+rem convert forward slashes to backslashes
+set srcdir=!srcdir:/=\!
+
+set cflags=-nologo @BLDCFLAGS@ -EHsc- -W3 -D_WIN32
+set cxxflags=-nologo @BLDCXXFLAGS@ -EHsc- -W3 -D_WIN32
+if "@BLDCFLAGS@"=="-MDd" (
+    set cflags=!cflags! -Od -Z7
+    set cxxflags=!cxxflags! -Od -Z7
+) else (
+    set cflags=!cflags! -O2
+    set cxxflags=!cxxflags! -O2
+)
+
+set rootglibs=libGui.lib
+set rootevelibs=libEve.lib libEG.lib libGeom.lib libGed.lib libRGL.lib
+set rootlibs=libCore.lib libImt.lib libRIO.lib libNet.lib libHist.lib libGraf.lib libGraf3d.lib libGpad.lib libROOTVecOps.lib libTree.lib libTreePlayer.lib libRint.lib libPostscript.lib libMatrix.lib libPhysics.lib libMathCore.lib libThread.lib
+
+set out=
+
+for %%w in (%*) do (
+   set arg=%%w
+   if "!arg!"=="--arch" (
+      rem Output the architecture
+      set out=!out! !arch!
+   )
+   if "!arg!"=="--platform" (
+      rem Output the platform (OS)
+      set out=!out! !platform!
+   )
+   if "!arg:~0,6!"=="--has-" (
+      rem Check for feature
+      set feature=!arg:~6!
+      set res=""
+      for %%f in (%features%) do (
+         if %%f==!feature! (
+            set res=%%f
+            set out=!out! yes
+         )
+      )
+      if !res!=="" (
+         set out=!out! no
+      )
+   )
+   if "!arg!"=="--version" (
+      rem Output the version number. If RVersion.h can not be found, give up.
+      if exist !incdir!\RVersion.h (
+         for /f "tokens=2,3" %%a in (!incdir!\RVersion.h) do (
+            if "%%a"=="ROOT_RELEASE" (
+               set ROOT_RELEASE=%%~b
+            )
+         )
+         set out=!out! !ROOT_RELEASE!
+      ) else (
+         echo "cannot read ${incdir}/RVersion.h"
+         exit 1
+      )
+   )
+   if "!arg!"=="--git-revision" (
+      rem Output the git revision number. If RGitCommit.h can not be found, give up.
+      if exist !incdir!\RGitCommit.h (
+         for /f "tokens=2,3" %%a in (!incdir!\RGitCommit.h) do (
+            if "%%a"=="ROOT_GIT_COMMIT" (
+               set ROOT_GIT_COMMIT=%%~b
+            )
+         )
+         set out=!out! !ROOT_GIT_COMMIT!
+      ) else (
+         echo "cannot read !incdir!\RGitCommit.h"
+         exit /b 1
+      )
+   )
+   if "!arg!"=="--python-version" (
+      set out=!out! @pythonvers@
+   )
+   if "!arg!"=="--python2-version" (
+      set out=!$out! @python2vers@
+   )
+   if "!arg!"=="--python3-version" (
+      set out=!$out! @python3vers@
+   )
+   if "!arg!"=="--cflags" (
+      set out=!out! !cxxflags! -I!incdir!
+   )
+   if "!arg!"=="--libs" (
+      set out=!out! /link -LIBPATH:!libdir! !rootlibs!
+   )
+   if "!arg!"=="--glibs" (
+      set out=!out! /link -LIBPATH:!libdir! !rootlibs! !rootglibs!
+   )
+   if "!arg!"=="--evelibs" (
+      set out=!out! /link -LIBPATH:!libdir! !rootlibs! !rootglibs! !rootevelibs!
+   )
+   if "!arg!"=="--bindir" (
+      set out=!out! !bindir!
+   )
+   if "!arg!"=="--libdir" (
+      set out=!out! !libdir!
+   )
+   if "!arg!"=="--incdir" (
+      set out=!out! !incdir!
+   )
+   if "!arg!"=="--etcdir" (
+      set out=!out! !etcdir!
+   )
+   if "!arg!"=="--tutdir" (
+      set out=!out! !tutdir!
+   )
+   if "!arg!"=="--srcdir" (
+      rem output the src directory
+      set out=!out! !srcdir!
+   )
+   if "!arg!"=="--config" (
+      rem output the configure arguments
+      set out=!out! !configargs!
+   )
+   if "!arg!"=="--features" (
+      rem output all supported features
+      set out=!out!!features!
+   )
+   if "!arg!"=="--ncpu" (
+      rem number of available cores
+      set out=!out! %NUMBER_OF_PROCESSORS%
+   )
+   if "!arg!"=="--cc" (
+      rem output used C compiler
+      set out=!out! !altcc!
+   )
+   if "!arg!"=="--cxx" (
+      rem output used C++ compiler
+      set out=!out! !altcxx!
+   )
+   if "!arg!"=="--f77" (
+      rem output used Fortran compiler
+      set out=!out! !altf77!
+   )
+   if "!arg!"=="--ld" (
+      rem output used Linker
+      set out=!out! !altld!
+   )
+   if "!arg!"=="--help" (
+      rem Print a help message
+      goto print_help
+   )
+)
+
+echo !out!
+
+exit /b 0
+
+:print_help
+
+echo Usage: %0 [options]
+echo.
+echo   --arch                Print the architecture (compiler/OS)
+echo   --platform            Print the platform (OS)
+echo   --libs                Print regular ROOT libraries
+echo   --glibs               Print regular + GUI ROOT libraries
+echo   --evelibs             Print regular + GUI + Eve libraries
+echo   --cflags              Print compiler flags and header path
+echo   --bindir              Print the executable directory
+echo   --libdir              Print the library directory
+echo   --incdir              Print the header directory
+echo   --etcdir              Print the configuration directory
+echo   --tutdir              Print the tutorials directory
+echo   --srcdir              Print the top of the original source directory
+echo   --auxlibs             Print auxiliary libraries
+echo   --config              Print arguments used for configuration with CMake
+echo   --features            Print list of all supported features
+echo   --has-^<feature^>       Test if ^<feature^> is compiled in
+echo   --version             Print the ROOT version
+echo   --git-revision        Print the ROOT git revision number
+echo   --python-version      Print the Python version used by ROOT
+echo   --python2-version     Print the Python2 version used by PyROOT
+echo   --python3-version     Print the Python3 version used by PyROOT
+echo   --ncpu                Print number of available (hyperthreaded) cores
+echo   --cc                  Print alternative C compiler specified when ROOT was built
+echo   --cxx                 Print alternative C++ compiler specified when ROOT was built
+echo   --f77                 Print alternative Fortran compiler specified when ROOT was built
+echo   --ld                  Print alternative Linker specified when ROOT was built
+echo   --help                Print this message
+exit /b 0

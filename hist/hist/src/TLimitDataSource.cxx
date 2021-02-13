@@ -4,14 +4,14 @@
 ///////////////////////////////////////////////////////////////////////////
 /** \class TLimitDataSource
   This class serves as interface to feed data into the TLimit routines
-*/ 
+*/
 ///////////////////////////////////////////////////////////////////////////
 
 #include "TLimitDataSource.h"
 #include "TH1.h"
 #include "TVectorD.h"
-#include "TObjString.h"
 #include "TRandom3.h"
+#include "snprintf.h"
 
 ClassImp(TLimitDataSource);
 

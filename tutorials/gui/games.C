@@ -49,6 +49,12 @@ void games()
       return;
    }
    gROOT->ProcessLine("#define __RUN_GAMES__ 1");
+   
+   //Add this for CLING not to complain
+   gROOT->ProcessLine("#include \"Hello.h\"");
+   gROOT->ProcessLine("#include \"Aclock.h\"");
+   gROOT->ProcessLine("#include \"Tetris.h\"");
+   
    gROOT->ProcessLine("#include \"games.C\"");
    gROOT->ProcessLine("rungames()");
    gROOT->ProcessLine("#undef __RUN_GAMES__");

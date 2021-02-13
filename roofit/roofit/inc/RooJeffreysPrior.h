@@ -29,7 +29,7 @@ public:
 
 protected:
 
-  RooPdfProxy _nominal;    // Proxy to the PDF for this prior.
+  RooTemplateProxy<RooAbsPdf> _nominal;    // Proxy to the PDF for this prior.
   RooListProxy _obsSet ;   // Observables of the PDF.
   RooListProxy _paramSet ; // Parameters of the PDF.
 

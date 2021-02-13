@@ -9,6 +9,7 @@
 # @author Pere Mato, CERN
 ############################################################################
 
+
 ROOT_STANDARD_LIBRARY_PACKAGE(RooFit
   HEADERS
     Roo2DKeysPdf.h
@@ -23,6 +24,8 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFit
     RooBreitWigner.h
     RooBukinPdf.h
     RooCBShape.h
+    RooDSCBShape.h
+    RooSDSCBShape.h
     RooCFunction1Binding.h
     RooCFunction2Binding.h
     RooCFunction3Binding.h
@@ -46,7 +49,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFit
     RooLandau.h
     RooLognormal.h
     RooMathCoreReg.h
-    RooMathMoreReg.h
     RooMomentMorphFunc.h
     RooMomentMorphFuncND.h
     RooMomentMorph.h
@@ -83,6 +85,8 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFit
     src/RooBreitWigner.cxx
     src/RooBukinPdf.cxx
     src/RooCBShape.cxx
+    src/RooDSCBShape.cxx
+    src/RooSDSCBShape.cxx
     src/RooCFunction1Binding.cxx
     src/RooCFunction2Binding.cxx
     src/RooCFunction3Binding.cxx
@@ -106,7 +110,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFit
     src/RooLandau.cxx
     src/RooLognormal.cxx
     src/RooMathCoreReg.cxx
-    src/RooMathMoreReg.cxx
     src/RooMomentMorph.cxx
     src/RooMomentMorphFunc.cxx
     src/RooMomentMorphFuncND.cxx
@@ -134,6 +137,8 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFit
     "-writeEmptyRootPCM"
   LINKDEF
     LinkDef1.h
+  LIBRARIES
+    RooBatchCompute
   DEPENDENCIES
     Core
     RooFitCore
@@ -143,8 +148,8 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFit
     MathCore
 )
 
-if(vdt AND NOT builtin_vdt)
-  target_include_directories(RooFit PRIVATE ${VDT_INCLUDE_DIR})
-endif()
+# For recent clang, this can facilitate auto-vectorisation.
+# In RooFit, the errno side effect is not needed, anyway:
+target_compile_options(RooFit PUBLIC -fno-math-errno)
 
 ROOT_ADD_TEST_SUBDIRECTORY(test)

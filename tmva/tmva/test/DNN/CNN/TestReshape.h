@@ -28,7 +28,6 @@
 #ifndef ROOT_TESTFLATTEN_H
 #define ROOT_TESTFLATTEN_H
 
-#include <iostream>
 #include "TestConvNet.h"
 
 using namespace TMVA::DNN;

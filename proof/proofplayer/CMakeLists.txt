@@ -29,7 +29,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ProofPlayer
     TProofPlayerLite.h
     TStatsFeedback.h
     TStatus.h
-    TVirtualPacketizer.h
   SOURCES
     TDrawFeedback.cxx
     TEventIter.cxx
@@ -48,7 +47,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ProofPlayer
     TProofPlayerLite.cxx
     TStatsFeedback.cxx
     TStatus.cxx
-    TVirtualPacketizer.cxx
   DEPENDENCIES
     Hist
     Net
@@ -57,6 +55,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ProofPlayer
     RIO
     Thread
     Tree
+    TreePlayer
 )
 
 ROOT_STANDARD_LIBRARY_PACKAGE(ProofDraw

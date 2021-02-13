@@ -23,8 +23,13 @@
 
 #include "TNamed.h"
 #include "TDatime.h"
-#include "TMacro.h"
 #include "TString.h"
+
+#ifdef R__LESS_INCLUDES
+class TMacro;
+#else
+#include "TMacro.h"
+#endif
 
 class TBrowser;
 class TTreePlayer;

@@ -10,41 +10,37 @@
 #ifndef MN_GaussFunction_H_
 #define MN_GaussFunction_H_
 
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class GaussFunction {
 
 public:
+   GaussFunction(double mean, double sig, double constant) : fMean(mean), fSigma(sig), fConstant(constant) {}
 
-  GaussFunction(double mean, double sig, double constant) :
-    fMean(mean), fSigma(sig), fConstant(constant) {}
+   ~GaussFunction() {}
 
-  ~GaussFunction() {}
+   double m() const { return fMean; }
+   double s() const { return fSigma; }
+   double c() const { return fConstant; }
 
-  double m() const {return fMean;}
-  double s() const {return fSigma;}
-  double c() const {return fConstant;}
-
-  double operator()(double x) const {
-
-    return c()*exp(-0.5*(x-m())*(x-m())/(s()*s()))/(sqrt(2.*M_PI)*s());
-  }
+   double operator()(double x) const
+   {
+      constexpr double two_pi = 2 * 3.14159265358979323846; // M_PI is not standard
+      return c() * std::exp(-0.5 * (x - m()) * (x - m()) / (s() * s())) / (std::sqrt(two_pi) * s());
+   }
 
 private:
-
-  double fMean;
-  double fSigma;
-  double fConstant;
+   double fMean;
+   double fSigma;
+   double fConstant;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
 #endif // MN_GaussFunction_H_

@@ -12,7 +12,7 @@
 #ifndef ROOT_TBranchProxyDirector
 #define ROOT_TBranchProxyDirector
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 #include <vector>
 #include <list>
 #include <algorithm>
@@ -41,7 +41,7 @@ namespace Internal{
       std::list<Detail::TBranchProxy*> fDirected;
       std::vector<TFriendProxy*> fFriends;
 
-      TBranchProxyDirector(const TBranchProxyDirector &) : fTree(0), fEntry(-1) {;}
+      TBranchProxyDirector(const TBranchProxyDirector &) : fTree(nullptr), fEntry(-1) {;}
       TBranchProxyDirector& operator=(const TBranchProxyDirector&) {return *this;}
 
    public:

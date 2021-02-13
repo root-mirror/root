@@ -30,7 +30,6 @@ for each component PDF sequentially.
 #include "RooMsgService.h"
 
 #include "RooProdGenContext.h"
-#include "RooProdGenContext.h"
 #include "RooProdPdf.h"
 #include "RooDataSet.h"
 #include "RooRealVar.h"

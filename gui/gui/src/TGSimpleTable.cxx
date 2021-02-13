@@ -9,15 +9,8 @@
  *************************************************************************/
 
 #include "TGTable.h"
-#include "TClass.h"
 #include "TGWindow.h"
 #include "TGResourcePool.h"
-#include "Riostream.h"
-#include "TSystem.h"
-#include "TImage.h"
-#include "TEnv.h"
-#include "TGToolTip.h"
-#include "TGPicture.h"
 #include "TRandom3.h"
 #include "TGSimpleTableInterface.h"
 #include "TGSimpleTable.h"

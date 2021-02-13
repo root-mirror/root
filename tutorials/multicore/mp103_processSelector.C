@@ -12,6 +12,7 @@
 #include "TString.h"
 #include "TROOT.h"
 #include "TChain.h"
+#include "TBranch.h"
 #include "TFileCollection.h"
 #include "TH1F.h"
 #include "TTreeReader.h"

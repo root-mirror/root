@@ -19,8 +19,8 @@
 
 #include "Math/Util.h"
 
-
 #include <cassert>
+#include <string>
 
 /**
    @defgroup ParamFunc Parameteric Function Evaluation Interfaces.

@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include <vector>
 #include "TMVA/DNN/Functions.h"
 #include "TMVA/DNN/DeepNet.h"
 #include "TMVA/DNN/BatchNormLayer.h"

@@ -21,7 +21,7 @@ Abstract Interface class describing Streamer information for one class.
 #include "TPluginManager.h"
 #include "TStreamerElement.h"
 #include "TError.h"
-
+#include "TObjArray.h"
 
 TVirtualStreamerInfo *TVirtualStreamerInfo::fgInfoFactory    = 0;
 

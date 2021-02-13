@@ -78,7 +78,7 @@ int TMVACrossValidationApplication()
    reader->AddSpectator("eventID", &eventID);
 
    // Book the serialised methods
-   TString jobname("TMVACrossEvaluation");
+   TString jobname("TMVACrossValidation");
    {
       TString methodName = "BDTG";
       TString weightfile = TString("dataset/weights/") + jobname + "_" + methodName + TString(".weights.xml");
@@ -140,6 +140,15 @@ int TMVACrossValidationApplication()
    tree->ResetBranchAddresses();
    delete tree;
 
+   if (!gROOT->IsBatch()) {
+      auto c = new TCanvas();
+      c->Divide(2,1);
+      c->cd(1);
+      histBDTG.DrawClone();
+      c->cd(2); 
+      histFisher.DrawClone();
+   }
+   else 
    { // Write histograms to output file
       TFile *target = new TFile("TMVACrossEvaluationApp.root", "RECREATE");
       histBDTG.Write();

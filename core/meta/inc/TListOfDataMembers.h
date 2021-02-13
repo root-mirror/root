@@ -32,15 +32,17 @@ class TDataMember;
 class TListOfDataMembers : public THashList
 {
 private:
-   TClass    *fClass;    //! Context of this list.  Not owned.
+   TClass           *fClass = nullptr;    //! Context of this list.  Not owned.
 
-   TExMap    *fIds;      //! Map from DeclId_t to TDataMember*
-   THashList *fUnloaded; //! Holder of TDataMember for unloaded DataMembers.
-   Bool_t     fIsLoaded; //! Mark whether Load was executed.
-   ULong64_t  fLastLoadMarker; //! Represent interpreter state when we last did a full load.
+   TExMap           *fIds = nullptr;      //! Map from DeclId_t to TDataMember*
+   THashList        *fUnloaded = nullptr; //! Holder of TDataMember for unloaded DataMembers.
+   ULong64_t         fLastLoadMarker = 0; //! Represent interpreter state when we last did a full load.
+   std::atomic<bool> fIsLoaded{kFALSE};  //! Mark whether Load was executed.
 
-   TListOfDataMembers(const TListOfDataMembers&);              // not implemented
-   TListOfDataMembers& operator=(const TListOfDataMembers&);   // not implemented
+   TDictionary::EMemberSelection fSelection = TDictionary::EMemberSelection::kNoUsingDecls; //! Whether the list should contain regular data members or only using decls or both.
+
+   TListOfDataMembers(const TListOfDataMembers&) = delete;
+   TListOfDataMembers& operator=(const TListOfDataMembers&) = delete;
 
    void       MapObject(TObject *obj);
    void       UnmapObject(TObject *obj);
@@ -48,12 +50,15 @@ private:
 public:
    typedef TDictionary::DeclId_t DeclId_t;
 
-   TListOfDataMembers(TClass *cl = 0);
-   // construct from a generic collection of data members objects
+   /// Constructor, possibly for all members of a class (or globals).
+   /// Include (or not) the scope's using declarations of variables.
+   TListOfDataMembers(TClass *cl, TDictionary::EMemberSelection selection):
+      fClass(cl), fSelection(selection) {}
+
+   /// Construct from a generic collection of data members objects
    template<class DataMemberList>
    TListOfDataMembers(DataMemberList & dmlist) :
-      fClass(0),fIds(0),fUnloaded(0),
-      fIsLoaded(kTRUE), fLastLoadMarker(0)
+      fIsLoaded(kTRUE)
    {
       for (auto * dataMember : dmlist)
          Add(dataMember);

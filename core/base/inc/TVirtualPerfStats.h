@@ -27,9 +27,14 @@
 
 class TFile;
 class TBranch;
-class TList;
+class TChain;
 
 class TVirtualPerfStats : public TObject {
+
+private:
+   friend class TChain;
+
+   virtual void SetFile(TFile *) = 0;
 
 public:
    virtual ~TVirtualPerfStats() {}

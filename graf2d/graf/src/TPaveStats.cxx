@@ -9,18 +9,19 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+#include <iostream>
 
-#include "Riostream.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TPaveStats.h"
 #include "TPaveLabel.h"
 #include "TVirtualPad.h"
 #include "TStyle.h"
-#include "TClass.h"
 #include "TLatex.h"
+#include "strlcpy.h"
 
 ClassImp(TPaveStats);
 

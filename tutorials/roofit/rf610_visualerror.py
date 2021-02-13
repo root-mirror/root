@@ -1,13 +1,12 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
 ## Likelihood and minimization: visualization of errors from a covariance matrix
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -15,7 +14,7 @@ import ROOT
 # Setup example fit
 # ---------------------------------------
 
-# Create sum of two Gaussians p.d.f. with factory
+# Create sum of two Gaussians pdf with factory
 x = ROOT.RooRealVar("x", "x", -10, 10)
 
 m = ROOT.RooRealVar("m", "m", 0, -10, 10)
@@ -68,7 +67,7 @@ model.plotOn(frame, ROOT.RooFit.VisualizeError(
 # Calculate error using sampling method and visualize as dashed red line.
 #
 # In self method a number of curves is calculated with variations of the parameter values, sampled
-# from a multi-variate Gaussian p.d.f. that is constructed from the fit results covariance matrix.
+# from a multi-variate Gaussian pdf that is constructed from the fit results covariance matrix.
 # The error(x) is determined by calculating a central interval that capture N% of the variations
 # for each valye of x, N% is controlled by Z (i.e. Z=1 gives N=68%). The number of sampling curves
 # is chosen to be such that at least 100 curves are expected to be outside the N% interval, is minimally

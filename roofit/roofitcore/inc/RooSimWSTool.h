@@ -24,13 +24,14 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
-class RooAbsCategoryLValue ; 
-class RooAbsCategory ;
-class RooAbsArg ;
-class RooAbsPdf ;
-class RooCatType ;
-class RooSimultaneous ;
+class RooAbsCategoryLValue;
+class RooAbsCategory;
+class RooAbsArg;
+class RooAbsPdf;
+class RooCatType;
+class RooSimultaneous;
 
 
 class RooSimWSTool : public TNamed, public RooPrintable {

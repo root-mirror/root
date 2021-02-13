@@ -17,14 +17,17 @@
 #ifndef ROO_PDF_CUSTOMIZER
 #define ROO_PDF_CUSTOMIZER
 
-#include "Rtypes.h"
 #include "TList.h"
 #include "TNamed.h"
 #include "TString.h"
 #include "RooArgSet.h"
 #include "RooPrintable.h"
 #include "RooFactoryWSTool.h"
-class RooAbsCategoryLValue ; 
+
+#include <vector>
+#include <string>
+
+class RooAbsCategoryLValue ;
 class RooAbsCategory ;
 class RooAbsArg ;
 class RooAbsPdf ;

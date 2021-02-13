@@ -11,7 +11,7 @@
 #include <arrow/memory_pool.h>
 #include <arrow/record_batch.h>
 #include <arrow/table.h>
-#include <arrow/compute/test-util.h>
+#include <arrow/testing/gtest_util.h>
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
@@ -28,6 +28,16 @@ std::shared_ptr<Schema> exampleSchema()
 {
    return schema({field("Name", arrow::utf8()), field("Age", arrow::int64()), field("Height", arrow::float64()),
                   field("Married", arrow::boolean()), field("Babies", arrow::uint32())});
+}
+
+template <typename T>
+std::shared_ptr<T> makeColumn(std::shared_ptr<Field>, std::shared_ptr<arrow::Array> array) {
+  return std::make_shared<T>(field, array);
+}
+
+template <>
+std::shared_ptr<arrow::ChunkedArray> makeColumn<arrow::ChunkedArray>(std::shared_ptr<Field>, std::shared_ptr<arrow::Array> array) {
+  return std::make_shared<arrow::ChunkedArray>(array);
 }
 
 std::shared_ptr<Table> createTestTable()
@@ -49,10 +59,14 @@ std::shared_ptr<Table> createTestTable()
    arrow::ArrayFromVector<BooleanType, bool>(marriageStatus, &arrays_[3]);
    arrow::ArrayFromVector<UInt32Type, unsigned int>(babies, &arrays_[4]);
 
-   std::vector<std::shared_ptr<Column>> columns_ = {
-      std::make_shared<Column>(schema_->field(0), arrays_[0]), std::make_shared<Column>(schema_->field(1), arrays_[1]),
-      std::make_shared<Column>(schema_->field(2), arrays_[2]), std::make_shared<Column>(schema_->field(3), arrays_[3]),
-      std::make_shared<Column>(schema_->field(4), arrays_[4])};
+   using ColumnType = typename decltype(std::declval<arrow::Table>().column(0))::element_type;
+
+   std::vector<std::shared_ptr<ColumnType>> columns_ = {
+      makeColumn<ColumnType>(schema_->field(0), arrays_[0]),
+      makeColumn<ColumnType>(schema_->field(1), arrays_[1]),
+      makeColumn<ColumnType>(schema_->field(2), arrays_[2]),
+      makeColumn<ColumnType>(schema_->field(3), arrays_[3]),
+      makeColumn<ColumnType>(schema_->field(4), arrays_[4])};
 
    auto table_ = Table::Make(schema_, columns_);
    return table_;

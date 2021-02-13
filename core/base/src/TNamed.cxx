@@ -20,7 +20,7 @@ Most member functions defined in this base class are in general
 overridden by the derived classes.
 */
 
-#include "Riostream.h"
+#include <iostream>
 #include "Strlen.h"
 #include "TNamed.h"
 #include "TROOT.h"

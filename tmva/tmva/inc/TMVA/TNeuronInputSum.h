@@ -33,9 +33,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
-#include "TString.h"
-
 #include "TMVA/TNeuronInput.h"
 #include "TMVA/TNeuron.h"
 

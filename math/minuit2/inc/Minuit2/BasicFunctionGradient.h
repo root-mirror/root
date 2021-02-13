@@ -16,70 +16,70 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-//extern StackAllocator gStackAllocator;
+// extern StackAllocator gStackAllocator;
 
 class BasicFunctionGradient {
 
 private:
-
 public:
+   explicit BasicFunctionGradient(unsigned int n)
+      : fGradient(MnAlgebraicVector(n)), fG2ndDerivative(MnAlgebraicVector(n)), fGStepSize(MnAlgebraicVector(n)),
+        fValid(false), fAnalytical(false)
+   {
+   }
 
-  explicit BasicFunctionGradient(unsigned int n) :
-    fGradient(MnAlgebraicVector(n)), fG2ndDerivative(MnAlgebraicVector(n)),
-    fGStepSize(MnAlgebraicVector(n)), fValid(false),
-    fAnalytical(false) {}
+   explicit BasicFunctionGradient(const MnAlgebraicVector &grd)
+      : fGradient(grd), fG2ndDerivative(MnAlgebraicVector(grd.size())), fGStepSize(MnAlgebraicVector(grd.size())),
+        fValid(true), fAnalytical(true)
+   {
+   }
 
-  explicit BasicFunctionGradient(const MnAlgebraicVector& grd) :
-    fGradient(grd), fG2ndDerivative(MnAlgebraicVector(grd.size())),
-    fGStepSize(MnAlgebraicVector(grd.size())), fValid(true),
-    fAnalytical(true) {}
+   BasicFunctionGradient(const MnAlgebraicVector &grd, const MnAlgebraicVector &g2, const MnAlgebraicVector &gstep)
+      : fGradient(grd), fG2ndDerivative(g2), fGStepSize(gstep), fValid(true), fAnalytical(false)
+   {
+   }
 
-  BasicFunctionGradient(const MnAlgebraicVector& grd, const MnAlgebraicVector& g2, const MnAlgebraicVector& gstep) :
-    fGradient(grd), fG2ndDerivative(g2),
-    fGStepSize(gstep), fValid(true), fAnalytical(false) {}
+   ~BasicFunctionGradient() {}
 
-  ~BasicFunctionGradient() {}
+   BasicFunctionGradient(const BasicFunctionGradient &grad)
+      : fGradient(grad.fGradient), fG2ndDerivative(grad.fG2ndDerivative), fGStepSize(grad.fGStepSize),
+        fValid(grad.fValid)
+   {
+   }
 
-  BasicFunctionGradient(const BasicFunctionGradient& grad) : fGradient(grad.fGradient), fG2ndDerivative(grad.fG2ndDerivative), fGStepSize(grad.fGStepSize), fValid(grad.fValid) {}
+   BasicFunctionGradient &operator=(const BasicFunctionGradient &grad)
+   {
+      fGradient = grad.fGradient;
+      fG2ndDerivative = grad.fG2ndDerivative;
+      fGStepSize = grad.fGStepSize;
+      fValid = grad.fValid;
+      return *this;
+   }
 
-  BasicFunctionGradient& operator=(const BasicFunctionGradient& grad) {
-    fGradient = grad.fGradient;
-    fG2ndDerivative = grad.fG2ndDerivative;
-    fGStepSize = grad.fGStepSize;
-    fValid = grad.fValid;
-    return *this;
-  }
+   void *operator new(size_t nbytes) { return StackAllocatorHolder::Get().Allocate(nbytes); }
 
-  void* operator new(size_t nbytes) {
-    return StackAllocatorHolder::Get().Allocate(nbytes);
-  }
+   void operator delete(void *p, size_t /*nbytes */) { StackAllocatorHolder::Get().Deallocate(p); }
 
-  void operator delete(void* p, size_t /*nbytes */) {
-    StackAllocatorHolder::Get().Deallocate(p);
-  }
+   const MnAlgebraicVector &Grad() const { return fGradient; }
+   const MnAlgebraicVector &Vec() const { return fGradient; }
+   bool IsValid() const { return fValid; }
 
-  const MnAlgebraicVector& Grad() const {return fGradient;}
-  const MnAlgebraicVector& Vec() const {return fGradient;}
-  bool IsValid() const {return fValid;}
-
-  bool IsAnalytical() const {return fAnalytical;}
-  const MnAlgebraicVector& G2() const {return fG2ndDerivative;}
-  const MnAlgebraicVector& Gstep() const {return fGStepSize;}
+   bool IsAnalytical() const { return fAnalytical; }
+   const MnAlgebraicVector &G2() const { return fG2ndDerivative; }
+   const MnAlgebraicVector &Gstep() const { return fGStepSize; }
 
 private:
-
-  MnAlgebraicVector fGradient;
-  MnAlgebraicVector fG2ndDerivative;
-  MnAlgebraicVector fGStepSize;
-  bool fValid;
-  bool fAnalytical;
+   MnAlgebraicVector fGradient;
+   MnAlgebraicVector fG2ndDerivative;
+   MnAlgebraicVector fGStepSize;
+   bool fValid;
+   bool fAnalytical;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_BasicFunctionGradient
+#endif // ROOT_Minuit2_BasicFunctionGradient

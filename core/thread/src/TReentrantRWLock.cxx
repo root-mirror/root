@@ -41,9 +41,17 @@ using namespace ROOT;
 
 #ifdef NDEBUG
 # define R__MAYBE_AssertReadCountLocIsFromCurrentThread(READERSCOUNTLOC)
+# define R__MAYBE_ASSERT_WITH_LOCAL_LOCK(where,msg,what)
 #else
 # define R__MAYBE_AssertReadCountLocIsFromCurrentThread(READERSCOUNTLOC) \
    AssertReadCountLocIsFromCurrentThread(READERSCOUNTLOC)
+#define R__MAYBE_ASSERT_WITH_LOCAL_LOCK(where, msg, what) \
+   {                                                      \
+      std::unique_lock<MutexT> lock(fMutex);              \
+      auto local = fRecurseCounts.GetLocal();             \
+      if (!(what))                                        \
+         Error(where, "%s", msg);                         \
+   }
 #endif
 
 Internal::UniqueLockRecurseCount::UniqueLockRecurseCount()
@@ -313,15 +321,27 @@ TReentrantRWLock<MutexT, RecurseCountsT>::Rewind(const State &earlierState) {
 
    auto hint = reinterpret_cast<TVirtualRWMutex::Hint_t *>(typedState.fReadersCountLoc);
    if (pStateDelta->fDeltaWriteRecurse != 0) {
+      R__MAYBE_ASSERT_WITH_LOCAL_LOCK("TReentrantRWLock::Rewind",
+                                      "Lock rewinded from a thread that does not own the Write lock",
+                                      fWriter && !fRecurseCounts.IsNotCurrentWriter(local));  // local defined in macro
+
       // Claim a recurse-state +1 to be able to call Unlock() below.
       fRecurseCounts.fWriteRecurse = typedState.fWriteRecurse + 1;
       // Release this thread's write lock
       WriteUnLock(hint);
+   } else {
+      Error("TReentrantRWLock::Rewind", "has been called with no write lock held.");
    }
 
    if (pStateDelta->fDeltaReadersCount != 0) {
       // Claim a recurse-state +1 to be able to call Unlock() below.
       *typedState.fReadersCountLoc = typedState.fReadersCount + 1;
+      // ReadersCount and Readers can be read/updated before actually holding the R/W lock.
+      // (See WriteLock and ReadLock methods) but fReaders is an atomic, so that should be fine
+      // but that's weird, that does not account to other change in fReaders during between
+      // the snapshot and the rewind ... humm unless the lock held is a WriteLock
+      // (the actual use case) in which case there is no other thread that can update fReaders
+      // and we also assume that the "user code" is balanced and release all read locks it takes.
       fReaders = typedState.fReadersCount + 1;
       // Release this thread's reader lock(s)
       ReadUnLock(hint);

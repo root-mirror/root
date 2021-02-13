@@ -40,9 +40,8 @@ protected:
   RooListProxy x ;
 
   Double_t evaluate() const ;
-  inline RooSpan<double> evaluateBatch(std::size_t, std::size_t ) const {
-    return {};
-  }
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* /*normSet*/ = nullptr) const;
+
 
 private:
 

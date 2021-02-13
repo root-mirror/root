@@ -1,7 +1,6 @@
 #ifndef ROOT_TMVA_QUICKMVAPROBESTIMATOR 
 #define ROOT_TMVA_QUICKMVAPROBESTIMATOR 
 
-#include <iostream>
 #include <vector>
 #include <algorithm>
 

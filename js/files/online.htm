@@ -3,19 +3,22 @@
    <head>
       <!--  this file used by THttpServer to display objects hierarchy -->
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <title>Online server</title>
       <link rel="shortcut icon" href="jsrootsys/img/RootIcon.ico"/>
-      <script type="text/javascript" src="jsrootsys/scripts/JSRootCore.js?gui"></script>
-      <script type="text/javascript">
-         function GetCachedHierarchy() { return "$$$h.json$$$"; }
-      </script>
+      <script type="text/javascript" src="jsrootsys/scripts/JSRoot.core.js"></script>
    </head>
 
    <body>
       <div id="onlineGUI">
          loading scripts...
       </div>
+
+      <script type="text/javascript">
+         function GetCachedHierarchy() { return "$$$h.json$$$"; }
+
+         JSROOT.buildGUI("onlineGUI", "online");
+      </script>
+
    </body>
 
 </html>

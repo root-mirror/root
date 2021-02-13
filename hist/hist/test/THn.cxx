@@ -59,6 +59,7 @@ TEST(THn, Projection) {
       EXPECT_DOUBLE_EQ(0.42, hProj->GetBinContent(1));
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(2));
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(3));
+      delete hProj;
    }
 
    {
@@ -69,6 +70,7 @@ TEST(THn, Projection) {
       EXPECT_DOUBLE_EQ(0.42, hProj->GetBinContent(2));
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(3));
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(4));
+      delete hProj;
    }
 
    {
@@ -88,6 +90,7 @@ TEST(THn, Projection) {
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(9));
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(10));
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(11));
+      delete hProj;
    }
 
    {
@@ -104,7 +107,7 @@ TEST(THn, Projection) {
       EXPECT_DOUBLE_EQ(0.42, hProj->GetBinContent(2));
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(3));
       EXPECT_DOUBLE_EQ(0., hProj->GetBinContent(4));
+      delete hProj;
    }
-
 
 }

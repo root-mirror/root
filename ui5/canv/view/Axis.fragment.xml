@@ -1,0 +1,64 @@
+<core:FragmentDefinition
+       xmlns="sap.m"
+       xmlns:l="sap.ui.layout"
+       xmlns:jsroot="rootui5.canv.controller"
+       xmlns:core="sap.ui.core">
+   <VBox>
+      <Input
+         type="Text"
+         placeholder="Enter title ..."
+         valueStateText="Edit axis title"
+         valueLiveUpdate="true"
+         value="{
+            path : '/axis/fTitle',
+            type : 'sap.ui.model.type.String'
+       }"/>
+      <jsroot:ColorButton text="Axis" attrcolor="{/axiscolor}" tooltip="Axis color"/>
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+          <VBox class="sapUiSmallMarginEnd">
+             <Label text="Ticks:" wrapping="true"/>
+         </VBox>
+         <VBox>
+            <StepInput min="-1.000" max="1.000" step="0.001" value="{/axis/fTickLength}" editable="true" displayValuePrecision="3"/>
+         </VBox>
+      </HBox>
+      <jsroot:ColorButton text="Title" attrcolor="{/color_title}" tooltip="Title color"/>
+      <CheckBox text="Center title" selected="{/center_title}"/>
+      <CheckBox text="Rotate title" selected="{/rotate_title}"/>
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+          <VBox class="sapUiSmallMarginEnd">
+             <Label text="Offset:" wrapping="true"/>
+         </VBox>
+         <VBox>
+            <StepInput min="0.00" max="3.00" step="0.01" value="{/axis/fTitleOffset}" editable="true" displayValuePrecision="3"/>
+         </VBox>
+      </HBox>
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+          <VBox class="sapUiSmallMarginEnd">
+             <Label text="Size:" wrapping="true"/>
+         </VBox>
+         <VBox>
+            <StepInput min="0.01" max="0.50" step="0.01" value="{/axis/fTitleSize}" editable="true" displayValuePrecision="3"/>
+         </VBox>
+      </HBox>
+      <jsroot:ColorButton text="Labels" attrcolor="{/color_label}" tooltip="Labels color"/>
+      <CheckBox text="Center label" selected="{/center_label}"/>
+      <CheckBox text="Rotate label" selected="{/vert_label}"/>
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+          <VBox class="sapUiSmallMarginEnd">
+             <Label text="Offset:" wrapping="true"/>
+         </VBox>
+         <VBox>
+            <StepInput min="0.00" max="0.20" step="0.01" value="{/axis/fLabelOffset}" editable="true" displayValuePrecision="3"/>
+         </VBox>
+      </HBox>
+      <HBox justifyContent="SpaceBetween" alignItems="Center">
+          <VBox class="sapUiSmallMarginEnd">
+             <Label text="Size:" wrapping="true"/>
+         </VBox>
+         <VBox>
+            <StepInput min="0.00" max="0.50" step="0.01" value="{/axis/fLabelSize}" editable="true" displayValuePrecision="3"/>
+         </VBox>
+      </HBox>
+   </VBox>
+</core:FragmentDefinition>

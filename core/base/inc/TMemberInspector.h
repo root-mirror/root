@@ -40,8 +40,8 @@ private:
    TParentBuf* fParent; // current inspection "path"
    EObjectPointerState fObjectPointerState; // whether the address is valid or only an offset
 
-   TMemberInspector(const TMemberInspector&);            // Not implemented.
-   TMemberInspector &operator=(const TMemberInspector&); // Not implemented.
+   TMemberInspector(const TMemberInspector &) = delete;
+   TMemberInspector &operator=(const TMemberInspector &) = delete;
 
 public:
    TMemberInspector();

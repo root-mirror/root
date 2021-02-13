@@ -79,6 +79,8 @@ protected:
    ULong64_t   fResetAllocationTime{0};           ///<! Time spent reallocating baskets in microseconds during last Reset operation.
 #endif
 
+   virtual void    ReadResetBuffer(Int_t basketnumber);
+
 public:
    // The IO bits flag is to provide improved forward-compatibility detection.
    // Any new non-forward compatibility flags related serialization should be
@@ -131,7 +133,7 @@ public:
    virtual void    PrepareBasket(Long64_t /* entry */) {};
            Int_t   ReadBasketBuffers(Long64_t pos, Int_t len, TFile *file);
            Int_t   ReadBasketBytes(Long64_t pos, TFile *file);
-   virtual void    Reset();
+   virtual void    WriteReset();
 
 // Time spent reseting basket sizes (typically, at event cluster boundaries), in microseconds
 #ifdef R__TRACK_BASKET_ALLOC_TIME

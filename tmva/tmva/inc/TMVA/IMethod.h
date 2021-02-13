@@ -38,7 +38,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
 #include "TString.h"
 #include <iosfwd>
 #include "Rtypes.h"

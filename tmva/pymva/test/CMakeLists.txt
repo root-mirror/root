@@ -10,19 +10,38 @@
 ############################################################################
 
 project(pymva-tests)
-find_package(ROOT REQUIRED)
 
 set(Libraries Core MathCore TMVA PyMVA)
-include_directories(${ROOT_INCLUDE_DIRS})
 include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
 # Look for needed python modules
+find_python_module(torch QUIET)
 find_python_module(keras QUIET)
 find_python_module(theano QUIET)
 find_python_module(tensorflow QUIET)
 find_python_module(sklearn QUIET)
 
 # Enable tests based on available python modules
+if(PY_TORCH_FOUND)
+   configure_file(generatePyTorchModelClassification.py generatePyTorchModelClassification.py COPYONLY)
+   configure_file(generatePyTorchModelMulticlass.py generatePyTorchModelMulticlass.py COPYONLY)
+   configure_file(generatePyTorchModelRegression.py generatePyTorchModelRegression.py COPYONLY)
+   # Test PyTorch: Binary classification
+   ROOT_EXECUTABLE(testPyTorchClassification testPyTorchClassification.C
+      LIBRARIES ${Libraries})
+   ROOT_ADD_TEST(PyMVA-Torch-Classification COMMAND testPyTorchClassification)
+
+   # Test PyTorch: Regression
+   ROOT_EXECUTABLE(testPyTorchRegression testPyTorchRegression.C
+      LIBRARIES ${Libraries})
+   ROOT_ADD_TEST(PyMVA-Torch-Regression COMMAND testPyTorchRegression)
+
+   # Test PyTorch: Multi-class classification
+   ROOT_EXECUTABLE(testPyTorchMulticlass testPyTorchMulticlass.C
+      LIBRARIES ${Libraries})
+   ROOT_ADD_TEST(PyMVA-Torch-Multiclass COMMAND testPyTorchMulticlass)
+endif(PY_TORCH_FOUND)
+
 if((PY_KERAS_FOUND AND PY_THEANO_FOUND) OR (PY_KERAS_FOUND AND PY_TENSORFLOW_FOUND))
    # Test PyKeras: Binary classification
    ROOT_EXECUTABLE(testPyKerasClassification testPyKerasClassification.C

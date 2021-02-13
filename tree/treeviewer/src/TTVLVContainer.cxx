@@ -17,6 +17,8 @@
 #include "TGTextEntry.h"
 #include "TGToolTip.h"
 #include "TList.h"
+#include "TVirtualX.h"
+#include "snprintf.h"
 
 
 ClassImp(TGItemContext);

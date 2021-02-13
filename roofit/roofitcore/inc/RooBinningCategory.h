@@ -16,10 +16,9 @@
 #ifndef ROO_BINNING_CATEGORY
 #define ROO_BINNING_CATEGORY
 
-#include "TSortedList.h"
 #include "RooAbsCategory.h"
-#include "RooRealProxy.h"
-#include "RooCatType.h"
+#include "RooTemplateProxy.h"
+#include "TString.h"
 
 class RooBinningCategory : public RooAbsCategory {
 
@@ -38,10 +37,12 @@ protected:
   
   void initialize(const char* catTypeName=0) ;
 
-  RooRealProxy _inputVar ; // Input variable that is mapped
+  RooTemplateProxy<RooAbsRealLValue> _inputVar; // Input variable that is mapped
   TString _bname ;         // Name of the binning specification to be used to perform the mapping
 
-  virtual RooCatType evaluate() const ; 
+  virtual value_type evaluate() const;
+  /// The shape of this category does not need to be recomputed, as it creates states on the fly.
+  void recomputeShape() { }
 
   ClassDef(RooBinningCategory,1) // RealVar-to-Category function defined by bin boundaries on input var
 };

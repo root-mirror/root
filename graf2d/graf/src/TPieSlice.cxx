@@ -8,16 +8,9 @@
 
 #include <TPieSlice.h>
 
-#include <Riostream.h>
 #include <TError.h>
-#include <TROOT.h>
 #include <TVirtualPad.h>
-#include <TArc.h>
-#include <TMath.h>
-#include <TStyle.h>
-#include <TLatex.h>
-#include <TPaveText.h>
-#include <TH1.h>
+#include <TPie.h>
 
 ClassImp(TPieSlice);
 

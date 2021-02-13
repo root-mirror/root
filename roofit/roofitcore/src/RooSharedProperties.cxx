@@ -71,7 +71,7 @@ RooSharedProperties::~RooSharedProperties()
 ////////////////////////////////////////////////////////////////////////////////
 /// Return true of unique id of this property is equal to that of other
 
-Bool_t RooSharedProperties::operator==(const RooSharedProperties& other) 
+Bool_t RooSharedProperties::operator==(const RooSharedProperties& other) const
 {
   return (_uuid==other._uuid) ;
 }

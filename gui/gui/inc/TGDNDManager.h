@@ -9,8 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#ifndef ROOT_TDNDManager
-#define ROOT_TDNDManager
+#ifndef ROOT_TGDNDManager
+#define ROOT_TGDNDManager
 
 #include "TGFrame.h"
 
@@ -202,5 +202,5 @@ public:
 
 R__EXTERN TGDNDManager *gDNDManager; // global drag and drop manager
 
-#endif  // ROOT_TDNDManager
+#endif  // ROOT_TGDNDManager
 

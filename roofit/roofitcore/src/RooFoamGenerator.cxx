@@ -23,7 +23,16 @@ Class RooFoamGenerator is a generic toy monte carlo generator that implement
 the TFOAM sampling technique on any positively valued function.
 The RooFoamGenerator generator is used by the various generator context
 classes to take care of generation of observables for which p.d.fs
-do not define internal methods
+do not define internal methods.
+
+The foam generator reacts to the following config options:
+- nCell[123N]D
+- nSample
+- chatLevel
+Access those using:
+    myPdf->specialGeneratorConfig()->getConfigSection("RooFoamGenerator").setRealValue("nSample",1e4);
+
+\see rf902_numgenconfig.C
 **/
 
 
@@ -80,7 +89,6 @@ void RooFoamGenerator::registerSampler(RooNumGenFactory& fact)
 RooFoamGenerator::RooFoamGenerator(const RooAbsReal &func, const RooArgSet &genVars, const RooNumGenConfig& config, Bool_t verbose, const RooAbsReal* maxFuncVal) :
   RooAbsNumGenerator(func,genVars,verbose,maxFuncVal)
 {
-  _rvIter = _realVars.createIterator() ;
   _binding = new RooTFoamBinding(*_funcClone,_realVars) ;
  
   _tfoam = new TFoam("TFOAM") ;
@@ -102,16 +110,13 @@ RooFoamGenerator::RooFoamGenerator(const RooAbsReal &func, const RooArgSet &genV
   _xmin  = new Double_t[_realVars.getSize()] ;
   _range = new Double_t[_realVars.getSize()] ;
   
-  TIterator* iter = _realVars.createIterator() ;
-  RooRealVar* var ;
   Int_t i(0) ;
-  while((var=(RooRealVar*)iter->Next())) {
+  for (const auto arg : _realVars) {
+    auto var = static_cast<const RooRealVar*>(arg);
     _xmin[i] = var->getMin() ;
     _range[i] = var->getMax() - var->getMin() ;
     i++ ;
   }
-  delete iter ;
-
 }
 
 
@@ -125,7 +130,6 @@ RooFoamGenerator::~RooFoamGenerator()
   delete[] _range ;
   delete _tfoam ;
   delete _binding ;
-  delete _rvIter ;
 }
 
 
@@ -142,10 +146,9 @@ const RooArgSet *RooFoamGenerator::generateEvent(UInt_t /*remaining*/, Double_t&
   _tfoam->GetMCvect(_vec) ;
   
   // Transfer contents to dataset
-  RooRealVar* var ;  
-  _rvIter->Reset() ;
   Int_t i(0) ;
-  while((var=(RooRealVar*)_rvIter->Next())) {
+  for (auto arg : _realVars) {
+    auto var = static_cast<RooRealVar*>(arg);
     var->setVal(_xmin[i] + _range[i]*_vec[i]) ;
     i++ ;
   }

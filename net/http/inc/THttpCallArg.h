@@ -159,8 +159,17 @@ public:
    /** mark reply as 404 error - page/request not exists or refused */
    void Set404() { SetContentType("_404_"); }
 
+   /** Return true if reply can be postponed by server  */
+   virtual Bool_t CanPostpone() const { return kTRUE; }
+
    /** mark as postponed - reply will not be send to client immediately */
-   void SetPostponed() { SetContentType("_postponed_"); }
+   void SetPostponed()
+   {
+      if (CanPostpone())
+         SetContentType("_postponed_");
+      else
+         Set404();
+   }
 
    /** indicate that http request should response with file content */
    void SetFile(const char *filename = nullptr)

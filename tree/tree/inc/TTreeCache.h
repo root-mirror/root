@@ -23,9 +23,6 @@
 
 #include "TFileCacheRead.h"
 
-#include <cstdint>
-#include <memory>
-#include <utility>
 #include <vector>
 
 class TTree;

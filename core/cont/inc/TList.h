@@ -69,8 +69,8 @@ protected:
    void InsertAfter(const TObjLinkPtr_t &newlink, const TObjLinkPtr_t &prev);
 
 private:
-   TList(const TList&);             // not implemented
-   TList& operator=(const TList&);  // not implemented
+   TList(const TList&) = delete;
+   TList& operator=(const TList&) = delete;
 
 public:
    typedef TListIter Iterator_t;
@@ -208,7 +208,7 @@ protected:
    Bool_t         fDirection;    //iteration direction
    Bool_t         fStarted;      //iteration started
 
-   TListIter() : fList(0), fCurCursor(0), fCursor(0), fDirection(kIterForward),
+   TListIter() : fList(nullptr), fCurCursor(), fCursor(), fDirection(kIterForward),
                  fStarted(kFALSE) { }
 
 public:

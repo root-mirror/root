@@ -121,13 +121,15 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <stdio.h>
-#include <assert.h>
+#include <cstdio>
+#include <cassert>
+#include <set>
 
 #include "RConfigure.h"
 #include "TTabCom.h"
 #include "TClass.h"
 #include "TClassTable.h"
+#include "TDataMember.h"
 #include "TSystem.h"
 #include "TROOT.h"
 #include "TMethod.h"
@@ -137,12 +139,14 @@
 #include "TGlobal.h"
 #include "TList.h"
 #include "THashList.h"
+#include "TObjString.h"
 #include "Getline.h"
 #include "TFunction.h"
 #include "TMethodArg.h"
 #include "TInterpreter.h"
 #include "Riostream.h"
 #include "Rstrstream.h"
+#include "strlcpy.h"
 
 #define BUF_SIZE 1024 // must be smaller than/equal to fgLineBufSize in Getline.cxx and
                       // lineBufSize in cppcompleter.py
@@ -449,6 +453,11 @@ const TSeqCollection *TTabCom::GetListOfClasses()
             fpClasses->Add(new TObjString(className));
          }
       }
+
+      // Add possible identifiers coming from the global module index.
+      // FIXME: Consolidate all this -- we have ultimate source of information
+      // clang's identifier table and the ASTIndentifiers.
+      gInterpreter->AddAvailableIndentifiers(*fpClasses);
    }
 
    if (fPrevInterpMarker != gInterpreter->GetInterpreterStateMarker()) {

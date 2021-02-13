@@ -12,11 +12,10 @@
 #ifndef ROOT_TStatusBitsChecker
 #define ROOT_TStatusBitsChecker
 
-#include <string>
 #include <map>
 #include <list>
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 class TClass;
 

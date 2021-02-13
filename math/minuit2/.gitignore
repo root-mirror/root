@@ -1,7 +1,0 @@
-*build*
-src/math/*.cxx
-inc/Math/*
-inc/Fit/*
-LGPL2_1.txt
-LICENSE
-version_number

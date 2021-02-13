@@ -12,8 +12,6 @@
 #define ROOT_TCreatePrimitives
 
 
-#include "Rtypes.h"
-
 #include "TLatex.h"
 #include "TCurlyArc.h"
 #include "TArrow.h"

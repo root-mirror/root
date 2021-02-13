@@ -14,15 +14,19 @@
 //    stressGraphics
 //
 // To get a short help:
+//
 //    stressGraphics -h
 //
-// To run interactively, do
-// root
-//  Root > .L stressGraphics.cxx
-//  Root > stressGraphics()
-
-
-#ifndef __CINT__
+// To run interactively, do:
+//
+//    root -b
+//    root [0] .L stressGraphics.cxx
+//    root [1] stressGraphics()
+//
+// or:
+//
+//    root -b
+//    root [0] .x  stressGraphics.cxx
 
 #include <stdlib.h>
 #include <Riostream.h>
@@ -145,7 +149,6 @@ void     patterns_box   (Int_t pat, Double_t x1, Double_t y1, Double_t x2, Doubl
 Double_t interference   (Double_t *x, Double_t *par);
 Double_t result         (Double_t *x, Double_t *par);
 void     cleanup        ();
-#endif
 
 // Global variables.
 Int_t     gVerbose;
@@ -173,7 +176,7 @@ char      outfile[16];
 char      gLine[80];
 
 
-#ifndef __CINT__
+#ifndef __CLING__
 ////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char *argv[])

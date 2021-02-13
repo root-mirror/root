@@ -8,11 +8,9 @@
  *************************************************************************/
 
 #include "TBenchmark.h"
-#include "TROOT.h"
 #include "TStopwatch.h"
 
-
-TBenchmark *gBenchmark = 0;
+TBenchmark *gBenchmark = nullptr;
 
 ClassImp(TBenchmark);
 

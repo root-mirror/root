@@ -7,8 +7,7 @@
 // LICENSE.TXT for details.
 //------------------------------------------------------------------------------
 
-#include "IncrementalCUDADeviceCompiler.h"
-
+#include "cling/Interpreter/IncrementalCUDADeviceCompiler.h"
 #include "cling/Interpreter/Interpreter.h"
 #include "cling/Interpreter/InvocationOptions.h"
 #include "cling/Interpreter/Transaction.h"
@@ -52,16 +51,15 @@ namespace cling {
 
     // cling -std=c++xx -Ox -x cuda -S --cuda-gpu-arch=sm_xx --cuda-device-only
     // ${include headers} ${-I/paths} [-v] [-g] ${m_CuArgs->additionalPtxOpt}
-    std::vector<std::string> argv = {
-        "cling",
-        m_CuArgs->cppStdVersion.c_str(),
-        "-O" + std::to_string(optLevel),
-        "-x",
-        "cuda",
-        "-S",
-        std::string("--cuda-gpu-arch=sm_")
-            .append(std::to_string(m_CuArgs->smVersion)),
-        "--cuda-device-only"};
+    argv = {"cling",
+            m_CuArgs->cppStdVersion.c_str(),
+            "-O" + std::to_string(optLevel),
+            "-x",
+            "cuda",
+            "-S",
+            std::string("--cuda-gpu-arch=sm_")
+                .append(std::to_string(m_CuArgs->smVersion)),
+            "--cuda-device-only"};
 
     addHeaderSearchPathFlags(argv, CI.getHeaderSearchOptsPtr());
 
@@ -157,6 +155,11 @@ namespace cling {
       std::string s = arg;
       if (s.compare(0, 2, "-D") == 0)
         additionalPtxOpt.push_back(s);
+    }
+
+    // use custom CUDA SDK path
+    if(!invocationOptions.CompilerOpts.CUDAPath.empty()){
+      additionalPtxOpt.push_back("--cuda-path=" + invocationOptions.CompilerOpts.CUDAPath);
     }
 
     enum FatBinFlags {
@@ -338,9 +341,11 @@ namespace cling {
     // The outer header of the fat binary is documented in the CUDA
     // fatbinary.h header. As mentioned there, the overall size must be a
     // multiple of eight, and so we must make sure that the PTX is.
-    while (m_PTX_code.size() % 7)
-      m_PTX_code += ' ';
+    // We also need to make sure that the buffer is explicitly null
+    // terminated (cuobjdump, at least, seems to assume that it is).
     m_PTX_code += '\0';
+    while (m_PTX_code.size() % 8)
+      m_PTX_code += '\0';
 
     // NVIDIA, unfortunatly, does not provide full documentation on their
     // fatbin format. There is some information on the outer header block in

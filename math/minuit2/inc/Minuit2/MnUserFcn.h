@@ -14,33 +14,32 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MnUserTransformation;
 
- /**
-    Wrapper used by Minuit of FCN interface
-    containing a reference to the transformation object
-  */
+/**
+   Wrapper used by Minuit of FCN interface
+   containing a reference to the transformation object
+ */
 class MnUserFcn : public MnFcn {
 
 public:
+   MnUserFcn(const FCNBase &fcn, const MnUserTransformation &trafo, int ncall = 0)
+      : MnFcn(fcn, ncall), fTransform(trafo)
+   {
+   }
 
-   MnUserFcn(const FCNBase& fcn, const MnUserTransformation& trafo, int ncall = 0) :
-      MnFcn(fcn,ncall), fTransform(trafo) {}
+   ~MnUserFcn() {}
 
-  ~MnUserFcn() {}
-
-  virtual double operator()(const MnAlgebraicVector&) const;
+   virtual double operator()(const MnAlgebraicVector &) const;
 
 private:
-
-  const MnUserTransformation& fTransform;
+   const MnUserTransformation &fTransform;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnUserFcn
+#endif // ROOT_Minuit2_MnUserFcn

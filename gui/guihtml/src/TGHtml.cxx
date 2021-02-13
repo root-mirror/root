@@ -31,22 +31,23 @@
 
 **************************************************************************/
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cctype>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 
-#include "TSystem.h"
 #include "TGHtml.h"
 #include "THashTable.h"
 #include "TObjString.h"
 #include "TGIdleHandler.h"
 #include "TImage.h"
-#include "TGScrollBar.h"
 #include "TGTextEntry.h"
 #include "TGText.h"
-#include "Riostream.h"
 #include "TGComboBox.h"
 #include "TGListBox.h"
+#include "TVirtualX.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 //_____________________________________________________________________________
 //

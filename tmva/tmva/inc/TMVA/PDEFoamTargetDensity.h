@@ -34,6 +34,8 @@
 
 #include "TMVA/PDEFoamDensityBase.h"
 
+#include <vector>
+
 namespace TMVA
 {
 

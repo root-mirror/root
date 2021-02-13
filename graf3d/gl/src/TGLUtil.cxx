@@ -13,19 +13,18 @@
 #include <cassert>
 #include <string>
 #include <map>
+#include <iostream>
 
 #include "THLimitsFinder.h"
 #include "TVirtualPad.h"
 #include "TVirtualX.h"
-#include "Riostream.h"
 #include "TStyle.h"
 #include "TGaxis.h"
 #include "TColor.h"
 #include "TError.h"
-#include "TH1.h"
+#include "TAxis.h"
 #include "TMath.h"
 #include "TROOT.h"
-#include "TClass.h"
 #include "TEnv.h"
 
 #include "TGLBoundingBox.h"

@@ -13,9 +13,6 @@
 
 #include "TObject.h"
 
-#include <iostream>
-#include <memory>
-
 class TF1AbsComposition : public TObject {
 
 public:

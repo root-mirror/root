@@ -1,13 +1,12 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook -nodraw
-##
 ## Data and categories: demonstration of discrete-discrete (invertable) functions
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 

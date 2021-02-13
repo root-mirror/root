@@ -471,7 +471,7 @@ void TEveCalo3DGL::RenderEndCapCell(const TEveCaloData::CellGeom_t &cellData, Fl
    using namespace TMath;
    Float_t z1, r1In, r1Out, z2, r2In, r2Out;
 
-   z1    = (cellData.EtaMin()<0) ? fM->fEndCapPosB : fM->fEndCapPosF;
+   z1    = (cellData.EtaMin()<0) ? fM->fEndCapPosB - offset : fM->fEndCapPosF + offset;
    z2    = z1 + TMath::Sign(towerH, cellData.EtaMin());
 
    r1In  = z1*Tan(cellData.ThetaMin());
@@ -529,10 +529,7 @@ void TEveCalo3DGL::RenderEndCapCell(const TEveCaloData::CellGeom_t &cellData, Fl
 
    RenderBox(box);
 
-   if (z1 > 0)
-      offset += towerH * Cos(cellData.ThetaMin());
-   else
-      offset -= towerH * Cos(cellData.ThetaMin());
+   offset += towerH;
 
 } // end RenderEndCapCell
 

@@ -50,7 +50,6 @@
 #include "TGShapedFrame.h"
 #include "TGButton.h"
 #include "TGTab.h"
-#include "TEnv.h"
 
 #include "TCanvas.h"
 #include "TFormula.h"

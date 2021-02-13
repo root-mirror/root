@@ -78,9 +78,6 @@
 #include "TObject.h"
 #include "THnSparse.h"
 #include "RooNumber.h"
-//#ifndef ROOT_TFile
-//#include "TFile.h"
-//#endif
 
 #include <cstdlib>
 #include <string>

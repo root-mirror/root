@@ -8,7 +8,6 @@
 #ifndef RooProofDriverSelector_h
 #define RooProofDriverSelector_h
 
-#include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
 #include <TSelector.h>

@@ -11,6 +11,7 @@
 #include <TCollection.h>
 #include <TCanvas.h>
 #include <TROOT.h>
+#include <snprintf.h>
 
 ClassImp(CanvSave);
 

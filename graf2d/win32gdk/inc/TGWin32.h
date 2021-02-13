@@ -18,7 +18,7 @@
 #include "TTF.h"
 
 
-#if !defined(__CINT__)
+#ifndef __CLING__
 
 #include "Windows4Root.h"
 #include "gdk/gdk.h"
@@ -26,7 +26,6 @@
 
 #else
 
-typedef ULong_t LPCRITICAL_SECTION;
 typedef unsigned long DWORD;
 typedef void* HANDLE;
 
@@ -40,13 +39,11 @@ typedef XID GdkVisual;
 struct GdkGC;
 struct GdkGCValues;
 struct GdkWindowAttr;
-struct GdkColor;
+struct GdkColor { int pixel,red,green,blue; };
 struct GdkEvent;
 struct GdkImage;
 struct GdkPoint;
 struct GdkRectangle;
-
-struct MSG;
 
 #endif
 
@@ -395,7 +392,6 @@ public:
    Window_t     FindRWindow(Window_t win, Window_t dragwin, Window_t input, int x, int y, int maxd);
    Bool_t       IsDNDAware(Window_t win, Atom_t *typelist);
 
-   Bool_t       GUIThreadMessageFunc(MSG* msg);
    Bool_t       IsCmdThread() const;
    void         SetUserThreadId(ULong_t id);
 

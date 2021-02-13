@@ -130,23 +130,23 @@
 #include <TGedMarkerSelect.h>
 #include <TGedPatternSelect.h>
 #include <TGFileDialog.h>
-#include <TGFrame.h>
 #include <TGLabel.h>
 #include <TGLayout.h>
 #include <TGMenu.h>
-#include <TGMsgBox.h>
 #include <TGNumberEntry.h>
 #include <TGResourcePool.h>
 #include <TGStatusBar.h>
 #include <TGTab.h>
 #include <TGToolBar.h>
 #include <TROOT.h>
+#include <snprintf.h>
 #include <TRootHelpDialog.h>
 #include <TStyle.h>
 #include <TSystem.h>
 #include <TVirtualPad.h>
+#include <TVirtualX.h>
 
-TStyleManager *TStyleManager::fgStyleManager = 0;
+TStyleManager *TStyleManager::fgStyleManager = nullptr;
 
 ClassImp(TStyleManager);
 

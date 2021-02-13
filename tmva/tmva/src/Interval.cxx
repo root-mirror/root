@@ -66,7 +66,6 @@ Interval definition, continuous and discrete
 ~~~
 */
 
-#include "TMath.h"
 #include "TRandom3.h"
 #include "ThreadLocalStorage.h"
 

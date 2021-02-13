@@ -17,6 +17,7 @@
 #include "TError.h"
 #include "TFile.h"
 #include "TProtoClass.h"
+#include "TDataMember.h"
 #include "TROOT.h"
 #include "TStreamerInfo.h"
 #include "TClassEdit.h"
@@ -26,7 +27,6 @@ std::string gPCMFilename;
 std::vector<std::string> gClassesToStore;
 std::vector<std::string> gTypedefsToStore;
 std::vector<std::string> gEnumsToStore;
-std::vector<std::string> gAncestorPCMNames;
 
 extern "C"
 void InitializeStreamerInfoROOTFile(const char *filename)
@@ -52,12 +52,6 @@ extern "C"
 void AddEnumToROOTFile(const char *enumname)
 {
    gEnumsToStore.emplace_back(enumname);
-}
-
-extern "C"
-void AddAncestorPCMROOTFile(const char *pcmName)
-{
-   gAncestorPCMNames.emplace_back(pcmName);
 }
 
 static bool IsUniquePtrOffsetZero()
@@ -252,9 +246,6 @@ bool CloseStreamerInfoROOTFile(bool writeEmptyRootPCM)
    protoClasses.Delete();
    typedefs.Write("__Typedefs", TObject::kSingleKey);
    enums.Write("__Enums", TObject::kSingleKey);
-
-   dictFile.WriteObjectAny(&gAncestorPCMNames, "std::vector<std::string>", "__AncestorPCMNames");
-
 
    return true;
 }

@@ -449,21 +449,12 @@ int TMVAClassification( TString myMethodList = "" )
       // General layout.
       TString layoutString ("Layout=TANH|128,TANH|128,TANH|128,LINEAR");
 
-      // Training strategies.
-      TString training0("LearningRate=1e-2,Momentum=0.9,Repetitions=1,"
-                        "ConvergenceSteps=30,BatchSize=256,TestRepetitions=10,"
-                        "WeightDecay=1e-4,Regularization=None,"
-                        "DropConfig=0.0+0.5+0.5+0.5, Multithreading=True");
-      TString training1("LearningRate=1e-2,Momentum=0.9,Repetitions=1,"
-                        "ConvergenceSteps=20,BatchSize=256,TestRepetitions=10,"
-                        "WeightDecay=1e-4,Regularization=L2,"
-                        "DropConfig=0.0+0.0+0.0+0.0, Multithreading=True");
-      TString training2("LearningRate=1e-3,Momentum=0.0,Repetitions=1,"
-                        "ConvergenceSteps=20,BatchSize=256,TestRepetitions=10,"
-                        "WeightDecay=1e-4,Regularization=L2,"
-                        "DropConfig=0.0+0.0+0.0+0.0, Multithreading=True");
-      TString trainingStrategyString ("TrainingStrategy=");
-      trainingStrategyString += training0 + "|" + training1 + "|" + training2;
+      // Define Training strategy. One could define multiple stratgey string separated by the "|" delimiter 
+
+      TString trainingStrategyString = ("TrainingStrategy=LearningRate=1e-2,Momentum=0.9,"
+                                        "ConvergenceSteps=20,BatchSize=100,TestRepetitions=1,"
+                                        "WeightDecay=1e-4,Regularization=None,"
+                                        "DropConfig=0.0+0.5+0.5+0.5");
 
       // General Options.
       TString dnnOptions ("!H:V:ErrorStrategy=CROSSENTROPY:VarTransform=N:"

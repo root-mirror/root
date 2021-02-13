@@ -30,8 +30,8 @@
 class TVirtualPS : public TNamed, public TAttLine, public TAttFill, public TAttMarker, public TAttText {
 
 private:
-   TVirtualPS(const TVirtualPS&); // Not implemented
-   TVirtualPS& operator=(const TVirtualPS&); // Not implemented
+   TVirtualPS(const TVirtualPS&) = delete;
+   TVirtualPS& operator=(const TVirtualPS&) = delete;
 
 protected:
    Int_t        fNByte;           //Number of bytes written in the file (PDF)

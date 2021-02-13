@@ -16,7 +16,6 @@
 #ifndef ROO_1D_TABLE
 #define ROO_1D_TABLE
 
-#include <assert.h>
 #include "TObjArray.h"
 #include "RooTable.h"
 #include <vector>

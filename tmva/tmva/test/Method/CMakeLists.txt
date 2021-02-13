@@ -9,4 +9,12 @@
 # @author Kim Albertsson
 ############################################################################
 
-ROOT_ADD_UNITTEST_DIR(TMVA)
+# As the reference implementation is deprecated and
+# can't be instantiated, we can only run this test
+# if there if we can run CPU or CUDA versions.
+#if (defined DNNCPU || defined DNNCUDA)
+if(tmva-cpu OR tmva-gpu)
+    ROOT_ADD_GTEST(TestMethodDNNValidationSize
+                TestMethodDNNValidationSize.cxx
+                LIBRARIES TMVA)
+endif()

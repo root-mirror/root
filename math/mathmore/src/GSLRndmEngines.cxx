@@ -32,7 +32,7 @@
 
 
 // need to be included later
-#include <time.h>
+#include <ctime>
 #include <cassert>
 
 #include "gsl/gsl_rng.h"
@@ -41,12 +41,10 @@
 
 #include "Math/GSLRndmEngines.h"
 #include "GSLRngWrapper.h"
-// for wrapping in GSL ROOT engines 
+// for wrapping in GSL ROOT engines
 #include "GSLRngROOTWrapper.h"
 
 extern double gsl_ran_gaussian_acr(  const gsl_rng * r, const double sigma);
-
-//#include <iostream>
 
 namespace ROOT {
 namespace Math {

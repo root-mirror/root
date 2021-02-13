@@ -31,7 +31,6 @@ a SAX interface and DOM interface of libxml.
   libxml++ as the file COPYING.
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TXMLParser.h"
 
 #include <libxml/parser.h>

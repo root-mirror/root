@@ -13,13 +13,6 @@
 #include "TEvePointSet.h"
 #include "TEveGValuators.h"
 
-#include "TVirtualPad.h"
-#include "TColor.h"
-
-#include "TGLabel.h"
-#include "TGButton.h"
-#include "TGNumberEntry.h"
-#include "TGColorSelect.h"
 #include "TGDoubleSlider.h"
 
 /** \class TEvePointSetArrayEditor

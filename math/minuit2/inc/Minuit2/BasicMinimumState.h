@@ -18,81 +18,74 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-//extern StackAllocator gStackAllocator;
+// extern StackAllocator gStackAllocator;
 
 class BasicMinimumState {
 
 public:
+   /// Constructor without parameter values, but with function value, edm and nfcn.
+   /// This constructor will result in a state that is flagged as not valid
+   BasicMinimumState(unsigned int n, double fval, double edm, int nfcn)
+      : fParameters(MinimumParameters(n, fval)), fError(MinimumError(n)), fGradient(FunctionGradient(n)), fEDM(edm),
+        fNFcn(nfcn)
+   {
+   }
 
-   // constructor without parameter values but with function value, edm and nfcn
-   BasicMinimumState(unsigned int n, double fval, double edm, int nfcn) :
-      fParameters(MinimumParameters(n,fval)), fError(MinimumError(n)),
-    fGradient(FunctionGradient(n)), fEDM(edm), fNFcn(nfcn) {}
-   
-  BasicMinimumState(const MinimumParameters& states, const MinimumError& err,
-                    const FunctionGradient& grad, double edm, int nfcn) :     
-     fParameters(states), fError(err), fGradient(grad), fEDM(edm), fNFcn(nfcn) {}
+   /// Constructor with parameters values, errors and gradient
+   BasicMinimumState(const MinimumParameters &states, const MinimumError &err, const FunctionGradient &grad, double edm,
+                     int nfcn)
+      : fParameters(states), fError(err), fGradient(grad), fEDM(edm), fNFcn(nfcn)
+   {
+   }
 
-   BasicMinimumState(const MinimumParameters& states, double edm, int nfcn) : fParameters(states), fError(MinimumError(states.Vec().size())),
-                                                                              fGradient(FunctionGradient(states.Vec().size())), fEDM(edm), fNFcn(nfcn)
-   {}
+   /// Constuctor with only parameter values, edm and nfcn, but without errors (covariance).
+   /// The resulting state it will be considered valid, since it contains the parameter values,
+   /// although it will has not the error matrix (MinimumError) with
+   /// HasCovariance() returning false.
+   BasicMinimumState(const MinimumParameters &states, double edm, int nfcn)
+      : fParameters(states), fError(MinimumError(states.Vec().size())),
+        fGradient(FunctionGradient(states.Vec().size())), fEDM(edm), fNFcn(nfcn)
+   {
+   }
 
-  ~BasicMinimumState() {}
+   void *operator new(size_t nbytes) { return StackAllocatorHolder::Get().Allocate(nbytes); }
 
-  BasicMinimumState(const BasicMinimumState& state) :
-     fParameters(state.fParameters), fError(state.fError), fGradient(state.fGradient), fEDM(state.fEDM), fNFcn(state.fNFcn) {}
+   void operator delete(void *p, size_t /*nbytes */) { StackAllocatorHolder::Get().Deallocate(p); }
 
-  BasicMinimumState& operator=(const BasicMinimumState& state) {
-    fParameters = state.fParameters;
-    fError = state.fError;
-    fGradient = state.fGradient;
-    fEDM = state.fEDM;
-    fNFcn = state.fNFcn;
-    return *this;
-  }
+   const MinimumParameters &Parameters() const { return fParameters; }
+   const MnAlgebraicVector &Vec() const { return fParameters.Vec(); }
+   int size() const { return fParameters.Vec().size(); }
 
-  void* operator new(size_t nbytes) {
-    return StackAllocatorHolder::Get().Allocate(nbytes);
-  }
+   const MinimumError &Error() const { return fError; }
+   const FunctionGradient &Gradient() const { return fGradient; }
+   double Fval() const { return fParameters.Fval(); }
+   double Edm() const { return fEDM; }
+   int NFcn() const { return fNFcn; }
 
-  void operator delete(void* p, size_t /*nbytes */) {
-    StackAllocatorHolder::Get().Deallocate(p);
-  }
-
-  const MinimumParameters& Parameters() const {return fParameters;}
-  const MnAlgebraicVector& Vec() const {return fParameters.Vec();}
-  int size() const {return fParameters.Vec().size();}
-
-  const MinimumError& Error() const {return fError;}
-  const FunctionGradient& Gradient() const {return fGradient;}
-  double Fval() const {return fParameters.Fval();}
-  double Edm() const {return fEDM;}
-  int NFcn() const {return fNFcn;}
-
-
-  bool IsValid() const {
-    if(HasParameters() && HasCovariance())
-      return Parameters().IsValid() && Error().IsValid();
-    else if(HasParameters()) return Parameters().IsValid();
-    else return false;
-  }
-  bool HasParameters() const {return fParameters.IsValid();}
-  bool HasCovariance() const {return fError.IsAvailable();}
+   bool IsValid() const
+   {
+      if (HasParameters() && HasCovariance())
+         return Parameters().IsValid() && Error().IsValid();
+      else if (HasParameters())
+         return Parameters().IsValid();
+      else
+         return false;
+   }
+   bool HasParameters() const { return fParameters.IsValid(); }
+   bool HasCovariance() const { return fError.IsAvailable(); }
 
 private:
-
-  MinimumParameters fParameters;
-  MinimumError fError;
-  FunctionGradient fGradient;
-  double fEDM;
-  int fNFcn;
+   MinimumParameters fParameters;
+   MinimumError fError;
+   FunctionGradient fGradient;
+   double fEDM;
+   int fNFcn;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_BasicMinimumState
+#endif // ROOT_Minuit2_BasicMinimumState

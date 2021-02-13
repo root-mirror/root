@@ -8,6 +8,7 @@
 
 #include <ROOT/RVirtualCanvasPainter.hxx>
 
+#include "ROOT/RAttrBase.hxx" // for GPadLog()
 #include <ROOT/RLogger.hxx>
 #include <TSystem.h> // TSystem::Load
 
@@ -17,7 +18,7 @@ namespace {
 static int LoadCanvasPainterLibraryOnce() {
   static int loadResult = gSystem->Load("libROOTCanvasPainter");
   if (loadResult != 0)
-     R__ERROR_HERE("Gpad") << "Loading of libROOTCanvasPainter failed!";
+     R__LOG_ERROR(ROOT::Experimental::GPadLog()) << "Loading of libROOTCanvasPainter failed!";
   return loadResult;
 }
 static void LoadCanvasPainterLibrary() {
@@ -26,25 +27,24 @@ static void LoadCanvasPainterLibrary() {
 }
 } // unnamed namespace
 
+using namespace ROOT::Experimental::Internal;
 
 /// The implementation is here to pin the vtable.
-ROOT::Experimental::Internal::RVirtualCanvasPainter::~RVirtualCanvasPainter() = default;
+RVirtualCanvasPainter::~RVirtualCanvasPainter() = default;
 
-std::unique_ptr<ROOT::Experimental::Internal::RVirtualCanvasPainter::Generator>
-   &ROOT::Experimental::Internal::RVirtualCanvasPainter::GetGenerator()
+std::unique_ptr<RVirtualCanvasPainter::Generator> &RVirtualCanvasPainter::GetGenerator()
 {
    /// The generator for implementations.
    static std::unique_ptr<Generator> generator;
    return generator;
 }
 
-std::unique_ptr<ROOT::Experimental::Internal::RVirtualCanvasPainter> ROOT::Experimental::Internal::
-   RVirtualCanvasPainter::Create(const RCanvas &canv)
+std::unique_ptr<RVirtualCanvasPainter> RVirtualCanvasPainter::Create(ROOT::Experimental::RCanvas &canv)
 {
    if (!GetGenerator()) {
       LoadCanvasPainterLibrary();
       if (!GetGenerator()) {
-         R__ERROR_HERE("Gpad") << "RVirtualCanvasPainter::Generator failed to register!";
+         R__LOG_ERROR(GPadLog()) << "RVirtualCanvasPainter::Generator failed to register!";
          throw std::runtime_error("RVirtualCanvasPainter::Generator failed to initialize");
       }
    }
@@ -52,5 +52,5 @@ std::unique_ptr<ROOT::Experimental::Internal::RVirtualCanvasPainter> ROOT::Exper
 }
 
 /// The implementation is here to pin the vtable.
-ROOT::Experimental::Internal::RVirtualCanvasPainter::Generator::~Generator() = default;
+RVirtualCanvasPainter::Generator::~Generator() = default;
 

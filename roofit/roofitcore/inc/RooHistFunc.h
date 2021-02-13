@@ -21,6 +21,7 @@
 #include "RooSetProxy.h"
 #include "RooAICRegistry.h"
 #include "RooTrace.h"
+#include <list>
 
 class RooRealVar;
 class RooAbsReal;
@@ -28,42 +29,46 @@ class RooDataHist ;
 
 class RooHistFunc : public RooAbsReal {
 public:
-  RooHistFunc() ; 
+  RooHistFunc() ;
   RooHistFunc(const char *name, const char *title, const RooArgSet& vars, const RooDataHist& dhist, Int_t intOrder=0);
   RooHistFunc(const char *name, const char *title, const RooArgList& funcObs, const RooArgList& histObs, const RooDataHist& dhist, Int_t intOrder=0);
   RooHistFunc(const RooHistFunc& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooHistFunc(*this,newname); }
   virtual ~RooHistFunc() ;
 
+  /// Return RooDataHist that is represented.
   RooDataHist& dataHist()  { 
-    // Return RooDataHist that is represented
     return *_dataHist ; 
   }
+
+  /// Return RooDataHist that is represented.
   const RooDataHist& dataHist() const { 
-    // Return RooDataHist that is represented
     return *_dataHist ; 
   }
   
+  /// Set histogram interpolation order.
   void setInterpolationOrder(Int_t order) { 
-    // Set histogram interpolation order 
+
     _intOrder = order ; 
   }
 
-  Int_t getInterpolationOrder() const { 
-    // Return histogram interpolation order
+  /// Return histogram interpolation order.
+  Int_t getInterpolationOrder() const {
+
     return _intOrder ; 
   }
 
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ;
 
+  /// Set use of special boundary conditions for c.d.f.s
   void setCdfBoundaries(Bool_t flag) { 
-    // Set use of special boundary conditions for c.d.f.s
     _cdfBoundaries = flag ; 
   }
 
+  /// If true, special boundary conditions for c.d.f.s are used
   Bool_t getCdfBoundaries() const { 
-    // If true, special boundary conditions for c.d.f.s are used
+
     return _cdfBoundaries ; 
   }
 

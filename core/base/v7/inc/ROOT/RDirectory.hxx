@@ -1,4 +1,4 @@
-/// \file ROOT/RDirectory.h
+/// \file ROOT/RDirectory.hxx
 /// \ingroup Base ROOT7
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-07-31
@@ -16,8 +16,8 @@
 #ifndef ROOT7_RDirectory
 #define ROOT7_RDirectory
 
-#include "ROOT/RLogger.hxx"
 #include "ROOT/RDirectoryEntry.hxx"
+#include "ROOT/RLogger.hxx"
 
 #include <iterator>
 #include <memory>
@@ -28,6 +28,9 @@
 
 namespace ROOT {
 namespace Experimental {
+
+/// Logging for generic IO functionality.
+RLogChannel &IOLog();
 
 /**
   Objects of this class are thrown to signal that no key with that name exists.
@@ -176,7 +179,7 @@ public:
       std::string sName(name);
       auto idx = fContent.find(sName);
       if (idx != fContent.end()) {
-         R__LOG_HERE(ELogLevel::kWarning, "CORE") << "Replacing object with name \"" << name << "\"" << std::endl;
+         R__LOG_WARNING(IOLog()) << "Replacing object with name \"" << name << "\"" << std::endl;
          idx->second.swap(entry);
       } else {
          fContent[sName].swap(entry);

@@ -10,11 +10,10 @@
  *************************************************************************/
 
 #include "TBrowser.h"
-#include "TPolyLine3D.h"
 #include "TPoint.h"
 #include "TVirtualPad.h"
+#include "TVirtualX.h"
 #include "TView.h"
-
 #include "TGeoManager.h"
 #include "TVirtualGeoPainter.h"
 #include "TGeoTrack.h"
@@ -63,31 +62,6 @@ TGeoTrack::TGeoTrack(Int_t id, Int_t pdgcode, TVirtualGeoTrack *parent, TObject 
       SetLineColor(4);
       SetLineWidth(2);
    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Copy ctor. NOT TO BE CALLED.
-
-TGeoTrack::TGeoTrack(const TGeoTrack& other)
-                 :TVirtualGeoTrack(other),
-                  fPointsSize(other.fPointsSize),
-                  fNpoints(other.fNpoints),
-                  fPoints(other.fPoints)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Assignment operator. NOT TO BE CALLED.
-
-TGeoTrack& TGeoTrack::operator=(const TGeoTrack& gv)
-{
-   if(this!=&gv) {
-      TVirtualGeoTrack::operator=(gv);
-      fPointsSize=gv.fPointsSize;
-      fNpoints=gv.fNpoints;
-      fPoints=gv.fPoints;
-   }
-   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

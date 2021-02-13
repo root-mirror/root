@@ -17,10 +17,10 @@
 #include "THashList.h"
 
 #include "TGButton.h"
-#include "TGMenu.h"
 #include "TGPack.h"
 #include "TGTab.h"
 #include "TRootContextMenu.h"
+#include "TVirtualX.h"
 
 #include <cassert>
 

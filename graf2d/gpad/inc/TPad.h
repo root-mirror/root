@@ -12,11 +12,8 @@
 #ifndef ROOT_TPad
 #define ROOT_TPad
 
-
 #include "TVirtualPad.h"
 #include "TAttBBox2D.h"
-#include "TPoint.h"
-#include "GuiTypes.h"
 
 class TVirtualViewer3D;
 class TVirtualPadPainter;
@@ -24,7 +21,7 @@ class TBrowser;
 class TBox;
 class TLegend;
 class TArrow;
-
+class TPoint;
 
 class TPad : public TVirtualPad, public TAttBBox2D {
 

@@ -1,12 +1,13 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-## Basic functionality: examples on normalization and integration of p.d.fs, construction of cumulative distribution functions from monodimensional p.d.f.s
+## Basic functionality: examples on normalization and integration of pdfs, construction
+## of cumulative distribution functions from monodimensional pdfs
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 from __future__ import print_function
 import ROOT
@@ -17,11 +18,11 @@ import ROOT
 # Create observables x,y
 x = ROOT.RooRealVar("x", "x", -10, 10)
 
-# Create p.d.f. gaussx(x,-2,3)
+# Create pdf gaussx(x,-2,3)
 gx = ROOT.RooGaussian(
     "gx", "gx", x, ROOT.RooFit.RooConst(-2), ROOT.RooFit.RooConst(3))
 
-# Retrieve raw & normalized values of RooFit p.d.f.s
+# Retrieve raw & normalized values of RooFit pdfs
 # --------------------------------------------------------------------------------------------------
 
 # Return 'raw' unnormalized value of gx
@@ -43,7 +44,7 @@ print("gx_Int[x] = ", igx.getVal())
 x.setRange("signal", -5, 5)
 
 # Create an integral of gx_Norm[x] over x in range "signal"
-# ROOT.This is the fraction of of p.d.f. gx_Norm[x] which is in the
+# ROOT.This is the fraction of of pdf gx_Norm[x] which is in the
 # range named "signal"
 xset = ROOT.RooArgSet(x)
 igx_sig = gx.createIntegral(xset, ROOT.RooFit.NormSet(xset), ROOT.RooFit.Range("signal"))
@@ -57,7 +58,7 @@ print("gx_Int[x|signal]_Norm[x] = ", igx_sig.getVal())
 gx_cdf = gx.createCdf(ROOT.RooArgSet(x))
 
 # Plot cdf of gx versus x
-frame = x.frame(ROOT.RooFit.Title("c.d.f of Gaussian p.d.f"))
+frame = x.frame(ROOT.RooFit.Title("cdf of Gaussian pdf"))
 gx_cdf.plotOn(frame)
 
 # Draw plot on canvas

@@ -30,6 +30,8 @@ an URL. The supported url format is:
 #include "TMap.h"
 #include "TROOT.h"
 
+#include <atomic>
+
 TObjArray *TUrl::fgSpecialProtocols = nullptr;
 THashList *TUrl::fgHostFQDNs = nullptr;
 
@@ -570,10 +572,10 @@ void TUrl::Print(Option_t *) const
 
 TObjArray *TUrl::GetSpecialProtocols()
 {
-   R__LOCKGUARD(gROOTMutex);
-   static Bool_t usedEnv = kFALSE;
+   static std::atomic_bool usedEnv = ATOMIC_VAR_INIT(false);
 
    if (!gEnv) {
+      R__LOCKGUARD(gROOTMutex);
       if (!fgSpecialProtocols)
          fgSpecialProtocols = new TObjArray;
       if (fgSpecialProtocols->GetEntriesFast() == 0)
@@ -584,6 +586,12 @@ TObjArray *TUrl::GetSpecialProtocols()
    if (usedEnv)
       return fgSpecialProtocols;
 
+   R__LOCKGUARD(gROOTMutex);
+
+   // Some other thread might have set it up in the meantime.
+   if (usedEnv)
+      return fgSpecialProtocols;
+
    if (fgSpecialProtocols)
       fgSpecialProtocols->Delete();
 
@@ -591,7 +599,6 @@ TObjArray *TUrl::GetSpecialProtocols()
       fgSpecialProtocols = new TObjArray;
 
    const char *protos = gEnv->GetValue("Url.Special", "file: hpss: dcache: dcap:");
-   usedEnv = kTRUE;
 
    if (protos) {
       Int_t cnt = 0;
@@ -607,6 +614,7 @@ TObjArray *TUrl::GetSpecialProtocols()
       }
       delete [] p;
    }
+   usedEnv = true;
    return fgSpecialProtocols;
 }
 

@@ -12,9 +12,11 @@
 ROOT_STANDARD_LIBRARY_PACKAGE(ROOTGraphicsPrimitives
   HEADERS
     ROOT/RBox.hxx
+    ROOT/RFrameTitle.hxx
     ROOT/RLegend.hxx
     ROOT/RLine.hxx
     ROOT/RMarker.hxx
+    ROOT/RPaveText.hxx
     ROOT/RText.hxx
   SOURCES
     src/RBox.cxx
@@ -26,7 +28,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTGraphicsPrimitives
     -writeEmptyRootPCM
   DEPENDENCIES
     Core
-    RIO
     ROOTGpadv7
 )
 

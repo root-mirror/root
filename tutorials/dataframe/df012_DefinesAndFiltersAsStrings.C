@@ -1,6 +1,7 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -nodraw
+/// Use just-in-time-compiled Filters and Defines for quick prototyping.
 ///
 /// This tutorial illustrates how to save some typing when using RDataFrame
 /// by invoking functions that perform jit-compiling at runtime.
@@ -9,7 +10,7 @@
 /// \macro_output
 ///
 /// \date October 2017
-/// \author Guilherme Amadio
+/// \author Guilherme Amadio (CERN)
 
 void df012_DefinesAndFiltersAsStrings()
 {
@@ -21,7 +22,7 @@ void df012_DefinesAndFiltersAsStrings()
    // of radius 1.0)
 
    size_t npoints = 10000000;
-   ROOT::RDataFrame tdf(npoints);
+   ROOT::RDataFrame df(npoints);
 
    // Define what we want inside the dataframe. We do not need to define p as an array,
    // but we do it here to demonstrate how to use jitting with RDataFrame
@@ -31,10 +32,10 @@ void df012_DefinesAndFiltersAsStrings()
    // if the local variable and the data column are of different types or the
    // local x variable is declared in the global scope of the lambda function
 
-   auto pidf = tdf.Define("x", "gRandom->Uniform(-1.0, 1.0)")
-                  .Define("y", "gRandom->Uniform(-1.0, 1.0)")
-                  .Define("p", "std::array<double, 2> v{x, y}; return v;")
-                  .Define("r", "double r2 = 0.0; for (auto&& x : p) r2 += x*x; return sqrt(r2);");
+   auto pidf = df.Define("x", "gRandom->Uniform(-1.0, 1.0)")
+                 .Define("y", "gRandom->Uniform(-1.0, 1.0)")
+                 .Define("p", "std::array<double, 2> v{x, y}; return v;")
+                 .Define("r", "double r2 = 0.0; for (auto&& x : p) r2 += x*x; return sqrt(r2);");
 
    // Now we have a dataframe with columns x, y, p (which is a point based on x
    // and y), and the radius r = sqrt(x*x + y*y). In order to approximate pi, we

@@ -12,21 +12,23 @@
 #ifndef ROOT_TFilePrefetch
 #define ROOT_TFilePrefetch
 
-#include "TFile.h"
-#include "TThread.h"
-#include "TFPBlock.h"
-#include "TSemaphore.h"
-#include "TMD5.h"
 #include "TObject.h"
 #include "TString.h"
-#include "TObjString.h"
-#include "TObjArray.h"
 #include "TStopwatch.h"
+#include "TThread.h"
+#include "TFile.h"
 
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
 
+#ifdef R__LESS_INCLUDES
+class TSemaphore;
+class TFPBlock;
+#else
+#include "TSemaphore.h"
+#include "TFPBlock.h"
+#endif
 
 class TFilePrefetch : public TObject {
 

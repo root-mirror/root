@@ -33,11 +33,11 @@
 
 // Routines used for processing <IMG> markup
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 
 #include "TGHtml.h"
-//#include <TGHtmlUri.h>
+#include "snprintf.h"
 #include "TImage.h"
 #include "TUrl.h"
 #include "TSocket.h"

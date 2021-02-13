@@ -180,10 +180,6 @@ Duktape License
 
 https://github.com/svaarala/duktape/blob/master/LICENSE.txt
 
-> ===============
-> Duktape license
-> ===============
-> 
 > (http://opensource.org/licenses/MIT)
 > 
 > Copyright (c) 2013-2017 by Duktape authors (see AUTHORS.rst)

@@ -48,7 +48,7 @@ void makerootfile(const char *MacroName, const char *IN, const char *OutDir, boo
               i,IN,cw,ch);
    }
    fprintf(fh,"</center>\n");
-   fprintf(fh,"<script src=\"https://root.cern/js/dev/scripts/JSRootCore.js\" type=\"text/javascript\"></script>\n");
+   fprintf(fh,"<script src=\"https://root.cern/js/dev/scripts/JSRoot.core.js\" type=\"text/javascript\"></script>\n");
    fprintf(fh,"<script type='text/javascript'>\n");
    fprintf(fh,"JSROOT.OpenFile(\"./%s.root\", function(file) {\n",IN);
    for (i=1; i<=ImageNum; i++) {

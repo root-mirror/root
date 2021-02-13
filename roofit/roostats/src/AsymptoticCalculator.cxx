@@ -1037,7 +1037,7 @@ RooAbsData * AsymptoticCalculator::GenerateCountingAsimovData(RooAbsPdf & pdf, c
     if (!r) return 0;
     int icat = 0;
     if (channelCat) {
-       icat = channelCat->getIndex();
+       icat = channelCat->getCurrentIndex();
     }
 
     RooDataSet *ret = new RooDataSet(TString::Format("CountingAsimovData%d",icat),TString::Format("CountingAsimovData%d",icat), obs);
@@ -1067,7 +1067,7 @@ RooAbsData * AsymptoticCalculator::GenerateAsimovDataSinglePdf(const RooAbsPdf &
 
    RooDataSet* asimovData = 0;
    if (channelCat) {
-      int icat = channelCat->getIndex();
+      int icat = channelCat->getCurrentIndex();
       asimovData = new RooDataSet(TString::Format("AsimovData%d",icat),TString::Format("combAsimovData%d",icat),
                                   RooArgSet(obsAndWeight,*channelCat),RooFit::WeightVar(weightVar));
    }
@@ -1146,7 +1146,7 @@ RooAbsData * AsymptoticCalculator::GenerateAsimovData(const RooAbsPdf & pdf, con
    std::map<std::string, RooDataSet*> asimovDataMap;
 
   //look at category of simpdf
-  RooCategory& channelCat = (RooCategory&)simPdf->indexCat();
+  RooCategory& channelCat = const_cast<RooCategory&>(dynamic_cast<const RooCategory&>(simPdf->indexCat()));
   int nrIndices = channelCat.numTypes();
   if( nrIndices == 0 ) {
     oocoutW((TObject*)0,Generation) << "Simultaneous pdf does not contain any categories." << endl;
@@ -1155,12 +1155,12 @@ RooAbsData * AsymptoticCalculator::GenerateAsimovData(const RooAbsPdf & pdf, con
     channelCat.setIndex(i);
     //iFrame++;
     // Get pdf associated with state from simpdf
-    RooAbsPdf* pdftmp = simPdf->getPdf(channelCat.getLabel()) ;
+    RooAbsPdf* pdftmp = simPdf->getPdf(channelCat.getCurrentLabel()) ;
     assert(pdftmp != 0);
 
     if (printLevel > 1)
     {
-      cout << "on type " << channelCat.getLabel() << " " << channelCat.getIndex() << endl;
+      cout << "on type " << channelCat.getCurrentLabel() << " " << channelCat.getCurrentIndex() << endl;
     }
 
     RooAbsData * dataSinglePdf = GenerateAsimovDataSinglePdf( *pdftmp, observables, *weightVar, &channelCat);
@@ -1171,17 +1171,17 @@ RooAbsData * AsymptoticCalculator::GenerateAsimovData(const RooAbsPdf & pdf, con
        return 0;
     }
 
-    if (asimovDataMap.count(string(channelCat.getLabel())) != 0) {
-      oocoutE((TObject*)0,Generation) << "AsymptoticCalculator::GenerateAsimovData(): The PDF for " << channelCat.getLabel()
+    if (asimovDataMap.count(string(channelCat.getCurrentLabel())) != 0) {
+      oocoutE((TObject*)0,Generation) << "AsymptoticCalculator::GenerateAsimovData(): The PDF for " << channelCat.getCurrentLabel()
           << " was already defined. It will be overridden. The faulty category definitions follow:" << endl;
       channelCat.Print("V");
     }
 
-    asimovDataMap[string(channelCat.getLabel())] = (RooDataSet*) dataSinglePdf;
+    asimovDataMap[string(channelCat.getCurrentLabel())] = (RooDataSet*) dataSinglePdf;
 
     if (printLevel > 1)
     {
-      cout << "channel: " << channelCat.getLabel() << ", data: ";
+      cout << "channel: " << channelCat.getCurrentLabel() << ", data: ";
       dataSinglePdf->Print();
       cout << endl;
     }

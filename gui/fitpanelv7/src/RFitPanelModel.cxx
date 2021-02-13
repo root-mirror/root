@@ -1,10 +1,6 @@
-/// \file RFitPanelModel.cxx
-/// \ingroup WebGui ROOT7
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \author Iliana Betsou <Iliana.Betsou@cern.ch>
-/// \date 2019-04-11
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Authors: Sergey Linev <S.Linev@gsi.de> Iliana Betsou <Iliana.Betsou@cern.ch>
+// Date: 2019-04-11
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
@@ -16,11 +12,17 @@
 
 #include <ROOT/RFitPanelModel.hxx>
 
+#include <ROOT/RLogger.hxx>
+
 #include "TH1.h"
-#include "TDirectory.h"
 #include "TPluginManager.h"
 #include "TFitResult.h"
 #include "TF1.h"
+
+ROOT::Experimental::RLogChannel &ROOT::Experimental::FitPanelLog() {
+   static RLogChannel sLog("ROOT.FitPanel");
+   return sLog;
+}
 
 
 enum EFitPanel {

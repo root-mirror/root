@@ -39,8 +39,6 @@
 #include <ext/atomicity.h>
 #endif
 
-#include "Rtypes.h"
-
 #if defined(__GLIBCXX__) // g++ 3.4+
 
 using __gnu_cxx::__atomic_add;
@@ -48,13 +46,12 @@ using __gnu_cxx::__exchange_and_add;
 
 #endif
 
-
 class TAtomicCount {
 private:
    mutable _Atomic_word fCnt;   // counter
 
-   TAtomicCount(const TAtomicCount &);             // not implemented
-   TAtomicCount &operator=(const TAtomicCount &);  // not implemented
+   TAtomicCount(const TAtomicCount &) = delete;
+   TAtomicCount &operator=(const TAtomicCount &) = delete;
 
 public:
    explicit TAtomicCount(Long_t v) : fCnt(v) { }

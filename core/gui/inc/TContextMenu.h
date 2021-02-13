@@ -23,9 +23,13 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "TContextMenuImp.h"
-
 #include "TNamed.h"
+
+#ifdef R__LESS_INCLUDES
+class TContextMenuImp;
+#else
+#include "TContextMenuImp.h"
+#endif
 
 class TMethod;
 class TFunction;
@@ -55,8 +59,7 @@ protected:
    TVirtualPad     *fSelectedPad;         //selected pad (if exist)
    TBrowser        *fBrowser;             //selected browser (if exist)
 
-   virtual void DisplayPopUp(Int_t x, Int_t y)
-      { if (fContextMenuImp) fContextMenuImp->DisplayPopup(x, y); }
+   virtual void DisplayPopUp(Int_t x, Int_t y);
 
 private:
    TContextMenu();

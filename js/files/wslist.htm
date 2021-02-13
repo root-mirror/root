@@ -1,0 +1,32 @@
+<!--  this file used to present list of WS handlers  -->
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <title>List of WS handlers</title>
+   </head>
+
+   <body>
+      <div id="winlist">
+         loading list...
+      </div>
+
+      <script type='text/javascript'>
+         let lst = "$$$wslist$$$";
+
+         let elem = document.getElementById("winlist"), html = "";
+
+         if (lst && typeof lst == "object")
+            lst.forEach(entry => {
+               if (!entry.title) entry.title = "Window " + entry.name;
+               html += `<a href="${entry.name}/" title="${entry.title}">${entry.name}</a>`;
+            });
+
+         if (!html) html = "No widgets";
+
+         elem.innerHTML = html;
+
+      </script>
+   </body>
+
+</html>

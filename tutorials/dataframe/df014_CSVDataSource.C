@@ -1,8 +1,10 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -draw
+/// Process a CSV file with RDataFrame and the CSV data source.
+///
 /// This tutorial illustrates how use the RDataFrame in combination with a
-/// RDataSource. In this case we use a TCsvDS. This data source allows to read
+/// RDataSource. In this case we use a RCsvDS. This data source allows to read
 /// a CSV file from a RDataFrame.
 /// As a result of running this tutorial, we will produce plots of the dimuon
 /// spectrum starting from a subset of the CMS collision events of Run2010B.
@@ -15,7 +17,7 @@
 /// \macro_image
 ///
 /// \date October 2017
-/// \author Enric Tejedor
+/// \author Enric Tejedor (CERN)
 
 int df014_CSVDataSource()
 {
@@ -25,15 +27,15 @@ int df014_CSVDataSource()
    auto fileName = "df014_CsvDataSource_MuRun2010B_cpp.csv";
    if(gSystem->AccessPathName(fileName))
       TFile::Cp(fileNameUrl, fileName);
-   auto tdf = ROOT::RDF::MakeCsvDataFrame(fileName);
+   auto df = ROOT::RDF::MakeCsvDataFrame(fileName);
 
    // Now we will apply a first filter based on two columns of the CSV,
    // and we will define a new column that will contain the invariant mass.
    // Note how the new invariant mass column is defined from several other
    // columns that already existed in the CSV file.
    auto filteredEvents =
-      tdf.Filter("Q1 * Q2 == -1")
-         .Define("m", "sqrt(pow(E1 + E2, 2) - (pow(px1 + px2, 2) + pow(py1 + py2, 2) + pow(pz1 + pz2, 2)))");
+      df.Filter("Q1 * Q2 == -1")
+        .Define("m", "sqrt(pow(E1 + E2, 2) - (pow(px1 + px2, 2) + pow(py1 + py2, 2) + pow(pz1 + pz2, 2)))");
 
    // Next we create a histogram to hold the invariant mass values and we draw it.
    auto invMass =

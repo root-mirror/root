@@ -3,8 +3,6 @@
 #include "VectorizedTMath.h"
 #include <gtest/gtest.h>
 
-#if defined(R__HAS_VECCORE) && defined(R__HAS_VC)
-
 #define N 16384
 
 Double_t uniform_random(Double_t a, Double_t b)
@@ -106,5 +104,3 @@ int main(int argc, char *argv[])
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
 }
-
-#endif

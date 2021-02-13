@@ -66,23 +66,25 @@
 #include "TMath.h"
 #include "TSystem.h"
 #include "TList.h"
-#include "Riostream.h"
 #include "KeySymbols.h"
 #include "TGButton.h"
 #include "TQConnection.h"
 #include "TParameter.h"
 #include "RConfigure.h"
-#include "TEnv.h"
+#include "TVirtualX.h"
+#include "snprintf.h"
 
-const TGGC   *TGPopupMenu::fgDefaultGC = 0;
-const TGGC   *TGPopupMenu::fgDefaultSelectedGC = 0;
-const TGGC   *TGPopupMenu::fgDefaultSelectedBackgroundGC = 0;
-const TGFont *TGPopupMenu::fgDefaultFont = 0;
-const TGFont *TGPopupMenu::fgHilightFont = 0;
+#include <iostream>
 
-const TGGC   *TGMenuTitle::fgDefaultGC = 0;
-const TGGC   *TGMenuTitle::fgDefaultSelectedGC = 0;
-const TGFont *TGMenuTitle::fgDefaultFont = 0;
+const TGGC   *TGPopupMenu::fgDefaultGC = nullptr;
+const TGGC   *TGPopupMenu::fgDefaultSelectedGC = nullptr;
+const TGGC   *TGPopupMenu::fgDefaultSelectedBackgroundGC = nullptr;
+const TGFont *TGPopupMenu::fgDefaultFont = nullptr;
+const TGFont *TGPopupMenu::fgHilightFont = nullptr;
+
+const TGGC   *TGMenuTitle::fgDefaultGC = nullptr;
+const TGGC   *TGMenuTitle::fgDefaultSelectedGC = nullptr;
+const TGFont *TGMenuTitle::fgDefaultFont = nullptr;
 
 
 ClassImp(TGMenuBar);

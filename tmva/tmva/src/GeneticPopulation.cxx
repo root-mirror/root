@@ -29,14 +29,11 @@ Population definition for genetic algorithm.
 
 */
 
-#include <iostream>
-#include <iomanip>
+#include <algorithm>
 
 #include "Rstrstream.h"
-#include "TSystem.h"
 #include "TRandom3.h"
 #include "TH1.h"
-#include <algorithm>
 
 #include "TMVA/GeneticPopulation.h"
 #include "TMVA/GeneticGenes.h"

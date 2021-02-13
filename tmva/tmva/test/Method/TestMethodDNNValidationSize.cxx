@@ -1,9 +1,3 @@
-
-// As the reference implementation is deprecated and
-// can't be instantiated, we can only run this test
-// if there if we can run CPU or CUDA versions.
-#if (defined DNNCPU || defined DNNCUDA)
-
 #include "gtest/gtest.h"
 
 #include "TMVA/DataLoader.h"
@@ -50,14 +44,14 @@ struct TestMethodDNNValidationSize {
    size_t GetProcessedValidationOption(TString options)
    {
 #ifdef DNNCPU
-      const TString defualtOptions = "!H:!V:Layout=RELU|50:Architecture=CPU:";
-#elif DNNCUDA
-      const TString defualtOptions = "!H:!V:Layout=RELU|50:Architecture=GPU:";
+      const TString defaultOptions = "!H:!V:Layout=RELU|50:Architecture=CPU:";
+#elif defined DNNCUDA
+      const TString defaultOptions = "!H:!V:Layout=RELU|50:Architecture=GPU:";
 #else
 #error "This should not happen. Can only compile with CPU or CUDA implementations."
 #endif
 
-      IMethod *m = fFactory->BookMethod(fDataLoader.get(), Types::kDNN, "DNN", defualtOptions + options);
+      IMethod *m = fFactory->BookMethod(fDataLoader.get(), Types::kDNN, "DNN", defaultOptions + options);
       MethodDNN *mdnn = dynamic_cast<MethodDNN *>(m);
 
       size_t numValidationSamples = mdnn->GetNumValidationSamples();
@@ -168,4 +162,8 @@ TEST(MethodDnnValidationSize, Absolute)
    EXPECT_THROW(context.GetProcessedValidationOption("ValidationSize=101"), std::runtime_error);
 }
 
-#endif
+int main(int argc, char *argv[])
+{
+   ::testing::InitGoogleTest(&argc, argv);
+   return RUN_ALL_TESTS();
+}

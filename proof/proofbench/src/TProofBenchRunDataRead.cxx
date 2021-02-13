@@ -42,7 +42,7 @@ for query are plotted.
 #include "TPerfStats.h"
 #include "THashList.h"
 #include "TSortedList.h"
-#include "TPad.h"
+#include "TVirtualPad.h"
 #include "TEnv.h"
 #include "TLeaf.h"
 #include "TQueryResult.h"

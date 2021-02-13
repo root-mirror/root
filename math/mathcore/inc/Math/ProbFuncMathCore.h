@@ -41,8 +41,8 @@ namespace Math {
    * These names are currently kept for backward compatibility, but
    * their usage is deprecated.
    *
-   *  These functions are defined in the header file <em>Math/ProbFunc.h<em> or in the global one
-   *  including all statistical functions <em>Math/DistFunc.h<em>
+   *  These functions are defined in the header file <em>Math/ProbFunc.h</em> or in the global one
+   *  including all statistical functions <em>Math/DistFunc.h</em>
    *
    */
 
@@ -727,8 +727,8 @@ namespace Math {
    first or the second momentum of the truncated distribution.
    In the case of the Landau, first and second momentum functions are provided for the Landau
    distribution truncated only on the right side.
-   These functions are defined in the header file <em>Math/ProbFunc.h<em> or in the global one
-   including all statistical functions <em>Math/StatFunc.h<em>
+   These functions are defined in the header file <em>Math/ProbFunc.h</em> or in the global one
+   including all statistical functions <em>Math/StatFunc.h</em>
 
    */
 

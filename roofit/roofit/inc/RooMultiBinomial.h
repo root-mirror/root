@@ -17,15 +17,14 @@
 
 #include "RooAbsReal.h"
 #include "RooListProxy.h"
-#include "TString.h" 
 
-class RooArgList ;
+class RooArgList;
 
 
 class RooMultiBinomial : public RooAbsReal {
  public:
   // Constructors, assignment etc
-  inline RooMultiBinomial() { 
+  inline RooMultiBinomial() {
   }
 
   RooMultiBinomial(const char *name, const char *title, const RooArgList& effFuncList, const RooArgList& catList, Bool_t ignoreNonVisible);

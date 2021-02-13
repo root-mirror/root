@@ -14,8 +14,6 @@
 
 #include "TFormLeafInfo.h"
 
-#include <string>
-
 // Forward declarations
 class TVirtualRefProxy;
 
@@ -77,4 +75,5 @@ public:
    // TFormLeafInfo overload: Update (and propagate) cached information
    virtual Bool_t   Update();
 };
+
 #endif /* ROOT_TFormLeafInfoReference */

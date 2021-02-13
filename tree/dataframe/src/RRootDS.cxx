@@ -12,6 +12,8 @@
 
 namespace ROOT {
 
+namespace Internal {
+
 namespace RDF {
 
 std::vector<void *> RRootDS::GetColumnReadersImpl(std::string_view name, const std::type_info &id)
@@ -64,9 +66,8 @@ std::string RRootDS::GetTypeName(std::string_view colName) const
    }
    // TODO: we need to factor out the routine for the branch alone...
    // Maybe a cache for the names?
-   auto typeName =
-      ROOT::Internal::RDF::ColumnName2ColumnTypeName(std::string(colName), /*nsID=*/0, &fModelChain, /*ds=*/nullptr,
-                                                     /*isCustomCol=*/false);
+   auto typeName = ROOT::Internal::RDF::ColumnName2ColumnTypeName(std::string(colName), &fModelChain, /*ds=*/nullptr,
+                                                                  /*define=*/nullptr);
    // We may not have yet loaded the library where the dictionary of this type is
    TClass::GetClass(typeName.c_str());
    return typeName;
@@ -162,10 +163,11 @@ std::string RRootDS::GetLabel()
 
 RDataFrame MakeRootDataFrame(std::string_view treeName, std::string_view fileNameGlob)
 {
-   ROOT::RDataFrame tdf(std::make_unique<RRootDS>(treeName, fileNameGlob));
-   return tdf;
+   return ROOT::RDataFrame(treeName, fileNameGlob);
 }
 
 } // ns RDF
+
+} // ns Internal
 
 } // ns ROOT

@@ -20,6 +20,7 @@
 #include "RooLinkedList.h"
 
 #include <memory>
+#include <stdexcept>
 #include <assert.h>
 
 /// Interface for RooFIter-compatible iterators
@@ -68,7 +69,7 @@ class RooFIterForLinkedList final : public GenericRooFIter
     fPtr = fPtr->_next;
     return (RooAbsArg*) arg ;
   }
-    
+
  private:
     const RooLinkedListElem * fPtr{nullptr};  //! Next link element
 };
@@ -248,9 +249,9 @@ public:
   {
     // Copy constructor
   }
-  
+
   virtual ~RooLinkedListIterImpl() { }
-  
+
   TIterator& operator=(const TIterator& other) {
 
     // Iterator assignment operator
@@ -264,30 +265,30 @@ public:
     }
     return *this ;
   }
-    
-  virtual const TCollection *GetCollection() const { 
+
+  virtual const TCollection *GetCollection() const {
     // Dummy
-    return 0 ; 
+    return 0 ;
   }
 
-  virtual TObject *Next() { 
+  virtual TObject *Next() {
     // Return next element in collection
     if (!_ptr) return 0 ;
-    TObject* arg = _ptr->_arg ;      
+    TObject* arg = _ptr->_arg ;
     _ptr = _forward ? _ptr->_next : _ptr->_prev ;
     return arg ;
   }
 
-  TObject *NextNV() { 
+  TObject *NextNV() {
     // Return next element in collection
     if (!_ptr) return 0 ;
-    TObject* arg = _ptr->_arg ;      
+    TObject* arg = _ptr->_arg ;
     _ptr = _forward ? _ptr->_next : _ptr->_prev ;
     return arg ;
   }
-  
 
-  virtual void Reset() { 
+
+  virtual void Reset() {
     // Return iterator to first element in collection
     _ptr = _forward ? _list->_first : _list->_last ;
   }

@@ -38,6 +38,7 @@
 #include "TGInputDialog.h"
 #include "TSystem.h"
 #include "TObjString.h"
+#include "strlcpy.h"
 
 #include <sys/stat.h>
 
@@ -594,6 +595,8 @@ Bool_t TGFileDialog::ProcessMessage(Long_t msg, Long_t parm1, Long_t)
                            fFileInfo->fFileNamesList->Add(new TObjString(s));
                            delete [] s;
                         }
+                        tmp->Delete();
+                        delete tmp;
                         fTbfname->Clear();
                         fTbfname->AddText(0, tmpString);
                         fClient->NeedRedraw(fName);

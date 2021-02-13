@@ -14,8 +14,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 /** concrete implementation of the MinimumSeedGenerator interface; used within
     ModularFunctionMinimizer;
@@ -24,21 +23,21 @@ namespace ROOT {
 class MnSeedGenerator : public MinimumSeedGenerator {
 
 public:
+   MnSeedGenerator() {}
 
-  MnSeedGenerator() {}
+   virtual ~MnSeedGenerator() {}
 
-  virtual ~MnSeedGenerator() {}
+   virtual MinimumSeed
+   operator()(const MnFcn &, const GradientCalculator &, const MnUserParameterState &, const MnStrategy &) const;
 
-  virtual MinimumSeed operator()(const MnFcn&, const GradientCalculator&, const MnUserParameterState&, const MnStrategy&) const;
-
-  virtual MinimumSeed operator()(const MnFcn&, const AnalyticalGradientCalculator&, const MnUserParameterState&, const MnStrategy&) const;
+   virtual MinimumSeed operator()(const MnFcn &, const AnalyticalGradientCalculator &, const MnUserParameterState &,
+                                  const MnStrategy &) const;
 
 private:
-
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnSeedGenerator
+#endif // ROOT_Minuit2_MnSeedGenerator

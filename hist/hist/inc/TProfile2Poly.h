@@ -14,6 +14,7 @@
 
 #include "TH2Poly.h"
 #include "TProfile.h"
+#include <vector>
 
 class TProfile2PolyBin : public TH2PolyBin {
 public:

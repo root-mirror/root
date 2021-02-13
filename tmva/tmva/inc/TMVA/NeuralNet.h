@@ -1,5 +1,5 @@
 /**
- * @file NeuralNet
+ * @file TMVA/NeuralNet.h
  * @author  Peter Speckmayer
  * @version 1.0
  *
@@ -25,10 +25,8 @@
 #define TMVA_NEURAL_NET
 #pragma once
 
-#include <map>
 #include <vector>
 #include <iostream>
-#include <fstream>
 #include <algorithm>
 #include <iterator>
 #include <functional>
@@ -39,6 +37,8 @@
 #include <thread>
 #include <future>
 #include <type_traits>
+#include <string>
+#include <utility>
 
 #include "Pattern.h"
 #include "Monitoring.h"
@@ -48,7 +48,6 @@
 
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TStyle.h"
 
 #include <fenv.h> // turn on or off exceptions for NaN and other numeric exceptions
 
@@ -479,10 +478,8 @@ namespace TMVA
           * \param size size of the layer
           * \param itWeightBegin indicates the start of the weights for this layer on the weight vector
           * \param itGradientBegin indicates the start of the gradients for this layer on the gradient vector
-          * \param itFunctionBegin indicates the start of the vector of activation functions for this layer on the 
-          *                        activation function vector
-          * \param itInverseFunctionBegin indicates the start of the vector of activation functions for this 
-          *                               layer on the activation function vector
+          * \param activationFunction indicates activation functions for this layer
+          * \param inverseActivationFunction indicates the inverse activation functions for this layer
           * \param eModeOutput indicates a potential tranformation of the output values before further computation
           *                    DIRECT does not further transformation; SIGMOID applies a sigmoid transformation to each
           *                    output value (to create a probability); SOFTMAX applies a softmax transformation to all 
@@ -501,8 +498,7 @@ namespace TMVA
           * 
           * \param size size of the layer
           * \param itWeightBegin indicates the start of the weights for this layer on the weight vector
-          * \param itFunctionBegin indicates the start of the vector of activation functions for this layer on the 
-          *                        activation function vector
+          * \param activationFunction indicates the activation function for this layer
           * \param eModeOutput indicates a potential tranformation of the output values before further computation
           *                    DIRECT does not further transformation; SIGMOID applies a sigmoid transformation to each
           *                    output value (to create a probability); SOFTMAX applies a softmax transformation to all 
@@ -680,9 +676,6 @@ namespace TMVA
          /*! \brief c'tor for defining a Layer
           *
           * 
-          * \param itInputBegin indicates the start of the input node vector
-          * \param itInputEnd indicates the end of the input node vector
-          *
           */
          Layer (size_t numNodes, EnumFunction activationFunction, ModeOutputValues eModeOutputValues = ModeOutputValues::DIRECT);
 
@@ -1142,7 +1135,7 @@ namespace TMVA
     
          /*! \brief executes one training cycle
           *
-          * \param minimizier the minimizer to be used
+          * \param minimizer the minimizer to be used
           * \param weights the weight vector to be used
           * \param itPatternBegin the pattern to be trained with
           * \param itPatternEnd the pattern to be trainied with

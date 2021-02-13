@@ -22,14 +22,13 @@
 #include "TH1.h"
 #include "TF1.h"
 #include "TGTextEntry.h"
-#include "TGToolTip.h"
 #include "TGLabel.h"
 #include "TGDoubleSlider.h"
 #include "TString.h"
 #include "TGNumberEntry.h"
 #include "TG3DLine.h"
 #include "TFunctionParametersDialog.h"
-#include "TCanvas.h"
+#include "TVirtualPad.h"
 
 
 ClassImp(TF1Editor);

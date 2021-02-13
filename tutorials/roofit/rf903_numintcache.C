@@ -6,7 +6,9 @@
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -70,13 +72,12 @@ void rf903_numintcache(Int_t mode = 0)
    w1->pdf("model")->plotOn(framex);
 
    // Draw x projection on canvas
-   new TCanvas("rf903_numintcache", "rf903_numintcache", 600, 600);
+   auto canv = new TCanvas("rf903_numintcache", "rf903_numintcache", 600, 600);
    framex->Draw();
+   canv->Draw();
 
    // Make workspace available on command line after macro finishes
    gDirectory->Add(w1);
-
-   return;
 }
 
 RooWorkspace *getWorkspace(Int_t mode)
@@ -95,7 +96,7 @@ RooWorkspace *getWorkspace(Int_t mode)
       // Create empty workspace workspace
       w = new RooWorkspace("w", 1);
 
-      // Make a difficult to normalize  p.d.f. in 3 dimensions that is integrated numerically.
+      // Make a difficult to normalize  pdf in 3 dimensions that is integrated numerically.
       w->factory("EXPR::model('1/((x-a)*(x-a)+0.01)+1/((y-a)*(y-a)+0.01)+1/"
                  "((z-a)*(z-a)+0.01)',x[-1,1],y[-1,1],z[-1,1],a[-5,5])");
    }
@@ -110,7 +111,7 @@ RooWorkspace *getWorkspace(Int_t mode)
       // w->pdf("model")->setNormValueCaching(3) ;
       w->pdf("model")->setStringAttribute("CACHEPARMINT", "x:y:z");
 
-      // Evaluate p.d.f. once to trigger filling of cache
+      // Evaluate pdf once to trigger filling of cache
       RooArgSet normSet(*w->var("x"), *w->var("y"), *w->var("z"));
       w->pdf("model")->getVal(&normSet);
       w->writeToFile("rf903_numintcache.root");

@@ -26,10 +26,10 @@ namespace Experimental {
 
 class RAttrBox : public RAttrBase {
 
-   RAttrLine fAttrBorder{this, "border_"};   ///<!
-   RAttrFill fAttrFill{this, "fill_"};           ///<!
+   RAttrLine    fAttrBorder{this, "border"};    ///<! box line attributes
+   RAttrFill    fAttrFill{this, "fill"};        ///<! box fill attributes
 
-   R__ATTR_CLASS(RAttrBox, "box_", AddDefaults(fAttrBorder).AddDefaults(fAttrFill));
+   R__ATTR_CLASS(RAttrBox, "box");
 
    const RAttrLine &GetAttrBorder() const { return fAttrBorder; }
    RAttrBox &SetAttrBorder(const RAttrLine &border) { fAttrBorder = border; return *this; }

@@ -22,8 +22,8 @@ namespace RooStats{
 namespace HistFactory {
 
   namespace Constraint {
-    enum Type{ Gaussian, Poisson };            
-    std::string Name( Type type ); 
+    enum Type{ Gaussian, Poisson };
+    std::string Name( Type type );
     Type GetType( const std::string& Name );
   }
 
@@ -31,14 +31,14 @@ namespace HistFactory {
   // Base class for common functions
   /*
   class Systematic {
-    
+
   public:
 
     virtual void Print(std::ostream& = std::cout);
-    virtual void writeToFile(const std::string& FileName, 
+    virtual void writeToFile(const std::string& FileName,
 			     const std::string& Directory);
-    
-    
+
+
   };
   */
 
@@ -50,10 +50,10 @@ namespace HistFactory {
 
   public:
 
-    OverallSys() : fLow(0), fHigh(0) {} 
+    OverallSys() : fLow(0), fHigh(0) {}
 
     void SetName( const std::string& Name ) { fName = Name; }
-    std::string GetName() const { return fName; }
+    const std::string& GetName() const { return fName; }
 
     void SetLow( double Low )   { fLow  = Low; }
     void SetHigh( double High ) { fHigh = High; }
@@ -155,28 +155,28 @@ namespace HistFactory {
 
     void SetHistoLow(TH1* Low ) {Low->SetDirectory(nullptr); fhLow.reset(Low);}
     void SetHistoHigh(TH1* High ) {High->SetDirectory(nullptr); fhHigh.reset(High);}
-    
+
     const TH1* GetHistoLow() const {return fhLow.get();}
     const TH1* GetHistoHigh() const {return fhHigh.get();}
-    
+
     void SetName( const std::string& Name ) { fName = Name; }
     const std::string& GetName() const { return fName; }
 
     void SetInputFileLow( const std::string& InputFileLow ) { fInputFileLow = InputFileLow; }
     void SetInputFileHigh( const std::string& InputFileHigh ) { fInputFileHigh = InputFileHigh; }
-    
+
     const std::string& GetInputFileLow() const { return fInputFileLow; }
     const std::string& GetInputFileHigh() const { return fInputFileHigh; }
 
     void SetHistoNameLow( const std::string& HistoNameLow ) { fHistoNameLow = HistoNameLow; }
     void SetHistoNameHigh( const std::string& HistoNameHigh ) { fHistoNameHigh = HistoNameHigh; }
-    
+
     const std::string& GetHistoNameLow() const { return fHistoNameLow; }
     const std::string& GetHistoNameHigh() const { return fHistoNameHigh; }
 
     void SetHistoPathLow( const std::string& HistoPathLow ) { fHistoPathLow = HistoPathLow; }
     void SetHistoPathHigh( const std::string& HistoPathHigh ) { fHistoPathHigh = HistoPathHigh; }
-    
+
     const std::string& GetHistoPathLow() const { return fHistoPathLow; }
     const std::string& GetHistoPathHigh() const { return fHistoPathHigh; }
 
@@ -232,6 +232,13 @@ public:
     ShapeSys(const ShapeSys& other) :
       HistogramUncertaintyBase(other),
       fConstraintType(other.fConstraintType) {}
+    ShapeSys& operator=(const ShapeSys& oth) {
+       if (this == &oth) return *this;
+       HistogramUncertaintyBase::operator=(oth);
+       fConstraintType = oth.fConstraintType;
+       return *this;
+    }
+    ShapeSys& operator=(ShapeSys&&) = default;
 
     void SetInputFile( const std::string& InputFile ) { fInputFileHigh = InputFile; }
     std::string GetInputFile() const { return fInputFileHigh; }
@@ -284,22 +291,22 @@ public:
 
     void SetConstant(bool constant) { fConstant = constant; }
     bool IsConstant() const { return fConstant; }
-    
+
     bool HasInitialShape() const { return fHasInitialShape; }
 
-    void SetInputFile( const std::string& InputFile ) { 
+    void SetInputFile( const std::string& InputFile ) {
       fInputFileHigh = InputFile;
       fHasInitialShape=true;
     }
     const std::string& GetInputFile() const { return fInputFileHigh; }
 
-    void SetHistoName( const std::string& HistoName ) { 
+    void SetHistoName( const std::string& HistoName ) {
       fHistoNameHigh = HistoName;
-      fHasInitialShape=true; 
+      fHasInitialShape=true;
     }
     const std::string& GetHistoName() const { return fHistoNameHigh; }
 
-    void SetHistoPath( const std::string& HistoPath ) { 
+    void SetHistoPath( const std::string& HistoPath ) {
       fHistoPathHigh = HistoPath;
       fHasInitialShape=true;
     }
@@ -356,19 +363,21 @@ public:
   protected:
 
     bool fActivate;
-    bool fUseHisto; // Use an external histogram for the errors 
+    bool fUseHisto; // Use an external histogram for the errors
   };
 
 /** \class StatErrorConfig
  * \ingroup HistFactory
  * Configuration to automatically assign nuisance parameters for the statistical
  * error of the Monte Carlo simulations.
+ * The default is to assign a Poisson uncertainty to a bin when its statistical uncertainty
+ * is larger than 5% of the bin content.
  */
   class StatErrorConfig {
 
   public:
 
-    StatErrorConfig() : fRelErrorThreshold( .05 ), fConstraintType( Constraint::Gaussian ) {;}
+    StatErrorConfig() : fRelErrorThreshold( .05 ), fConstraintType( Constraint::Poisson ) {;}
     void Print(std::ostream& = std::cout) const;
     void PrintXML(std::ostream&) const;
 
@@ -381,7 +390,7 @@ public:
   protected:
 
     double fRelErrorThreshold;
-    Constraint::Type fConstraintType; 
+    Constraint::Type fConstraintType;
 
   };
 

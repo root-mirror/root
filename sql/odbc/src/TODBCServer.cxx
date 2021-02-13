@@ -20,7 +20,9 @@
 #include "TString.h"
 #include "TObjString.h"
 #include "TList.h"
-#include "Riostream.h"
+#include "strlcpy.h"
+
+#include <iostream>
 
 
 #include <sqlext.h>

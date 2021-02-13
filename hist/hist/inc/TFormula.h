@@ -8,20 +8,23 @@
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
-// ---------------------------------- TFormula.h
 #ifndef ROOT_TFormula
 #define ROOT_TFormula
 
 
 #include "TNamed.h"
- #include "TBits.h"
-#include "TObjArray.h"
-#include "TMethodCall.h"
+#include "TBits.h"
 #include "TInterpreter.h"
+#include <cassert>
 #include <vector>
 #include <list>
 #include <map>
+#include <string>
+#include <atomic>
 #include <Math/Types.h>
+
+class TMethodCall;
+
 
 class TFormulaFunction
 {
@@ -42,7 +45,7 @@ public:
    : fName(name),fBody(""),fNargs(0),fFound(false),fFuncCall(false){}
    Bool_t operator<(const TFormulaFunction &rhv) const
    {
-      // order by length - first the longer ones to avoid replacing wrong functions 
+      // order by length - first the longer ones to avoid replacing wrong functions
       if ( fName.Length() < rhv.fName.Length() )
          return true;
       else if ( fName.Length() > rhv.fName.Length() )
@@ -90,10 +93,10 @@ private:
    std::vector<Double_t>  fClingVariables;       //!  cached variables
    std::vector<Double_t>  fClingParameters;      //  parameter values
    Bool_t            fReadyToExecute;       //! trasient to force initialization
-   Bool_t            fClingInitialized;  //!  transient to force re-initialization
+   std::atomic<Bool_t>  fClingInitialized;  //!  transient to force re-initialization
    Bool_t            fAllParametersSetted;    // flag to control if all parameters are setted
    Bool_t            fLazyInitialization = kFALSE;  //! transient flag to control lazy initialization (needed for reading from files)
-   TMethodCall *fMethod; //! pointer to methodcall
+   std::unique_ptr<TMethodCall> fMethod; //! pointer to methodcall
    std::unique_ptr<TMethodCall> fGradMethod; //! pointer to a methodcall
    TString           fClingName;     //! unique name passed to Cling to define the function ( double clingName(double*x, double*p) )
    std::string       fSavedInputFormula;  //! unique name used to defined the function and used in the global map (need to be saved in case of lazy initialization)
@@ -136,7 +139,7 @@ protected:
    std::map<TString,Double_t>          fConsts;   //!
    std::map<TString,TString>           fFunctionsShortcuts;  //!
    TString                             fFormula;  // string representing the formula expression
-   Int_t                               fNdim;  //   Dimension - needed for lambda expressions  
+   Int_t                               fNdim;  //   Dimension - needed for lambda expressions
    Int_t                               fNpar;  //!  Number of parameter (transient since we save the vector)
    Int_t                               fNumber;  //!
    std::vector<TObject*>               fLinearParts;  // vector of linear functions
@@ -156,7 +159,7 @@ protected:
    void   ReplaceParamName(TString &formula, const TString & oldname, const TString & name);
    void   DoAddParameter(const TString &name, Double_t value, bool processFormula);
    void   DoSetParameters(const Double_t * p, Int_t size);
-   void   SetPredefinedParamNames(); 
+   void   SetPredefinedParamNames();
 
    Double_t       DoEval(const Double_t * x, const Double_t * p = nullptr) const;
 #ifdef R__HAS_VECCORE
@@ -169,7 +172,7 @@ public:
       kNotGlobal     = BIT(10),    // don't store in gROOT->GetListOfFunction (it should be protected)
       kNormalized    = BIT(14),    // set to true if the TFormula (ex gausn) is normalized
       kLinear        = BIT(16),    //set to true if the TFormula is for linear fitting
-      kLambda        = BIT(17)     // set to true if TFormula has been build with a lambda  
+      kLambda        = BIT(17)     // set to true if TFormula has been build with a lambda
    };
    using GradientStorage = std::vector<Double_t>;
 
@@ -205,6 +208,11 @@ public:
    void GradientPar(const Double_t *x, TFormula::GradientStorage& result);
 
    void GradientPar(const Double_t *x, Double_t *result);
+
+   // query if TFormula provides gradient computation using AD (CLAD)
+   bool HasGeneratedGradient() const {
+      return fGradMethod != nullptr;
+   }
 
    // template <class T>
    // T Eval(T x, T y = 0, T z = 0, T t = 0) const;
@@ -251,6 +259,6 @@ public:
    void           SetVariables(const std::pair<TString,Double_t> *vars, const Int_t size);
    void SetVectorized(Bool_t vectorized);
 
-   ClassDef(TFormula,12)
+   ClassDef(TFormula,13)
 };
 #endif

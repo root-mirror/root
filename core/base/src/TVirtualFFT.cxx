@@ -83,7 +83,6 @@ Different options are explained in the function comments
 #include "TROOT.h"
 #include "TVirtualFFT.h"
 #include "TPluginManager.h"
-#include "TEnv.h"
 #include "TError.h"
 
 TVirtualFFT *TVirtualFFT::fgFFT    = 0;

@@ -78,6 +78,10 @@ ROOT_STANDARD_LIBRARY_PACKAGE(HistFactory
     XMLParser
 )
 
+# For recent clang, this can facilitate auto-vectorisation.
+# In RooFit, the errno side effect is not needed, anyway:
+target_compile_options(HistFactory PUBLIC -fno-math-errno)
+
 ROOT_EXECUTABLE(hist2workspace
   MakeModelAndMeasurements.cxx
   hist2workspace.cxx
@@ -92,7 +96,7 @@ ROOT_EXECUTABLE(hist2workspace
 #---Createhist2workspaceCommandLineOptions------------------------------------------------------------------
 generateHeader(hist2workspace
   ${CMAKE_CURRENT_SOURCE_DIR}/src/hist2workspace-argparse.py
-  ${CMAKE_BINARY_DIR}/include/hist2workspaceCommandLineOptionsHelp.h
+  ${CMAKE_BINARY_DIR}/ginclude/hist2workspaceCommandLineOptionsHelp.h
 )
 
 file(COPY config/prepareHistFactory DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

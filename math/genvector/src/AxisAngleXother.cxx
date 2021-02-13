@@ -17,7 +17,6 @@
 
 #include <cmath>
 
-#include "Math/GenVector/AxisAngle.h"
 #include "Math/GenVector/Quaternion.h"
 #include "Math/GenVector/Cartesian3D.h"
 #include "Math/GenVector/RotationX.h"

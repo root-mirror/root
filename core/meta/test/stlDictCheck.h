@@ -5,6 +5,7 @@
 
 #include <array>
 #include <memory>
+#include <utility>
 
 #ifdef __ROOTCLING__
 #pragma link C++ class A+;

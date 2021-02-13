@@ -14,11 +14,10 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-double mnddot(unsigned int n, const double* dx, int incx, const double* dy,
-              int incy) {
+double mnddot(unsigned int n, const double *dx, int incx, const double *dy, int incy)
+{
    /* System generated locals */
    int i__1;
    double ret_val;
@@ -28,12 +27,10 @@ double mnddot(unsigned int n, const double* dx, int incx, const double* dy,
    double dtemp;
    int ix, iy, mp1;
 
-
    /*     forms the dot product of two vectors. */
    /*     uses unrolled loops for increments equal to one. */
    /*     jack dongarra, linpack, 3/11/78. */
    /*     modified 12/3/93, array(1) declarations changed to array(*) */
-
 
    /* Parameter adjustments */
    --dy;
@@ -72,11 +69,10 @@ double mnddot(unsigned int n, const double* dx, int incx, const double* dy,
 
    /*        code for both increments equal to 1 */
 
-
    /*        clean-up loop */
 
 L20:
-      m = n % 5;
+   m = n % 5;
    if (m == 0) {
       goto L40;
    }
@@ -89,20 +85,18 @@ L20:
       goto L60;
    }
 L40:
-      mp1 = m + 1;
+   mp1 = m + 1;
    i__1 = n;
    for (i__ = mp1; i__ <= i__1; i__ += 5) {
-      dtemp = dtemp + dx[i__] * dy[i__] + dx[i__ + 1] * dy[i__ + 1] + dx[
-         i__ + 2] * dy[i__ + 2] + dx[i__ + 3] * dy[i__ + 3] + dx[i__ +
-            4] * dy[i__ + 4];
+      dtemp = dtemp + dx[i__] * dy[i__] + dx[i__ + 1] * dy[i__ + 1] + dx[i__ + 2] * dy[i__ + 2] +
+              dx[i__ + 3] * dy[i__ + 3] + dx[i__ + 4] * dy[i__ + 4];
       /* L50: */
    }
 L60:
-      ret_val = dtemp;
+   ret_val = dtemp;
    return ret_val;
 } /* ddot_ */
 
+} // namespace Minuit2
 
-   }  // namespace Minuit2
-
-}  // namespace ROOT
+} // namespace ROOT

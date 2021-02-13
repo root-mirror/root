@@ -51,11 +51,13 @@
 #include "TCut.h"
 #include "TFile.h"
 #include "TSystem.h"
+#include "TError.h"
+#include "snprintf.h"
 
 Int_t stressEntryList(Int_t nentries = 10000, Int_t nfiles = 10);
 void MakeTrees(Int_t nentries, Int_t nfiles);
 
-Bool_t Test1()
+Bool_t Test1(bool fixedCut)
 {
    //Test the functionality of entry lists for chains:
    //making new entry lists out of parts of other entry lists
@@ -70,9 +72,18 @@ Bool_t Test1()
    smallchain->Add("stressEntryListTrees*.root/tree1");
 
    //create an entry list for the small chain
-   TCut cut = "x<0 && y>0";
+   TString fixedCutStr; fixedCutStr.Form("Entry$ >= %lld", smallchain->GetEntries());
+   TCut cut = fixedCut ? fixedCutStr.Data() : "x<0 && y>0";
    smallchain->Draw(">>elist_small", cut, "entrylist");
    TEntryList *elist_small = (TEntryList*)gDirectory->Get("elist_small");
+
+   if (fixedCut && elist_small->GetN() != 0) {
+      printf("Test1: Cut \"Entry$ >= %lld\" found entries in the small chain\n", smallchain->GetEntries());
+      return false;
+   } else if (!fixedCut && elist_small->GetN() == 0) {
+      printf("Test1: Cut \"x<0 && y>0\" found no entries in the small chain\n");
+      return false;
+   }
 
    //check if the entry list contains correct entries
    Int_t range = 100;
@@ -109,6 +120,16 @@ Bool_t Test1()
    //make an entry list for a big chain
    bigchain->Draw(">>elist_big", cut, "entrylist");
    TEntryList* elist_big = (TEntryList*)gDirectory->Get("elist_big");
+
+   if (fixedCut && elist_big->GetN() != smallchain->GetEntries()) {
+      printf("Test1: Cut \"Entry$ >= %lld\" did not find the right number of entries in the big chain (expected %lld got %lld\n",
+            smallchain->GetEntries(), smallchain->GetEntries(), elist_big->GetN());
+      return false;
+   } else if (!fixedCut && elist_big->GetN() == 0) {
+      printf("Test1: Cut \"x<0 && y>0\" found no entries in the big chain\n");
+      return false;
+   }
+
    //make a small entry list by extracting the lists, corresponding to the trees in
    //the small chain, from the big entry list
    TEntryList *list_extracted = new TEntryList("list_extracted", "list_extracted");
@@ -175,6 +196,14 @@ Bool_t Test1()
    if (wrongentries1>0 || wrongentries2>0 || wrongentries3>0 || wrongentries4>0 || wrongentries5>0)
       return kFALSE;
    return kTRUE;
+}
+
+Bool_t Test1a() {
+   return Test1(false);
+}
+
+Bool_t Test1b() {
+   return Test1(true);
 }
 
 Bool_t Test2()
@@ -503,7 +532,10 @@ Bool_t Test5And6(const std::list<const char*>& treeNamesForChain )
    elempty->Remove(3);
    //elempty->Print("all");
    chain->SetEntryList(elempty);
+   auto oldlevel = gErrorIgnoreLevel;
+   gErrorIgnoreLevel = kError; // Draw will print a warning about the empty histogram.
    Long64_t nen = chain->Draw("x", "", "goff");
+   gErrorIgnoreLevel = oldlevel;
    if (nen!=0) wrongentries5++;
 
    //printf("wrongentries5=%d\n", wrongentries5);
@@ -534,7 +566,7 @@ Bool_t Test6()
 }
 
 
-void SetupTree(TTree* tree, Double_t x, Double_t y, Double_t z)
+void SetupTree(TTree* tree, Double_t &x, Double_t &y, Double_t &z)
 {
    tree->Branch("x", &x, "x/D");
    tree->Branch("y", &y, "y/D");
@@ -607,21 +639,22 @@ Int_t stressEntryList(Int_t nentries, Int_t nfiles)
    CleanUp(nfiles);
 
    MakeTrees(nentries, nfiles);
-   printf("**********************************************************************\n");
-   printf("***************Starting TEntryList stress test************************\n");
-   printf("**********************************************************************\n");
-   printf("**********Generating %d data files, 2 trees of %d in each**********\n", nfiles, nentries);
-   printf("**********************************************************************\n");
+   printf("*************************************************************************\n");
+   printf("****************Starting TEntryList stress test**************************\n");
+   printf("*************************************************************************\n");
+   printf("***********Generating %d data files, 2 trees of %d in each************\n", nfiles, nentries);
+   printf("*************************************************************************\n");
 
    Int_t retval = 0;
    using fcnCharPtrPair = std::pair<std::function<bool()>,const char*>;
    std::list<fcnCharPtrPair> testDescrList = {
-      {Test1, "Test1: Applying different entry lists to different chains---------- "},
-      {Test2, "Test2: Adding and subtracting entry lists-------------------------- "},
-      {Test3, "Test3: TEntryList and TEventList for TChain------------------------ "},
-      {Test4, "Test4: TEntryList and TEventList for TTree------------------------- "},
-      {Test5, "Test5: Full and Empty TEntryList----------------------------------- "},
-      {Test6, "Test6: Full and Empty TEntryList w/ TTrees in TDirectories--------- "}
+      {Test1a, "Test1: Applying different entry lists to different chains------------ "},
+      {Test1b, "Test1: Applying different entry lists to different chains (bad cuts)- "},
+      {Test2,  "Test2: Adding and subtracting entry lists---------------------------- "},
+      {Test3,  "Test3: TEntryList and TEventList for TChain-------------------------- "},
+      {Test4,  "Test4: TEntryList and TEventList for TTree--------------------------- "},
+      {Test5,  "Test5: Full and Empty TEntryList------------------------------------- "},
+      {Test6,  "Test6: Full and Empty TEntryList w/ TTrees in TDirectories----------- "}
    };
 
    for (auto const & testDescrPair : testDescrList) {
@@ -632,9 +665,9 @@ Int_t stressEntryList(Int_t nentries, Int_t nfiles)
       printf("%s %s\n", descr, testRes ? "OK" : "FAILED" );
    }
 
-   printf("**********************************************************************\n");
-   printf("*******************Deleting the data files****************************\n");
-   printf("**********************************************************************\n");
+   printf("*************************************************************************\n");
+   printf("********************Deleting the data files******************************\n");
+   printf("*************************************************************************\n");
    CleanUp(nfiles);
    return retval;
 }

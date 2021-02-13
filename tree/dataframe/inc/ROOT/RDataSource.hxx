@@ -11,6 +11,7 @@
 #ifndef ROOT_RDATASOURCE
 #define ROOT_RDATASOURCE
 
+#include "RDF/RColumnReaderBase.hxx"
 #include "ROOT/RStringView.hxx"
 #include "RtypesCore.h" // ULong64_t
 #include "TString.h"
@@ -111,6 +112,9 @@ protected:
    virtual std::string AsString() { return "generic data source"; };
 
 public:
+   /// Tag type used to indicate that newer versions of RDataSource interfaces should be invoked
+   static struct RV2Interface{} V2;
+
    virtual ~RDataSource() = default;
 
    // clang-format off
@@ -126,14 +130,14 @@ public:
    virtual const std::vector<std::string> &GetColumnNames() const = 0;
 
    /// \brief Checks if the dataset has a certain column
-   /// \param[in] columnName The name of the column
-   virtual bool HasColumn(std::string_view) const = 0;
+   /// \param[in] colName The name of the column
+   virtual bool HasColumn(std::string_view colName) const = 0;
 
    // clang-format off
    /// \brief Type of a column as a string, e.g. `GetTypeName("x") == "double"`. Required for jitting e.g. `df.Filter("x>0")`.
-   /// \param[in] columnName The name of the column
+   /// \param[in] colName The name of the column
    // clang-format on
-   virtual std::string GetTypeName(std::string_view) const = 0;
+   virtual std::string GetTypeName(std::string_view colName) const = 0;
 
    // clang-format off
    /// Called at most once per column by RDF. Return vector of pointers to pointers to column values - one per slot.
@@ -151,6 +155,17 @@ public:
       std::transform(typeErasedVec.begin(), typeErasedVec.end(), typedVec.begin(),
                      [](void *p) { return static_cast<T **>(p); });
       return typedVec;
+   }
+
+   /// If the other GetColumnReaders overload returns an empty vector, this overload will be called instead.
+   /// \param[in] slot The data processing slot that needs to be considered
+   /// \param[in] name The name of the column for which a column reader needs to be returned
+   /// \param[in] tid A type_info
+   /// At least one of the two must return a non-empty/non-null value.
+   virtual std::unique_ptr<ROOT::Detail::RDF::RColumnReaderBase>
+   GetColumnReaders(unsigned int /*slot*/, std::string_view /*name*/, const std::type_info &)
+   {
+      return {};
    }
 
    // clang-format off

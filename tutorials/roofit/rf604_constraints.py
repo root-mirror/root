@@ -1,13 +1,12 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook -nodraw
-##
 ## Likelihood and minimization: fitting with constraints
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 from __future__ import print_function
 import ROOT
@@ -16,14 +15,14 @@ import ROOT
 # Create model and dataset
 # ----------------------------------------------
 
-# Construct a Gaussian p.d.f
+# Construct a Gaussian pdf
 x = ROOT.RooRealVar("x", "x", -10, 10)
 
 m = ROOT.RooRealVar("m", "m", 0, -10, 10)
 s = ROOT.RooRealVar("s", "s", 2, 0.1, 10)
 gauss = ROOT.RooGaussian("gauss", "gauss(x,m,s)", x, m, s)
 
-# Construct a flat p.d.f (polynomial of 0th order)
+# Construct a flat pdf (polynomial of 0th order)
 poly = ROOT.RooPolynomial("poly", "poly(x)", x)
 
 # model = f*gauss + (1-f)*poly
@@ -42,7 +41,7 @@ d = model.generate(ROOT.RooArgSet(x), 50)
 # Create constraint pdf
 # -----------------------------------------
 
-# Construct Gaussian constraint p.d.f on parameter f at 0.8 with
+# Construct Gaussian constraint pdf on parameter f at 0.8 with
 # resolution of 0.1
 fconstraint = ROOT.RooGaussian(
     "fconstraint",
@@ -54,11 +53,11 @@ fconstraint = ROOT.RooGaussian(
 # Method 1 - add internal constraint to model
 # -------------------------------------------------------------------------------------
 
-# Multiply constraint term with regular p.d.f using ROOT.RooProdPdf
+# Multiply constraint term with regular pdf using ROOT.RooProdPdf
 # Specify in fitTo() that internal constraints on parameter f should be
 # used
 
-# Multiply constraint with p.d.f
+# Multiply constraint with pdf
 modelc = ROOT.RooProdPdf(
     "modelc", "model with constraint", ROOT.RooArgList(model, fconstraint))
 
@@ -75,7 +74,7 @@ r2 = modelc.fitTo(
 # Method 2 - specify external constraint when fitting
 # ------------------------------------------------------------------------------------------
 
-# Construct another Gaussian constraint p.d.f on parameter f at 0.8 with
+# Construct another Gaussian constraint pdf on parameter f at 0.8 with
 # resolution of 0.1
 fconstext = ROOT.RooGaussian("fconstext", "fconstext", f, ROOT.RooFit.RooConst(
     0.2), ROOT.RooFit.RooConst(0.1))

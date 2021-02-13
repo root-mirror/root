@@ -26,6 +26,7 @@
 #include "TMVA/DNN/Architectures/Reference/TensorDataLoader.h"
 #include <vector>
 
+
 class TRandom;
 
 namespace TMVA
@@ -45,13 +46,14 @@ namespace DNN
 *
 * \tparam AReal The floating point type used to represent scalars.
 */
+
+
 template<typename AReal>
 class TReference
 {
 private:
    static TRandom * fgRandomGen;
 public:
-
    using Scalar_t     = AReal;
    using Matrix_t     = TMatrixT<AReal>;
    using Tensor_t     = TMatrixT<AReal>;
@@ -69,9 +71,12 @@ public:
    ///@{
    /** Matrix-multiply \p input with the transpose of \pweights and
     *  write the results into \p output. */
+
    static void MultiplyTranspose(TMatrixT<Scalar_t> &output,
                                  const TMatrixT<Scalar_t> &input,
                                  const TMatrixT<Scalar_t> &weights);
+
+
    /** Add the vectors biases row-wise to the matrix output */
    static void AddRowWise(TMatrixT<Scalar_t> &output,
                           const TMatrixT<Scalar_t> &biases);
@@ -108,6 +113,75 @@ public:
                                             const TMatrixT<Scalar_t> & weights_state, // HxH
                                             const TMatrixT<Scalar_t> & input,  // BxD
                                             TMatrixT<Scalar_t> & input_gradient);
+
+
+
+   /** Backward pass for LSTM Network */
+   static Matrix_t & LSTMLayerBackward(TMatrixT<Scalar_t> & state_gradients_backward,
+			                              TMatrixT<Scalar_t> & cell_gradients_backward,
+			                              TMatrixT<Scalar_t> & input_weight_gradients,
+                                       TMatrixT<Scalar_t> & forget_weight_gradients,
+                                       TMatrixT<Scalar_t> & candidate_weight_gradients,
+                                       TMatrixT<Scalar_t> & output_weight_gradients,
+                                       TMatrixT<Scalar_t> & input_state_weight_gradients,
+                                       TMatrixT<Scalar_t> & forget_state_weight_gradients,
+                                       TMatrixT<Scalar_t> & candidate_state_weight_gradients,
+                                       TMatrixT<Scalar_t> & output_state_weight_gradients,
+                                       TMatrixT<Scalar_t> & input_bias_gradients,
+                                       TMatrixT<Scalar_t> & forget_bias_gradients,
+                                       TMatrixT<Scalar_t> & candidate_bias_gradients,
+                                       TMatrixT<Scalar_t> & output_bias_gradients,
+                                       TMatrixT<Scalar_t> & di,
+                                       TMatrixT<Scalar_t> & df,
+                                       TMatrixT<Scalar_t> & dc,
+                                       TMatrixT<Scalar_t> & dout,
+                                       const TMatrixT<Scalar_t> & precStateActivations,
+                                       const TMatrixT<Scalar_t> & precCellActivations,
+                                       const TMatrixT<Scalar_t> & fInput,
+                                       const TMatrixT<Scalar_t> & fForget,
+                                       const TMatrixT<Scalar_t> & fCandidate,
+                                       const TMatrixT<Scalar_t> & fOutput,
+                                       const TMatrixT<Scalar_t> & weights_input,
+                                       const TMatrixT<Scalar_t> & weights_forget,
+                                       const TMatrixT<Scalar_t> & weights_candidate,
+                                       const TMatrixT<Scalar_t> & weights_output,
+                                       const TMatrixT<Scalar_t> & weights_input_state,
+                                       const TMatrixT<Scalar_t> & weights_forget_state,
+                                       const TMatrixT<Scalar_t> & weights_candidate_state,
+                                       const TMatrixT<Scalar_t> & weights_output_state,
+                                       const TMatrixT<Scalar_t> & input,
+                                       TMatrixT<Scalar_t> & input_gradient,
+                                       TMatrixT<Scalar_t> & cell_gradient,
+                                       TMatrixT<Scalar_t> & cell_tanh);
+
+
+ /** Backward pass for GRU Network */
+   static Matrix_t & GRULayerBackward(TMatrixT<Scalar_t> & state_gradients_backward,
+                                      TMatrixT<Scalar_t> & reset_weight_gradients,
+                                      TMatrixT<Scalar_t> & update_weight_gradients,
+                                      TMatrixT<Scalar_t> & candidate_weight_gradients,
+                                      TMatrixT<Scalar_t> & reset_state_weight_gradients,
+                                      TMatrixT<Scalar_t> & update_state_weight_gradients,
+                                      TMatrixT<Scalar_t> & candidate_state_weight_gradients,
+                                      TMatrixT<Scalar_t> & reset_bias_gradients,
+                                      TMatrixT<Scalar_t> & update_bias_gradients,
+                                      TMatrixT<Scalar_t> & candidate_bias_gradients,
+                                      TMatrixT<Scalar_t> & dr,
+                                      TMatrixT<Scalar_t> & du,
+                                      TMatrixT<Scalar_t> & dc,
+                                      const TMatrixT<Scalar_t> & precStateActivations,
+                                      const TMatrixT<Scalar_t> & fReset,
+                                      const TMatrixT<Scalar_t> & fUpdate,
+                                      const TMatrixT<Scalar_t> & fCandidate,
+                                      const TMatrixT<Scalar_t> & weights_reset,
+                                      const TMatrixT<Scalar_t> & weights_update,
+                                      const TMatrixT<Scalar_t> & weights_candidate,
+                                      const TMatrixT<Scalar_t> & weights_reset_state,
+                                      const TMatrixT<Scalar_t> & weights_update_state,
+                                      const TMatrixT<Scalar_t> & weights_candidate_state,
+                                      const TMatrixT<Scalar_t> & input,
+                                      TMatrixT<Scalar_t> & input_gradient);
+
    /** Adds a the elements in matrix B scaled by c to the elements in
     *  the matrix A. This is required for the weight update in the gradient
     *  descent step.*/
@@ -165,6 +239,9 @@ public:
    static void TanhDerivative(TMatrixT<AReal> & B,
                               const TMatrixT<AReal> & A);
 
+   static void FastTanh(Tensor_t &B) { return Tanh(B); }
+   static void FastTanhDerivative(Tensor_t &B, const Tensor_t &A) { return TanhDerivative(B, A); }
+
    static void SymmetricRelu(TMatrixT<AReal> & B);
    static void SymmetricReluDerivative(TMatrixT<AReal> & B,
                                        const TMatrixT<AReal> & A);
@@ -176,6 +253,7 @@ public:
    static void Gauss(TMatrixT<AReal> & B);
    static void GaussDerivative(TMatrixT<AReal> & B,
                                const TMatrixT<AReal> & A);
+
 
    ///@}
 

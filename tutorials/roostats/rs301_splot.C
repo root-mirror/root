@@ -208,12 +208,12 @@ void DoSPlot(RooWorkspace *ws)
    // qcdMassDecayConst->setConstant();
 
    RooMsgService::instance().setSilentMode(true);
-   
+
    std::cout << "\n\n------------------------------------------\nThe dataset before creating sWeights:\n";
    data->Print();
-   
+
    RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
-   
+
    // Now we use the SPlot class to add SWeights to our data set
    // based on our model and our yield variables
    RooStats::SPlot *sData = new RooStats::SPlot("sData", "An SPlot", *data, model, RooArgList(*zYield, *qcdYield));
@@ -244,7 +244,7 @@ void DoSPlot(RooWorkspace *ws)
    // import this new dataset with sWeights
    std::cout << "import new dataset with sWeights" << std::endl;
    ws->import(*data, Rename("dataWithSWeights"));
-   
+
    RooMsgService::instance().setGlobalKillBelow(RooFit::INFO);
 }
 

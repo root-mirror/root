@@ -12,10 +12,9 @@
 #ifndef ROOT_TGaxis
 #define ROOT_TGaxis
 
-
-#include "TNamed.h"
 #include "TLine.h"
 #include "TAttText.h"
+#include "TString.h"
 
 class TF1;
 class TAxis;

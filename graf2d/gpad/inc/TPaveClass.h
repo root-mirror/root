@@ -13,8 +13,12 @@
 
 
 #include "TPaveLabel.h"
-#include "TClassTree.h"
 
+#ifdef R__LESS_INCLUDES
+class TClassTree;
+#else
+#include "TClassTree.h"
+#endif
 
 class TPaveClass : public TPaveLabel{
 

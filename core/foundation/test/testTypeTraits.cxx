@@ -4,6 +4,7 @@
 #include <memory>
 #include <type_traits>
 #include <vector>
+#include <string>
 
 #include "gtest/gtest.h"
 
@@ -38,13 +39,6 @@ TEST(TypeTraits, RemoveFirstParameter)
 {
    ::testing::StaticAssertTypeEq<RemoveFirstParameter_t<TypeList<int, void>>, TypeList<void>>();
    ::testing::StaticAssertTypeEq<RemoveFirstParameter_t<std::tuple<void>>, std::tuple<>>();
-}
-
-TEST(TypeTraits, IsContainer)
-{
-   static_assert(IsContainer<std::vector<int>>::value, "");
-   static_assert(IsContainer<std::vector<bool>>::value, "");
-   static_assert(IsContainer<std::tuple<int, int>>::value == false, "");
 }
 
 /******** helper objects ***********/

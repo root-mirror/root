@@ -12,6 +12,7 @@
 #include "THbookKey.h"
 #include "THbookTree.h"
 #include "TBrowser.h"
+#include "snprintf.h"
 
 ClassImp(THbookKey);
 

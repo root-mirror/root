@@ -24,11 +24,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
-
 #include "TObject.h"
-
-#include "TAttFill.h"
 
 class TBuffer3D;
 class TVirtualPad;

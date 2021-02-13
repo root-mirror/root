@@ -2,11 +2,9 @@
 <html lang="en">
    <head>
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <title>ROOT Browser</title>
-      <script type="text/javascript" src="jsrootsys/scripts/JSRootCore.js"></script>
+      <title>ROOT RBrowser</title>
+      <script type="text/javascript" src="jsrootsys/scripts/JSRoot.core.js"></script>
       <link rel="stylesheet" type="text/css" href="rootui5sys/browser/style.css">
-
    </head>
 
    <body>
@@ -16,29 +14,20 @@
 
       <script type='text/javascript'>
 
-        function InitUI(handle) {
-
-           sap.ui.require(["sap/ui/core/mvc/XMLView"], function(XMLView) {
-              XMLView.create({
-                 id: "TopBrowserId",
-                 viewName: "rootui5.browser.view.Browser",
-                 viewData: { conn_handle: handle }
-              }).then(function(oView) {
-                 oView.placeAt("BrowserDiv");
-              });
-           });
-
-        }
-
-        if (JSROOT.GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
-
-        JSROOT.ConnectWebWindow({
-           prereq: "openui5;v6;v7",  // load v6,v7 because of canvas painter
+        JSROOT.connectWebWindow({
+           prereq: "openui5",
 //           openui5src: "jsroot",    // use JSROOT provided package, default
-//           openui5src: "https://openui5.hana.ondemand.com/1.70.0/",
-           openui5libs: "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.table, sap.ui.codeeditor, sap.tnt", // customize openui5 libs later
-           prereq_logdiv: "BrowserDiv",
-           callback: InitUI
+//           openui5src: "https://openui5.hana.ondemand.com/1.82.2/",
+           openui5libs: "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.table, sap.ui.codeeditor, sap.ui.commons, sap.tnt", // customize openui5 libs later
+           prereq_logdiv: "BrowserDiv"
+        }).then(handle => {
+            sap.ui.require(["sap/ui/core/mvc/XMLView"], XMLView => {
+                XMLView.create({
+                   id: "TopBrowserId",
+                   viewName: "rootui5.browser.view.Browser",
+                   viewData: { conn_handle: handle }
+                }).then(oView => oView.placeAt("BrowserDiv"));
+            });
         });
 
       </script>

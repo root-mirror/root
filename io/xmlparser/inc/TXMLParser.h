@@ -24,8 +24,8 @@ struct   _xmlParserCtxt;
 class TXMLParser : public TObject, public TQObject {
 
 private:
-   TXMLParser(const TXMLParser&);            // Not implemented
-   TXMLParser& operator=(const TXMLParser&); // Not implemented
+   TXMLParser(const TXMLParser&) = delete;
+   TXMLParser& operator=(const TXMLParser&) = delete;
 
 protected:
    _xmlParserCtxt     *fContext;          ///< Parse the xml file

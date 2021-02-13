@@ -9,7 +9,7 @@
 # @author Mihaela Gheata, CERN
 ############################################################################
 
-include_directories(AFTER SYSTEM ${VECGEOM_INCLUDE_DIR})
+include_directories(AFTER SYSTEM ${VECGEOM_INCLUDE_DIRS})
 if ( Vc_FOUND )
    include_directories( AFTER SYSTEM ${Vc_INCLUDE_DIRS})
    if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
@@ -17,7 +17,7 @@ if ( Vc_FOUND )
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fabi-version=6")
    endif()
 endif()
-   
+
 ROOT_STANDARD_LIBRARY_PACKAGE(ConverterVG
   HEADERS
     TGeoVGConverter.h

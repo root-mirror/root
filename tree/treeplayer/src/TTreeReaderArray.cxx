@@ -15,11 +15,13 @@
 #include "TBranchElement.h"
 #include "TBranchRef.h"
 #include "TBranchSTL.h"
+#include "TBranchObject.h"
 #include "TBranchProxyDirector.h"
 #include "TClassEdit.h"
 #include "TFriendElement.h"
 #include "TFriendProxy.h"
 #include "TLeaf.h"
+#include "TList.h"
 #include "TROOT.h"
 #include "TStreamerInfo.h"
 #include "TStreamerElement.h"
@@ -214,13 +216,47 @@ namespace {
                        ARGS&&... args):
          BASE(std::forward<ARGS>(args)...)
       {
-         if (TLeaf* sizeLeaf = treeReader->GetTree()->FindLeaf(leafName)) {
-            fIsUnsigned = sizeLeaf->IsUnsigned();
-            if (fIsUnsigned) {
-               fSizeReader.reset(new TTreeReaderValue<UInt_t>(*treeReader, leafName));
-            } else {
-               fSizeReader.reset(new TTreeReaderValue<Int_t>(*treeReader, leafName));
+         std::string foundLeafName = leafName;
+         TLeaf* sizeLeaf = treeReader->GetTree()->FindLeaf(foundLeafName.c_str());
+
+         if (!sizeLeaf) {
+            // leafName might be "top.currentParent.N". But "N" might really be "top.N"!
+            // Strip parents until we find the leaf.
+            std::string leafNameNoParent = leafName;
+            std::string parent;
+            auto posLastDot = leafNameNoParent.rfind('.');
+            if (posLastDot != leafNameNoParent.npos) {
+               parent = leafNameNoParent.substr(0, posLastDot);
+               leafNameNoParent.erase(0, posLastDot + 1);
             }
+
+            do {
+               if (!sizeLeaf && !parent.empty()) {
+                  auto posLastDotParent = parent.rfind('.');
+                  if (posLastDotParent != parent.npos)
+                     parent = parent.substr(0, posLastDot);
+                  else
+                     parent.clear();
+               }
+
+               foundLeafName = parent;
+               if (!parent.empty())
+                  foundLeafName += ".";
+               foundLeafName += leafNameNoParent;
+               sizeLeaf = treeReader->GetTree()->FindLeaf(foundLeafName.c_str());
+            } while (!sizeLeaf && !parent.empty());
+         }
+
+         if (!sizeLeaf) {
+            Error("TUIntOrIntReader", "Cannot find leaf count for %s or any parent branch!", leafName);
+            return;
+         }
+
+         fIsUnsigned = sizeLeaf->IsUnsigned();
+         if (fIsUnsigned) {
+            fSizeReader.reset(new TTreeReaderValue<UInt_t>(*treeReader, foundLeafName.c_str()));
+         } else {
+            fSizeReader.reset(new TTreeReaderValue<Int_t>(*treeReader, foundLeafName.c_str()));
          }
       }
 

@@ -25,7 +25,6 @@
 #include <TError.h>
 
 #include <memory>
-#include <vector>
 
 namespace ROOT {
 namespace Experimental {
@@ -107,6 +106,7 @@ public:
    void Read(const NTupleSize_t globalIndex, RColumnElementBase *element) {
       if (!fCurrentPage.Contains(globalIndex)) {
          MapPage(globalIndex);
+         R__ASSERT(fCurrentPage.Contains(globalIndex));
       }
       void *src = static_cast<unsigned char *>(fCurrentPage.GetBuffer()) +
                   (globalIndex - fCurrentPage.GetGlobalRangeFirst()) * element->GetSize();
@@ -123,6 +123,7 @@ public:
    }
 
    void ReadV(const NTupleSize_t globalIndex, const ClusterSize_t::ValueType count, RColumnElementBase *elemArray) {
+      R__ASSERT(count > 0);
       if (!fCurrentPage.Contains(globalIndex)) {
          MapPage(globalIndex);
       }

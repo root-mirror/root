@@ -9,15 +9,15 @@
 #define ROOT_TBranchSTL
 
 #include "TBranch.h"
-#include "TTree.h"
-#include "TVirtualCollectionProxy.h"
-#include "TBrowser.h"
-#include "TBranchObject.h"
-#include "TBranchElement.h"
 #include "TIndArray.h"
+
 #include <map>
 #include <vector>
-#include <utility>
+
+class TTree;
+class TVirtualCollectionProxy;
+class TStreamerInfo;
+class TBranchElement;
 
 class TBranchSTL: public TBranch {
    public:

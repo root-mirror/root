@@ -21,9 +21,11 @@
 #include "RooListProxy.h"
 
 #include "RooObjCacheManager.h"
+#include <vector>
+#include <list>
 
 class RooRealVar;
-class RooArgList ;
+class RooArgList;
 
 class PiecewiseInterpolation : public RooAbsReal {
 public:

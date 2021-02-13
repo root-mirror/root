@@ -7,8 +7,6 @@
 #include "Math/Integrator.h"
 #include "Math/Derivator.h"
 #include "TBenchmark.h"
-#include "TSystem.h"
-#include "TF1.h"
 
 #include "gtest/gtest.h"
 

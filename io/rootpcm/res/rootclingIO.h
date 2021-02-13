@@ -21,7 +21,6 @@ extern "C" {
    void AddStreamerInfoToROOTFile(const char *normName);
    void AddTypedefToROOTFile(const char *tdname);
    void AddEnumToROOTFile(const char *tdname);
-   void AddAncestorPCMROOTFile(const char *pcmName);
    bool CloseStreamerInfoROOTFile(bool writeEmptyRootPCM);
 }
 

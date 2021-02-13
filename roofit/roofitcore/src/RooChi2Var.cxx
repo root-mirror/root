@@ -17,19 +17,39 @@
 //////////////////////////////////////////////////////////////////////////////
 /**
 // \class RooChi2Var 
-// Class RooChi2Var implements a simple chi^2 calculation from a binned dataset
+// RooChi2Var implements a simple \f$ \chi^2 \f$ calculation from a binned dataset
 // and a PDF. It calculates
-\f[
-  \chi^2 = \sum_{[\mathrm{bins}]}  \left( \frac{(f_\mathrm{PDF} \cdot N_\mathrm{tot} / V_\mathrm{bin}) - N_\mathrm{bin}}{\mathrm{err}_\mathrm{bin}} \right)^2
-\f]
-// If no user-defined errors are defined for the dataset, poisson errors
-// are used. In extended PDF mode, N_tot is substituted with N_expected.
-//
-*/
+\f{align*}{
+  \chi^2 &= \sum_{\mathrm{bins}}  \left( \frac{N_\mathrm{PDF,bin} - N_\mathrm{Data,bin}}{\Delta_\mathrm{bin}} \right)^2 \\
+  N_\mathrm{PDF,bin} &=
+    \begin{cases}
+        \mathrm{pdf}(\text{bin centre}) \cdot V_\mathrm{bin} \cdot N_\mathrm{Data,tot}  &\text{normal PDF}\\
+        \mathrm{pdf}(\text{bin centre}) \cdot V_\mathrm{bin} \cdot N_\mathrm{Data,expected} &\text{extended PDF}
+    \end{cases} \\
+  \Delta_\mathrm{bin} &=
+    \begin{cases}
+        \sqrt{N_\mathrm{PDF,bin}} &\text{if } \mathtt{DataError == RooAbsData::Expected}\\
+        \mathtt{data{\rightarrow}weightError()} &\text{otherwise} \\
+    \end{cases}
+\f}
+ * If the dataset doesn't have user-defined errors, errors are assumed to be \f$ \sqrt{N} \f$.
+ * In extended PDF mode, N_tot (total number of data events) is substituted with N_expected, the
+ * expected number of events that the PDF predicts.
+ *
+ * \note If data errors are used, empty bins will prevent the calculation of \f$ \chi^2 \f$, because those have
+ * zero error. This leads to messages like:
+ * ```
+ *   [#0] ERROR:Eval -- RooChi2Var::RooChi2Var(chi2_GenPdf_data_hist) INFINITY ERROR: bin 2 has zero error
+ * ```
+ *
+ * \note In this case, one can use the expected errors of the PDF instead of the data errors:
+ * ```{.cpp}
+ * RooChi2Var chi2(..., ..., RooFit::DataError(RooAbsData::Expected), ...);
+ * ```
+ */
 
 #include "RooFit.h"
 
-#include "RooChi2Var.h"
 #include "RooChi2Var.h"
 #include "RooDataHist.h"
 #include "RooAbsPdf.h"
@@ -37,6 +57,7 @@
 #include "RooMsgService.h"
 
 #include "Riostream.h"
+#include "TClass.h"
 
 #include "RooRealVar.h"
 #include "RooAbsDataStore.h"
@@ -67,18 +88,21 @@ RooArgSet RooChi2Var::_emptySet ;
 ///  Range()      <td> Fit only selected region
 ///  <tr><td>
 ///  Verbose()    <td> Verbose output of GOF framework
-
+///  <tr><td>
+///  IntegrateBins()  <td> Integrate PDF within each bin. This sets the desired precision. Only useful for binned fits.
 RooChi2Var::RooChi2Var(const char *name, const char* title, RooAbsReal& func, RooDataHist& hdata,
 		       const RooCmdArg& arg1,const RooCmdArg& arg2,const RooCmdArg& arg3,
 		       const RooCmdArg& arg4,const RooCmdArg& arg5,const RooCmdArg& arg6,
 		       const RooCmdArg& arg7,const RooCmdArg& arg8,const RooCmdArg& arg9) :
   RooAbsOptTestStatistic(name,title,func,hdata,_emptySet,
 			 RooCmdConfig::decodeStringOnTheFly("RooChi2Var::RooChi2Var","RangeWithName",0,"",arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9).c_str(),
-			 0,
+			 /*addCoefRangeName=*/0,
 			 RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","NumCPU",0,1,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9),
 			 RooFit::Interleave,
 			 RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","Verbose",0,1,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9),
-			 0)
+			 /*splitCutRange=*/0,
+			 /*cloneInputData=*/false,
+			 RooCmdConfig::decodeDoubleOnTheFly("RooChi2Var::RooChi2Var", "IntegrateBins", 0, -1., {arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9}))
 {
   RooCmdConfig pc("RooChi2Var::RooChi2Var") ;
   pc.defineInt("etype","DataError",0,(Int_t)RooDataHist::Auto) ;  
@@ -130,7 +154,8 @@ RooChi2Var::RooChi2Var(const char *name, const char* title, RooAbsReal& func, Ro
 ///  ConditionalObservables() <td> Define projected observables 
 ///  <tr><td>
 ///  Verbose()    <td> Verbose output of GOF framework
-
+///  <tr><td>
+///  IntegrateBins()  <td> Integrate PDF within each bin. This sets the desired precision.
 RooChi2Var::RooChi2Var(const char *name, const char* title, RooAbsPdf& pdf, RooDataHist& hdata,
 		       const RooCmdArg& arg1,const RooCmdArg& arg2,const RooCmdArg& arg3,
 		       const RooCmdArg& arg4,const RooCmdArg& arg5,const RooCmdArg& arg6,
@@ -143,7 +168,9 @@ RooChi2Var::RooChi2Var(const char *name, const char* title, RooAbsPdf& pdf, RooD
 			 RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","NumCPU",0,1,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9),
 			 RooFit::Interleave,
 			 RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","Verbose",0,1,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9),
-			 RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","SplitRange",0,0,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9))             
+			 RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","SplitRange",0,0,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9),
+			 /*cloneInputData=*/false,
+			 RooCmdConfig::decodeDoubleOnTheFly("RooChi2Var::RooChi2Var", "IntegrateBins", 0, -1., {arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9}))
 {
   RooCmdConfig pc("RooChi2Var::RooChi2Var") ;
   pc.defineInt("extended","Extended",0,kFALSE) ;

@@ -42,7 +42,7 @@ Int_t          TTF::fgSymbItaFontIdx = -1;
 Int_t          TTF::fgFontCount      = 0;
 Int_t          TTF::fgNumGlyphs      = 0;
 char          *TTF::fgFontName[kTTMaxFonts];
-FT_Matrix     *TTF::fgRotMatrix;
+FT_Matrix     *TTF::fgRotMatrix      = nullptr;
 FT_Library     TTF::fgLibrary;
 FT_BBox        TTF::fgCBox;
 FT_Face        TTF::fgFace[kTTMaxFonts];
@@ -212,7 +212,10 @@ void TTF::LayoutGlyphs()
       origin.y = 0;
 
       // clear existing image if there is one
-      if (glyph->fImage) FT_Done_Glyph(glyph->fImage);
+      if (glyph->fImage) {
+         FT_Done_Glyph(glyph->fImage);
+         glyph->fImage = nullptr;
+      }
 
       // load the glyph image (in its native format)
       if (FT_Load_Glyph(fgFace[fgCurFontIdx], glyph->fIndex, load_flags))

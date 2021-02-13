@@ -90,10 +90,9 @@
  */
 
 #include "RooHypatia2.h"
-
+#include "RooBatchCompute.h"
 #include "RooAbsReal.h"
 #include "RooHelpers.h"
-#include "BatchHelpers.h"
 
 #include "TMath.h"
 #include "Math/SpecFunc.h"
@@ -119,21 +118,21 @@
 /// \param[in] a2 Start of right tail.
 /// \param[in] n2 Shape parameter of right tail (\f$ n2 \ge 0 \f$). With \f$ n2 = 0 \f$, the function is constant.
 RooHypatia2::RooHypatia2(const char *name, const char *title, RooAbsReal& x, RooAbsReal& lambda,
-    RooAbsReal& zeta, RooAbsReal& beta, RooAbsReal& sigm, RooAbsReal& mu, RooAbsReal& a,
+    RooAbsReal& zeta, RooAbsReal& beta, RooAbsReal& argSigma, RooAbsReal& mu, RooAbsReal& a,
     RooAbsReal& n, RooAbsReal& a2, RooAbsReal& n2) :
                 RooAbsPdf(name, title),
                 _x("x", "x", this, x),
                 _lambda("lambda", "Lambda", this, lambda),
                 _zeta("zeta", "zeta", this, zeta),
                 _beta("beta", "Asymmetry parameter beta", this, beta),
-                _sigma("sigma", "Width parameter sigma", this, sigm),
+                _sigma("sigma", "Width parameter sigma", this, argSigma),
                 _mu("mu", "Location parameter mu", this, mu),
                 _a("a", "Left tail location a", this, a),
                 _n("n", "Left tail parameter n", this, n),
                 _a2("a2", "Right tail location a2", this, a2),
                 _n2("n2", "Right tail parameter n2", this, n2)
 {
-  RooHelpers::checkRangeOfParameters(this, {&sigm}, 0.);
+  RooHelpers::checkRangeOfParameters(this, {&argSigma}, 0.);
   RooHelpers::checkRangeOfParameters(this, {&zeta, &n, &n2, &a, &a2}, 0., std::numeric_limits<double>::max(), true);
   if (zeta.getVal() == 0. && zeta.isConstant()) {
     RooHelpers::checkRangeOfParameters(this, {&lambda}, -std::numeric_limits<double>::max(), 0., false,
@@ -428,7 +427,7 @@ std::pair<double, double> computeAB_zetaZero(double beta, double asigma, double 
   return {A, B};
 }
 
-using BatchHelpers::BracketAdapter;
+using RooBatchCompute::BracketAdapter;
 //////////////////////////////////////////////////////////////////////////////////////////
 /// A specialised compute function where x is an observable, and all parameters are used as
 /// parameters. Since many things can be calculated outside of the loop, it is faster.
@@ -488,27 +487,29 @@ void compute(RooSpan<double> output, RooSpan<const double> x,
 
 }
 
-RooSpan<double> RooHypatia2::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  using namespace BatchHelpers;
+RooSpan<double> RooHypatia2::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  using namespace RooBatchCompute;
 
-  auto x = _x.getValBatch(begin, batchSize);
-  auto lambda = _lambda.getValBatch(begin, batchSize);
-  auto zeta = _zeta.getValBatch(begin, batchSize);
-  auto beta = _beta.getValBatch(begin, batchSize);
-  auto sig = _sigma.getValBatch(begin, batchSize);
-  auto mu = _mu.getValBatch(begin, batchSize);
-  auto a = _a.getValBatch(begin, batchSize);
-  auto n = _n.getValBatch(begin, batchSize);
-  auto a2 = _a2.getValBatch(begin, batchSize);
-  auto n2 = _n2.getValBatch(begin, batchSize);
+  auto x = _x->getValues(evalData, normSet);
+  auto lambda = _lambda->getValues(evalData, normSet);
+  auto zeta = _zeta->getValues(evalData, normSet);
+  auto beta = _beta->getValues(evalData, normSet);
+  auto sig = _sigma->getValues(evalData, normSet);
+  auto mu = _mu->getValues(evalData, normSet);
+  auto a = _a->getValues(evalData, normSet);
+  auto n = _n->getValues(evalData, normSet);
+  auto a2 = _a2->getValues(evalData, normSet);
+  auto n2 = _n2->getValues(evalData, normSet);
 
-  batchSize = BatchHelpers::findSize({x, lambda, zeta, beta, sig, mu, a, n, a2, n2});
+  size_t paramSizeSum=0, batchSize = x.size();
+  for (const auto& i:{lambda, zeta, beta, sig, mu, a, n, a2, n2}) {
+    paramSizeSum += i.size();
+    batchSize = std::max(batchSize, i.size());
+  }
+  RooSpan<double> output = evalData.makeBatch(this, batchSize);
 
-  auto output = _batchData.makeWritableBatchInit(begin, batchSize, 0.);
-
-  const std::vector<RooSpan<const double>> params = {lambda, zeta, beta, sig, mu, a, n, a2, n2};
-  auto emptySpan = [](const RooSpan<const double>& span) { return span.empty(); };
-  if (!x.empty() && std::all_of(params.begin(), params.end(), emptySpan)) {
+  // Run high performance compute if only x has multiple values
+  if (x.size()>1 && paramSizeSum==9) {
     compute(output, x,
         BracketAdapter<double>(_lambda), BracketAdapter<double>(_zeta),
         BracketAdapter<double>(_beta), BracketAdapter<double>(_sigma), BracketAdapter<double>(_mu),
@@ -522,7 +523,6 @@ RooSpan<double> RooHypatia2::evaluateBatch(std::size_t begin, std::size_t batchS
         BracketAdapterWithMask(_a, a), BracketAdapterWithMask(_n, n),
         BracketAdapterWithMask(_a2, a2), BracketAdapterWithMask(_n2, n2));
   }
-
   return output;
 }
 

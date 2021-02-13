@@ -22,6 +22,9 @@
 
 #include "TBufferFile.h"
 
+#include <vector>
+#include <string>
+
 class TSQLRow;
 
 class TBufferSQL final : public TBufferFile {

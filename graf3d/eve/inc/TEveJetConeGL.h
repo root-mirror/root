@@ -14,6 +14,7 @@
 
 #include "TGLObject.h"
 #include "TEveVector.h"
+#include <vector>
 
 class TGLViewer;
 class TGLScene;
@@ -28,8 +29,8 @@ class TEveJetConeProjected;
 class TEveJetConeGL : public TGLObject
 {
 private:
-   TEveJetConeGL(const TEveJetConeGL&);            // Not implemented
-   TEveJetConeGL& operator=(const TEveJetConeGL&); // Not implemented
+   TEveJetConeGL(const TEveJetConeGL&) = delete;
+   TEveJetConeGL& operator=(const TEveJetConeGL&) = delete;
 
 protected:
    TEveJetCone                     *fC;  // Model object.

@@ -17,8 +17,8 @@
 #include "TPoint.h"
 #include "TObject.h"
 
-#include <cassert>
 #include <cmath>
+#include <utility>
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //

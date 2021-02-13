@@ -33,13 +33,9 @@ plotted for the 1-D case.
 #include "RooStats/MCMCInterval.h"
 #include "RooStats/MarkovChain.h"
 
-#include "TROOT.h"
-#include "TMath.h"
 #include "TLine.h"
-#include "TObjArray.h"
 #include "TList.h"
 #include "TGraph.h"
-#include "TPad.h"
 #include "RooRealVar.h"
 #include "RooPlot.h"
 #include "TH2.h"

@@ -1,4 +1,4 @@
-/// \file ROOT/RIndexIter.h
+/// \file ROOT/RIndexIter.hxx
 /// \ingroup Base ROOT7
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2016-01-19

@@ -1,13 +1,13 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
-## Organization and simultaneous fits: easy interactive access to workspace contents - CINT to CLING code migration
+## Organization and simultaneous fits: easy interactive access to workspace contents - CINT
+## to CLING code migration
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -28,12 +28,12 @@ def fillWorkspace(w):
     sig1 = ROOT.RooGaussian("sig1", "Signal component 1", x, mean, sigma1)
     sig2 = ROOT.RooGaussian("sig2", "Signal component 2", x, mean, sigma2)
 
-    # Build Chebychev polynomial p.d.f.
+    # Build Chebychev polynomial pdf
     a0 = ROOT.RooRealVar("a0", "a0", 0.5, 0., 1.)
     a1 = ROOT.RooRealVar("a1", "a1", -0.2, 0., 1.)
     bkg = ROOT.RooChebychev("bkg", "Background", x, ROOT.RooArgList(a0, a1))
 
-    # Sum the signal components into a composite signal p.d.f.
+    # Sum the signal components into a composite signal pdf
     sig1frac = ROOT.RooRealVar(
         "sig1frac", "fraction of component 1 in signal", 0.8, 0., 1.)
     sig = ROOT.RooAddPdf(
@@ -50,7 +50,7 @@ def fillWorkspace(w):
             sig),
         ROOT.RooArgList(bkgfrac))
 
-    getattr(w, 'import')(model)
+    w.Import(model)
 
 
 # Create and fill workspace
@@ -65,7 +65,7 @@ def fillWorkspace(w):
 # change the code
 w = ROOT.RooWorkspace("w", ROOT.kTRUE)
 
-# Fill workspace with p.d.f. and data in a separate function
+# Fill workspace with pdf and data in a separate function
 fillWorkspace(w)
 
 # Print workspace contents

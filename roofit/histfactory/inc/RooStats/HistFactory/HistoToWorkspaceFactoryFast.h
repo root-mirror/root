@@ -109,8 +109,8 @@ namespace RooStats{
       void SetObsToExpected(RooWorkspace* proto, std::string obsPrefix, std::string expPrefix, 
 			    int lowBin, int highBin);
 
-      TH1* MakeScaledUncertaintyHist(const std::string& Name, 
-				     std::vector< std::pair<const TH1*, const TH1*> > HistVec );
+      std::unique_ptr<TH1> MakeScaledUncertaintyHist(const std::string& Name,
+				     std::vector< std::pair<const TH1*, const TH1*> > HistVec ) const;
 
       TH1* MakeAbsolUncertaintyHist( const std::string& Name, const TH1* Hist );
 

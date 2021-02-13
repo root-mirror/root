@@ -15,6 +15,9 @@
 #include "TGLUtil.h"
 #include "TGLFontManager.h"
 
+#include <vector>
+#include <utility>
+
 class TAttAxis;
 class TAxis;
 class TH1;

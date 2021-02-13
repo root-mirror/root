@@ -1,0 +1,39 @@
+From 6220954941eda5612543f8f80a89dc46babb49da Mon Sep 17 00:00:00 2001
+From: Axel Naumann <Axel.Naumann@cern.ch>
+Date: Wed, 23 Sep 2020 11:02:59 +0200
+Subject: [PATCH] [cppyy-backend] Use new ExtraProperty to determine
+ templateness.
+
+---
+ .../cppyy-backend/clingwrapper/src/clingwrapper.cxx | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
+
+diff --git a/bindings/pyroot/cppyy/cppyy-backend/clingwrapper/src/clingwrapper.cxx b/bindings/pyroot/cppyy/cppyy-backend/clingwrapper/src/clingwrapper.cxx
+index ae52fbe635..e79013324e 100644
+--- a/bindings/pyroot/cppyy/cppyy-backend/clingwrapper/src/clingwrapper.cxx
++++ b/bindings/pyroot/cppyy/cppyy-backend/clingwrapper/src/clingwrapper.cxx
+@@ -1684,20 +1684,9 @@ Cppyy::TCppMethod_t Cppyy::GetMethodTemplate(
+ 
+     if (func) {
+     // make sure we didn't match a non-templated overload
+-        if (strstr(func->GetName(), "<"))
++        if (func->ExtraProperty() & kIsTemplateSpec)
+             return (TCppMethod_t)new_CallWrapper(func);
+ 
+-    // don't give in just yet, but rather get the full name through the symbol name,
+-    // as eg. constructors do not receive their proper/full name from GetName()
+-        int err;
+-        char* truename = TClassEdit::DemangleName(func->GetMangledName(), err);
+-        if (truename && err != -1) {
+-            bool isTemplated = (bool)strstr(truename, "<");
+-            free(truename);
+-            if (isTemplated)
+-                return (TCppMethod_t)new_CallWrapper(func);
+-        }
+-
+     // disregard this non-templated method as it will be considered when appropriate
+         return (TCppMethod_t)nullptr;
+     }
+-- 
+2.25.1
+

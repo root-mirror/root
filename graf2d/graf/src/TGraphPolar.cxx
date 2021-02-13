@@ -55,10 +55,8 @@ Begin_Macro(source)
 End_Macro
 */
 
-#include "TROOT.h"
 #include "TGraphPolar.h"
 #include "TGraphPolargram.h"
-#include "TVirtualPad.h"
 
 ClassImp(TGraphPolar);
 

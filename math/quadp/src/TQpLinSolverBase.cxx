@@ -48,9 +48,7 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "Riostream.h"
 #include "TQpLinSolverBase.h"
-#include "TMatrixD.h"
 
 ClassImp(TQpLinSolverBase);
 

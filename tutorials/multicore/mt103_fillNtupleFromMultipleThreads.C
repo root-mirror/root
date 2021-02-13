@@ -39,12 +39,6 @@ void mt103_fillNtupleFromMultipleThreads()
       auto f = merger.GetFile();
       TNtuple ntrand("ntrand", "Random Numbers", "r");
 
-      // The resetting of the kCleanup bit below is necessary to avoid leaving
-      // the management of this object to ROOT, which leads to a race condition
-      // that may cause a crash once all threads are finished and the final
-      // merge is happening
-      ntrand.ResetBit(kMustCleanup);
-
       TRandom rnd(seed);
       for (auto i : ROOT::TSeqI(nEntries))
          ntrand.Fill(rnd.Gaus());

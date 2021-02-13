@@ -26,7 +26,6 @@
 
 #include "TError.h"
 #include "TFileInfo.h"
-#include "TSeqCollection.h"
 #include "TFile.h"
 #include "TFileStager.h"
 #include "TObjString.h"

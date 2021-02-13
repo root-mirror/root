@@ -79,8 +79,8 @@ public:
    virtual Int_t    Fill(const char *namex, const char *namey, Double_t w);
    virtual void     FillN(Int_t, const Double_t *, const Double_t *, Int_t) {;} //MayNotUse
    virtual void     FillN(Int_t ntimes, const Double_t *x, const Double_t *y, const Double_t *w, Int_t stride=1);
-   virtual void     FillRandom(const char *fname, Int_t ntimes=5000);
-   virtual void     FillRandom(TH1 *h, Int_t ntimes=5000);
+   virtual void     FillRandom(const char *fname, Int_t ntimes=5000, TRandom * rng = nullptr);
+   virtual void     FillRandom(TH1 *h, Int_t ntimes=5000, TRandom * rng = nullptr);
    virtual void     FitSlicesX(TF1 *f1=0,Int_t firstybin=0, Int_t lastybin=-1, Int_t cut=0, Option_t *option="QNR", TObjArray* arr = 0);
    virtual void     FitSlicesY(TF1 *f1=0,Int_t firstxbin=0, Int_t lastxbin=-1, Int_t cut=0, Option_t *option="QNR", TObjArray* arr = 0);
    virtual Int_t    GetBin(Int_t binx, Int_t biny, Int_t binz = 0) const;
@@ -94,7 +94,7 @@ public:
    virtual Double_t GetBinErrorUp(Int_t binx, Int_t biny) { return TH1::GetBinErrorUp( GetBin(binx, biny) ); }
    virtual Double_t GetCorrelationFactor(Int_t axis1=1,Int_t axis2=2) const;
    virtual Double_t GetCovariance(Int_t axis1=1,Int_t axis2=2) const;
-   virtual void     GetRandom2(Double_t &x, Double_t &y);
+   virtual void     GetRandom2(Double_t &x, Double_t &y, TRandom * rng = nullptr);
    virtual void     GetStats(Double_t *stats) const;
    virtual Double_t Integral(Option_t *option="") const;
    //virtual Double_t Integral(Int_t, Int_t, Option_t * ="") const {return 0;}

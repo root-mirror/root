@@ -205,7 +205,7 @@ Int_t TUnfoldBinning::UpdateFirstLastBin(Bool_t startWithRootNode)
 /// Create a new node without axis.
 ///
 /// \param[in] name identifier of the node
-/// \param[in] nBin number of unconnected bins (could be zero)
+/// \param[in] nBins number of unconnected bins (could be zero)
 /// \param[in] binNames (optional) names of the bins separated by ';'
 
 TUnfoldBinning::TUnfoldBinning
@@ -241,7 +241,7 @@ TUnfoldBinning::TUnfoldBinning
 /// Add a new binning node as last last child of this node.
 ///
 /// \param[in] name name of the node
-/// \param[in] nBin number of extra bins
+/// \param[in] nBins number of extra bins
 /// \param[in] binNames (optional) names of the bins separated by ';'
 ///
 /// this is a shortcut for AddBinning(new TUnfoldBinning(name,nBins,binNames))
@@ -695,11 +695,11 @@ Int_t TUnfoldBinning::GetTH1xNumberOfBins
 ///
 /// \param[in] histogramName name of the histogram which is created
 /// \param[in] originalAxisBinning if true, try to preserve the axis binning
-/// \param[out] (default=0) binMap mapping of global bins to histogram bins.
+/// \param[out] binMap (default=0) mapping of global bins to histogram bins.
 /// if(binMap==0), no binMap is created
-/// \param[in] (default=0) histogramTitle title of the histogram. If zero, a title
+/// \param[in] histogramTitle (default=0) title of the histogram. If zero, a title
 /// is selected automatically
-/// \param[in] (default=0) axisSteering steer the handling of underflow/overflow
+/// \param[in] axisSteering (default=0) steer the handling of underflow/overflow
 /// and projections
 ///
 /// returns a new histogram (TH1D, TH2D or TH3D)
@@ -789,11 +789,11 @@ TH1 *TUnfoldBinning::CreateHistogram
 ///
 /// \param[in] histogramName name of the histogram which is created
 /// \param[in] originalAxisBinning if true, try to preserve the axis binning
-/// \param[out] (default=0) binMap mapping of global bins to histogram bins.
+/// \param[out] binMap (default=0) mapping of global bins to histogram bins.
 /// if(binMap==0), no binMap is created
-/// \param[in] (default=0) histogramTitle title of the histogram. If zero, a title
+/// \param[in] histogramTitle (default=0) title of the histogram. If zero, a title
 /// is selected automatically
-/// \param[in] (default=0) axisSteering steer the handling of underflow/overflow
+/// \param[in] axisSteering (default=0) steer the handling of underflow/overflow
 /// and projections
 ///
 /// returns a new TH2D. The options are described in greater detail
@@ -832,7 +832,7 @@ TH2D *TUnfoldBinning::CreateErrorMatrixHistogram
 /// Create a TH2D histogram capable to hold the bins of the two
 /// input binning schemes on the x and y axes, respectively.
 ///
-/// \paran[in] xAxis binning scheme for the x axis
+/// \param[in] xAxis binning scheme for the x axis
 /// \param[in] yAxis binning scheme for the y axis
 /// \param[in] histogramName name of the histogram which is created
 /// \param[in] originalXAxisBinning preserve x-axis bin widths if possible
@@ -1053,8 +1053,8 @@ Int_t *TUnfoldBinning::CreateEmptyBinMap(void) const {
 /// Set one entry in a bin map.
 ///
 /// \param[out] binMap to be used with TUnfoldSys::GetOutput() etc
-/// \param[in] source bin, global bin number in this binning scheme
-/// \param[in] destination bin in the output histogram
+/// \param[in] globalBin source bin, global bin number in this binning scheme
+/// \param[in] destBin destination bin in the output histogram
 
 void TUnfoldBinning::SetBinMapEntry
 (Int_t *binMap,Int_t globalBin,Int_t destBin) const {
@@ -2075,7 +2075,7 @@ Int_t TUnfoldBinning::ToGlobalBin
 /// and bin numbers on the corresponding axes.
 ///
 /// \param[in] globalBin global bin number
-/// \param[out] local bin numbers of the distribution's axes
+/// \param[out] axisBins local bin numbers of the distribution's axes
 ///
 /// returns the distribution in which the globalBin is located
 ///  or 0 if the globalBin is outside this node and its children

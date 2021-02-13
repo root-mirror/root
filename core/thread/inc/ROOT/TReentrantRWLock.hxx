@@ -88,7 +88,7 @@ struct UniqueLockRecurseCount {
 struct RecurseCounts {
    using Hint_t = TVirtualRWMutex::Hint_t;
    using ReaderColl_t = std::unordered_map<std::thread::id, size_t>;
-   size_t fWriteRecurse; ///<! Number of re-entry in the lock by the same thread.
+   size_t fWriteRecurse =  0; ///<! Number of re-entry in the lock by the same thread.
 
    std::thread::id fWriterThread; ///<! Holder of the write lock
    ReaderColl_t fReadersCount;    ///<! Set of reader thread ids

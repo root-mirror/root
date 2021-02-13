@@ -12,12 +12,12 @@
 #ifndef ROOT_TGLPadPainter
 #define ROOT_TGLPadPainter
 
-#include <deque>
-
 #include "TVirtualPadPainter.h"
 #include "TGLFontManager.h"
 #include "TGLPadUtils.h"
 #include "TPoint.h"
+
+#include <vector>
 
 class TLinearGradient;
 class TRadialGradient;

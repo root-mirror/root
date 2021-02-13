@@ -253,6 +253,9 @@ TObject *THashTable::FindObject(const TObject *obj) const
    if (IsArgNull("FindObject", obj)) return 0;
 
    Int_t slot = GetHashValue(obj);
+
+   R__COLLECTION_READ_LOCKGUARD(ROOT::gCoreMutex);
+
    if (fCont[slot]) return fCont[slot]->FindObject(obj);
    return 0;
 }

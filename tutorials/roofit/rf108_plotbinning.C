@@ -7,7 +7,8 @@
 /// \macro_output
 /// \macro_code
 ///
-/// \author 07/2008 - Wouter Verkerke
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -28,7 +29,7 @@ void rf108_plotbinning()
    // S e t u p   m o d e l
    // ---------------------
 
-   // Build a B decay p.d.f with mixing
+   // Build a B decay pdf with mixing
    RooRealVar dt("dt", "dt", -20, 20);
    RooRealVar dm("dm", "dm", 0.472);
    RooRealVar tau("tau", "tau", 1.547);
@@ -100,7 +101,7 @@ void rf108_plotbinning()
    // Plot mixState asymmetry of data with specified custom binning
    data->plotOn(aframe, Asymmetry(mixState), Binning(abins));
 
-   // Plot corresponding property of p.d.f
+   // Plot corresponding property of pdf
    bmix.plotOn(aframe, Asymmetry(mixState));
 
    // Adjust vertical range of plot to sensible values for an asymmetry

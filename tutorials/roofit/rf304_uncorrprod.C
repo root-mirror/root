@@ -1,14 +1,16 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Multidimensional models: simple uncorrelated multi-dimensional p.d.f.s
+/// Multidimensional models: simple uncorrelated multi-dimensional pdfs
 ///
-///  pdf = gauss(x,mx,sx) * gauss(y,my,sy)
+/// `pdf = gauss(x,mx,sx) * gauss(y,my,sy)`
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -25,7 +27,7 @@ void rf304_uncorrprod()
    // C r e a t e   c o m p o n e n t   p d f s   i n   x   a n d   y
    // ----------------------------------------------------------------
 
-   // Create two p.d.f.s gaussx(x,meanx,sigmax) gaussy(y,meany,sigmay) and its variables
+   // Create two pdfs gaussx(x,meanx,sigmax) gaussy(y,meany,sigmay) and its variables
    RooRealVar x("x", "x", -5, 5);
    RooRealVar y("y", "y", -5, 5);
 
@@ -40,7 +42,7 @@ void rf304_uncorrprod()
    // C o n s t r u c t   u n c o r r e l a t e d   p r o d u c t   p d f
    // -------------------------------------------------------------------
 
-   // Multiply gaussx and gaussy into a two-dimensional p.d.f. gaussxy
+   // Multiply gaussx and gaussy into a two-dimensional pdf gaussxy
    RooProdPdf gaussxy("gaussxy", "gaussx*gaussy", RooArgList(gaussx, gaussy));
 
    // S a m p l e   p d f ,   p l o t   p r o j e c t i o n   o n   x   a n d   y

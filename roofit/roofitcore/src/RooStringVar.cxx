@@ -19,43 +19,26 @@
 \class RooStringVar
 \ingroup Roofitcore
 
-RooStringVar implements a string values RooAbsArg
+RooStringVar is a RooAbsArg implementing string values.
 **/
+
+#include "RooStringVar.h"
 
 #include "RooFit.h"
 #include "Riostream.h"
-
-#include <math.h>
-#include "TObjString.h"
 #include "TTree.h"
-#include "RooStringVar.h"
 #include "RooStreamParser.h"
 #include "RooMsgService.h"
+#include "TBranch.h"
 
-
-
-using namespace std;
-
-ClassImp(RooStringVar);
-
-
-              
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Constructor with initial value and internal buffer size
-
-RooStringVar::RooStringVar(const char *name, const char *title, const char* value, Int_t size) :
-  RooAbsString(name, title, size)
+/// Constructor with initial value. The size argument is ignored.
+RooStringVar::RooStringVar(const char *name, const char *title, const char* value, Int_t) :
+  RooAbsArg(name, title),
+  _string(value)
 {
-  if(!isValidString(value)) {
-    coutW(InputArguments) << "RooStringVar::RooStringVar(" << GetName() 
-	 << "): initial contents too long and ignored" << endl ;
-  } else {
-    strlcpy(_value,value,_len) ;
-  }
-
-  setValueDirty() ;
-  setShapeDirty() ;
+  setValueDirty();
 }  
 
 
@@ -64,73 +47,17 @@ RooStringVar::RooStringVar(const char *name, const char *title, const char* valu
 /// Copy constructor
 
 RooStringVar::RooStringVar(const RooStringVar& other, const char* name) :
-  RooAbsString(other, name)
+  RooAbsArg(other, name),
+  _string(other._string)
 {
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Destructor
-
-RooStringVar::~RooStringVar() 
-{
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-RooStringVar::operator TString() 
-{
-  // Cast operator to TString
-  return TString(_value) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set value to given TString
-
-void RooStringVar::setVal(const char* value) 
-{
-  if (!isValidString(value)) {    
-    coutW(InputArguments) << "RooStringVar::setVal(" << GetName() << "): new string too long and ignored" << endl ;
-  } else {
-    if (value) {
-      strlcpy(_value,value,_len) ;
-    } else {
-      _value[0] = 0 ;
-    }
-  }
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set value to given TString
-
-RooAbsArg& RooStringVar::operator=(const char* newValue) 
-{
-  if (!isValidString(newValue)) {
-    coutW(InputArguments) << "RooStringVar::operator=(" << GetName() << "): new string too long and ignored" << endl ;
-  } else {
-    if (newValue) {
-      strlcpy(_value,newValue,_len) ;
-    } else {
-      _value[0] = 0 ;
-    }
-  }
-
-  return *this ;
+  setValueDirty();
 }
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Read object contents from given stream
-
-Bool_t RooStringVar::readFromStream(istream& is, Bool_t compact, Bool_t verbose) 
+bool RooStringVar::readFromStream(std::istream& is, Bool_t compact, Bool_t)
 {
   TString token,errorPrefix("RooStringVar::readFromStream(") ;
   errorPrefix.Append(GetName()) ;
@@ -138,32 +65,81 @@ Bool_t RooStringVar::readFromStream(istream& is, Bool_t compact, Bool_t verbose)
   RooStreamParser parser(is,errorPrefix) ;
 
   TString newValue ;
-  Bool_t ret(kFALSE) ;
 
   if (compact) {
     parser.readString(newValue,kTRUE) ;
   } else {
     newValue = parser.readLine() ;
   }
-  
-  if (!isValidString(newValue)) {
-    if (verbose) 
-      coutW(InputArguments) << "RooStringVar::readFromStream(" << GetName() 
-			    << "): new string too long and ignored" << endl ;
-  } else {
-    strlcpy(_value,newValue,_len) ;
-  }
 
-  return ret ;
+  _string = newValue;
+  setValueDirty();
+
+  return false;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Write object contents to given stream
+/// Copy cache of another RooAbsArg to our cache
+///
+/// Warning: This function copies the cached values of source,
+///          it is the callers responsibility to make sure the cache is clean
 
-void RooStringVar::writeToStream(ostream& os, Bool_t /*compact*/) const
+void RooStringVar::copyCache(const RooAbsArg* source, Bool_t /*valueOnly*/, Bool_t setValDirty)
 {
-  os << getVal() ;
+  auto other = dynamic_cast<const RooStringVar*>(source) ;
+  assert(other);
+
+  _string = other->_string;
+  if (setValDirty) {
+    setValueDirty() ;
+  }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Attach object to a branch of given TTree
+
+void RooStringVar::attachToTree(TTree& t, Int_t)
+{
+  // First determine if branch is taken
+  TBranch* branch ;
+  if ((branch = t.GetBranch(GetName()))) {
+    t.SetBranchAddress(GetName(), &_string);
+  } else {
+    t.Branch(GetName(), &_string);
+  }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Fill tree branch associated with this object
+
+void RooStringVar::fillTreeBranch(TTree& t)
+{
+  // First determine if branch is taken
+  TBranch* branch = t.GetBranch(GetName()) ;
+  if (!branch) {
+    coutE(DataHandling) << "RooAbsString::fillTreeBranch(" << GetName() << ") ERROR: not attached to tree" << std::endl;
+    assert(false);
+    return;
+  }
+  branch->Fill() ;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// (De)Activate associated tree branch
+
+void RooStringVar::setTreeBranchStatus(TTree& t, Bool_t active)
+{
+  TBranch* branch = t.GetBranch(GetName()) ;
+  if (branch) {
+    t.SetBranchStatus(GetName(),active?1:0) ;
+  }
 }
 
 

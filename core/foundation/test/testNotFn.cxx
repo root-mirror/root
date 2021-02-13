@@ -1,9 +1,5 @@
 #include "ROOT/RNotFn.hxx"
 
-// libc++ does not define __cpp_lib_not_fn.
-// Assume we have not_fn if
-#if defined(R__NOTFN_BACKPORT)
-
 #include "gtest/gtest.h"
 
 bool retTrue(){return true;}
@@ -11,6 +7,9 @@ bool retFlip(bool b){return !b;}
 
 TEST(NotFn, Simple)
 {
+// libc++ does not define __cpp_lib_not_fn.
+// Assume we have not_fn if
+#if defined(R__NOTFN_BACKPORT)
    EXPECT_TRUE(true);
    EXPECT_TRUE(std::not_fn([]() { return false; })());
 
@@ -27,7 +26,6 @@ TEST(NotFn, Simple)
 
    EXPECT_TRUE(std::not_fn(std::not_fn(retFlip))(false));
    EXPECT_FALSE(std::not_fn(std::not_fn(retFlip))(true));
-
+#endif
 }
 
-#endif

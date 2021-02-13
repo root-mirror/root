@@ -51,6 +51,9 @@ void TCpu<AFloat>::InitializeGauss(TCpuMatrix<AFloat> & A)
    for (size_t i = 0; i < A.GetSize(); ++i) {
       A.GetRawDataPointer()[i] = rand.Gaus(0.0, sigma);
    }
+   // for (size_t i = 0; i < A.GetSize(); ++i) {
+   //    A.GetRawDataPointer()[i] = rand.Gaus(0.0, sigma);
+   // }
 }
 
 //______________________________________________________________________________
@@ -89,7 +92,7 @@ void TCpu<AFloat>::InitializeGlorotNormal(TCpuMatrix<AFloat> & A)
 
    TRandom &  rand = GetRandomGenerator();
 
-   AFloat sigma = sqrt(2.0 /( ((AFloat) n) + ((AFloat) m)) );
+   AFloat sigma = sqrt(6.0 /( ((AFloat) n) + ((AFloat) m)) );
    // AFloat sigma = sqrt(2.0 /( ((AFloat) m)) );
 
    size_t nsize = A.GetSize();
@@ -98,7 +101,6 @@ void TCpu<AFloat>::InitializeGlorotNormal(TCpuMatrix<AFloat> & A)
       do {
          value = rand.Gaus(0.0, sigma);
       } while (std::abs(value) > 2 * sigma);
-      R__ASSERT(std::abs(value) < 2 * sigma);
       A.GetRawDataPointer()[i] = value;
    }
 }
@@ -112,8 +114,9 @@ template<typename AFloat>
 void TCpu<AFloat>::InitializeGlorotUniform(TCpuMatrix<AFloat> & A)
 {
    size_t m,n;
-   m = A.GetNrows();
-   n = A.GetNcols();
+   m = A.GetNrows(); // output size
+   n = A.GetNcols();  // input size
+   // Note that m and n are inverted with respect to cudnn because tensor is here column-wise
 
    TRandom &  rand = GetRandomGenerator();
 
@@ -134,9 +137,9 @@ void TCpu<AFloat>::InitializeIdentity(TCpuMatrix<AFloat> & A)
    n = A.GetNcols();
 
    for (size_t i = 0; i < m; i++) {
-      for (size_t j = 0; j < n ; j++) {
-         //A(i,j) = 0.0;
-         A(i,j) = 1.0;
+      for (size_t j = 0; j <  n; j++) {
+         A(i,j) = 0.0;
+         //A(i,j) = 1.0;
       }
 
       if (i < n) {
@@ -157,6 +160,16 @@ void TCpu<AFloat>::InitializeZero(TCpuMatrix<AFloat> & A)
       for (size_t j = 0; j < n ; j++) {
          A(i,j) = 0.0;
       }
+   }
+}
+//______________________________________________________________________________
+template <typename AFloat>
+void TCpu<AFloat>::InitializeZero(TCpuTensor<AFloat> &A)
+{
+   size_t n = A.GetSize();
+
+   for (size_t i = 0; i < n; i++) {
+      A.GetRawDataPointer()[i] = 0.0;
    }
 }
 

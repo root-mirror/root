@@ -36,7 +36,7 @@ ClassImp(TEnum);
 /// in TROOT::GetListOfGlobals).
 
 TEnum::TEnum(const char *name, DeclId_t declid, TClass *cls)
-   : fInfo(nullptr), fClass(cls)
+   : fClass(cls)
 {
    SetName(name);
    if (cls) {
@@ -99,19 +99,6 @@ Long_t TEnum::Property() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Get the unterlying integer type of the enum:
-///     enum E { kOne }; //  ==> int
-///     enum F: long; //  ==> long
-/// Returns kNumDataTypes if the enum is unknown / invalid.
-
-EDataType TEnum::GetUnderlyingType() const
-{
-   if (fInfo)
-      return gInterpreter->ClassInfo_GetUnderlyingType(fInfo);
-   return kNumDataTypes;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 
 TDictionary::DeclId_t TEnum::GetDeclId() const
 {
@@ -134,8 +121,10 @@ void TEnum::Update(DeclId_t id)
 
    fInfo = gInterpreter->ClassInfo_Factory(id);
 
-   if (fInfo)
+   if (fInfo) {
       SetBit(kBitIsScopedEnum, gInterpreter->ClassInfo_IsScopedEnum(fInfo));
+      fUnderlyingType = gInterpreter->ClassInfo_GetUnderlyingType(fInfo);
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -24,8 +24,8 @@ namespace Experimental {
 class REveSecondarySelectable
 {
 private:
-   REveSecondarySelectable(const REveSecondarySelectable &);            // Not implemented
-   REveSecondarySelectable &operator=(const REveSecondarySelectable &); // Not implemented
+   REveSecondarySelectable(const REveSecondarySelectable &) = delete;
+   REveSecondarySelectable &operator=(const REveSecondarySelectable &) = delete;
 
 public:
    typedef std::set<Int_t>                SelectionSet_t;
@@ -46,8 +46,8 @@ public:
    Bool_t GetAlwaysSecSelect()   const { return fAlwaysSecSelect; }
    void   SetAlwaysSecSelect(Bool_t f) { fAlwaysSecSelect = f; }
 
-   const SelectionSet_t &RefSelectedSet()    const { return fSelectedSet; }
-   const SelectionSet_t &RefHighlightedSet() const { return fHighlightedSet; }
+   SelectionSet_t &RefSelectedSet()    { return fSelectedSet; }
+   SelectionSet_t &RefHighlightedSet() { return fHighlightedSet; }
 
    // XXXX
    // void   ProcessGLSelection(TGLSelectRecord& rec);

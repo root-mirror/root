@@ -108,7 +108,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Geom
     src/TGeoTrd1.cxx
     src/TGeoTrd2.cxx
     src/TGeoTube.cxx
-    src/TGeoUnit.cxx
     src/TGeoVolume.cxx
     src/TGeoVoxelFinder.cxx
     src/TGeoXtru.cxx
@@ -122,6 +121,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Geom
     Thread
     RIO
     MathCore
+    Hist
 )
 
 # GCC has bugs with -O3 or -Ofast that break Geom

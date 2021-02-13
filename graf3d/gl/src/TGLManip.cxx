@@ -14,9 +14,6 @@
 #include "TGLCamera.h"
 #include "TGLPhysicalShape.h"
 #include "TGLIncludes.h"
-#include "TROOT.h"
-
-#include "TVirtualX.h"
 
 /** \class TGLManip
 \ingroup opengl

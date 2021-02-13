@@ -76,17 +76,17 @@ private:
    TGDoubleSlider& operator=(const TGDoubleSlider&); // Not implemented
 
 protected:
-   Float_t       fPos;           // logical position between fVmin and fVmax
-   Float_t       fSmin;          // logical position of min value of Slider
-   Float_t       fSmax;          // logical position of max value of Slider
+   Double_t      fPos;           // logical position between fVmin and fVmax
+   Double_t      fSmin;          // logical position of min value of Slider
+   Double_t      fSmax;          // logical position of max value of Slider
    Int_t         fRelPos;        // slider position in pixel coordinates
-   Float_t       fVmin;          // logical lower limit of slider
-   Float_t       fVmax;          // logical upper limit of slider
+   Double_t      fVmin;          // logical lower limit of slider
+   Double_t      fVmax;          // logical upper limit of slider
    Int_t         fScale;         // tick mark scale
    Int_t         fScaleType;     // tick mark scale type (no, downright, both)
    Int_t         fPressPoint;    // mouse position at button press event
-   Float_t       fPressSmin;     // logical min position at button press event
-   Float_t       fPressSmax;     // logical max position at button press event
+   Double_t      fPressSmin;     // logical min position at button press event
+   Double_t      fPressSmax;     // logical max position at button press event
    Int_t         fMove;          // 1: move min value
                                  // 2: move max value
                                  // 3: move min and max value
@@ -97,7 +97,7 @@ protected:
 
    TString       GetSString() const; // returns scaling type as string
 
-   static void   FixBounds(Float_t &min, Float_t &max);
+   static void   FixBounds(Double_t &min, Double_t &max);
    void          ChangeCursor(Event_t *event);
 
 public:
@@ -114,29 +114,81 @@ public:
 
    virtual void  SetScale(Int_t scale) { fScale = scale; }
    virtual void  SetRange(Float_t min, Float_t max) {
+      SetRange((Double_t) min, (Double_t) max);
+   }
+   virtual void  SetRange(Long64_t min, Long64_t max) {
+      SetRange((Double_t) min, (Double_t) max);
+   }
+   virtual void  SetRange(Int_t min, Int_t max) {
+      SetRange((Double_t) min, (Double_t) max);
+   }
+
+   virtual void SetPosition(Float_t min, Float_t max) {
+      SetPosition((Double_t) min, (Double_t) max);
+   }
+   virtual void SetPosition(Long64_t min, Long64_t max) {
+      SetPosition((Double_t) min, (Double_t) max);
+   }
+   virtual void SetPosition(Int_t min, Int_t max) {
+      SetPosition((Double_t) min, (Double_t) max);
+   }
+
+   virtual Float_t GetMinPosition() const {
+      return (Float_t) GetMinPositionD();
+   }
+   virtual Float_t GetMaxPosition() const {
+      return (Float_t) GetMaxPositionD();
+   }
+   virtual Long64_t GetMinPositionL() const {
+      return (Long64_t)GetMinPositionD();
+   }
+   virtual Long64_t GetMaxPositionL() const {
+      return (Long64_t)GetMaxPositionD();
+   }
+
+   virtual void GetPosition(Float_t &min, Float_t &max) const {
+      if (fReversedScale) { min = (Float_t)(fVmin+fVmax-fSmax); max = (Float_t)(fVmin+fVmax-fSmin); }
+      else { min = (Float_t)fSmin; max = (Float_t)fSmax; }
+   }
+   virtual void GetPosition(Float_t *min, Float_t *max) const {
+      if (fReversedScale) { *min = (Float_t)(fVmin+fVmax-fSmax); *max = (Float_t)(fVmin+fVmax-fSmin); }
+      else { *min = (Float_t)fSmin; *max = (Float_t)fSmax; }
+   }
+   virtual void GetPosition(Long64_t &min, Long64_t &max) const {
+      if (fReversedScale) { min = (Long64_t)(fVmin+fVmax-fSmax); max = (Long64_t)(fVmin+fVmax-fSmin); }
+      else { min = (Long64_t)fSmin; max = (Long64_t)fSmax; }
+   }
+   virtual void GetPosition(Long64_t *min, Long64_t *max) const {
+      if (fReversedScale) { *min = (Long64_t)(fVmin+fVmax-fSmax); *max = (Long64_t)(fVmin+fVmax-fSmin); }
+      else { *min = (Long64_t)fSmin; *max = (Long64_t)fSmax; }
+   }
+
+   // double precision methods
+
+   virtual void  SetRange(Double_t min, Double_t max) {
       fVmin = min; fVmax = max;
       FixBounds(fVmin, fVmax);
    }
 
-   virtual void SetPosition(Float_t min, Float_t max) {
+   virtual void SetPosition(Double_t min, Double_t max) {
       if (fReversedScale) { fSmin = fVmin+fVmax-max; fSmax = fVmin+fVmax-min; }
       else { fSmin = min; fSmax = max; }
       fClient->NeedRedraw(this);
    }
 
-   virtual Float_t GetMinPosition() const {
+   virtual Double_t GetMinPositionD() const {
       if (fReversedScale) return fVmin+fVmax-fSmax;
       else return fSmin;
    }
-   virtual Float_t GetMaxPosition() const {
+   virtual Double_t GetMaxPositionD() const {
       if (fReversedScale) return fVmin+fVmax-fSmin;
       else return fSmax;
    }
-   virtual void GetPosition(Float_t &min, Float_t &max) const {
+   virtual void GetPosition(Double_t &min, Double_t &max) const {
       if (fReversedScale) { min = fVmin+fVmax-fSmax; max = fVmin+fVmax-fSmin; }
       else { min = fSmin; max = fSmax; }
    }
-   virtual void GetPosition(Float_t *min, Float_t *max) const {
+   virtual void GetPosition(Double_t *min, Double_t *max) const {
       if (fReversedScale) { *min = fVmin+fVmax-fSmax; *max = fVmin+fVmax-fSmin; }
       else { *min = fSmin; *max = fSmax; }
    }

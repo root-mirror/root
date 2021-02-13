@@ -37,6 +37,7 @@ set(EVE_HEADERS1
   TEveTransEditor.h
   TEveTreeTools.h
   TEveUtil.h
+  TEveVector.h
   TEveViewer.h
   TEveViewerListEditor.h
   TEveVSD.h
@@ -228,7 +229,7 @@ if(MSVC)
       OpenGL::GL
       OpenGL::GLU
       ${FTGL_LIBRARIES}
-      ${GLEW_LIBRARIES}
+      RGlew
     DEPENDENCIES
       Core
       EG
@@ -263,7 +264,7 @@ else()
       OpenGL::GL
       OpenGL::GLU
       ${FTGL_LIBRARIES}
-      ${GLEW_LIBRARIES}
+      RGlew
     DEPENDENCIES
       Core
       EG
@@ -275,4 +276,4 @@ else()
 endif()
 
 target_include_directories(Eve PRIVATE
-  ${FTGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
+  ${FTGL_INCLUDE_DIRS})

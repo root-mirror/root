@@ -980,7 +980,7 @@ Bool_t TGeoMCGeometry::GetShape(const TString &volumePath,TString &shapeType,
 /// - Inputs:
 ///   - TString& volumeName  The volume name
 /// - Outputs:
-///   - TSrting   &name       Material name
+///   - TString   &name       Material name
 ///   - Int_t     &imat       Material index number
 ///   - Double_t  &a          Average Atomic mass of material
 ///   - Double_t  &z          Average Atomic number of material

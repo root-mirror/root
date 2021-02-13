@@ -77,8 +77,12 @@ void TGObject::SaveAs(const char* filename /*= ""*/, Option_t* option /*= ""*/) 
 
 Bool_t TGObject::IsEqual(const TObject *obj) const
 {
-   if ((fId == 0) && (((const TGObject *) obj)->fId == 0))
-      return TObject::IsEqual(obj);
-   return fId == ((const TGObject *) obj)->fId;
+   if (auto gobj = dynamic_cast<const TGObject *>(obj)) {
+      if (fId == 0 && gobj->fId == 0)
+         return TObject::IsEqual(obj);
+      return fId == gobj->fId;
+   }
+   // TGObject != some-other-TObject:
+   return false;
 }
 

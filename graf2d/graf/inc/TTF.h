@@ -64,9 +64,9 @@ TTF helper class containing glyphs description.
 
    class TTGlyph {
    public:
-      UInt_t     fIndex; ///< glyph index in face
-      FT_Vector  fPos;   ///< position of glyph origin
-      FT_Glyph   fImage; ///< glyph image
+      UInt_t     fIndex{0};     ///< glyph index in face
+      FT_Vector  fPos;          ///< position of glyph origin
+      FT_Glyph   fImage{nullptr}; ///< glyph image
    };
 
 protected:

@@ -52,6 +52,7 @@
 
 #include "TMVA/MethodBase.h"
 #include "TMVA/PDF.h"
+#include <vector>
 
 class TH1D;
 
@@ -61,12 +62,12 @@ namespace TMVA {
 
    public:
 
-      MethodLikelihood( const TString& jobName, 
-                        const TString& methodTitle, 
+      MethodLikelihood( const TString& jobName,
+                        const TString& methodTitle,
                         DataSetInfo& theData,
                         const TString& theOption = "");
-  
-      MethodLikelihood( DataSetInfo& theData, 
+
+      MethodLikelihood( DataSetInfo& theData,
                         const TString& theWeightFile);
 
       virtual ~MethodLikelihood();

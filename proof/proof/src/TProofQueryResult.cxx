@@ -21,7 +21,7 @@ TQueryResult version adapted to PROOF neeeds
 #include "TList.h"
 #include "TProofQueryResult.h"
 #include "TSystem.h"
-
+#include "TMacro.h"
 
 ClassImp(TProofQueryResult);
 

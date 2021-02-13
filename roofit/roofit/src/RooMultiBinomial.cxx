@@ -118,15 +118,15 @@ Double_t RooMultiBinomial::evaluate() const
   // Calculate efficiency per accept/reject decision
 
   for (int i=0; i<effFuncListSize; ++i) {
-    if ( ((RooAbsCategory&)_catList[i]).getIndex() == 1) {
+    if ( ((RooAbsCategory&)_catList[i]).getCurrentIndex() == 1) {
       // Accept case
       effValue[i] = effFuncVal[i] ;
       notVisible = false;
-    } else if ( ((RooAbsCategory&)_catList[i]).getIndex() == 0){
+    } else if ( ((RooAbsCategory&)_catList[i]).getCurrentIndex() == 0){
       // Reject case
       effValue[i] = 1 - effFuncVal[i] ;
     } else {
-      coutW(Eval) << "WARNING: WRONG CATEGORY NAMES GIVEN!, label = " << ((RooAbsCategory&)_catList[i]).getIndex() << endl;
+      coutW(Eval) << "WARNING: WRONG CATEGORY NAMES GIVEN!, label = " << ((RooAbsCategory&)_catList[i]).getCurrentIndex() << endl;
       effValue[i] = 0;
     }
   }

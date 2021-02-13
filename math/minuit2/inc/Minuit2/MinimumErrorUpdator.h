@@ -12,8 +12,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class MinimumState;
 class MinimumError;
@@ -23,16 +22,13 @@ class FunctionGradient;
 class MinimumErrorUpdator {
 
 public:
+   virtual ~MinimumErrorUpdator() {}
 
-  virtual ~MinimumErrorUpdator() {}
-
-  virtual MinimumError Update(const MinimumState&, const MinimumParameters&,
-                              const FunctionGradient&) const = 0;
-
+   virtual MinimumError Update(const MinimumState &, const MinimumParameters &, const FunctionGradient &) const = 0;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MinimumErrorUpdator
+#endif // ROOT_Minuit2_MinimumErrorUpdator

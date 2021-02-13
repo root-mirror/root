@@ -27,6 +27,7 @@
 #define ROOT_TMVA_MethodPyKeras
 
 #include "TMVA/PyMethodBase.h"
+#include <vector>
 
 namespace TMVA {
 
@@ -75,14 +76,17 @@ namespace TMVA {
       /// Get the Keras backend (can be: TensorFlow, Theano or CNTK)
       EBackendType GetKerasBackend();
       TString GetKerasBackendName();
+      // flag to indicate we are using the Keras shipped with Tensorflow 2
+      Bool_t UseTFKeras() const { return fUseTFKeras; }
 
-    private:
+   private:
 
       TString fFilenameModel; // Filename of the previously exported Keras model
       UInt_t fBatchSize {0}; // Training batch size
       UInt_t fNumEpochs {0}; // Number of training epochs
       Int_t fNumThreads {0}; // Number of CPU threads (if 0 uses default values)
       Int_t fVerbose; // Keras verbosity during training
+      Bool_t fUseTFKeras { kFALSE};   // use Keras from Tensorflow (-1, default, 0 false, 1, true)
       Bool_t fContinueTraining; // Load weights from previous training
       Bool_t fSaveBestOnly; // Store only weights with smallest validation loss
       Int_t fTriesEarlyStopping; // Stop training if validation loss is not decreasing for several epochs
@@ -90,16 +94,18 @@ namespace TMVA {
       TString fTensorBoard;          // Store log files during training
       TString fNumValidationString;  // option string defining the number of validation events
       TString fGpuOptions;    // GPU options (for Tensorflow to set in session_config.gpu_options)
+      TString fUserCodeName; // filename of an optional user script that will be executed before loading the Keras model
+      TString fKerasString;  // string identifying keras or tf.keras
 
-      bool fModelIsSetup = false; // flag whether model is loaded, neede for getMvaValue during evaluation
+      bool fModelIsSetup = false; // flag whether model is loaded, needed for getMvaValue during evaluation
       float* fVals = nullptr; // variables array used for GetMvaValue
       std::vector<float> fOutput; // probability or regression output array used for GetMvaValue
       UInt_t fNVars {0}; // number of variables
       UInt_t fNOutputs {0}; // number of outputs (classes or targets)
       TString fFilenameTrainedModel; // output filename for trained model
 
-      void SetupKerasModel(Bool_t loadTrainedModel); // setups the needed variables loads the model
-      UInt_t  GetNumValidationSamples();  // get numer of validation events according to given option
+      void SetupKerasModel(Bool_t loadTrainedModel); // setups the needed variables, loads the model
+      UInt_t  GetNumValidationSamples();  // get number of validation events according to given option
 
       ClassDef(MethodPyKeras, 0);
    };

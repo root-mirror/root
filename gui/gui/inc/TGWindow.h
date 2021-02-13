@@ -23,7 +23,6 @@
 
 #include "TGObject.h"
 #include "TGClient.h"
-#include "TVirtualX.h"
 
 class TGClient;
 class TGIdleHandler;
@@ -85,22 +84,20 @@ public:
    const TGWindow *GetParent() const { return fParent; }
    virtual const TGWindow *GetMainFrame() const;
 
-   virtual void MapWindow() { gVirtualX->MapWindow(fId); }
-   virtual void MapSubwindows() { gVirtualX->MapSubwindows(fId); }
-   virtual void MapRaised() { gVirtualX->MapRaised(fId); }
-   virtual void UnmapWindow() { gVirtualX->UnmapWindow(fId); }
-   virtual void DestroyWindow() { gVirtualX->DestroyWindow(fId); }
-   virtual void DestroySubwindows() { gVirtualX->DestroySubwindows(fId); }
-   virtual void RaiseWindow() { gVirtualX->RaiseWindow(fId); }
-   virtual void LowerWindow() { gVirtualX->LowerWindow(fId); }
-   virtual void IconifyWindow() { gVirtualX->IconifyWindow(fId); }
+   virtual void MapWindow();
+   virtual void MapSubwindows();
+   virtual void MapRaised();
+   virtual void UnmapWindow();
+   virtual void DestroyWindow();
+   virtual void DestroySubwindows();
+   virtual void RaiseWindow();
+   virtual void LowerWindow();
+   virtual void IconifyWindow();
    virtual void ReparentWindow(const TGWindow *p, Int_t x = 0, Int_t y = 0);
-   virtual void RequestFocus() { gVirtualX->SetInputFocus(fId); }
+   virtual void RequestFocus();
 
-   virtual void SetBackgroundColor(Pixel_t color)
-                  { gVirtualX->SetWindowBackground(fId, color); }
-   virtual void SetBackgroundPixmap(Pixmap_t pixmap)
-                  { gVirtualX->SetWindowBackgroundPixmap(fId, pixmap); }
+   virtual void SetBackgroundColor(Pixel_t color);
+   virtual void SetBackgroundPixmap(Pixmap_t pixmap);
 
    virtual Bool_t HandleExpose(Event_t *event)
                   { if (event->fCount == 0) fClient->NeedRedraw(this); return kTRUE; }

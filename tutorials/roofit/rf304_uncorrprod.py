@@ -1,14 +1,14 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-## Multidimensional models: simple uncorrelated multi-dimensional p.d.f.s
+## Multidimensional models: simple uncorrelated multi-dimensional pdfs
 ##
-## pdf = gauss(x,mx,sx) * gauss(y,my,sy)
+## `pdf = gauss(x,mx,sx) * gauss(y,my,sy)`
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -16,7 +16,7 @@ import ROOT
 # Create component pdfs in x and y
 # ----------------------------------------------------------------
 
-# Create two p.d.f.s gaussx(x,meanx,sigmax) gaussy(y,meany,sigmay) and its
+# Create two pdfs gaussx(x,meanx,sigmax) gaussy(y,meany,sigmay) and its
 # variables
 x = ROOT.RooRealVar("x", "x", -5, 5)
 y = ROOT.RooRealVar("y", "y", -5, 5)
@@ -32,7 +32,7 @@ gaussy = ROOT.RooGaussian("gaussy", "gaussian PDF", y, meany, sigmay)
 # Construct uncorrelated product pdf
 # -------------------------------------------------------------------
 
-# Multiply gaussx and gaussy into a two-dimensional p.d.f. gaussxy
+# Multiply gaussx and gaussy into a two-dimensional pdf gaussxy
 gaussxy = ROOT.RooProdPdf(
     "gaussxy", "gaussx*gaussy", ROOT.RooArgList(gaussx, gaussy))
 

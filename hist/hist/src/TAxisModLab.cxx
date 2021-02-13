@@ -9,10 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <stdlib.h>
+#include <cstdlib>
 
-#include "Riostream.h"
-#include "TROOT.h"
 #include "TAxisModLab.h"
 
 ClassImp(TAxisModLab);

@@ -18,8 +18,6 @@
 
 #include "Math/WrappedFunction.h"
 
-#include <cassert>
-
 namespace ROOT {
 
    namespace Math {

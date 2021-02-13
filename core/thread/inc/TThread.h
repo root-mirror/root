@@ -24,15 +24,18 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
-#include "TCondition.h"
-#include "TSystem.h"
+#include "TNamed.h"
 #include "TTimer.h"
-#include "Varargs.h"
+#include <stdarg.h>
+
+#ifdef R__LESS_INCLUDES
+class TCondition;
+#else
+#include "TCondition.h"
+#endif
 
 class TMutex;
 class TThreadImp;
-
 
 class TThread : public TNamed {
 
@@ -97,7 +100,7 @@ private:
 
    // Private Member functions
    void           Constructor();
-   void           SetComment(const char *txt = 0)
+   void           SetComment(const char *txt = nullptr)
                      { fComment[0] = 0; if (txt) { strncpy(fComment, txt, 99); fComment[99] = 0; } }
    void           DoError(Int_t level, const char *location, const char *fmt, va_list va) const;
    void           ErrorHandler(int level, const char *location, const char *fmt, va_list ap) const;
@@ -107,19 +110,19 @@ private:
    static void    AfterCancel(TThread *th);
    static void    **GetTls(Int_t k);
 
-   TThread(const TThread&);            // not implemented
-   TThread& operator=(const TThread&); // not implemented
+   TThread(const TThread&) = delete;
+   TThread& operator=(const TThread&) = delete;
 
 public:
-   TThread(VoidRtnFunc_t fn, void *arg = 0, EPriority pri = kNormalPriority);
-   TThread(VoidFunc_t fn, void *arg = 0, EPriority pri = kNormalPriority);
-   TThread(const char *thname, VoidRtnFunc_t fn, void *arg = 0, EPriority pri = kNormalPriority);
-   TThread(const char *thname, VoidFunc_t fn, void *arg = 0, EPriority pri = kNormalPriority);
+   TThread(VoidRtnFunc_t fn, void *arg = nullptr, EPriority pri = kNormalPriority);
+   TThread(VoidFunc_t fn, void *arg = nullptr, EPriority pri = kNormalPriority);
+   TThread(const char *thname, VoidRtnFunc_t fn, void *arg = nullptr, EPriority pri = kNormalPriority);
+   TThread(const char *thname, VoidFunc_t fn, void *arg = nullptr, EPriority pri = kNormalPriority);
    TThread(Long_t id = 0);
    virtual ~TThread();
 
    Int_t            Kill();
-   Int_t            Run(void *arg = 0);
+   Int_t            Run(void *arg = nullptr);
    void             SetPriority(EPriority pri);
    void             Delete(Option_t *option="") { TObject::Delete(option); }
    EPriority        GetPriority() const { return fPriority; }
@@ -131,10 +134,10 @@ public:
    static void      Initialize();
    static Bool_t    IsInitialized();
 
-   Long_t           Join(void **ret = 0);
-   static Long_t    Join(Long_t id, void **ret = 0);
+   Long_t           Join(void **ret = nullptr);
+   static Long_t    Join(Long_t id, void **ret = nullptr);
 
-   static Int_t     Exit(void *ret = 0);
+   static Int_t     Exit(void *ret = nullptr);
    static Int_t     Exists();
    static TThread  *GetThread(Long_t id);
    static TThread  *GetThread(const char *name);
@@ -162,7 +165,7 @@ public:
    static Int_t     CancelPoint();
    static Int_t     Kill(Long_t id);
    static Int_t     Kill(const char *name);
-   static Int_t     CleanUpPush(void *free, void *arg = 0);
+   static Int_t     CleanUpPush(void *free, void *arg = nullptr);
    static Int_t     CleanUpPop(Int_t exe = 0);
    static Int_t     CleanUp();
 

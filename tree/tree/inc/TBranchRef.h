@@ -22,7 +22,12 @@
 
 
 #include "TBranch.h"
+
+#ifdef R__LESS_INCLUDES
+class TRefTable;
+#else
 #include "TRefTable.h"
+#endif
 
 class TTree;
 

@@ -26,7 +26,7 @@ void TMVA::plot_training_history(TString dataset, TFile* /*file*/, TDirectory* B
 
    // legend
    Float_t x0L = 0.107,     y0H = 0.899;
-   Float_t dxL = 0.457-x0L, dyH = 0.22;
+   Float_t dxL = 0.557-x0L, dyH = 0.22;
 
    TLegend *legend = new TLegend( x0L, y0H-dyH, x0L+dxL, y0H );
    //legend->SetTextSize( 0.05 );
@@ -38,7 +38,7 @@ void TMVA::plot_training_history(TString dataset, TFile* /*file*/, TDirectory* B
 
    TString ftit = "Training History";
 
-   TString hNameRef = "";//training_history";
+   TString hNameRef = "TrainingHistory";
 
    TList xhists;
    TList xmethods;
@@ -73,7 +73,7 @@ void TMVA::plot_training_history(TString dataset, TFile* /*file*/, TDirectory* B
                if (h->GetMinimum() < y1) y1 = h->GetMinimum();
                if (h->GetBinLowEdge(0) < x1 ) x1 = h->GetBinLowEdge(0);
                if (h->GetBinLowEdge(h->GetNbinsX()+1 ) > x2 ) x2 = h->GetBinLowEdge(h->GetNbinsX()+1 );
-               
+
             }
          }
       }
@@ -149,15 +149,17 @@ void TMVA::plot_training_history(TString dataset, TFile* /*file*/, TDirectory* B
          cout << "ERROR - unknown hist \"histWithLargestInt\" --> serious problem in ROOT file" << endl;
          break;
       }
-      legend->AddEntry(histWithLargestInt,TString(histWithLargestInt->GetTitle()).ReplaceAll("MVA_",""),"l");
+      TString histLabel = TString(histWithLargestInt->GetTitle()).ReplaceAll("MVA_", "");
+      histLabel.ReplaceAll("TrainingHistory_", "");
+      legend->AddEntry(histWithLargestInt, histLabel, "l");
       hists.Remove(histWithLargestInt);
    }
 
    // rescale legend box size
    // current box size has been tuned for 3 MVAs + 1 title
-   dyH *= (Float_t(TMath::Min(10,nmva) - 3.0)/4.0);
-   legend->SetY2( y0H + dyH);
-   
+   dyH *= (1. + (Float_t(TMath::Min(10,nmva) - 3.0)/4.0) );
+   legend->SetY1( y0H - dyH);
+
    // redraw axes
    frame->Draw("sameaxis");
    legend->Draw("same");
@@ -194,4 +196,3 @@ void TMVA::training_history(TString dataset, TString fin , Bool_t useTMVAStyle )
 
    return;
 }
-

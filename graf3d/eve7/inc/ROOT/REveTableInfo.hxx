@@ -13,7 +13,8 @@
 #define ROOT7_REveTableInfo
 
 #include <ROOT/REveElement.hxx>
-#include <ROOT/REveDataClasses.hxx>
+#include <ROOT/REveDataCollection.hxx>
+#include <ROOT/REveDataTable.hxx>
 
 namespace ROOT {
 namespace Experimental {

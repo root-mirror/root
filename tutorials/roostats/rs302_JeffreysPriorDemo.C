@@ -49,7 +49,7 @@
 
 using namespace RooFit;
 
-void JeffreysPriorDemo()
+void rs302_JeffreysPriorDemo()
 {
    RooWorkspace w("w");
    w.factory("Uniform::u(x[0,1])");
@@ -81,7 +81,7 @@ void JeffreysPriorDemo()
    pi.plotOn(plot);
    test->plotOn(plot, LineColor(kRed), LineStyle(kDashDotted));
    plot->Draw();
-   
+
    auto legend = plot->BuildLegend();
    legend->DrawClone();
 }
@@ -124,7 +124,7 @@ void TestJeffreysGaussMean()
    pi.plotOn(plot);
    test->plotOn(plot, LineColor(kRed), LineStyle(kDashDotted));
    plot->Draw();
-   
+
    auto legend = plot->BuildLegend();
    legend->DrawClone();
 }
@@ -173,7 +173,7 @@ void TestJeffreysGaussSigma()
    pi.plotOn(plot);
    test->plotOn(plot, LineColor(kRed), LineStyle(kDashDotted));
    plot->Draw();
-   
+
    auto legend = plot->BuildLegend();
    legend->DrawClone();
 }

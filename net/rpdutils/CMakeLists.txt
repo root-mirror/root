@@ -31,7 +31,16 @@ add_library(rpdutil STATIC
   src/rpdutils.cxx
 )
 
-target_include_directories(rpdutil PRIVATE ${CMAKE_BINARY_DIR}/include)
+target_include_directories(rpdutil PRIVATE
+   ${CMAKE_SOURCE_DIR}/core/clib/inc         # for snprintf.h
+   ${CMAKE_SOURCE_DIR}/core/base/inc         # for RConfig.hxx
+   ${CMAKE_SOURCE_DIR}/core/foundation/inc   # for TError.hxx
+   ${CMAKE_SOURCE_DIR}/core/meta/inc         # for TGenericClassInfo.h
+   ${CMAKE_SOURCE_DIR}/net/net/inc           # for NetErrors.h
+   ${CMAKE_SOURCE_DIR}/net/auth/inc          # for NetErrors.h
+   ${CMAKE_BINARY_DIR}/ginclude              # for RConfigure.h
+)
+
 target_link_libraries(rpdutil INTERFACE $<$<PLATFORM_ID:Linux>:crypt>)
 set_property(TARGET rpdutil PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_dependencies(rpdutil move_headers)
@@ -45,4 +54,10 @@ ROOT_LINKER_LIBRARY(SrvAuth rpdutils.cxx
     Net
   BUILTINS
     OPENSSL
+)
+
+target_include_directories(SrvAuth PRIVATE
+   ${CMAKE_SOURCE_DIR}/net/auth/res
+   ${CMAKE_SOURCE_DIR}/net/auth/inc
+   ${CMAKE_SOURCE_DIR}/rpdutils/res
 )

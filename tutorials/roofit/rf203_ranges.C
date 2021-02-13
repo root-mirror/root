@@ -1,12 +1,14 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Addition and convolution: fitting and plotting in sub ranges
+/// Fitting and plotting in sub ranges.
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -40,13 +42,13 @@ void rf203_ranges()
    RooRealVar f("f", "f", 0., 1.);
    RooAddPdf model("model", "model", RooArgList(gx, px), f);
 
-   // Generated 10000 events in (x,y) from p.d.f. model
+   // Generated 10000 events in (x,y) from pdf model
    RooDataSet *modelData = model.generate(x, 10000);
 
    // F i t   f u l l   r a n g e
    // ---------------------------
 
-   // Fit p.d.f to all data
+   // Fit pdf to all data
    RooFitResult *r_full = model.fitTo(*modelData, Save(kTRUE));
 
    // F i t   p a r t i a l   r a n g e
@@ -55,7 +57,7 @@ void rf203_ranges()
    // Define "signal" range in x as [-3,3]
    x.setRange("signal", -3, 3);
 
-   // Fit p.d.f only to data in "signal" range
+   // Fit pdf only to data in "signal" range
    RooFitResult *r_sig = model.fitTo(*modelData, Save(kTRUE), Range("signal"));
 
    // P l o t   /   p r i n t   r e s u l t s

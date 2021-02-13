@@ -15,6 +15,11 @@
 
 namespace ROOT {
 namespace Experimental {
+
+class RLogChannel;
+/// Log channel for Browsable diagnostics.
+RLogChannel &BrowsableLog(); // implemented in RElement.cxx
+
 namespace Browsable {
 
 /** \class RHolder

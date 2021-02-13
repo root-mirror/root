@@ -135,6 +135,7 @@
 #include "TProofProgressDialog.h"
 #include "TProofProgressLog.h"
 #include "TProofProgressMemoryPlot.h"
+#include "TObjString.h"
 
 #include "proof/getProof.C"
 

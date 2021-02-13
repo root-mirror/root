@@ -1,9 +1,7 @@
-/// \file rooturlschemehandler.cpp
-/// \ingroup WebGui
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \date 2017-06-29
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Author: Sergey Linev <S.Linev@gsi.de>
+// Date: 2017-06-29
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
+
 
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
@@ -16,6 +14,8 @@
 
 #include "rooturlschemehandler.h"
 
+#include "rootwebpage.h" // only because of logger channel
+
 #include <QBuffer>
 #include <QByteArray>
 #include <QFile>
@@ -27,14 +27,15 @@
 #include "THttpCallArg.h"
 #include "TBase64.h"
 
+/** \class UrlRequestJobHolder
+\ingroup qt5webdisplay
 
-/////////////////////////////////////////////////////////////////////////////////////
-/// Class UrlRequestJobHolder
-/// Required to monitor state of QWebEngineUrlRequestJob
-/// Qt can delete object at any time, therefore one connects destroy signal
-/// from the request to clear pointer
-////////////////////////////////////////////////////////////////////////////////////
+Class UrlRequestJobHolder
+Required to monitor state of QWebEngineUrlRequestJob
+Qt can delete object at any time, therefore one connects destroy signal
+from the request to clear pointer
 
+*/
 
 /////////////////////////////////////////////////////////////////
 /// Constructor
@@ -78,7 +79,7 @@ protected:
 
    void CheckWSPageContent(THttpWSHandler *) override
    {
-      std::string search = "JSROOT.ConnectWebWindow({";
+      std::string search = "JSROOT.connectWebWindow({";
       std::string replace = search + "platform:\"qt5\",socket_kind:\"rawlongpoll\",";
 
       ReplaceAllinContent(search, replace, true);
@@ -118,12 +119,12 @@ public:
       QWebEngineUrlRequestJob *req = fRequest.req();
 
       if (!req) {
-         R__ERROR_HERE("Qt5") << "Qt5 request already processed path " << GetPathName() << " file " << GetFileName();
+         R__LOG_ERROR(QtWebDisplayLog()) << "Qt5 request already processed path " << GetPathName() << " file " << GetFileName();
          return;
       }
 
       if (Is404()) {
-         R__ERROR_HERE("Qt5") << "Qt5 request FAIL path " << GetPathName() << " file " << GetFileName();
+         R__LOG_ERROR(QtWebDisplayLog()) << "Qt5 request FAIL path " << GetPathName() << " file " << GetFileName();
 
          req->fail(QWebEngineUrlRequestJob::UrlNotFound);
          // abort request
@@ -173,7 +174,7 @@ void RootUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *request)
    QUrl url = request->requestUrl();
 
    if (!fServer) {
-      R__ERROR_HERE("webgui") << "Server not specified when request is started";
+      R__LOG_ERROR(QtWebDisplayLog()) << "Server not specified when request is started";
       request->fail(QWebEngineUrlRequestJob::UrlNotFound);
       return;
    }

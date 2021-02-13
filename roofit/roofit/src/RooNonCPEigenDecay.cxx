@@ -46,7 +46,6 @@ where Q denotes the charge of the \f$\rho\f$ meson.
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include "RooRealVar.h"
 #include "RooRandom.h"
 #include "RooNonCPEigenDecay.h"

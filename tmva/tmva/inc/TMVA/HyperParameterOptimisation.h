@@ -7,6 +7,8 @@
 
 
 #include "TString.h"
+#include <vector>
+#include <map>
 
 #include "TMultiGraph.h"
 

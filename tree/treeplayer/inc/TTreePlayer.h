@@ -79,8 +79,8 @@ public:
    const char       *GetScanFileName() const {return fScanFileName;}
    TTreeFormula     *GetSelect() const    {return fSelector->GetSelect();}
    virtual Long64_t  GetSelectedRows() const {return fSelectedRows;}
-   TSelector        *GetSelector() const {return fSelector;}
-   TSelector        *GetSelectorFromFile() const {return fSelectorFromFile;}
+   virtual TSelector *GetSelector() const {return fSelector;}
+   virtual TSelector *GetSelectorFromFile() const {return fSelectorFromFile;}
    // See TSelectorDraw::GetVar
    TTreeFormula     *GetVar(Int_t i) const {return fSelector->GetVar(i);};
    // See TSelectorDraw::GetVar

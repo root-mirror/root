@@ -41,6 +41,8 @@
 
 #include "TMVA/VariableTransformBase.h"
 
+#include <vector>
+
 namespace TMVA {
 
    class VariablePCATransform : public VariableTransformBase {

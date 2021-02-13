@@ -12,12 +12,12 @@
 #ifndef ROOT_TGeoPatternFinder
 #define ROOT_TGeoPatternFinder
 
-#include <mutex>
-
 #include "TObject.h"
 
-#include "TGeoVolume.h"
+#include <mutex>
+#include <vector>
 
+#include "TGeoVolume.h"
 
 class TGeoMatrix;
 
@@ -40,8 +40,8 @@ public:
       ThreadData_t();
       ~ThreadData_t();
    private:
-      ThreadData_t(const ThreadData_t&); // Not implemented
-      ThreadData_t& operator=(const ThreadData_t&); // Not implemented
+      ThreadData_t(const ThreadData_t&) = delete;
+      ThreadData_t& operator=(const ThreadData_t&) = delete;
    };
    ThreadData_t& GetThreadData()   const;
    void          ClearThreadData() const;
@@ -62,7 +62,7 @@ protected :
    mutable std::vector<ThreadData_t*> fThreadData; //! Vector of thread private transient data
    mutable Int_t                      fThreadSize; //! Size of the thread vector
    mutable std::mutex                 fMutex;      //! Mutex for thread data
-   
+
 protected:
    TGeoPatternFinder(const TGeoPatternFinder&);
    TGeoPatternFinder& operator=(const TGeoPatternFinder&);
@@ -501,8 +501,8 @@ private:
    Double_t           *fSinCos = nullptr;         //! Sincos table
 
 protected:
-   TGeoPatternSphPhi(const TGeoPatternSphPhi& pfc); // Not implemented
-   TGeoPatternSphPhi& operator=(const TGeoPatternSphPhi& pfc); // Not implemented
+   TGeoPatternSphPhi(const TGeoPatternSphPhi& pfc) = delete;
+   TGeoPatternSphPhi& operator=(const TGeoPatternSphPhi& pfc) = delete;
    Double_t           *CreateSinCos();
 public:
    // constructors

@@ -15,28 +15,29 @@
  *****************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////////
+/// \class RooAddModel
 ///
 /// RooAddModel is an efficient implementation of a sum of PDFs of the form
 /// \f[
-///  c_1*\mathrm{PDF}_1 + c_2*\mathrm{PDF}_2 + ... c_n*\mathrm{PDF}_n
-/// \]f
+///  c_1 \cdot \mathrm{PDF}_1 + c_2 \cdot \mathrm{PDF}_2 + ... + c_n \cdot \mathrm{PDF}_n
+/// \f]
 /// or
 /// \f[
-///  c_1*\mathrm{PDF}_1 + c_2*\mathrm{PDF}_2 + ... (1-\sum(c_1, \ldots, c_{n-1}))*\mathrm{PDF}_n
-///
+///  c_1 \cdot \mathrm{PDF}_1 + c_2 \cdot \mathrm{PDF}_2 + ... + \left( 1-\sum_{i=1}^{n-1} c_i \right) \cdot \mathrm{PDF}_n
+/// \f]
 /// The first form is for extended likelihood fits, where the
 /// expected number of events is \f$ \sum_i c_i \f$. The coefficients \f$ c_i \f$
 /// can either be explicitly provided, or, if all components support
-/// extended likelihood fits, they can be calculated the contribution
+/// extended likelihood fits, they can be calculated from the contribution
 /// of each PDF to the total number of expected events.
 ///
 /// In the second form, the sum of the coefficients is enforced to be one,
 /// and the coefficient of the last PDF is calculated from that condition.
 ///
-/// RooAddPdf relies on each component PDF to be normalized and will perform
+/// RooAddModel relies on each component PDF to be normalized, and will perform
 /// no normalization other than calculating the proper last coefficient \f$ c_n \f$, if requested.
 /// An (enforced) condition for this assumption is that each \f$ \mathrm{PDF}_i \f$ is independent
-/// of each coefficient i.
+/// of each coefficient \f$ i \f$.
 ///
 ///
 
@@ -82,7 +83,7 @@ RooAddModel::RooAddModel() :
 /// The number of coefficients must be either equal to the number of PDFs,
 /// in which case extended MLL fitting is enabled, or be one less.
 ///
-/// All PDFs must inherit from RooAbsPdf. All coefficients must inherit from RooAbsReal
+/// All PDFs must inherit from RooAbsPdf. All coefficients must inherit from RooAbsReal.
 
 RooAddModel::RooAddModel(const char *name, const char *title, const RooArgList& inPdfList, const RooArgList& inCoefList, Bool_t ownPdfList) :
   RooResolutionModel(name,title,((RooResolutionModel*)inPdfList.at(0))->convVar()),
@@ -189,7 +190,7 @@ RooAddModel::~RooAddModel()
 /// By default the interpretation of the fraction coefficients is
 /// performed in the contextual choice of observables. This makes the
 /// shape of the p.d.f explicitly dependent on the choice of
-/// observables. This method instructs RooAddPdf to freeze the
+/// observables. This method instructs RooAddModel to freeze the
 /// interpretation of the coefficients to be done in the given set of
 /// observables. If frozen, fractions are automatically transformed
 /// from the reference normalization set to the contextual normalization
@@ -213,10 +214,10 @@ void RooAddModel::fixCoefNormalization(const RooArgSet& refCoefNorm)
 
 ////////////////////////////////////////////////////////////////////////////////
 /// By default the interpretation of the fraction coefficients is
-/// performed in the default range. This make the shape of a RooAddPdf
+/// performed in the default range. This make the shape of a RooAddModel
 /// explicitly dependent on the range of the observables. To allow
 /// a range independent definition of the fraction this function
-/// instructs RooAddPdf to freeze its interpretation in the given
+/// instructs RooAddModel to freeze its interpretation in the given
 /// named range. If the current normalization range is different
 /// from the reference range, the appropriate fraction coefficients
 /// are automically calculation from the reference fractions using
@@ -852,7 +853,7 @@ void RooAddModel::selectNormalizationRange(const char* rangeName, Bool_t force)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Return specialized context to efficiently generate toy events from RooAddPdfs
+/// Return specialized context to efficiently generate toy events from RooAddModels.
 
 RooAbsGenContext* RooAddModel::genContext(const RooArgSet &vars, const RooDataSet *prototype, 
 					const RooArgSet* auxProto, Bool_t verbose) const 

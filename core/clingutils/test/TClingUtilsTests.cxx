@@ -1,4 +1,4 @@
-/// \file TClingUtilsTest.cxx
+/// \file TClingUtilsTests.cxx
 ///
 /// \brief The file contain unit tests which test the TClingUtils.h
 ///

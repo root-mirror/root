@@ -38,20 +38,20 @@ private:
    Double_t                fB[3]; // Magnetic field vector
 
 protected:
-   TGeoUniformMagField(const TGeoUniformMagField&);
-   TGeoUniformMagField& operator=(const TGeoUniformMagField&);
+   TGeoUniformMagField(const TGeoUniformMagField&) = delete;
+   TGeoUniformMagField& operator=(const TGeoUniformMagField&) = delete;
 
 public:
    TGeoUniformMagField();
    TGeoUniformMagField(Double_t Bx, Double_t By, Double_t Bz);
    virtual ~TGeoUniformMagField() {}
 
-   void            Field(const Double_t * /*x*/, Double_t *B) {B[0]=fB[0]; B[1]=fB[1]; B[2]=fB[2];}
+   void            Field(const Double_t * /*x*/, Double_t *B) override {B[0]=fB[0]; B[1]=fB[1]; B[2]=fB[2];}
 
    const Double_t *GetFieldValue() const { return &fB[0]; }
    void            SetFieldValue(Double_t Bx, Double_t By, Double_t Bz) {fB[0]=Bx; fB[1]=By; fB[2]=Bz;}
 
-   ClassDef(TGeoUniformMagField, 1)  // Uniform magnetic field
+   ClassDefOverride(TGeoUniformMagField, 1)  // Uniform magnetic field
 };
 
 #endif

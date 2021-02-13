@@ -1,9 +1,7 @@
-<!--  this file used for ROOT7 Canvas display -->
 <!DOCTYPE html>
 <html lang="en">
    <head>
       <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <title>Example of web socket usage with THttpServer</title>
    </head>
 
@@ -14,9 +12,9 @@
 
    <script type='text/javascript'>
 
-      var path = window.location.href;
+      let path = window.location.href;
       path = path.replace("http://", "ws://") + "root.websocket";
-      var cnt  = 0;
+      let cnt  = 0;
 
       function show(str) {
          document.getElementById('LogDiv').insertAdjacentHTML( 'beforeend', '<text>' + str + '</text><br/>');
@@ -24,7 +22,7 @@
       }
 
       console.log('starting socket ' + path);
-      var socket = new WebSocket(path);
+      let socket = new WebSocket(path);
 
       socket.onopen = function() {
          show('websocket initialized');
@@ -33,7 +31,7 @@
       }
 
       socket.onmessage = function(e) {
-         var msg = e.data;
+         let msg = e.data;
          if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
 
          show('get: ' + msg);
@@ -50,8 +48,8 @@
          show('websocket error' + err);
       }
 
-      // sends data every 5 seconds
-      setInterval(function() {
+      // sends data every second
+      setInterval(() => {
          if (socket._ready) socket.send("Client time " + new Date().toTimeString() + " client counter:" + (cnt++));
       }, 1000);
 

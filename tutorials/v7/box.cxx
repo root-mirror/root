@@ -26,14 +26,14 @@ void box()
    auto canvas = RCanvas::Create("Canvas Title");
 
    auto Box1 = canvas->Draw<RBox>(RPadPos(0.1_normal, 0.3_normal), RPadPos(0.3_normal,0.6_normal));
-   RColor Color1(255, 0, 0, 0.5); // 50% opaque
-   RColor Color2(0, 0, 255, 0.3); // 30% opaque
+   RColor Color1(0, 255, 0, 0.5); // 50% opaque
+   RColor Color2(0, 0, 255, 0.7); // 70% opaque
 
    Box1->AttrBox().AttrBorder().SetColor(Color1).SetWidth(5);
    Box1->AttrBox().AttrFill().SetColor(RColor::kRed);
 
    auto Box2 = canvas->Draw<RBox>(RPadPos(0.4_normal, 0.2_normal), RPadPos(0.6_normal,0.7_normal));
-   Box2->AttrBox().AttrBorder().SetColor(Color2).SetStyle(2).SetWidth(3);
+   Box2->AttrBox().AttrBorder().SetColor(Color2).SetStyle(2).SetWidth(10);
    Box2->AttrBox().AttrFill().SetColor(RColor::kGreen);
 
    auto Box3 = canvas->Draw<RBox>(RPadPos(0.7_normal, 0.4_normal), RPadPos(0.9_normal,0.6_normal));

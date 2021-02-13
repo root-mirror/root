@@ -18,6 +18,7 @@
 
 #include <list>
 #include <map>
+#include <string>
 
 class TGCanvas;
 class TGListTree;

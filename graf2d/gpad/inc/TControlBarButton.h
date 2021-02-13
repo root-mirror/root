@@ -12,11 +12,7 @@
 #ifndef ROOT_TControlBarButton
 #define ROOT_TControlBarButton
 
-
-#include "Rtypes.h"
-
 #include "TNamed.h"
-
 
 class TControlBarButton : public TNamed {
 

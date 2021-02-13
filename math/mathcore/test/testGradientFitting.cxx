@@ -7,6 +7,7 @@
 #include "HFitInterface.h"
 #include "TH2.h"
 #include "TF2.h"
+#include "TROOT.h"
 #include "TRandom.h"
 
 #include "gtest/gtest.h"
@@ -42,12 +43,12 @@ public:
    {
       if (p == nullptr) {
          ParameterGradient(x, fParameters, grad);
-         return; 
+         return;
       }
       T xx = (1. - x[0] );
-      T yy = (1. - x[1] ); 
+      T yy = (1. - x[1] );
       T fval = FVal(x,p);
-      grad[0] =  fval / fIntegral;  
+      grad[0] =  fval / fIntegral;
       grad[1] =  p[0] * ( xx / fIntegral - fval / (2. * fIntegral * fIntegral ) );
       grad[2] =  p[0] * ( xx * xx / fIntegral -  fval / (3. * fIntegral * fIntegral ) );
       grad[3] =  p[0] * ( yy / fIntegral - fval / (2. * fIntegral * fIntegral ) );
@@ -57,7 +58,7 @@ public:
    // return integral in interval {0,1}{0,1}
    double Integral(const double * p)
    {
-      return 1. +  (p[1] + p[3] )/ 2. + (p[2] + p[4] )/ 3.; 
+      return 1. +  (p[1] + p[3] )/ 2. + (p[2] + p[4] )/ 3.;
    }
 
 private:
@@ -66,16 +67,16 @@ private:
    {
       // use a function based on Bernstein polynomial which have easy normalization
       T xx = (1. - x[0] );
-      T yy = (1. - x[1] ); 
+      T yy = (1. - x[1] );
       T fval =  1. + p[1] * xx + p[2] * xx * xx + p[3] * yy + p[4] * yy * yy;
-      return fval; 
+      return fval;
    }
 
    T DoEvalPar(const T *x, const double *p) const
    {
-      if (p == nullptr) 
-         return DoEvalPar(x, fParameters); 
-      return p[0] * FVal(x,p) / fIntegral; 
+      if (p == nullptr)
+         return DoEvalPar(x, fParameters);
+      return p[0] * FVal(x,p) / fIntegral;
    }
 
    T DoParameterDerivative(const T *x, const double *p, unsigned int ipar) const
@@ -86,7 +87,7 @@ private:
    }
 
    double fParameters[5] = {0,0,0,0,0};
-   double fIntegral = 1.0; 
+   double fIntegral = 1.0;
 };
 
 struct LikelihoodFitType {};
@@ -96,7 +97,7 @@ template <typename U, typename V, typename F>
 struct GradientFittingTestTraits {
    using DataType = U;
    using FittingDataType = V;
-   using FitType = F; 
+   using FitType = F;
 };
 
 // Typedefs of GradientTestTraits for scalar (binned and unbinned) data
@@ -111,7 +112,7 @@ using VectorialBinned = GradientFittingTestTraits<ROOT::Double_v, ROOT::Fit::Bin
 using VectorialUnBinned = GradientFittingTestTraits<ROOT::Double_v, ROOT::Fit::UnBinData, LikelihoodFitType>;
 #endif
 
-int printLevel = 0; 
+int printLevel = 0;
 
 template <class T>
 class GradientFittingTest : public ::testing::Test {
@@ -150,7 +151,7 @@ protected:
          fHistogram->Fill(x, y);
       }
 
-   
+
       // Create the function
       GradFunc2D<typename T::DataType> function;
 
@@ -202,8 +203,8 @@ protected:
       }
 
       // for unbin data we need to fix the overall normalization parameter
-      fFitter.Config().ParamsSettings()[0].SetValue(1); 
-      fFitter.Config().ParamsSettings()[0].Fix(); 
+      fFitter.Config().ParamsSettings()[0].SetValue(1);
+      fFitter.Config().ParamsSettings()[0].Fix();
    }
 
 
@@ -215,7 +216,7 @@ protected:
    {
       std::cout << "Doing a binned likelihood Fit " << std::endl;
       // the fit is extended in case of bin data types
-      bool extended = std::is_same<ROOT::Fit::BinData,typename T::FittingDataType>::value; 
+      bool extended = std::is_same<ROOT::Fit::BinData,typename T::FittingDataType>::value;
       fFitter.LikelihoodFit(*fData, extended,  fExecutionPolicy);
    }
 
@@ -230,15 +231,15 @@ protected:
 
    // function actually running the test.
    // We define here the condition to say that the test is valid
-   bool RunFit(ROOT::Fit::ExecutionPolicy executionPolicy) {
+   bool RunFit(ROOT::EExecutionPolicy executionPolicy) {
       fExecutionPolicy = executionPolicy;
-      if (printLevel>0) { 
+      if (printLevel>0) {
          std::cout << "**************************************\n";
-         if (fExecutionPolicy == ROOT::Fit::ExecutionPolicy::kSerial)
+         if (fExecutionPolicy == ROOT::EExecutionPolicy::kSequential)
             std::cout << "   RUN SEQUENTIAL \n";
-         else if (fExecutionPolicy == ROOT::Fit::ExecutionPolicy::kMultithread)
+         else if (fExecutionPolicy == ROOT::EExecutionPolicy::kMultiThread)
             std::cout << "   RUN MULTI-THREAD \n";
-         else if (fExecutionPolicy == ROOT::Fit::ExecutionPolicy::kMultiprocess)
+         else if (fExecutionPolicy == ROOT::EExecutionPolicy::kMultiProcess)
             std::cout << "   RUN MULTI-PROCESS \n";
 
          std::cout << "**************************************\n";
@@ -248,12 +249,12 @@ protected:
       return (fFitter.Result().IsValid() && fFitter.Result().Edm() < 0.001);
    }
 
-   
+
    TF2 *fFunction;
    typename T::FittingDataType *fData;
    TH2D *fHistogram;
    ROOT::Fit::Fitter fFitter;
-   ROOT::Fit::ExecutionPolicy fExecutionPolicy = ROOT::Fit::ExecutionPolicy::kSerial; 
+   ROOT::EExecutionPolicy fExecutionPolicy = ROOT::EExecutionPolicy::kSequential;
    static const unsigned fNumPoints = 401;
 };
 
@@ -269,27 +270,27 @@ typedef ::testing::Types<ScalarChi2, ScalarBinned, ScalarUnBinned> TestTypes;
 
 
 // Declare that the GradientFittingTest class should be instantiated with the types defined by TestTypes
-TYPED_TEST_CASE_P(GradientFittingTest);
+TYPED_TEST_SUITE_P(GradientFittingTest);
 
 // Test the fitting using the gradient is successful
 TYPED_TEST_P(GradientFittingTest, Sequential)
 {
-   EXPECT_TRUE(TestFixture::RunFit(ROOT::Fit::ExecutionPolicy::kSerial));
+   EXPECT_TRUE(TestFixture::RunFit(ROOT::EExecutionPolicy::kSequential));
 }
 
 TYPED_TEST_P(GradientFittingTest, Multithread)
 {
-   EXPECT_TRUE(TestFixture::RunFit(ROOT::Fit::ExecutionPolicy::kMultithread));
+   EXPECT_TRUE(TestFixture::RunFit(ROOT::EExecutionPolicy::kMultiThread));
 }
 
-REGISTER_TYPED_TEST_CASE_P(GradientFittingTest,Sequential,Multithread);
+REGISTER_TYPED_TEST_SUITE_P(GradientFittingTest,Sequential,Multithread);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GradientFitting, GradientFittingTest, TestTypes); 
+INSTANTIATE_TYPED_TEST_SUITE_P(GradientFitting, GradientFittingTest, TestTypes);
 
 int main(int argc, char** argv) {
 
-// Disables elapsed time by default.
-  //::testing::GTEST_FLAG(print_time) = false;
+   // Disables elapsed time by default.
+   //::testing::GTEST_FLAG(print_time) = false;
 
    // Parse command line arguments
    for (Int_t i = 1 ;  i < argc ; i++) {
@@ -305,9 +306,9 @@ int main(int argc, char** argv) {
          printLevel = 3;
       }
    }
- 
+
   // This allows the user to override the flag on the command line.
-  ::testing::InitGoogleTest(&argc, argv); 
+  ::testing::InitGoogleTest(&argc, argv);
 
   return RUN_ALL_TESTS();
 }

@@ -23,8 +23,8 @@ class RooExtendPdf : public RooAbsPdf {
 public:
 
   RooExtendPdf() ;
-  RooExtendPdf(const char *name, const char *title, const RooAbsPdf& pdf, 
-	       const RooAbsReal& norm, const char* rangeName=0) ;
+  RooExtendPdf(const char *name, const char *title, RooAbsPdf& pdf,
+	       RooAbsReal& norm, const char* rangeName=0) ;
   RooExtendPdf(const RooExtendPdf& other, const char* name=0) ;
   virtual TObject* clone(const char* newname) const { return new RooExtendPdf(*this,newname) ; }
   virtual ~RooExtendPdf() ;
@@ -34,11 +34,11 @@ public:
   Bool_t forceAnalyticalInt(const RooAbsArg& /*dep*/) const { return kTRUE ; }
   Int_t getAnalyticalIntegralWN(RooArgSet& allVars, RooArgSet& analVars, const RooArgSet* normSet, const char* rangeName=0) const {
     // Forward determination of analytical integration capabilities to input p.d.f
-    return ((RooAbsPdf&)_pdf.arg()).getAnalyticalIntegralWN(allVars, analVars, normSet, rangeName) ;
+    return _pdf->getAnalyticalIntegralWN(allVars, analVars, normSet, rangeName) ;
   }
   Double_t analyticalIntegralWN(Int_t code, const RooArgSet* normSet, const char* rangeName=0) const {
     // Forward calculation of analytical integrals to input p.d.f
-    return ((RooAbsPdf&)_pdf.arg()).analyticalIntegralWN(code, normSet, rangeName) ;
+    return _pdf->analyticalIntegralWN(code, normSet, rangeName) ;
   }
   
   virtual Bool_t selfNormalized() const { return kTRUE ; }
@@ -49,12 +49,12 @@ public:
 
 protected:
 
-  RooRealProxy _pdf ;        // Input p.d.f
-  RooRealProxy _n ;          // Number of expected events
+  RooTemplateProxy<RooAbsPdf>  _pdf;        // Input p.d.f
+  RooTemplateProxy<RooAbsReal> _n;          // Number of expected events
   const TNamed* _rangeName ; // Name of subset range
 
 
-  ClassDef(RooExtendPdf,1) // Wrapper p.d.f adding an extended likelihood term to an existing p.d.f
+  ClassDef(RooExtendPdf,2) // Wrapper p.d.f adding an extended likelihood term to an existing p.d.f
 };
 
 #endif

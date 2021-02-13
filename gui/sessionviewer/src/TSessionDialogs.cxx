@@ -31,19 +31,18 @@
 #include "TGNumberEntry.h"
 #include "TGLabel.h"
 #include "TGListView.h"
-#include "TGPicture.h"
 #include "TGFSContainer.h"
 #include "TGFileDialog.h"
 #include "TGListTree.h"
 #include "TInterpreter.h"
 #include "TApplication.h"
-#include "TKey.h"
+#include "TObjString.h"
 #include "TGTableLayout.h"
-#include "TGFileDialog.h"
 #include "TProof.h"
 #include "TFileInfo.h"
 #include "TGMsgBox.h"
 #include "TRegexp.h"
+#include "TVirtualX.h"
 
 ClassImp(TNewChainDlg);
 ClassImp(TNewQueryDlg);
@@ -1216,17 +1215,20 @@ void TUploadDataSetDlg::UploadDataSet()
    const char *dsetName = fDSetName->GetText();
    const char *destination = fDestinationURL->GetText();
    UInt_t flags = 0;
-   TList *skippedFiles = new TList();
-   TList *datasetFiles = new TList();
 
    if (fUploading)
       return;
+
    if (!fViewer->GetActDesc()->fConnected ||
        !fViewer->GetActDesc()->fAttached ||
        !fViewer->GetActDesc()->fProof ||
        !fViewer->GetActDesc()->fProof->IsValid()) {
       return;
    }
+
+   TList *skippedFiles = new TList();
+   TList *datasetFiles = new TList();
+
    // Format upload flags with user selection
    if (fOverwriteDSet->IsOn())
       flags |= TProof::kOverwriteDataSet;

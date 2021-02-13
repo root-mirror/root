@@ -23,12 +23,13 @@
 
 #include "TNamed.h"
 
-#include "TF1.h"
+#include "TCollection.h"
 
 class TH1F;
 class TAxis;
 class TBrowser;
 class TGraph;
+class TF1;
 
 #include "TFitResultPtr.h"
 

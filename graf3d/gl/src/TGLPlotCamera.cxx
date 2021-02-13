@@ -10,7 +10,6 @@
  *************************************************************************/
 #include "TGLPlotCamera.h"
 #include "TGLIncludes.h"
-#include "TVirtualGL.h"
 #include "TGLUtil.h"
 
 /** \class TGLPlotCamera

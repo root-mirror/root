@@ -30,21 +30,20 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-
+#include "ROOT/RLogger.hxx"
 #include "TDavixFile.h"
 #include "TROOT.h"
 #include "TSocket.h"
 #include "Bytes.h"
 #include "TError.h"
-#include "TSystem.h"
 #include "TEnv.h"
 #include "TBase64.h"
 #include "TVirtualPerfStats.h"
 #include "TDavixFileInternal.h"
-#include "TSocket.h"
+#include "snprintf.h"
 
-#include <errno.h>
-#include <stdlib.h>
+#include <cerrno>
+#include <cstdlib>
 #include <unistd.h>
 #include <fcntl.h>
 #include <davix.hpp>
@@ -80,6 +79,13 @@ const char* open_mode_update = "UPDATE";
 static TMutex createLock;
 static Context* davix_context_s = NULL;
 
+////////////////////////////////////////////////////////////////////////////////
+
+ROOT::Experimental::RLogChannel &TDavixLogChannel()
+{
+   static ROOT::Experimental::RLogChannel sLog("ROOT.TDavix");
+   return sLog;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -141,6 +147,113 @@ static void ConfigureDavixLogLevel()
          davix_set_log_level(DAVIX_LOG_ALL);
          break;
    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool normalizeToken(const std::string &input_token, std::string &output_token)
+{
+   static const std::string whitespace = " \t\f\n\v\r";
+   // Tokens are meant for use in an HTTP header; these are forbidden
+   // characters.
+   static const std::string nonheader_whitespace = "\r\n";
+   auto begin = input_token.find_first_not_of(whitespace);
+   // No token here, but not an error.
+   if (begin == std::string::npos) {
+       output_token = "";
+       return true;
+   }
+
+   std::string token = input_token.substr(begin);
+   auto end = token.find_last_not_of(whitespace);
+   token = token.substr(0, end + 1);
+
+   // If non-permitted header characters are present ("\r\n"),
+   // then this token is not permitted.
+   if (token.find(nonheader_whitespace) != std::string::npos) {
+       output_token = "";
+       R__LOG_ERROR(TDavixLogChannel()) << "Token discovery failure: token contains non-permitted character sequence (\\r\\n)";
+       return false;
+   }
+   output_token = token;
+   return true;
+}
+
+bool findTokenInFile(const std::string &token_file, std::string &output_token)
+{
+   R__LOG_INFO(TDavixLogChannel()) << "Looking for token in file " << token_file.c_str();
+   int fd = open(token_file.c_str(), O_RDONLY);
+   if (fd == -1) {
+      output_token = "";
+      if (errno == ENOENT) {
+         return true;
+      }
+      R__LOG_ERROR(TDavixLogChannel()) << "Cannot open '" << token_file << "', error: " << strerror(errno);
+      return false;
+   }
+
+   // As a pragmatic matter, we limit tokens to 16KB; this is often the limit
+   // in size of HTTP headers for many web servers.
+   // This also avoids unbounded memory use in case if the user points us to
+   // a large file.
+   static const size_t max_size = 16384;
+   std::vector<char> input_buffer;
+   input_buffer.resize(max_size);
+   ssize_t retval = read(fd, &input_buffer[0], max_size);
+   close(fd);
+
+   if (retval == -1) {
+      output_token = "";
+      R__LOG_ERROR(TDavixLogChannel()) << "Token discovery failure: failed to read file " << token_file.c_str() << "', error: " << strerror(errno);
+      return false;
+   }
+   if (retval == 16384) {
+      // Token may have been truncated!  Erring on the side of caution.
+      R__LOG_ERROR(TDavixLogChannel()) << "Token discovery failure: token was larger than 16KB limit.";
+      return false;
+   }
+
+   std::string token(&input_buffer[0], retval);
+
+   return normalizeToken(token, output_token);
+}
+
+// Token discovery process is based on WLCG specification:
+// https://github.com/WLCG-AuthZ-WG/bearer-token-discovery/blob/master/specification.md
+std::string DiscoverToken()
+{
+   const char *bearer_token = getenv("BEARER_TOKEN");
+   std::string token;
+   if (bearer_token && *bearer_token){
+      if (!normalizeToken(bearer_token, token)) {return "";}
+      if (!token.empty()) {return token;}
+   }
+
+   const char *bearer_token_file = getenv("BEARER_TOKEN_FILE");
+   if (bearer_token_file) {
+      if (!findTokenInFile(bearer_token_file, token)) {return "";}
+      if (!token.empty()) {return token;}
+   }
+
+#ifndef WIN32
+   uid_t euid = geteuid();
+   std::string fname = "/bt_u";
+   fname += std::to_string(euid);
+
+   const char *xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
+   if (xdg_runtime_dir) {
+      std::string xdg_token_file = std::string(xdg_runtime_dir) + fname;
+      if (!findTokenInFile(xdg_token_file, token)) {return "";}
+      if (!token.empty()) {return token;}
+   }
+
+   if (!findTokenInFile("/tmp" + fname, token)) {return "";}
+   return token;
+#else
+   // WLCG profile doesn't define search paths on Windows;
+   // skip this for now.
+   return "";
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -412,11 +525,20 @@ void TDavixFileInternal::parseConfig()
       if (gDebug > 0)
          Info("parseConfig", "Add CAdir: %s", env_var);
    }
+
    // CA Check
    bool ca_check_local = !isno(gEnv->GetValue("Davix.GSI.CACheck", (const char *)"y"));
    davixParam->setSSLCAcheck(ca_check_local);
    if (gDebug > 0)
       Info("parseConfig", "Setting CAcheck to %s", ((ca_check_local) ? ("true") : ("false")));
+
+   // WLCG Bearer tokens check
+   std::string prefix = "Bearer ";
+   auto token = DiscoverToken();
+   if (token.c_str()) {
+      // header: "Authorization: Bearer mytoken"
+      davixParam->addHeader("Authorization", prefix + token);
+   }
 
    // S3 Auth
    if (((env_var = gEnv->GetValue("Davix.S3.SecretKey", getenv("S3_SECRET_KEY"))) != NULL)

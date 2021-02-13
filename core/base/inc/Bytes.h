@@ -32,11 +32,9 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
-#ifndef __CINT__
-#include <string.h>
-#endif
+#include <cstring>
 
 #if (defined(__linux) || defined(__APPLE__)) && \
     (defined(__i386__) || defined(__x86_64__)) && \

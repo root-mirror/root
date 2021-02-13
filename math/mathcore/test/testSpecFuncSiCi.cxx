@@ -1,4 +1,4 @@
-#include "Math/SpecFunc.h"
+#include "Math/SpecFuncMathCore.h"
 #include <iostream>
 #include <cmath>
 

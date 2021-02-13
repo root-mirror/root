@@ -44,8 +44,8 @@ private:
    THashTable fOverloads; // TLists of overloads.
    ULong64_t  fLastLoadMarker; // Represent interpreter state when we last did a full load.
 
-   TListOfFunctionTemplates(const TListOfFunctionTemplates&);              // not implemented
-   TListOfFunctionTemplates& operator=(const TListOfFunctionTemplates&);   // not implemented
+   TListOfFunctionTemplates(const TListOfFunctionTemplates&) = delete;
+   TListOfFunctionTemplates& operator=(const TListOfFunctionTemplates&) = delete;
    TList     *GetListForObjectNonConst(const char* name);
 
    void       MapObject(TObject *obj);

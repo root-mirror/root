@@ -48,6 +48,7 @@ update_path PYTHONPATH "$old_rootsys" "/lib" @libdir@
 update_path MANPATH "$old_rootsys" "/man" @mandir@
 update_path CMAKE_PREFIX_PATH "$old_rootsys" "" $ROOTSYS
 update_path JUPYTER_PATH "$old_rootsys" "/etc/notebook" ROOTSYS/etc/notebook
+update_path JUPYTER_CONFIG_DIR "$old_rootsys" "/etc/notebook" ROOTSYS/etc/notebook
 
 # Prevent Cppyy from checking the PCH (and avoid warning)
 set -xg CLING_STANDARD_PCH none

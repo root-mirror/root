@@ -21,7 +21,7 @@
 #include "TAdvancedGraphicsDialog.h"
 #include "TGraph.h"
 #include "TAxis.h"
-#include "TPad.h"
+#include "TVirtualPad.h"
 #include "TColor.h"
 
 #include "Fit/BinData.h"

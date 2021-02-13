@@ -8,7 +8,7 @@
 /// TF1::SetVectorized
 ///
 /// \macro_image
-/// \macro output
+/// \macro_output
 /// \macro_code
 ///
 /// \author Lorenzo Moneta

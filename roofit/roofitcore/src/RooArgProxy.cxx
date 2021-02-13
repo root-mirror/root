@@ -17,7 +17,6 @@
 #include "RooFit.h"
 
 #include "RooArgProxy.h"
-#include "RooArgProxy.h"
 #include "RooArgSet.h"
 #include "RooAbsArg.h"
 #include <iostream>
@@ -28,15 +27,15 @@ using namespace std ;
 \class RooArgProxy
 \ingroup Roofitcore
 
-RooArgProxy is the abstact interface for RooAbsArg proxy classes.
+RooArgProxy is the abstract interface for RooAbsArg proxy classes.
 A RooArgProxy is the general mechanism to store references
-to other RooAbsArgs inside a RooAbsArg
+to other RooAbsArgs inside a RooAbsArg.
 
 Creating a RooArgProxy adds the proxied object to the proxy owners
 server list (thus receiving value/shape dirty flags from it) and
 registers itself with the owning class. The latter allows the
 owning class to change the proxied pointer when the server it
-points to gets redirected (e.g. in a copy or clone operation)
+points to gets redirected (e.g. in a copy or clone operation).
 **/
 
 
@@ -108,23 +107,30 @@ RooArgProxy::~RooArgProxy()
 
 Bool_t RooArgProxy::changePointer(const RooAbsCollection& newServerList, Bool_t nameChange, Bool_t factoryInitMode) 
 {
-  RooAbsArg* newArg ;
-  Bool_t initEmpty = _arg ? kFALSE : kTRUE ;
+  RooAbsArg* newArg = nullptr;
+  const bool initEmpty = _arg == nullptr;
+
   if (_arg) {
-    newArg= _arg->findNewServer(newServerList, nameChange);
-    if (newArg==_owner) newArg = 0 ;
+    newArg = _arg->findNewServer(newServerList, nameChange);
+    if (newArg==_owner) newArg = nullptr;
   } else if (factoryInitMode) {
     newArg = newServerList.first() ;
     _owner->addServer(*newArg,_valueServer,_shapeServer) ;
-  } else {
-    newArg = 0 ;
   }
+
   if (newArg) {
+    if (_ownArg) {
+      // We refer to an object that somebody gave to us. Now, we are not owning it, any more.
+      delete _arg;
+      _ownArg = false;
+    }
+
     _arg = newArg ;
-    _isFund = _arg->isFundamental() ;
-  }  
-  if (initEmpty && !factoryInitMode) return kTRUE ;
-  return newArg?kTRUE:kFALSE ;
+    _isFund = _arg->isFundamental();
+  }
+
+  if (initEmpty && !factoryInitMode) return true;
+  return newArg != nullptr;
 }
 
 

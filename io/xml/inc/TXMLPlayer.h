@@ -14,14 +14,13 @@
 
 #include "TObject.h"
 
-#include "TList.h"
-
 #include "TXMLSetup.h"
 
 class TStreamerInfo;
 class TStreamerElement;
 class TStreamerSTL;
 class TDataMember;
+class TList;
 
 class TXMLPlayer : public TObject {
 public:

@@ -40,7 +40,7 @@ the Clang C++ compiler, not CINT.
 
 #include <string>
 
-TClingMethodArgInfo::TClingMethodArgInfo(cling::Interpreter *interp, const TClingMethodInfo* mi) : TClingDeclInfo(mi->GetMethodDecl()), fInterp(interp), fIdx(-1) {}
+TClingMethodArgInfo::TClingMethodArgInfo(cling::Interpreter *interp, const TClingMethodInfo* mi) : TClingDeclInfo(mi->GetTargetFunctionDecl()), fInterp(interp), fIdx(-1) {}
 
 bool TClingMethodArgInfo::IsValid() const
 {
@@ -73,37 +73,8 @@ long TClingMethodArgInfo::Property() const
       property |= kIsDefault;
    }
    clang::QualType qt = pvd->getOriginalType().getCanonicalType();
-   if (qt.isConstQualified()) {
-      property |= kIsConstant;
-   }
-   while (1) {
-      if (qt->isArrayType()) {
-         qt = llvm::cast<clang::ArrayType>(qt)->getElementType();
-         continue;
-      }
-      else if (qt->isReferenceType()) {
-         property |= kIsReference;
-         qt = llvm::cast<clang::ReferenceType>(qt)->getPointeeType();
-         continue;
-      }
-      else if (qt->isPointerType()) {
-         property |= kIsPointer;
-         if (qt.isConstQualified()) {
-            property |= kIsConstPointer;
-         }
-         qt = llvm::cast<clang::PointerType>(qt)->getPointeeType();
-         continue;
-      }
-      else if (qt->isMemberPointerType()) {
-         qt = llvm::cast<clang::MemberPointerType>(qt)->getPointeeType();
-         continue;
-      }
-      break;
-   }
-   if (qt.isConstQualified()) {
-      property |= kIsConstant;
-   }
-   return property;
+
+   return TClingDeclInfo::Property(property, qt);
 }
 
 const char *TClingMethodArgInfo::DefaultValue() const

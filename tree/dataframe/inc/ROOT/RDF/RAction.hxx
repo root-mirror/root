@@ -1,7 +1,7 @@
 // Author: Enrico Guiraud, Danilo Piparo CERN  09/2018
 
 /*************************************************************************
- * Copyright (C) 1995-2018, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -11,13 +11,14 @@
 #ifndef ROOT_RACTION
 #define ROOT_RACTION
 
+#include "ROOT/RDF/ColumnReaderUtils.hxx"
 #include "ROOT/RDF/GraphNode.hxx"
 #include "ROOT/RDF/RActionBase.hxx"
-#include "ROOT/RDF/NodesUtils.hxx" // InitRDFValues
-#include "ROOT/RDF/Utils.hxx"      // ColumnNames_t
-#include "ROOT/RDF/RColumnValue.hxx"
+#include "ROOT/RDF/RColumnReaderBase.hxx"
+#include "ROOT/RDF/Utils.hxx" // ColumnNames_t, IsInternalColumn
 #include "ROOT/RDF/RLoopManager.hxx"
 
+#include <array>
 #include <cstddef> // std::size_t
 #include <memory>
 #include <string>
@@ -30,138 +31,102 @@ namespace RDF {
 namespace RDFDetail = ROOT::Detail::RDF;
 namespace RDFGraphDrawing = ROOT::Internal::RDF::GraphDrawing;
 
-// fwd declarations for RActionCRTP
 namespace GraphDrawing {
-std::shared_ptr<GraphNode> CreateDefineNode(const std::string &colName, const RDFDetail::RCustomColumnBase *columnPtr);
-bool CheckIfDefaultOrDSColumn(const std::string &name, const std::shared_ptr<RDFDetail::RCustomColumnBase> &column);
-} // ns GraphDrawing
+std::shared_ptr<GraphNode> AddDefinesToGraph(std::shared_ptr<GraphNode> node,
+                                             const RDFInternal::RBookedDefines &defines,
+                                             const std::vector<std::string> &prevNodeDefines);
+} // namespace GraphDrawing
 
-/// Unused, not instantiatable. Only the partial specialization RActionCRTP<RAction<...>> can be used.
-template <typename Dummy>
-class RActionCRTP {
-   static_assert(sizeof(Dummy) < 0, "The unspecialized version of RActionCRTP should never be instantiated");
-};
-
-/// A type-erasing wrapper around RColumnValue.
-/// Used to reduce compile time by avoiding instantiation of very large tuples and/or (std::get<N>...) fold expressions.
-class RTypeErasedColumnValue {
-   std::shared_ptr<void> fPtr; // shared_ptr correctly deletes the type-erased object
-
-public:
-   template <typename T>
-   RTypeErasedColumnValue(std::unique_ptr<RColumnValue<T>> v) : fPtr(std::move(v))
-   {
-   }
-
-   template <typename T>
-   T &Get(ULong64_t e)
-   {
-      return std::static_pointer_cast<RColumnValue<T>>(fPtr)->Get(e);
-   }
-
-   template <typename T>
-   RColumnValue<T> *Cast()
-   {
-      return static_cast<RColumnValue<T> *>(fPtr.get());
-   }
-};
-
-/// This overload is specialized to act on RTypeErasedColumnValues instead of RColumnValues.
-template <std::size_t... S, typename... ColTypes>
-void InitRDFValues(unsigned int slot, std::vector<RTypeErasedColumnValue> &values, TTreeReader *r,
-                   const ColumnNames_t &bn, const RBookedCustomColumns &customCols, std::index_sequence<S...>,
-                   ROOT::TypeTraits::TypeList<ColTypes...>, const std::array<bool, sizeof...(S)> &isTmpColumn)
-{
-   using expander = int[];
-   (void)slot; // avoid bogus 'unused parameter' warning
-   (void)r; // avoid bogus 'unused parameter' warning
-   (void)expander{(values.emplace_back(std::make_unique<RColumnValue<ColTypes>>()), 0)..., 0};
-   (void)expander{(isTmpColumn[S]
-                      ? values[S].Cast<ColTypes>()->SetTmpColumn(slot, customCols.GetColumns().at(bn.at(S)).get())
-                      : values[S].Cast<ColTypes>()->MakeProxy(r, bn.at(S)),
-                   0)...,
-                  0};
-}
-
-/// This overload is specialized to act on RTypeErasedColumnValues instead of RColumnValues.
-template <std::size_t... S, typename... ColTypes>
-void ResetRDFValueTuple(std::vector<RTypeErasedColumnValue> &values, std::index_sequence<S...>,
-                        ROOT::TypeTraits::TypeList<ColTypes...>)
-{
-   using expander = int[];
-   (void)expander{(values[S].Cast<ColTypes>()->Reset(), 0)...};
-}
-
-// fwd decl for RActionCRTP
-template <typename Helper, typename PrevDataFrame, typename ColumnTypes_t>
-class RAction;
-
-/// A common template base class for all RActions. Avoids code repetition for specializations of RActions
-/// for different helpers, implementing all of the common logic.
-template <typename Helper, typename PrevDataFrame, typename ColumnTypes_t>
-class RActionCRTP<RAction<Helper, PrevDataFrame, ColumnTypes_t>> : public RActionBase {
-   using Action_t = RAction<Helper, PrevDataFrame, ColumnTypes_t>;
+// clang-format off
+/**
+ * \class ROOT::Internal::RDF::RAction
+ * \ingroup dataframe
+ * \brief A RDataFrame node that produces a result
+ * \tparam Helper The action helper type, which implements the concrete action logic (e.g. FillHelper, SnapshotHelper)
+ * \tparam PrevDataFrame The type of the parent node in the computation graph
+ * \tparam ColumnTypes_t A TypeList with the types of the input columns
+ *
+ */
+// clang-format on
+template <typename Helper, typename PrevDataFrame, typename ColumnTypes_t = typename Helper::ColumnTypes_t>
+class R__CLING_PTRCHECK(off) RAction : public RActionBase {
+   using TypeInd_t = std::make_index_sequence<ColumnTypes_t::list_size>;
 
    Helper fHelper;
    const std::shared_ptr<PrevDataFrame> fPrevDataPtr;
    PrevDataFrame &fPrevData;
+   /// Column readers per slot and per input column
+   std::vector<std::array<std::unique_ptr<RColumnReaderBase>, ColumnTypes_t::list_size>> fValues;
 
-protected:
    /// The nth flag signals whether the nth input column is a custom column or not.
-   std::array<bool, ColumnTypes_t::list_size> fIsCustomColumn;
+   std::array<bool, ColumnTypes_t::list_size> fIsDefine;
 
 public:
-   using TypeInd_t = std::make_index_sequence<ColumnTypes_t::list_size>;
-
-   RActionCRTP(Helper &&h, const ColumnNames_t &columns, std::shared_ptr<PrevDataFrame> pd,
-               RBookedCustomColumns &&customColumns)
-      : RActionBase(pd->GetLoopManagerUnchecked(), columns, std::move(customColumns)), fHelper(std::forward<Helper>(h)),
-        fPrevDataPtr(std::move(pd)), fPrevData(*fPrevDataPtr), fIsCustomColumn()
+   RAction(Helper &&h, const ColumnNames_t &columns, std::shared_ptr<PrevDataFrame> pd, const RBookedDefines &defines)
+      : RActionBase(pd->GetLoopManagerUnchecked(), columns, defines), fHelper(std::forward<Helper>(h)),
+        fPrevDataPtr(std::move(pd)), fPrevData(*fPrevDataPtr), fValues(GetNSlots()), fIsDefine()
    {
       const auto nColumns = columns.size();
-      const auto &customCols = GetCustomColumns();
+      const auto &customCols = GetDefines();
       for (auto i = 0u; i < nColumns; ++i)
-         fIsCustomColumn[i] = customCols.HasName(columns[i]);
+         fIsDefine[i] = customCols.HasName(columns[i]);
    }
 
-   RActionCRTP(const RActionCRTP &) = delete;
-   RActionCRTP &operator=(const RActionCRTP &) = delete;
+   RAction(const RAction &) = delete;
+   RAction &operator=(const RAction &) = delete;
    // must call Deregister here, before fPrevDataFrame is destroyed,
    // otherwise if fPrevDataFrame is fLoopManager we get a use after delete
-   ~RActionCRTP() { fLoopManager->Deregister(this); }
+   ~RAction() { fLoopManager->Deregister(this); }
 
-   Helper &GetHelper() { return fHelper; }
+   /**
+      Retrieve a wrapper to the result of the action that knows how to merge
+      with others of the same type.
+   */
+   std::unique_ptr<RDFDetail::RMergeableValueBase> GetMergeableValue() const final
+   {
+      return fHelper.GetMergeableValue();
+   }
 
    void Initialize() final { fHelper.Initialize(); }
 
    void InitSlot(TTreeReader *r, unsigned int slot) final
    {
-      for (auto &bookedBranch : GetCustomColumns().GetColumns())
+      for (auto &bookedBranch : GetDefines().GetColumns())
          bookedBranch.second->InitSlot(r, slot);
-      static_cast<Action_t *>(this)->InitColumnValues(r, slot);
+      RDFInternal::RColumnReadersInfo info{RActionBase::GetColumnNames(), RActionBase::GetDefines(), fIsDefine.data(),
+                                           fLoopManager->GetDSValuePtrs(), fLoopManager->GetDataSource()};
+      fValues[slot] = RDFInternal::MakeColumnReaders(slot, r, ColumnTypes_t{}, info);
       fHelper.InitTask(r, slot);
+   }
+
+   template <typename... ColTypes, std::size_t... S>
+   void CallExec(unsigned int slot, Long64_t entry, TypeList<ColTypes...>, std::index_sequence<S...>)
+   {
+      fHelper.Exec(slot, fValues[slot][S]->template Get<ColTypes>(entry)...);
+      (void)entry; // avoid "unused parameter" warnings
    }
 
    void Run(unsigned int slot, Long64_t entry) final
    {
       // check if entry passes all filters
       if (fPrevData.CheckFilters(slot, entry))
-         static_cast<Action_t *>(this)->Exec(slot, entry, TypeInd_t());
+         CallExec(slot, entry, ColumnTypes_t{}, TypeInd_t{});
    }
 
    void TriggerChildrenCount() final { fPrevData.IncrChildrenCount(); }
 
+   /// Clean-up operations to be performed at the end of a task.
    void FinalizeSlot(unsigned int slot) final
    {
-      ClearValueReaders(slot);
-      for (auto &column : GetCustomColumns().GetColumns()) {
-         column.second->ClearValueReaders(slot);
-      }
+      for (auto &column : GetDefines().GetColumns())
+         column.second->FinaliseSlot(slot);
+      for (auto &v : fValues[slot])
+         v.reset();
       fHelper.CallFinalizeTask(slot);
    }
 
-   void ClearValueReaders(unsigned int slot) { static_cast<Action_t *>(this)->ResetColumnValues(slot, TypeInd_t()); }
-
+   /// Clean-up and finalize the action result (e.g. merging slot-local results).
+   /// It invokes the helper's Finalize method.
    void Finalize() final
    {
       fHelper.Finalize();
@@ -173,25 +138,14 @@ public:
       auto prevNode = fPrevData.GetGraph();
       auto prevColumns = prevNode->GetDefinedColumns();
 
-      // Action nodes do not need to ask an helper to create the graph nodes. They are never common nodes between
-      // multiple branches
+      // Action nodes do not need to go through CreateFilterNode: they are never common nodes between multiple branches
       auto thisNode = std::make_shared<RDFGraphDrawing::GraphNode>(fHelper.GetActionName());
-      auto evaluatedNode = thisNode;
-      for (auto &column : GetCustomColumns().GetColumns()) {
-         /* Each column that this node has but the previous hadn't has been defined in between,
-          * so it has to be built and appended. */
-         if (RDFGraphDrawing::CheckIfDefaultOrDSColumn(column.first, column.second))
-            continue;
-         if (std::find(prevColumns.begin(), prevColumns.end(), column.first) == prevColumns.end()) {
-            auto defineNode = RDFGraphDrawing::CreateDefineNode(column.first, column.second.get());
-            evaluatedNode->SetPrevNode(defineNode);
-            evaluatedNode = defineNode;
-         }
-      }
 
-      thisNode->AddDefinedColumns(GetCustomColumns().GetNames());
+      auto upmostNode = AddDefinesToGraph(thisNode, GetDefines(), prevColumns);
+
+      thisNode->AddDefinedColumns(GetDefines().GetNames());
       thisNode->SetAction(HasRun());
-      evaluatedNode->SetPrevNode(prevNode);
+      upmostNode->SetPrevNode(prevNode);
       return thisNode;
    }
 
@@ -212,131 +166,8 @@ private:
    void *PartialUpdateImpl(...) { throw std::runtime_error("This action does not support callbacks!"); }
 };
 
-/// An action node in a RDF computation graph.
-template <typename Helper, typename PrevDataFrame, typename ColumnTypes_t = typename Helper::ColumnTypes_t>
-class RAction final : public RActionCRTP<RAction<Helper, PrevDataFrame, ColumnTypes_t>> {
-   std::vector<RDFValueTuple_t<ColumnTypes_t>> fValues;
-
-public:
-   using ActionCRTP_t = RActionCRTP<RAction<Helper, PrevDataFrame, ColumnTypes_t>>;
-
-   RAction(Helper &&h, const ColumnNames_t &bl, std::shared_ptr<PrevDataFrame> pd,
-           RBookedCustomColumns &&customColumns)
-      : ActionCRTP_t(std::forward<Helper>(h), bl, std::move(pd), std::move(customColumns)), fValues(GetNSlots()) { }
-
-   void InitColumnValues(TTreeReader *r, unsigned int slot)
-   {
-      InitRDFValues(slot, fValues[slot], r, RActionBase::GetColumnNames(), RActionBase::GetCustomColumns(),
-                    typename ActionCRTP_t::TypeInd_t{}, ActionCRTP_t::fIsCustomColumn);
-   }
-
-   template <std::size_t... S>
-   void Exec(unsigned int slot, Long64_t entry, std::index_sequence<S...>)
-   {
-      (void)entry; // avoid bogus 'unused parameter' warning in gcc4.9
-      ActionCRTP_t::GetHelper().Exec(slot, std::get<S>(fValues[slot]).Get(entry)...);
-   }
-
-   template <std::size_t... S>
-   void ResetColumnValues(unsigned int slot, std::index_sequence<S...> s)
-   {
-      ResetRDFValueTuple(fValues[slot], s);
-   }
-};
-
-// These specializations let RAction<SnapshotHelper[MT]> type-erase their column values, for (presumably) a small hit in
-// performance (which hopefully be completely swallowed by the cost of I/O during the event loop) and a large,
-// measurable gain in compile time and therefore jitting time.
-// Snapshot is the action that most suffers from long compilation times because it happens to be called with dozens
-// if not with a few hundred template parameters, which pretty much never happens for other actions.
-
-// fwd decl
-template <typename... BranchTypes>
-class SnapshotHelper;
-
-template <typename... BranchTypes>
-class SnapshotHelperMT;
-
-template <typename PrevDataFrame, typename... ColTypes>
-class RAction<SnapshotHelper<ColTypes...>, PrevDataFrame, ROOT::TypeTraits::TypeList<ColTypes...>> final
-   : public RActionCRTP<RAction<SnapshotHelper<ColTypes...>, PrevDataFrame, ROOT::TypeTraits::TypeList<ColTypes...>>> {
-
-   using ActionCRTP_t =
-      RActionCRTP<RAction<SnapshotHelper<ColTypes...>, PrevDataFrame, ROOT::TypeTraits::TypeList<ColTypes...>>>;
-   using ColumnTypes_t = typename SnapshotHelper<ColTypes...>::ColumnTypes_t;
-
-   std::vector<std::vector<RTypeErasedColumnValue>> fValues;
-
-public:
-   RAction(SnapshotHelper<ColTypes...> &&h, const ColumnNames_t &bl, std::shared_ptr<PrevDataFrame> pd,
-           RBookedCustomColumns &&customColumns)
-      : ActionCRTP_t(std::forward<SnapshotHelper<ColTypes...>>(h), bl, std::move(pd), std::move(customColumns)),
-        fValues(GetNSlots())
-   {
-   }
-
-   void InitColumnValues(TTreeReader *r, unsigned int slot)
-   {
-      InitRDFValues(slot, fValues[slot], r, RActionBase::GetColumnNames(), RActionBase::GetCustomColumns(),
-                    typename ActionCRTP_t::TypeInd_t{}, ColumnTypes_t{}, ActionCRTP_t::fIsCustomColumn);
-   }
-
-   template <std::size_t... S>
-   void Exec(unsigned int slot, Long64_t entry, std::index_sequence<S...>)
-   {
-      (void)entry; // avoid bogus 'unused parameter' warning in gcc4.9
-      ActionCRTP_t::GetHelper().Exec(slot, fValues[slot][S].template Get<ColTypes>(entry)...);
-   }
-
-   template <std::size_t... S>
-   void ResetColumnValues(unsigned int slot, std::index_sequence<S...> s)
-   {
-      ResetRDFValueTuple(fValues[slot], s, ColumnTypes_t{});
-   }
-};
-
-// Same exact code as above, but for SnapshotHelperMT. I don't know how to avoid repeating this code
-template <typename PrevDataFrame, typename... ColTypes>
-class RAction<SnapshotHelperMT<ColTypes...>, PrevDataFrame, ROOT::TypeTraits::TypeList<ColTypes...>> final
-   : public RActionCRTP<
-        RAction<SnapshotHelperMT<ColTypes...>, PrevDataFrame, ROOT::TypeTraits::TypeList<ColTypes...>>> {
-
-   using ActionCRTP_t =
-      RActionCRTP<RAction<SnapshotHelperMT<ColTypes...>, PrevDataFrame, ROOT::TypeTraits::TypeList<ColTypes...>>>;
-   using ColumnTypes_t = typename SnapshotHelperMT<ColTypes...>::ColumnTypes_t;
-
-   std::vector<std::vector<RTypeErasedColumnValue>> fValues;
-
-public:
-   RAction(SnapshotHelperMT<ColTypes...> &&h, const ColumnNames_t &bl, std::shared_ptr<PrevDataFrame> pd,
-           RBookedCustomColumns &&customColumns)
-      : ActionCRTP_t(std::forward<SnapshotHelperMT<ColTypes...>>(h), bl, std::move(pd), std::move(customColumns)),
-        fValues(GetNSlots())
-   {
-   }
-
-   void InitColumnValues(TTreeReader *r, unsigned int slot)
-   {
-      InitRDFValues(slot, fValues[slot], r, RActionBase::GetColumnNames(), RActionBase::GetCustomColumns(),
-                    typename ActionCRTP_t::TypeInd_t{}, ColumnTypes_t{}, ActionCRTP_t::fIsCustomColumn);
-   }
-
-   template <std::size_t... S>
-   void Exec(unsigned int slot, Long64_t entry, std::index_sequence<S...>)
-   {
-      (void)entry; // avoid bogus 'unused parameter' warning in gcc4.9
-      ActionCRTP_t::GetHelper().Exec(slot, fValues[slot][S].template Get<ColTypes>(entry)...);
-   }
-
-   template <std::size_t... S>
-   void ResetColumnValues(unsigned int slot, std::index_sequence<S...> s)
-   {
-      ResetRDFValueTuple(fValues[slot], s, ColumnTypes_t{});
-   }
-};
-
-} // ns RDF
-} // ns Internal
-} // ns ROOT
+} // namespace RDF
+} // namespace Internal
+} // namespace ROOT
 
 #endif // ROOT_RACTION

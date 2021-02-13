@@ -15,54 +15,49 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-template<class mtype, class M, class T>
+template <class mtype, class M, class T>
 class MatrixInverse {
 
 public:
+   MatrixInverse(const M &obj) : fObject(obj) {}
 
-  MatrixInverse(const M& obj) : fObject(obj) {}
+   ~MatrixInverse() {}
 
-  ~MatrixInverse() {}
+   typedef mtype Type;
 
-  typedef mtype Type;
-
-  const M& Obj() const {return fObject;}
+   const M &Obj() const { return fObject; }
 
 private:
-
-  M fObject;
+   M fObject;
 };
 
-template<class M, class T>
+template <class M, class T>
 class MatrixInverse<vec, M, T> {
 
 private:
-
-  MatrixInverse(const M& obj) : fObject(obj) {}
+   MatrixInverse(const M &obj) : fObject(obj) {}
 
 public:
+   ~MatrixInverse() {}
 
-  ~MatrixInverse() {}
+   typedef vec Type;
 
-  typedef vec Type;
-
-  const M& Obj() const {return fObject;}
+   const M &Obj() const { return fObject; }
 
 private:
-
-  M fObject;
+   M fObject;
 };
 
-template<class mt, class M, class T>
-inline ABObj<mt, MatrixInverse<mt, ABObj<mt, M, T>, T>, T> Inverse(const ABObj<mt, M, T>& obj) {
-  return ABObj<mt, MatrixInverse<mt, ABObj<mt, M, T>, T>, T>(MatrixInverse<mt, ABObj<mt, M, T>, T>(obj));
+template <class mt, class M, class T>
+inline ABObj<mt, MatrixInverse<mt, ABObj<mt, M, T>, T>, T> Inverse(const ABObj<mt, M, T> &obj)
+{
+   return ABObj<mt, MatrixInverse<mt, ABObj<mt, M, T>, T>, T>(MatrixInverse<mt, ABObj<mt, M, T>, T>(obj));
 }
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MatrixInverse
+#endif // ROOT_Minuit2_MatrixInverse

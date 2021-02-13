@@ -25,10 +25,8 @@
 #include <vector>
 #include "TString.h"
 #include <map>
-#include "TH1D.h"
-#include <iostream>
-namespace TMVA {
 
+namespace TMVA {
 
    class TrainingHistory {
 

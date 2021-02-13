@@ -19,7 +19,7 @@ A TLeaf for a 16 bit Integer data type.
 #include "TBranch.h"
 #include "TBuffer.h"
 #include "TClonesArray.h"
-#include "Riostream.h"
+#include <iostream>
 
 ClassImp(TLeafS);
 

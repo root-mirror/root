@@ -67,20 +67,16 @@ on the test sample.
 #include "TMVA/RegressionVariance.h"
 #include "TMVA/QuickMVAProbEstimator.h"
 
-#include "Riostream.h"
 #include "TRandom3.h"
-#include "TFile.h"
 #include "TMath.h"
-#include "TObjString.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TGraph.h"
 #include "TSpline.h"
 #include "TDirectory.h"
 #include "TTree.h"
 
+#include <iostream>
 #include <algorithm>
-#include <iomanip>
 #include <vector>
 #include <cmath>
 

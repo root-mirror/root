@@ -33,12 +33,12 @@
 
 // Routines that deal with indexes
 
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cctype>
+#include <cstring>
+#include <cstdlib>
 
 #include "TGHtml.h"
-
+#include "strlcpy.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Return a pointer to the Nth TGHtmlElement in the list. If there

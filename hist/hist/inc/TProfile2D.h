@@ -28,6 +28,7 @@ class TProfile2D : public TH2D {
 
 public:
    friend class TProfileHelper;
+   friend class TH1Merger;
 
 protected:
    TArrayD     fBinEntries;      //number of entries per bin
@@ -100,9 +101,9 @@ public:
    virtual Bool_t    Divide(const TH1 *h1, const TH1 *h2, Double_t c1=1, Double_t c2=1, Option_t *option=""); // *MENU*
    virtual void      ExtendAxis(Double_t x, TAxis *axis);
    Int_t             Fill(Double_t x, Double_t y, Double_t z);
-   virtual Int_t     Fill(Double_t x, const char *namey, Double_t z);
-   virtual Int_t     Fill(const char *namex, Double_t y, Double_t z);
-   virtual Int_t     Fill(const char *namex, const char *namey, Double_t z);
+   virtual Int_t     Fill(Double_t x, const char *namey, Double_t z, Double_t w = 1.);
+   virtual Int_t     Fill(const char *namex, Double_t y, Double_t z, Double_t w = 1.);
+   virtual Int_t     Fill(const char *namex, const char *namey, Double_t z, Double_t w = 1.);
    virtual Int_t     Fill(Double_t x, Double_t y, Double_t z, Double_t w);
    virtual Double_t  GetBinContent(Int_t bin) const;
    virtual Double_t  GetBinContent(Int_t binx, Int_t biny) const {return GetBinContent(GetBin(binx,biny));}

@@ -41,6 +41,8 @@
 
 #include <vector>
 #include <memory>
+#include <map>
+
 #include "TH2.h"
 #include "TTree.h"
 #include "TMVA/MethodBase.h"

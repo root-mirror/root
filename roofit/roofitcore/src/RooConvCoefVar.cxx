@@ -28,7 +28,6 @@ RooRealIntegral integration mechanism
 #include "RooFit.h"
 
 #include "RooAbsAnaConvPdf.h"
-#include "RooAbsAnaConvPdf.h"
 #include "RooConvCoefVar.h"
 
 using namespace std;

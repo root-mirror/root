@@ -15,9 +15,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
+namespace Minuit2 {
 
 class FumiliFCNBase;
 class MnUserTransformation;
@@ -25,34 +23,29 @@ class MnUserTransformation;
 class FumiliGradientCalculator : public GradientCalculator {
 
 public:
+   FumiliGradientCalculator(const FumiliFCNBase &fcn, const MnUserTransformation &state, int n)
+      : fFcn(fcn), fTransformation(state), fHessian(MnAlgebraicSymMatrix(n))
+   {
+   }
 
-  FumiliGradientCalculator(const FumiliFCNBase& fcn, const MnUserTransformation& state, int n) :
-    fFcn(fcn),
-    fTransformation(state),
-    fHessian(MnAlgebraicSymMatrix(n) )
-  {}
+   ~FumiliGradientCalculator() {}
 
-  ~FumiliGradientCalculator() {}
+   FunctionGradient operator()(const MinimumParameters &) const;
 
-  FunctionGradient operator()(const MinimumParameters&) const;
+   FunctionGradient operator()(const MinimumParameters &, const FunctionGradient &) const;
 
-  FunctionGradient operator()(const MinimumParameters&,
-                              const FunctionGradient&) const;
+   const MnUserTransformation &Trafo() const { return fTransformation; }
 
-  const MnUserTransformation& Trafo() const {return fTransformation;}
-
-  const MnAlgebraicSymMatrix & Hessian() const { return fHessian; }
+   const MnAlgebraicSymMatrix &Hessian() const { return fHessian; }
 
 private:
-
-  const FumiliFCNBase& fFcn;
-  const MnUserTransformation& fTransformation;
-  mutable MnAlgebraicSymMatrix fHessian;
-
+   const FumiliFCNBase &fFcn;
+   const MnUserTransformation &fTransformation;
+   mutable MnAlgebraicSymMatrix fHessian;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_FumiliGradientCalculator
+#endif // ROOT_Minuit2_FumiliGradientCalculator

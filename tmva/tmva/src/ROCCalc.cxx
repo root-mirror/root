@@ -5,38 +5,32 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <errno.h>
+#include <cerrno>
 
-#include "TObjString.h"
 #include "TMath.h"
 #include "TString.h"
 #include "TTree.h"
 #include "TLeaf.h"
 #include "TH1.h"
-#include "TH2.h"
 #include "TList.h"
 #include "TSpline.h"
 #include "TVector.h"
 #include "TMatrixD.h"
 #include "TMatrixDSymEigen.h"
-#include "TVectorD.h"
 #include "TTreeFormula.h"
 #include "TXMLEngine.h"
 #include "TROOT.h"
-#include "TMatrixDSymEigen.h"
 #include "TColor.h"
+#include "TGraph.h"
+
 #include "TMVA/Config.h"
-
-
 #include "TMVA/Tools.h"
 #include "TMVA/ROCCalc.h"
-#include "TMVA/Config.h"
 #include "TMVA/Event.h"
 #include "TMVA/Version.h"
 #include "TMVA/PDF.h"
 #include "TMVA/MsgLogger.h"
 
-#include "TMVA/PDF.h"
 #include "TMVA/TSpline1.h"
 #include "TMVA/TSpline2.h"
 #include "TMVA/Types.h"

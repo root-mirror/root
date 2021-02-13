@@ -19,11 +19,13 @@
 #include "TH3.h"
 #include "TList.h"
 #include "TStyle.h"
-#include "Riostream.h"
 #include "TBrowser.h"
 #include "TMath.h"
 #include "TObjString.h"
 #include "TVirtualMutex.h"
+#include "strlcpy.h"
+
+#include <iostream>
 
 ClassImp(THStack);
 
@@ -40,17 +42,37 @@ to the drawing option.
 THStack::Add() allows to add a new histogram to the list.
 The THStack does not own the objects in the list.
 
-By default (if no option drawing option is specified), histograms will be paint
-stacked on top of each other. TH2 are stacked as lego plots.
+### <a name="HS00"></a> Stack painting
 
-If option "nostack" is specified the histograms are not drawn on top
-of each other but as they would if drawn using the option "same".
+By default, histograms are shown stacked.
+  - the first histogram is paint
+  - then the sum of the first and second, etc
 
-If option "nostackb" is specified the histograms are drawn next to
-each other as bar charts.
-
-In all cases The axis range is computed automatically along the X and Y axis in
+The axis ranges are computed automatically along the X and Y axis in
 order to show the complete histogram collection.
+
+### <a name="HS01"></a> Stack's drawing options
+
+The specific stack's drawing options are:
+
+  - **NOSTACK** If option "nostack" is specified, histograms are all painted in the same pad
+    as if the option "same" had been specified.
+
+  - **NOSTACKB** If the option "nostackb" is specified histograms are all painted in the same pad
+    next to each other as bar plots.
+
+  - **PADS** if option "pads" is specified, the current pad/canvas is subdivided into
+    a number of pads equal to the number of histograms and each histogram
+    is painted into a separate pad.
+
+  - **NOCLEAR** By default the background of the histograms is erased before drawing the
+    histograms. The option "noclear" avoid this behaviour. This is useful
+    when drawing a THStack on top of an other plot. If the patterns used to
+    draw the histograms in the stack are transparents, then the plot behind
+    will be visible.
+
+See the THistPainter class for the list of valid histograms' painting options.
+
 
 Example;
 
@@ -671,28 +693,7 @@ void THStack::Modified()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Paint the list of histograms.
-/// By default, histograms are shown stacked.
-///    - the first histogram is paint
-///    - then the sum of the first and second, etc
-///
-/// If option "nostack" is specified, histograms are all paint in the same pad
-/// as if the option "same" had been specified.
-///
-/// If the option nostackb is specified histograms are all paint in the same pad
-/// next to each other as bar plots.
-///
-/// if option "pads" is specified, the current pad/canvas is subdivided into
-/// a number of pads equal to the number of histograms and each histogram
-/// is paint into a separate pad.
-///
-/// By default the background of the histograms is erased before drawing the
-/// histograms. The option "noclear" avoid this behaviour. This is useful
-/// when drawing a THStack on top of an other plot. If the patterns used to
-/// draw the histograms in the stack are transparents, then the plot behind
-/// will be visible.
-///
-/// See THistPainter::Paint for a list of valid options.
+/// [Paint the list of histograms.](#HS00)
 
 void THStack::Paint(Option_t *choptin)
 {
@@ -797,16 +798,16 @@ void THStack::Paint(Option_t *choptin)
    }
 
    TString loption = opt;
-   char *nostack  = (char *)strstr(loption.Data(),"nostack");
-   char *nostackb = (char *)strstr(loption.Data(),"nostackb");
-   char *candle   = (char *)strstr(loption.Data(),"candle");
-   char *violin   = (char *)strstr(loption.Data(),"violin");
+   Bool_t nostack  = loption.Contains("nostack");
+   Bool_t nostackb = loption.Contains("nostackb");
+   Bool_t candle   = loption.Contains("candle");
+   Bool_t violin   = loption.Contains("violin");
 
    // do not delete the stack. Another pad may contain the same object
    // drawn in stack mode!
    //if (nostack && fStack) {fStack->Delete(); delete fStack; fStack = 0;}
 
-   if (!opt.Contains("nostack") && (!opt.Contains("candle")) && (!opt.Contains("violin"))) BuildStack();
+   if (!nostack && !candle && !violin) BuildStack();
 
    Double_t themax,themin;
    if (fMaximum == -1111) themax = GetMaximum(option);
@@ -829,7 +830,7 @@ void THStack::Paint(Option_t *choptin)
       TAxis *yaxis = h->GetYaxis();
       const TArrayD *xbins = xaxis->GetXbins();
       if (h->GetDimension() > 1) {
-         if (loption.Length()<=0) loption.Form("%s","lego1");
+         if (loption.IsNull()) loption = "lego1";
          const TArrayD *ybins = yaxis->GetXbins();
          if (xbins->fN != 0 && ybins->fN != 0) {
             fHistogram = new TH2F(GetName(),GetTitle(),
@@ -862,15 +863,21 @@ void THStack::Paint(Option_t *choptin)
       fHistogram->SetTitle(GetTitle());
    }
 
-   if (nostack)  {*nostack  = 0; strncat(nostack,nostack+7,7);}
-   if (nostackb) {*nostackb = 0; strncat(nostackb,nostackb+8,8);}
-   else fHistogram->GetPainter()->SetStack(fHists);
+   if (nostackb) {
+      loption.ReplaceAll("nostackb","");
+   } else {
+      if (nostack) loption.ReplaceAll("nostack","");
+      fHistogram->GetPainter()->SetStack(fHists);
+   }
 
    if (!fHistogram->TestBit(TH1::kIsZoomed)) {
       if (nostack && fMaximum != -1111) fHistogram->SetMaximum(fMaximum);
       else {
          if (gPad->GetLogy())           fHistogram->SetMaximum(themax*(1+0.2*TMath::Log10(themax/themin)));
-         else                           fHistogram->SetMaximum((1+gStyle->GetHistTopMargin())*themax);
+         else {
+            if (fMaximum != -1111)      fHistogram->SetMaximum(themax);
+            else                        fHistogram->SetMaximum((1+gStyle->GetHistTopMargin())*themax);
+         }
       }
       if (nostack && fMinimum != -1111) fHistogram->SetMinimum(fMinimum);
       else {

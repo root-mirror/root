@@ -9,9 +9,6 @@
 # @author Pere Mato, CERN
 ############################################################################
 
-# needed to propagate includes to rootling
-include_directories(${LIBXML2_INCLUDE_DIR} ${LIBXML2_INCLUDE_DIRS})
-
 ROOT_STANDARD_LIBRARY_PACKAGE(XMLParser
   HEADERS
      TDOMParser.h
@@ -29,6 +26,12 @@ ROOT_STANDARD_LIBRARY_PACKAGE(XMLParser
      src/TXMLParser.cxx
   DEPENDENCIES
     Core
+)
+
+# not needed to propagate includes to rootcling
+target_include_directories(XMLParser PRIVATE
+   ${LIBXML2_INCLUDE_DIR}
+   ${LIBXML2_INCLUDE_DIRS}
 )
 
 target_link_libraries(XMLParser

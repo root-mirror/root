@@ -11,11 +11,9 @@
 
 #include "TSpiderEditor.h"
 #include "TSpider.h"
-#include "TGFrame.h"
 #include "TGButton.h"
 #include "TGNumberEntry.h"
 #include "TGButtonGroup.h"
-#include <Riostream.h>
 #include "TGLabel.h"
 #include "TGPicture.h"
 #include "TGTextEntry.h"

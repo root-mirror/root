@@ -1,6 +1,8 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -draw
+/// Use callbacks to update a plot and a progress bar during the event loop.
+///
 /// Showcase registration of callback functions that act on partial results while
 /// the event-loop is running using `OnPartialResult` and `OnPartialResultSlot`.
 /// This tutorial is not meant to run in batch mode.
@@ -8,14 +10,14 @@
 /// \macro_code
 ///
 /// \date September 2017
-/// \author Enrico Guiraud
+/// \author Enrico Guiraud (CERN)
 
 using namespace ROOT; // RDataFrame lives in here
 
 void df013_InspectAnalysis()
 {
    ROOT::EnableImplicitMT();
-   const auto poolSize = ROOT::GetImplicitMTPoolSize();
+   const auto poolSize = ROOT::GetThreadPoolSize();
    const auto nSlots = 0 == poolSize ? 1 : poolSize;
 
    // ## Setup a simple RDataFrame
@@ -32,13 +34,13 @@ void df013_InspectAnalysis()
    };
 
    // Let's define a column "x" produced by invoking `heavyWork` for each event
-   // `tdf` stores a modified data-frame that contains "x"
-   auto tdf = d.Define("x", heavyWork);
+   // `df` stores a modified data-frame that contains "x"
+   auto df = d.Define("x", heavyWork);
 
    // Now we register a histogram-filling action with the RDataFrame.
    // `h` can be used just like a pointer to TH1D but it is actually a TResultProxy<TH1D>, a smart object that triggers
    // an event-loop to fill the pointee histogram if needed.
-   auto h = tdf.Histo1D<double>({"browserHisto", "", 100, -2., 2.}, "x");
+   auto h = df.Histo1D<double>({"browserHisto", "", 100, -2., 2.}, "x");
 
    // ## Use the callback mechanism to draw the histogram on a TBrowser while it is being filled
    // So far we have registered a column "x" to a data-frame with `nEvents` events and we registered the filling of a
@@ -49,8 +51,8 @@ void df013_InspectAnalysis()
    // - another callback is responsible of updating a simple progress bar from multiple threads
 
    // First off we create a TBrowser that contains a "RDFResults" directory
-   auto tdfDirectory = new TMemFile("RDFResults", "RECREATE");
-   auto browser = new TBrowser("b", tdfDirectory);
+   auto dfDirectory = new TMemFile("RDFResults", "RECREATE");
+   auto browser = new TBrowser("b", dfDirectory);
    // The global pad should now be set to the TBrowser's canvas, let's store its value in a local variable
    auto browserPad = gPad;
 
@@ -60,8 +62,8 @@ void df013_InspectAnalysis()
    // increasing number of events.
    // Instead of requesting the callback to be executed every N entries, this time we use the special value `kOnce` to
    // request that it is executed once right before starting the event-loop.
-   // The callback is a C++11 lambda that registers the partial result object in `tdfDirectory`.
-   h.OnPartialResult(h.kOnce, [tdfDirectory](TH1D &h_) { tdfDirectory->Add(&h_); });
+   // The callback is a C++11 lambda that registers the partial result object in `dfDirectory`.
+   h.OnPartialResult(h.kOnce, [dfDirectory](TH1D &h_) { dfDirectory->Add(&h_); });
    // Note that we called `OnPartialResult` with a dot, `.`, since this is a method of `TResultProxy` itself.
    // We do not want to call `OnPartialResult` on the pointee histogram!)
 
@@ -111,10 +113,10 @@ void df013_InspectAnalysis()
 
    // Finally, some book-keeping: in the TMemFile that we are using as TBrowser directory, we substitute the partial
    // result with a clone of the final result (the "original" final result will be deleted at the end of the macro).
-   tdfDirectory->Clear();
+   dfDirectory->Clear();
    auto clone = static_cast<TH1D *>(h->Clone());
    clone->SetDirectory(nullptr);
-   tdfDirectory->Add(clone);
+   dfDirectory->Add(clone);
    if (!browserPad)
       return; // in case root -b was invoked
    browserPad->cd();

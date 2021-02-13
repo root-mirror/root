@@ -35,6 +35,7 @@
 #include "clang/AST/CXXInheritance.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclTemplate.h"
+#include "clang/AST/Mangle.h"
 #include "clang/AST/Type.h"
 #include "clang/AST/TypeVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -363,6 +364,58 @@ void TNormalizedCtxt::keepTypedef(const cling::LookupHelper &lh, const char* nam
    return fImpl->keepTypedef(lh, name, replace);
 }
 
+std::string AnnotatedRecordDecl::BuildDemangledTypeInfo(const clang::RecordDecl *rDecl,
+                                                        const std::string &normalizedName)
+{
+   // Types with strong typedefs must not be findable through demangled type names, or else
+   // the demangled name will resolve to both sinblings double / Double32_t.
+   if (normalizedName.find("Double32_t") != std::string::npos
+       || normalizedName.find("Float16_t") != std::string::npos)
+       return {};
+   std::unique_ptr<clang::MangleContext> mangleCtx(rDecl->getASTContext().createMangleContext());
+   std::string mangledName;
+   {
+      llvm::raw_string_ostream sstr(mangledName);
+      if (const clang::TypeDecl* TD = llvm::dyn_cast<clang::TypeDecl>(rDecl)) {
+         mangleCtx->mangleCXXRTTI(clang::QualType(TD->getTypeForDecl(), 0), sstr);
+      }
+   }
+   if (!mangledName.empty()) {
+      int errDemangle = 0;
+#ifdef WIN32
+      if (mangledName[0] == '\01')
+         mangledName.erase(0, 1);
+      char *demangledTIName = TClassEdit::DemangleName(mangledName.c_str(), errDemangle);
+      if (!errDemangle && demangledTIName) {
+         static const char typeinfoNameFor[] = " `RTTI Type Descriptor'";
+         if (strstr(demangledTIName, typeinfoNameFor)) {
+            std::string demangledName = demangledTIName;
+            demangledName.erase(demangledName.end() - strlen(typeinfoNameFor), demangledName.end());
+#else
+      char* demangledTIName = TClassEdit::DemangleName(mangledName.c_str(), errDemangle);
+      if (!errDemangle && demangledTIName) {
+         static const char typeinfoNameFor[] = "typeinfo for ";
+         if (!strncmp(demangledTIName, typeinfoNameFor, strlen(typeinfoNameFor))) {
+            std::string demangledName = demangledTIName + strlen(typeinfoNameFor);
+#endif
+            free(demangledTIName);
+            return demangledName;
+         } else {
+#ifdef WIN32
+            ROOT::TMetaUtils::Error("AnnotatedRecordDecl::BuildDemangledTypeInfo",
+                                    "Demangled typeinfo name '%s' does not contain `RTTI Type Descriptor'\n",
+                                    demangledTIName);
+#else
+            ROOT::TMetaUtils::Error("AnnotatedRecordDecl::BuildDemangledTypeInfo",
+                                    "Demangled typeinfo name '%s' does not start with 'typeinfo for'\n",
+                                    demangledTIName);
+#endif
+         } // if demangled type_info starts with "typeinfo for "
+      } // if demangling worked
+      free(demangledTIName);
+   } // if mangling worked
+   return {};
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -382,7 +435,7 @@ AnnotatedRecordDecl::AnnotatedRecordDecl(long index,
    fRequestNoInputOperator(rRequestNoInputOperator), fRequestOnlyTClass(rRequestOnlyTClass), fRequestedVersionNumber(rRequestedVersionNumber)
 {
    TMetaUtils::GetNormalizedName(fNormalizedName, decl->getASTContext().getTypeDeclType(decl), interpreter,normCtxt);
-
+   fDemangledTypeInfo = BuildDemangledTypeInfo(decl, fNormalizedName);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -412,8 +465,9 @@ AnnotatedRecordDecl::AnnotatedRecordDecl(long index,
       ROOT::TMetaUtils::Warning("AnnotatedRecordDecl",
                                 "Could not remove the requested template arguments.\n");
    }
-
+   fDemangledTypeInfo = BuildDemangledTypeInfo(decl, fNormalizedName);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Normalize the requested type name.
 
@@ -436,8 +490,9 @@ AnnotatedRecordDecl::AnnotatedRecordDecl(long index,
    splitname1.ShortType(fRequestedName, 0);
 
    TMetaUtils::GetNormalizedName( fNormalizedName, clang::QualType(requestedType,0), interpreter, normCtxt);
-
+   fDemangledTypeInfo = BuildDemangledTypeInfo(decl, fNormalizedName);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Normalize the requested name.
 
@@ -468,8 +523,7 @@ AnnotatedRecordDecl::AnnotatedRecordDecl(long index,
    } else {
       TMetaUtils::GetNormalizedName( fNormalizedName, decl->getASTContext().getTypeDeclType(decl),interpreter,normCtxt);
    }
-
-
+   fDemangledTypeInfo = BuildDemangledTypeInfo(decl, fNormalizedName);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -683,10 +737,11 @@ ROOT::TMetaUtils::TNormalizedCtxtImpl::TNormalizedCtxtImpl(const cling::LookupHe
    keepTypedef(lh, "ULong64_t", true);
 
    clang::QualType toSkip = lh.findType("string", cling::LookupHelper::WithDiagnostics);
-   if (const clang::TypedefType* TT
-       = llvm::dyn_cast_or_null<clang::TypedefType>(toSkip.getTypePtr()))
-      fConfig.m_toSkip.insert(TT->getDecl());
-
+   if (!toSkip.isNull()) {
+      if (const clang::TypedefType* TT
+          = llvm::dyn_cast_or_null<clang::TypedefType>(toSkip.getTypePtr()))
+         fConfig.m_toSkip.insert(TT->getDecl());
+   }
    toSkip = lh.findType("std::string", cling::LookupHelper::WithDiagnostics);
    if (!toSkip.isNull()) {
       if (const clang::TypedefType* TT
@@ -988,6 +1043,87 @@ int ROOT::TMetaUtils::ElementStreamer(std::ostream& finalString,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Checks if default constructor exists and accessible
+
+bool ROOT::TMetaUtils::CheckDefaultConstructor(const clang::CXXRecordDecl* cl, const cling::Interpreter& interpreter)
+{
+   clang::CXXRecordDecl* ncCl = const_cast<clang::CXXRecordDecl*>(cl);
+
+   // We may induce template instantiation
+   cling::Interpreter::PushTransactionRAII clingRAII(const_cast<cling::Interpreter*>(&interpreter));
+
+   if (auto* Ctor = interpreter.getCI()->getSema().LookupDefaultConstructor(ncCl)) {
+      if (Ctor->getAccess() == clang::AS_public && !Ctor->isDeleted()) {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Checks IO constructor - must be public and with specified argument
+
+ROOT::TMetaUtils::EIOCtorCategory ROOT::TMetaUtils::CheckIOConstructor(const clang::CXXRecordDecl *cl,
+                                                                       const char *typeOfArg,
+                                                                       const clang::CXXRecordDecl *expectedArgType,
+                                                                       const cling::Interpreter& interpreter)
+{
+   if (typeOfArg && !expectedArgType) {
+      const cling::LookupHelper& lh = interpreter.getLookupHelper();
+      // We can not use findScope since the type we are given are usually,
+      // only forward declared (and findScope explicitly reject them).
+      clang::QualType instanceType = lh.findType(typeOfArg, cling::LookupHelper::WithDiagnostics);
+      if (!instanceType.isNull())
+         expectedArgType = instanceType->getAsCXXRecordDecl();
+   }
+
+   if (!expectedArgType)
+      return EIOCtorCategory::kAbsent;
+
+   // FIXME: We should not iterate here. That costs memory!
+   cling::Interpreter::PushTransactionRAII clingRAII(const_cast<cling::Interpreter*>(&interpreter));
+   for (auto iter = cl->ctor_begin(), end = cl->ctor_end(); iter != end; ++iter)
+      {
+         if ((iter->getAccess() != clang::AS_public) || (iter->getNumParams() != 1))
+            continue;
+
+         // We can reach this constructor.
+         clang::QualType argType((*iter->param_begin())->getType());
+         argType = argType.getDesugaredType(cl->getASTContext());
+         // Deal with pointers and references: ROOT-7723
+         auto ioCtorCategory = EIOCtorCategory::kAbsent;
+         if (argType->isPointerType()) {
+            ioCtorCategory = EIOCtorCategory::kIOPtrType;
+            argType = argType->getPointeeType();
+         } else if (argType->isReferenceType()) {
+            ioCtorCategory = EIOCtorCategory::kIORefType;
+            argType = argType.getNonReferenceType();
+         } else
+            continue;
+
+         argType = argType.getDesugaredType(cl->getASTContext());
+         const clang::CXXRecordDecl *argDecl = argType->getAsCXXRecordDecl();
+         if (argDecl) {
+            if (argDecl->getCanonicalDecl() == expectedArgType->getCanonicalDecl()) {
+               return ioCtorCategory;
+            }
+         } else {
+            std::string realArg = argType.getAsString();
+            std::string clarg("class ");
+            clarg += typeOfArg;
+            if (realArg == clarg)
+               return ioCtorCategory;
+         }
+   } // for each constructor
+
+   return EIOCtorCategory::kAbsent;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Check if class has constructor of provided type - either default or with single argument
 
 ROOT::TMetaUtils::EIOCtorCategory ROOT::TMetaUtils::CheckConstructor(const clang::CXXRecordDecl *cl,
                                                                      const RConstructorType &ioctortype,
@@ -995,62 +1131,13 @@ ROOT::TMetaUtils::EIOCtorCategory ROOT::TMetaUtils::CheckConstructor(const clang
 {
    const char *arg = ioctortype.GetName();
 
-   if (ioctortype.GetType() ==0 && (arg == 0 || arg[0] == '\0')) {
+   if (!ioctortype.GetType() && (!arg || !arg[0])) {
       // We are looking for a constructor with zero non-default arguments.
-      clang::CXXRecordDecl* ncCl = const_cast<clang::CXXRecordDecl*>(cl);
 
-      // We may induce template instantiation
-      cling::Interpreter::PushTransactionRAII clingRAII(const_cast<cling::Interpreter*>(&interpreter));
-
-      if (auto* Ctor = interpreter.getCI()->getSema().LookupDefaultConstructor(ncCl)) {
-         if (Ctor->getAccess() == clang::AS_public && !Ctor->isDeleted()) {
-            return EIOCtorCategory::kDefault;
-         }
-      }
-      return EIOCtorCategory::kAbsent;
+      return CheckDefaultConstructor(cl, interpreter) ? EIOCtorCategory::kDefault : EIOCtorCategory::kAbsent;
    }
 
-   for (clang::CXXRecordDecl::ctor_iterator iter = cl->ctor_begin(), end = cl->ctor_end();
-          iter != end;
-          ++iter)
-      {
-         if (iter->getAccess() != clang::AS_public)
-            continue;
-
-         // We can reach this constructor.
-         if (iter->getNumParams() == 1) {
-            clang::QualType argType( (*iter->param_begin())->getType() );
-            argType = argType.getDesugaredType(cl->getASTContext());
-            // Deal with pointers and references: ROOT-7723
-            auto ioCtorCategory = EIOCtorCategory::kAbsent;
-            if (argType->isPointerType()) {
-               ioCtorCategory = EIOCtorCategory::kIOPtrType;
-               argType = argType->getPointeeType();
-            } else if (argType->isReferenceType()){
-               ioCtorCategory = EIOCtorCategory::kIORefType;
-               argType = argType.getNonReferenceType();
-            }
-            if (ioCtorCategory !=  EIOCtorCategory::kAbsent) {
-               argType = argType.getDesugaredType(cl->getASTContext());
-               const clang::CXXRecordDecl *argDecl = argType->getAsCXXRecordDecl();
-               if (argDecl && ioctortype.GetType()) {
-                  if (argDecl->getCanonicalDecl() == ioctortype.GetType()->getCanonicalDecl()) {
-                     return ioCtorCategory;
-                  }
-               } else {
-                  std::string realArg = argType.getAsString();
-                  std::string clarg("class ");
-                  clarg += arg;
-                  if (realArg == clarg) {
-                     return ioCtorCategory;
-
-                  }
-               }
-            }
-         } // has one argument.
-      } // for each constructor
-
-   return EIOCtorCategory::kAbsent;
+   return CheckIOConstructor(cl, arg, ioctortype.GetType(), interpreter);
 }
 
 
@@ -1065,10 +1152,10 @@ const clang::CXXMethodDecl *GetMethodWithProto(const clang::Decl* cinfo,
       = interp.getLookupHelper().findFunctionProto(cinfo, method, proto,
                                                    diagnose ? cling::LookupHelper::WithDiagnostics
                                                    : cling::LookupHelper::NoDiagnostics);
-   if (funcD) {
+   if (funcD)
       return llvm::dyn_cast<const clang::CXXMethodDecl>(funcD);
-   }
-   return 0;
+
+   return nullptr;
 }
 
 
@@ -1076,7 +1163,7 @@ const clang::CXXMethodDecl *GetMethodWithProto(const clang::Decl* cinfo,
 
 namespace ROOT {
    namespace TMetaUtils {
-      RConstructorType::RConstructorType(const char *type_of_arg, const cling::Interpreter &interp) : fArgTypeName(type_of_arg),fArgType(0)
+      RConstructorType::RConstructorType(const char *type_of_arg, const cling::Interpreter &interp) : fArgTypeName(type_of_arg),fArgType(nullptr)
       {
          const cling::LookupHelper& lh = interp.getLookupHelper();
          // We can not use findScope since the type we are given are usually,
@@ -1101,22 +1188,21 @@ bool ROOT::TMetaUtils::HasIOConstructor(const clang::CXXRecordDecl *cl,
 {
    if (cl->isAbstract()) return false;
 
-   for (RConstructorTypes::const_iterator ctorTypeIt = ctorTypes.begin();
-        ctorTypeIt!=ctorTypes.end(); ++ctorTypeIt) {
+   for (auto & ctorType : ctorTypes) {
 
-      auto ioCtorCat = ROOT::TMetaUtils::CheckConstructor(cl, *ctorTypeIt, interp);
+      auto ioCtorCat = ROOT::TMetaUtils::CheckConstructor(cl, ctorType, interp);
 
       if (EIOCtorCategory::kAbsent == ioCtorCat)
          continue;
 
-      std::string proto( ctorTypeIt->GetName() );
+      std::string proto( ctorType.GetName() );
       bool defaultCtor = proto.empty();
       if (defaultCtor) {
          arg.clear();
       } else {
          // I/O constructors can take pointers or references to ctorTypes
         proto += " *";
-        if (EIOCtorCategory::kIOPtrType == ioCtorCat){
+        if (EIOCtorCategory::kIOPtrType == ioCtorCat) {
            arg = "( ("; //(MyType*)nullptr
         } else if (EIOCtorCategory::kIORefType == ioCtorCat) {
            arg = "( *("; //*(MyType*)nullptr
@@ -1658,7 +1744,7 @@ bool ROOT::TMetaUtils::ExtractAttrIntPropertyFromName(const clang::Decl& decl,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// FIXME: a function of ~300 lines!
+/// FIXME: a function of 450+ lines!
 
 void ROOT::TMetaUtils::WriteClassInit(std::ostream& finalString,
                                       const AnnotatedRecordDecl &cl,
@@ -1944,7 +2030,7 @@ void ROOT::TMetaUtils::WriteClassInit(std::ostream& finalString,
             methodTCP="Insert";
             break;
       }
-      // FIXME Workaround: for the moment we do not generate coll proxies with unique ptrs sincelast
+      // FIXME Workaround: for the moment we do not generate coll proxies with unique ptrs since
       // they imply copies and therefore do not compile.
       auto classNameForIO = TClassEdit::GetNameForIO(classname);
       finalString << "      instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::" << methodTCP << "< " << classNameForIO.c_str() << " >()));" << "\n";
@@ -1953,12 +2039,20 @@ void ROOT::TMetaUtils::WriteClassInit(std::ostream& finalString,
    }
 
    //---------------------------------------------------------------------------
-   // Register Altenate spelling of the class name.
+   // Register Alternate spelling of the class name.
    /////////////////////////////////////////////////////////////////////////////
 
    if (cl.GetRequestedName()[0] && classname != cl.GetRequestedName()) {
       finalString << "\n" << "      ::ROOT::AddClassAlternate(\""
                   << classname << "\",\"" << cl.GetRequestedName() << "\");\n";
+   }
+
+   if (!cl.GetDemangledTypeInfo().empty()
+         && cl.GetDemangledTypeInfo() != classname
+         && cl.GetDemangledTypeInfo() != cl.GetRequestedName()) {
+      finalString << "\n" << "      ::ROOT::AddClassAlternate(\""
+                  << classname << "\",\"" << cl.GetDemangledTypeInfo() << "\");\n";
+
    }
 
    //---------------------------------------------------------------------------

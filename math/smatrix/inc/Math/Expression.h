@@ -31,9 +31,9 @@
 // ********************************************************************
 
 /**
-   @defgroup Expression Expression Template Classes
-   @ingroup SMatrixGroup
- */
+\defgroup Expression Expression Template Classes
+\ingroup SMatrixGroup
+*/
 
 //==============================================================================
 // Expr: class representing SVector expressions

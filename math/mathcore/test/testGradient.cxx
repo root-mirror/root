@@ -2,7 +2,7 @@
 // Author: Alejandro García Montoro 07/2017
 
 #include "Fit/BinData.h"
-#include "Fit/FitExecutionPolicy.h"
+#include "ROOT/EExecutionPolicy.hxx"
 #include "Fit/FitUtil.h"
 #include "Fit/UnBinData.h"
 #include "Math/WrappedMultiTF1.h"
@@ -16,6 +16,7 @@
 #include "TH1.h"
 #include "TF2.h"
 #include "TH2.h"
+#include "TROOT.h"
 
 #include "TRandom3.h"
 
@@ -24,6 +25,8 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+
+int printLevel = 0;
 
 // Class to encapsulate the types that define how the gradient test is
 // performed; it also stores information strings about the types.
@@ -34,10 +37,10 @@
 //    "Scalar", "Vectorial")
 //    PolicyInfoStr points to a human-readable string describing
 //    ExecutionPolicyType (e.g., "Serial", "Multithread")
-template <typename U, ROOT::Fit::ExecutionPolicy V, int W, const char *dataInfoStr, const char *policyInfoStr>
+template <typename U, ROOT::EExecutionPolicy V, int W, const char *dataInfoStr, const char *policyInfoStr>
 struct GradientTestTraits {
    using DataType = U;
-   static constexpr ROOT::Fit::ExecutionPolicy ExecutionPolicyType() { return V; };
+   static constexpr ROOT::EExecutionPolicy ExecutionPolicyType() { return V; };
    static constexpr int Dimensions() { return W; };
 
    static void PrintTypeInfo(const std::string &fittingInfo)
@@ -61,25 +64,25 @@ char mthreadStr[] = "Multithread";
 
 // Typedefs of GradientTestTraits for scalar (serial and multithreaded)
 // scenarios
-using ScalarSerial1D = GradientTestTraits<Double_t, ROOT::Fit::ExecutionPolicy::kSerial, 1, scalarStr, serialStr>;
+using ScalarSerial1D = GradientTestTraits<Double_t, ROOT::EExecutionPolicy::kSequential, 1, scalarStr, serialStr>;
 using ScalarMultithread1D =
-   GradientTestTraits<Double_t, ROOT::Fit::ExecutionPolicy::kMultithread, 1, scalarStr, mthreadStr>;
-using ScalarSerial2D = GradientTestTraits<Double_t, ROOT::Fit::ExecutionPolicy::kSerial, 2, scalarStr, serialStr>;
+   GradientTestTraits<Double_t, ROOT::EExecutionPolicy::kMultiThread, 1, scalarStr, mthreadStr>;
+using ScalarSerial2D = GradientTestTraits<Double_t, ROOT::EExecutionPolicy::kSequential, 2, scalarStr, serialStr>;
 using ScalarMultithread2D =
-   GradientTestTraits<Double_t, ROOT::Fit::ExecutionPolicy::kMultithread, 2, scalarStr, mthreadStr>;
+   GradientTestTraits<Double_t, ROOT::EExecutionPolicy::kMultiThread, 2, scalarStr, mthreadStr>;
 
 #ifdef R__HAS_VECCORE
 
 // Typedefs of GradientTestTraits for vectorial (serial and multithreaded)
 // scenarios
 using VectorialSerial1D =
-   GradientTestTraits<ROOT::Double_v, ROOT::Fit::ExecutionPolicy::kSerial, 1, vectorStr, serialStr>;
+   GradientTestTraits<ROOT::Double_v, ROOT::EExecutionPolicy::kSequential, 1, vectorStr, serialStr>;
 using VectorialMultithread1D =
-   GradientTestTraits<ROOT::Double_v, ROOT::Fit::ExecutionPolicy::kMultithread, 1, vectorStr, mthreadStr>;
+   GradientTestTraits<ROOT::Double_v, ROOT::EExecutionPolicy::kMultiThread, 1, vectorStr, mthreadStr>;
 using VectorialSerial2D =
-   GradientTestTraits<ROOT::Double_v, ROOT::Fit::ExecutionPolicy::kSerial, 2, vectorStr, serialStr>;
+   GradientTestTraits<ROOT::Double_v, ROOT::EExecutionPolicy::kSequential, 2, vectorStr, serialStr>;
 using VectorialMultithread2D =
-   GradientTestTraits<ROOT::Double_v, ROOT::Fit::ExecutionPolicy::kMultithread, 2, vectorStr, mthreadStr>;
+   GradientTestTraits<ROOT::Double_v, ROOT::EExecutionPolicy::kMultiThread, 2, vectorStr, mthreadStr>;
 
 #endif
 
@@ -263,7 +266,7 @@ struct GradientTestEvaluation {
 
    // Basic type to compare against
    using ScalarSerial =
-      GradientTestTraits<double, ROOT::Fit::ExecutionPolicy::kSerial, T::Dimensions(), scalarStr, serialStr>;
+      GradientTestTraits<double, ROOT::EExecutionPolicy::kSequential, T::Dimensions(), scalarStr, serialStr>;
 
    GradientTestEvaluation()
    {
@@ -291,16 +294,18 @@ struct GradientTestEvaluation {
          fFitter->Gradient(fModel->fParams, solution);
       end = std::chrono::system_clock::now();
 
-      // std::cout << "Gradient is : " << fFitter->NDim() << "  ";
-      //  for (unsigned int i = 0; i < fNumParams ; ++i)
-      //    std::cout << "  " << solution[i];
-      // std::cout << std::endl;
-
-      
       std::chrono::duration<Double_t> timeElapsed = end - start;
 
+      if (printLevel > 0) {
+         std::cout << "Gradient is : " << fFitter->NDim() << "  ";
+         for (unsigned int i = 0; i < fNumParams; ++i)
+            std::cout << "  " << solution[i];
+         std::cout << std::endl;
+         std::cout << "elapsed time is " << timeElapsed.count() << std::endl;
+      }
+
       return timeElapsed.count() / fNumRepetitions;
-     
+
    }
 
    static const int fNumRepetitions = 2;
@@ -445,12 +450,12 @@ typedef ::testing::Types<VectorialSerial1D, VectorialSerial2D> TestTypes;
 #  ifdef R__USE_IMT
 typedef ::testing::Types<ScalarMultithread1D, ScalarMultithread2D> TestTypes;
 #  else
-typedef ::testing::Types<> TestTypes;
+typedef ::testing::Types<ScalarSerial1D,ScalarSerial2D> TestTypes;
 #  endif
 #endif
 
 
-TYPED_TEST_CASE(LogLikelihoodGradientTest, TestTypes);
+TYPED_TEST_SUITE(LogLikelihoodGradientTest, TestTypes);
 
 // Test EvalChi2Gradient and outputs its speedup against the scalar serial case.
 TYPED_TEST(LogLikelihoodGradientTest, LogLikelihoodGradient)
@@ -469,7 +474,7 @@ TYPED_TEST(LogLikelihoodGradientTest, LogLikelihoodGradient)
 }
 
 
-TYPED_TEST_CASE(Chi2GradientTest, TestTypes);
+TYPED_TEST_SUITE(Chi2GradientTest, TestTypes);
 
 // Test EvalChi2Gradient and outputs its speedup against the scalar serial case.
 TYPED_TEST(Chi2GradientTest, Chi2Gradient)
@@ -487,7 +492,7 @@ TYPED_TEST(Chi2GradientTest, Chi2Gradient)
    }
 }
 
-TYPED_TEST_CASE(PoissonLikelihoodGradientTest, TestTypes);
+TYPED_TEST_SUITE(PoissonLikelihoodGradientTest, TestTypes);
 
 // Test EvalChi2Gradient and outputs its speedup against the scalar serial case.
 TYPED_TEST(PoissonLikelihoodGradientTest, PoissonLikelihoodGradient)
@@ -505,3 +510,27 @@ TYPED_TEST(PoissonLikelihoodGradientTest, PoissonLikelihoodGradient)
    }
 }
 
+// add main() to avoid a linking error
+int main(int argc, char **argv)
+{
+
+   // Parse command line arguments
+   for (Int_t i = 1; i < argc; i++) {
+      std::string arg = argv[i];
+      if (arg == "-v") {
+         std::cout << "---running in verbose mode" << std::endl;
+         printLevel = 1;
+      } else if (arg == "-vv") {
+         std::cout << "---running in very verbose mode" << std::endl;
+         printLevel = 2;
+      } else if (arg == "-vvv") {
+         std::cout << "---running in very very verbose mode" << std::endl;
+         printLevel = 3;
+      }
+   }
+
+   // This allows the user to override the flag on the command line.
+   ::testing::InitGoogleTest(&argc, argv);
+
+   return RUN_ALL_TESTS();
+}

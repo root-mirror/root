@@ -30,6 +30,7 @@
 #include "TMatrix.h"
 #include "TMVA/DNN/Optimizer.h"
 #include "TMVA/DNN/Functions.h"
+#include <vector>
 
 namespace TMVA {
 namespace DNN {
@@ -70,7 +71,7 @@ protected:
 public:
    /*! Constructor. */
    TAdam(DeepNet_t &deepNet, Scalar_t learningRate = 0.001, Scalar_t beta1 = 0.9, Scalar_t beta2 = 0.999,
-         Scalar_t epsilon = 1e-8);
+         Scalar_t epsilon = 1e-7);
 
    /*! Destructor. */
    ~TAdam() = default;
@@ -112,10 +113,10 @@ TAdam<Architecture_t, Layer_t, DeepNet_t>::TAdam(DeepNet_t &deepNet, Scalar_t le
 
 
    for (size_t i = 0; i < layersNSlices; i++) {
-      
-      Architecture_t::CreateWeightTensors( fFirstMomentWeights[i], layers[i]->GetWeights()); 
-      Architecture_t::CreateWeightTensors( fSecondMomentWeights[i], layers[i]->GetWeights()); 
-   
+
+      Architecture_t::CreateWeightTensors( fFirstMomentWeights[i], layers[i]->GetWeights());
+      Architecture_t::CreateWeightTensors( fSecondMomentWeights[i], layers[i]->GetWeights());
+
       const size_t weightsNSlices = (layers[i]->GetWeights()).size();
 
       for (size_t j = 0; j < weightsNSlices; j++) {
@@ -125,8 +126,8 @@ TAdam<Architecture_t, Layer_t, DeepNet_t>::TAdam(DeepNet_t &deepNet, Scalar_t le
 
       const size_t biasesNSlices = (layers[i]->GetBiases()).size();
 
-      Architecture_t::CreateWeightTensors( fFirstMomentBiases[i], layers[i]->GetBiases()); 
-      Architecture_t::CreateWeightTensors( fSecondMomentBiases[i], layers[i]->GetBiases()); 
+      Architecture_t::CreateWeightTensors( fFirstMomentBiases[i], layers[i]->GetBiases());
+      Architecture_t::CreateWeightTensors( fSecondMomentBiases[i], layers[i]->GetBiases());
 
       for (size_t j = 0; j < biasesNSlices; j++) {
          initialize<Architecture_t>(fFirstMomentBiases[i][j], EInitialization::kZero);
@@ -140,6 +141,10 @@ template <typename Architecture_t, typename Layer_t, typename DeepNet_t>
 auto TAdam<Architecture_t, Layer_t, DeepNet_t>::UpdateWeights(size_t layerIndex, std::vector<Matrix_t> &weights,
                                                               const std::vector<Matrix_t> &weightGradients) -> void
 {
+   // update of weights using Adam algorithm
+   // we use the formulation defined before section 2.1 in the original paper
+   // 'Adam: A method for stochastic optimization, D. Kingma, J. Ba, see https://arxiv.org/abs/1412.6980
+
    std::vector<Matrix_t> &currentLayerFirstMomentWeights = this->GetFirstMomentWeightsAt(layerIndex);
    std::vector<Matrix_t> &currentLayerSecondMomentWeights = this->GetSecondMomentWeightsAt(layerIndex);
 
@@ -147,7 +152,7 @@ auto TAdam<Architecture_t, Layer_t, DeepNet_t>::UpdateWeights(size_t layerIndex,
    Scalar_t alpha = (this->GetLearningRate()) * (sqrt(1 - pow(this->GetBeta2(), this->GetGlobalStep()))) /
                     (1 - pow(this->GetBeta1(), this->GetGlobalStep()));
 
-   /// Adam update of first and second momentum of the weights 
+   /// Adam update of first and second momentum of the weights
    for (size_t i = 0; i < weights.size(); i++) {
       // Mt = beta1 * Mt-1 + (1-beta1) * WeightGradients
       Architecture_t::AdamUpdateFirstMom(currentLayerFirstMomentWeights[i], weightGradients[i], this->GetBeta1() );

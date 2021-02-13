@@ -22,7 +22,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Gviz3d
     src/TStructViewer.cxx
     src/TStructViewerGUI.cxx
   LIBRARIES
-    GLEW ${FTGL_LIBRARIES}
+    ${FTGL_LIBRARIES}
   DEPENDENCIES
     Gui
     Ged

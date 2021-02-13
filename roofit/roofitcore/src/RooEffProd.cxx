@@ -77,24 +77,13 @@ RooEffProd::~RooEffProd()
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-/// Return p.d.f. value normalized over given set of observables
-
-Double_t RooEffProd::getValV(const RooArgSet* set) const 
-{  
-  _nset = _fixedNset ? _fixedNset : set ;
-  return RooAbsPdf::getValV(set) ;
-}
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Calculate and return 'raw' unnormalized value of p.d.f
 
 Double_t RooEffProd::evaluate() const
 {
-  return eff()->getVal() * pdf()->getVal(_nset);
+  return eff()->getVal() * pdf()->getVal(_fixedNset ? _fixedNset : _normSet);
 }
 
 

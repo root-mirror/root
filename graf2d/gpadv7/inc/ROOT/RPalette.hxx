@@ -39,16 +39,18 @@ class RPalette {
 public:
    /// An ordinal value and its associated color.
    struct OrdinalAndColor {
-      double fOrdinal; ///< The value associated with the color.
-      RColor fColor;   ///< The color associated with the value.
+      double fOrdinal{0.}; ///< The value associated with the color.
+      RColor fColor;       ///< The color associated with the value.
 
       /// Compare two `OrdinalAndColor`s, for sorting.
       friend bool operator<(const OrdinalAndColor &lhs, const OrdinalAndColor &rhs)
       {
          return lhs.fOrdinal < rhs.fOrdinal;
       }
+
       /// Compare an `OrdinalAndColor` and an ordinal value.
       friend bool operator<(const OrdinalAndColor &lhs, double rhs) { return lhs.fOrdinal < rhs; }
+
    };
 
 private:
@@ -121,7 +123,7 @@ public:
 
    /// Get a global palette by name. Returns an empty palette if no palette with that name is known.
    /// This function is not thread safe; any concurrent call to global Palette manipulation must be synchronized!
-   static const RPalette &GetPalette(std::string_view name);
+   static const RPalette &GetPalette(std::string_view name = "");
 
    ///\}
 };

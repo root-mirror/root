@@ -31,7 +31,6 @@ do not define internal methods
 #include "Riostream.h"
 
 #include "RooAcceptReject.h"
-#include "RooAcceptReject.h"
 #include "RooAbsReal.h"
 #include "RooCategory.h"
 #include "RooRealVar.h"

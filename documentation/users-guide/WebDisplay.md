@@ -86,33 +86,30 @@ The minimal HTML/JavaScript code, which establish connection with the server, lo
 <!DOCTYPE HTML>
 <html>
     <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta charset="utf-8">
         <title>Web Window Example</title>
-        <script src="/jsrootsys/scripts/JSRootCore.js" type="text/javascript"></script>
-        <script>
-          JSROOT.ConnectWebWindow(function(handle) {
-             handle.SetReceiver({
-                 OnWebsocketOpened: function(h) {
-                     console.log('Connected');
-                     handle.Send("Init msg from client");
-                 },
-                 OnWebsocketMsg: function(h, msg) {
-                     console.log('Get message ' + msg);
-                     document.getElementById("main").innerHTML = msg;
-                 },
-                 OnWebsocketClosed: function(h) {
-                    // when connection closed, close panel as well
-                    if (window) window.close();
-                 }
-             });
-            // only here connection is established
-           handle.Connect();
-         });
-      </script>
+        <script src="/jsrootsys/scripts/JSRoot.core.js" type="text/javascript"></script>
     </head>
    <body>
-      <div id="main"></div>
+     <div id="main"></div>
+     <script>
+       JSROOT.connectWebWindow({
+          receiver: {
+              OnWebsocketOpened: function(handle) {
+                  console.log('Connected');
+                  handle.Send("Init msg from client");
+              },
+              OnWebsocketMsg: function(handle, msg) {
+                  console.log('Get message ' + msg);
+                  document.getElementById("main").innerHTML = msg;
+              },
+              OnWebsocketClosed: function(handle) {
+                 // when connection closed, close panel as well
+                 if (window) window.close();
+              }
+          }
+       });
+   </script>
    </body>
 </html>
 

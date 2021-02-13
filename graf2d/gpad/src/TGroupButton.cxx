@@ -9,17 +9,18 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TBox.h"
 #include "TGroupButton.h"
-#include "TVirtualX.h"
 #include "TDialogCanvas.h"
 #include "TCanvas.h"
 #include "TText.h"
 #include "TInterpreter.h"
-#include "TTimer.h"
-#include <string.h>
+#include "strlcpy.h"
+#include "snprintf.h"
+
+#include <cstring>
+#include <iostream>
 
 ClassImp(TGroupButton);
 

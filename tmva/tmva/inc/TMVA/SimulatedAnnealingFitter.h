@@ -39,6 +39,8 @@
 
 #include "TMVA/FitterBase.h"
 
+#include <vector>
+
 namespace TMVA {
 
    class IFitterTarget;

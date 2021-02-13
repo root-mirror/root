@@ -41,12 +41,8 @@
 
 #include "TUnfoldBinning.h"
 #include <iostream>
-#include <TNamed.h>
-#include <TObjArray.h>
-#include <TObjString.h>
 #include <TXMLNode.h>
 #include <TXMLDocument.h>
-#include <iostream>
 
 class TXMLNode;
 class TXMLDocument;
@@ -62,7 +58,7 @@ static TUnfoldBinningXML *ImportXML(const TXMLDocument *document,const char *nam
    static void WriteDTD(std::ostream &out); // write DTD to stream
 
    /// construct a new binning scheme, for use with the root streamer
-   TUnfoldBinningXML (const char *name=0,Int_t nBins=0,const char *binNames=0) 
+   TUnfoldBinningXML (const char *name=0,Int_t nBins=0,const char *binNames=0)
       : TUnfoldBinning (name,nBins,binNames) { }
  protected:
    static TUnfoldBinningXML *ImportXMLNode(TXMLNode *node); // import the given node as binning scheme

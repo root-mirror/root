@@ -33,7 +33,7 @@
     require.config({
         paths: {
             'd3': JSROOT_source_dir+'d3.min',
-            'JsRootCore': JSROOT_source_dir+'JSRootCore.min',
+            'JsRootCore': JSROOT_source_dir+'JSRoot.core.min',
             'nn': url+'NeuralNetwork.min',
             'dtree': url+'DecisionTree.min',
             'NetworkDesigner': url+'NetworkDesigner.min'

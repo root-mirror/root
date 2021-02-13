@@ -18,12 +18,12 @@
 
 #include "RooAbsGenContext.h"
 #include "RooArgSet.h"
-#include <vector>
+
 
 class RooDataSet;
 class RooRealIntegral;
 class RooAcceptReject;
-class RooDataHist ;
+class RooDataHist;
 class TRandom;
 class TIterator;
 

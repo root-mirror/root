@@ -6,42 +6,15 @@
           xmlns:core="sap.ui.core"
           xmlns:l="sap.ui.layout"
           xmlns:tnt="sap.tnt">
-
   <Page showSubHeader="false" showHeader="false" showFooter="false">
     <content>
       <tnt:ToolHeader asyncMode="true" height="40px" >
-        <Button id="burgerMenu" icon="sap-icon://menu2" type="Transparent">
-          <layoutData>
-            <OverflowToolbarLayoutData priority="NeverOverflow" />
-          </layoutData>
-        </Button>
-        <Button id="expandMaster" icon="sap-icon://full-screen" type="Transparent" press="onExpandMaster">
-          <layoutData>
-            <OverflowToolbarLayoutData priority="NeverOverflow" />
-          </layoutData>
-        </Button>
-        <Button id="shrinkMaster" icon="sap-icon://exit-full-screen" type="Transparent" press="onShrinkMaster" visible="false">
-          <layoutData>
-            <OverflowToolbarLayoutData priority="NeverOverflow" />
-          </layoutData>
-        </Button>
-        <Image height="35px" src="rootui5sys/browser/logo.png" />
+        <Button id="burgerMenu" icon="sap-icon://menu2" type="Transparent" tooltip="Hide/show browser" press="onFullScreen"/>
+        <Image height="35px" src="rootui5sys/browser/logo.png"/>
         <Text text="ROOT 7" wrapping="false" />
-        <ToolbarSpacer>
-          <layoutData>
-            <OverflowToolbarLayoutData priority="NeverOverflow" minWidth="16px" />
-          </layoutData>
-        </ToolbarSpacer>
-        <Button icon="sap-icon://settings" type="Transparent" tooltip="Settings" press="onSettingPress">
-          <layoutData>
-            <OverflowToolbarLayoutData priority="NeverOverflow" />
-          </layoutData>
-        </Button>
-        <Button icon="sap-icon://log" type="Transparent" tooltip="Logoff" press="onQuitRootPress">
-          <layoutData>
-            <OverflowToolbarLayoutData priority="NeverOverflow" />
-          </layoutData>
-        </Button>
+        <ToolbarSpacer/>
+        <Button icon="sap-icon://settings" type="Transparent" tooltip="Settings" press="onSettingPress"/>
+        <Button icon="sap-icon://log" type="Transparent" tooltip="Logoff" press="onQuitRootPress"/>
       </tnt:ToolHeader>
 
       <ScrollContainer height="calc(100% - 40px)">
@@ -52,7 +25,8 @@
               <customHeader>
                 <Toolbar width="100%">
                   <SearchField placeholder="Filter" liveChange="onSearch" />
-                  <Button icon="sap-icon://synchronize" press="onRealoadPress" tooltip="Refresh"/>
+                  <Button icon="sap-icon://synchronize" press="onRealoadPress" tooltip="Refresh browser content"/>
+                  <Button id="expandMaster" icon="sap-icon://open-command-field" tooltip="Expand/shrink" press="onExpandMaster"/>
                 </Toolbar>
               </customHeader>
               <content>
@@ -87,7 +61,7 @@
           <detailPages>
             <l:Splitter orientation="Vertical">
               <Page title="Javascript ROOT Browser" showNavButton="false" showFooter="false" showSubHeader="false" showHeader="false">
-                <TabContainer id="myTabContainer" showAddNewButton="true" addNewButtonPress="addNewButtonPressHandler" itemSelect="tabSelectItem" itemClose="tabCloseHandler" />
+                <TabContainer id="tabContainer" showAddNewButton="true" addNewButtonPress="handlePressAddTab" itemSelect="tabSelectItem" itemClose="handleTabClose"/>
               </Page>
               <Page showNavButton="false" showFooter="false" showSubHeader="false" showHeader="false">
                 <layoutData><l:SplitterLayoutData size="20%" /></layoutData>

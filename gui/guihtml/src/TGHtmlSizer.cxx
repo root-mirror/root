@@ -25,12 +25,14 @@
 
 // Routines used to compute the style and size of individual elements.
 
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include <cstring>
+#include <cstdlib>
+#include <cctype>
 
 #include "TGHtml.h"
 #include "TImage.h"
+#include "TVirtualX.h"
+#include "snprintf.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Get the current rendering style. In other words, get the style
@@ -58,7 +60,7 @@ SHtmlStyle_t TGHtml::GetCurrentStyle()
 ////////////////////////////////////////////////////////////////////////////////
 /// Push a new rendering style onto the stack.
 ///
-///  tag   - Tag for this style. Normally the end-tag such as </h3> or </em>.
+///  tag   - Tag for this style. Normally the end-tag such as \</h3\> or \</em\>.
 ///  style - The style to push
 
 void TGHtml::PushStyleStack(int tag, SHtmlStyle_t style)
@@ -150,7 +152,7 @@ void TGHtml::MakeInvisible(TGHtmlElement *p_first, TGHtmlElement *p_last)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// For the markup <a href=XXX>, find out if the URL has been visited
+/// For the markup \<a href=XXX\>, find out if the URL has been visited
 /// before or not.  Return COLOR_Visited or COLOR_Unvisited, as
 /// appropriate.
 

@@ -10,6 +10,7 @@
  *************************************************************************/
 
 #include "TROOT.h"
+#include "TDatime.h"
 #include "TGuiFactory.h"
 #include "TInspectCanvas.h"
 #include "TButton.h"
@@ -19,7 +20,8 @@
 #include "TDataMember.h"
 #include "TDataType.h"
 #include "TRealData.h"
-#include "TLatex.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 ClassImp(TInspectCanvas);
 

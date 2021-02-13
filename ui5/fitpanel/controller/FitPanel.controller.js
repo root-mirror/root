@@ -56,11 +56,11 @@ sap.ui.define([
          }
 
          if (this.websocket)
-            this.websocket.Send(prefix + this.getView().getModel().getJSON());
+            this.websocket.send(prefix + this.getView().getModel().getJSON());
       },
 
       // Assign the new JSONModel to data
-      OnWebsocketMsg: function(handle, msg) {
+      onWebsocketMsg: function(handle, msg) {
 
          if(msg.startsWith("MODEL:")) {
             var data = JSROOT.parse(msg.substr(6));
@@ -83,7 +83,7 @@ sap.ui.define([
       // Update Button
       doUpdate: function() {
          if (this.websocket)
-            this.websocket.Send("RELOAD");
+            this.websocket.send("RELOAD");
       },
 
       // Fit Button
@@ -168,7 +168,7 @@ sap.ui.define([
          var json = JSROOT.toJSON(this.data().fFuncPars);
 
          if (this.websocket)
-            this.websocket.Send("SETPARS:" + json);
+            this.websocket.send("SETPARS:" + json);
       }
 
    });

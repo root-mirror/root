@@ -17,6 +17,7 @@
 #define ROO_SCALED_FUNC
 
 #include "RooAbsFunc.h"
+#include <list>
 
 class RooScaledFunc : public RooAbsFunc {
 public:

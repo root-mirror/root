@@ -15,6 +15,7 @@
 #include "Math/Error.h"
 
 #include <iostream>
+#include <string>
 
 namespace ROOT {
 

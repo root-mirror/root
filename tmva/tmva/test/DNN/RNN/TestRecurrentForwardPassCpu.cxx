@@ -16,6 +16,7 @@
 #include <iostream>
 #include "TMVA/DNN/Architectures/Cpu.h"
 #include "TestRecurrentForwardPass.h"
+#include "TMath.h"
 //#include "gtest/gtest.h"
 //#include "gmock/gmock.h"
 
@@ -31,12 +32,19 @@ int main() {
 
    using Scalar_t = Double_t;
 
+   gRandom->SetSeed(12345);
+   TCpu<double>::SetRandomSeed(gRandom->Integer(TMath::Limits<UInt_t>::Max()));
+
    std::cout << "Testing RNN Forward pass\n";
 
    // timesteps, batchsize, statesize, inputsize
-   std::cout << testForwardPass<TCpu<Scalar_t>>(2, 2, 3, 2)  << "\n";
-   std::cout << testForwardPass<TCpu<Scalar_t>>(1, 8, 100, 50)  << "\n";
-   std::cout << testForwardPass<TCpu<Scalar_t>>(5, 9, 128, 64)  << "\n";
+   double err = testForwardPass<TCpu<Scalar_t>>(2, 1, 1, 3);
+   bool ok = (err < 1.E-5);
+   if (ok) {
+      Info("testRecurrentForwardPassCpu", "test passed - max error is %f", err);
+   } else {
+      Error("testRecurrentForwardPassCpu", "test failed - max error is %f", err);
+   }
 
-   return 0;
+   return (ok) ? 0 : -1;
 }

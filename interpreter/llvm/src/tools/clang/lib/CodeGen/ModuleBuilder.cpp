@@ -13,6 +13,7 @@
 
 #include "clang/CodeGen/ModuleBuilder.h"
 #include "CGDebugInfo.h"
+#include "CGCXXABI.h"
 #include "CodeGenModule.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/DeclObjC.h"
@@ -28,6 +29,14 @@
 
 using namespace clang;
 using namespace CodeGen;
+
+namespace {
+  struct CXXABICtxSwapper: clang::CodeGen::CGCXXABI {
+    void SwapCtx(clang::CodeGen::CGCXXABI &other) {
+      std::swap(MangleCtx, ((CXXABICtxSwapper&)other).MangleCtx);
+    }
+  };
+}
 
 namespace clang {
   class CodeGeneratorImpl : public CodeGenerator {
@@ -157,6 +166,8 @@ namespace clang {
       assert(Builder->WeakRefReferences.empty()
              && "Newly created module should not have weakRefRefs");
       Builder->WeakRefReferences.swap(OldBuilder->WeakRefReferences);
+
+      ((CXXABICtxSwapper&)*Builder->ABI).SwapCtx(*OldBuilder->ABI);
 
       return M.get();
     }

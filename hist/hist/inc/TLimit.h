@@ -4,7 +4,7 @@
 #ifndef ROOT_TLimit
 #define ROOT_TLimit
 
-#include "TObject.h"
+#include "Rtypes.h"
 
 #include "TVectorDfwd.h"
 
@@ -14,6 +14,7 @@ class TLimitDataSource;
 class TArrayD;
 class TOrdCollection;
 class TH1;
+class TObjArray;
 
 class TLimit {
  protected:

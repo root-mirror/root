@@ -22,28 +22,32 @@
 
 #include "Math/VirtualIntegrator.h"
 
-
 #include <memory>
+#include <vector>
+#include <string>
 
 
 /**
-   @defgroup NumAlgo Numerical Algorithms
-   Numerical Algorithm classes from the \ref MathCorePage and \ref MathMorePage libraries.
-   @ingroup MathCore
-   @ingroup MathMore
- */
+@defgroup NumAlgo Numerical Algorithms
+
+Numerical Algorithm classes from the \ref MathCore and \ref MathMore libraries.
+
+@ingroup MathCore
+@ingroup MathMore
+
+*/
 
 
 /**
 
 @defgroup Integration Numerical Integration
 
-Classes for numerical integration of functions. 
-These classes provide algorithms for integration of one-dimensional functions, with several adaptive and non-adaptive methods 
+Classes for numerical integration of functions.
+These classes provide algorithms for integration of one-dimensional functions, with several adaptive and non-adaptive methods
 and for integration of multi-dimensional function using an adaptive method or MonteCarlo Integration (GSLMCIntegrator).
-The basic classes ROOT::Math::IntegratorOneDim provides a common interface for the one-dimensional methods while the class 
-ROOT::Math::IntegratorMultiDim provides the interface for the multi-dimensional ones. 
-The methods can be configured (e.g  setting the default method with its defult parameters) using the ROOT::Math::IntegratorOneDimOptions and 
+The basic classes ROOT::Math::IntegratorOneDim provides a common interface for the one-dimensional methods while the class
+ROOT::Math::IntegratorMultiDim provides the interface for the multi-dimensional ones.
+The methods can be configured (e.g  setting the default method with its defult parameters) using the ROOT::Math::IntegratorOneDimOptions and
 ROOT::Math::IntegratorMultiDimOptions classes.
 
 @ingroup  NumAlgo
@@ -86,7 +90,7 @@ For detailed description on GSL integration algorithms see the
 <A HREF="http://www.gnu.org/software/gsl/manual/gsl-ref_16.html#SEC248">GSL Manual</A>.
 
 
-  @ingroup Integration
+@ingroup Integration
 
 */
 
@@ -128,7 +132,7 @@ public:
        @param f      integration function (1D interface). It is copied inside
        @param type   integration type (adaptive, non-adaptive, etc..)
        @param absTol desired absolute tolerance. The algorithm will stop when either the absolute OR the relative tolerance are satisfied.
-       @param relTol desired relative tolerance 
+       @param relTol desired relative tolerance
        @param size maximum number of sub-intervals
        @param rule Gauss-Kronrod integration rule (only for GSL ADAPTIVE type)
 
@@ -198,7 +202,7 @@ public:
    void SetFunction  (const IGenFunction &f, bool copy = false) {
       if (!fIntegrator) return;
       if (copy) {
-         if (fFunc) delete fFunc; 
+         if (fFunc) delete fFunc;
          fFunc = f.Clone();
          fIntegrator->SetFunction(*fFunc);
          return;

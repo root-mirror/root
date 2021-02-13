@@ -86,8 +86,6 @@ set(MINUIT2_HEADERS
     MnPlot.h
     MnPosDef.h
     MnPrint.h
-    MnRefCountedPointer.h
-    MnReferenceCounter.h
     MnScan.h
     MnSeedGenerator.h
     MnSimplex.h
@@ -160,6 +158,7 @@ set(MINUIT2_SOURCES
     MnPlot.cxx
     MnPosDef.cxx
     MnPrint.cxx
+    MnPrintImpl.cxx
     MnScan.cxx
     MnSeedGenerator.cxx
     MnStrategy.cxx
@@ -212,12 +211,6 @@ target_include_directories(
     PUBLIC
     $<BUILD_INTERFACE:${Minuit2_SOURCE_DIR}/inc>
     $<INSTALL_INTERFACE:include/Minuit2>
-    )
-
-target_compile_definitions(
-    Minuit2
-    PRIVATE
-    WARNINGMSG
     )
 
 target_compile_features(Minuit2 PUBLIC cxx_nullptr cxx_nonstatic_member_init)

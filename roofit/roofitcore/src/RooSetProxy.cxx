@@ -35,7 +35,6 @@ the serverRedirect changes.
 
 #include "Riostream.h"
 #include "RooSetProxy.h"
-#include "RooSetProxy.h"
 #include "RooArgSet.h"
 #include "RooAbsArg.h"
 

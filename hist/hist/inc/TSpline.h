@@ -12,10 +12,19 @@
 #ifndef ROOT_TSpline
 #define ROOT_TSpline
 
+#ifdef R__LESS_INCLUDES
+#include "TNamed.h"
+#include "TAttLine.h"
+#include "TAttFill.h"
+#include "TAttMarker.h"
+#else
 #include "TGraph.h"
+#endif
 
 class TH1;
+class TH1F;
 class TF1;
+class TGraph;
 
 class TSpline : public TNamed, public TAttLine,
                 public TAttFill, public TAttMarker
@@ -124,7 +133,7 @@ public:
    }
    Double_t Derivative(Double_t x) const {
       Double_t dx=x-fX;
-      return (fB+dx*(2*fC+3*fD*dx));      
+      return (fB+dx*(2*fC+3*fD*dx));
    }
 
 private:

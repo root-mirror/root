@@ -1,9 +1,6 @@
-/// \file rootwebpage.cpp
-/// \ingroup WebGui
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \date 2017-06-29
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Author: Sergey Linev <S.Linev@gsi.de>
+// Date: 2017-06-29
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 /*************************************************************************
  * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
@@ -19,6 +16,17 @@
 #include "TString.h"
 #include "TEnv.h"
 
+ROOT::Experimental::RLogChannel &QtWebDisplayLog()
+{
+   static ROOT::Experimental::RLogChannel sChannel("ROOT.QtWebDisplay");
+   return sChannel;
+}
+
+/** \class RootWebPage
+\ingroup qt5webdisplay
+*/
+
+
 RootWebPage::RootWebPage(QObject *parent) : QWebEnginePage(parent)
 {
    fConsole = gEnv->GetValue("WebGui.Console", (int)0);
@@ -30,17 +38,17 @@ void RootWebPage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel lvl, co
    switch (lvl) {
    case InfoMessageLevel:
       if (fConsole > 0)
-         R__DEBUG_HERE("Qt") << Form("%s:%d: %s", src.toLatin1().constData(), lineNumber,
+         R__LOG_DEBUG(0, QtWebDisplayLog()) << Form("%s:%d: %s", src.toLatin1().constData(), lineNumber,
                                      message.toLatin1().constData());
       break;
    case WarningMessageLevel:
       if (fConsole > -1)
-         R__WARNING_HERE("Qt") << Form("%s:%d: %s", src.toLatin1().constData(), lineNumber,
+         R__LOG_WARNING(QtWebDisplayLog()) << Form("%s:%d: %s", src.toLatin1().constData(), lineNumber,
                                        message.toLatin1().constData());
       break;
    case ErrorMessageLevel:
       if (fConsole > -2)
-         R__ERROR_HERE("Qt") << Form("%s:%d: %s", src.toLatin1().constData(), lineNumber,
+         R__LOG_ERROR(QtWebDisplayLog()) << Form("%s:%d: %s", src.toLatin1().constData(), lineNumber,
                                      message.toLatin1().constData());
       break;
    }

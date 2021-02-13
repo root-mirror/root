@@ -46,6 +46,7 @@
 #pragma link C++ class TLeafI+;
 #pragma link C++ class TLeafS+;
 #pragma link C++ class TLeafL+;
+#pragma link C++ class TLeafG+;
 #pragma link C++ class TLeafO+;
 #pragma link C++ class TNtuple-;
 #pragma link C++ class TNtupleD-;

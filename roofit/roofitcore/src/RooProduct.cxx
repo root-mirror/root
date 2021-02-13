@@ -148,6 +148,8 @@ RooProduct::ProdMap* RooProduct::groupProductTerms(const RooArgSet& allVars) con
   }
   if (indep->getSize()!=0) {
     map->push_back( std::make_pair(new RooArgSet(),indep) );
+  } else {
+     delete indep;
   }
 
   // Map observables -> functions ; start with individual observables
@@ -371,7 +373,7 @@ Double_t RooProduct::evaluate() const
   for (const auto item : _compCSet) {
     auto ccomp = static_cast<const RooAbsCategory*>(item);
 
-    prod *= ccomp->getIndex() ;
+    prod *= ccomp->getCurrentIndex() ;
   }
   
   return prod ;

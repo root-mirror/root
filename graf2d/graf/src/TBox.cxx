@@ -11,8 +11,9 @@
 
 #include <stdlib.h>
 
-#include "Riostream.h"
+#include <iostream>
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TBox.h"
 #include "TVirtualPad.h"
 #include "TVirtualX.h"
@@ -667,7 +668,7 @@ void TBox::ls(Option_t *) const
 
 void TBox::Paint(Option_t *option)
 {
-   PaintBox(gPad->XtoPad(fX1),gPad->YtoPad(fY1),gPad->XtoPad(fX2),gPad->YtoPad(fY2),option);
+   if(gPad) PaintBox(gPad->XtoPad(fX1),gPad->YtoPad(fY1),gPad->XtoPad(fX2),gPad->YtoPad(fY2),option);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -800,6 +801,7 @@ Rectangle_t TBox::GetBBox()
 TPoint TBox::GetBBoxCenter()
 {
    TPoint p;
+   if (!gPad) return (p);
    p.SetX(gPad->XtoPixel(TMath::Min(fX1,fX2)+0.5*(TMath::Max(fX1, fX2)-TMath::Min(fX1, fX2))));
    p.SetY(gPad->YtoPixel(TMath::Min(fY1,fY2)+0.5*(TMath::Max(fY1, fY2)-TMath::Min(fY1, fY2))));
    return(p);
@@ -810,6 +812,7 @@ TPoint TBox::GetBBoxCenter()
 
 void TBox::SetBBoxCenter(const TPoint &p)
 {
+   if (!gPad) return;
    Double_t w = TMath::Max(fX1, fX2)-TMath::Min(fX1, fX2);
    Double_t h = TMath::Max(fY1, fY2)-TMath::Min(fY1, fY2);
    if (fX2>fX1) {
@@ -835,6 +838,7 @@ void TBox::SetBBoxCenter(const TPoint &p)
 
 void TBox::SetBBoxCenterX(const Int_t x)
 {
+   if (!gPad) return;
    if (x<0) return;
    Double_t w = TMath::Max(fX1, fX2)-TMath::Min(fX1, fX2);
    if (fX2>fX1) {
@@ -852,6 +856,7 @@ void TBox::SetBBoxCenterX(const Int_t x)
 
 void TBox::SetBBoxCenterY(const Int_t y)
 {
+   if (!gPad) return;
    if (y<0) return;
    Double_t h = TMath::Max(fY1, fY2)-TMath::Min(fY1, fY2);
    if (fY2>fY1) {
@@ -871,6 +876,7 @@ void TBox::SetBBoxCenterY(const Int_t y)
 void TBox::SetBBoxX1(const Int_t x)
 {
    if (x<0) return;
+   if (!gPad) return;
    fX1 = gPad->PixeltoX(x);
 }
 
@@ -881,6 +887,7 @@ void TBox::SetBBoxX1(const Int_t x)
 void TBox::SetBBoxX2(const Int_t x)
 {
    if (x<0) return;
+   if (!gPad) return;
    fX2 = gPad->PixeltoX(x);
 }
 
@@ -890,6 +897,7 @@ void TBox::SetBBoxX2(const Int_t x)
 void TBox::SetBBoxY1(const Int_t y)
 {
    if (y<0) return;
+   if (!gPad) return;
    fY2 = gPad->PixeltoY(y - gPad->VtoPixel(0));
 }
 
@@ -900,5 +908,6 @@ void TBox::SetBBoxY1(const Int_t y)
 void TBox::SetBBoxY2(const Int_t y)
 {
    if (y<0) return;
+   if (!gPad) return;
    fY1 = gPad->PixeltoY(y - gPad->VtoPixel(0));
 }

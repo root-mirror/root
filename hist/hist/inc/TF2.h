@@ -44,7 +44,7 @@ public:
 
    // constructor using a functor
 
-   TF2(const char *name, ROOT::Math::ParamFunctor f, Double_t xmin = 0, Double_t xmax = 1, Double_t ymin = 0, Double_t ymax = 1, Int_t npar = 0, Int_t ndim = 2);  
+   TF2(const char *name, ROOT::Math::ParamFunctor f, Double_t xmin = 0, Double_t xmax = 1, Double_t ymin = 0, Double_t ymax = 1, Int_t npar = 0, Int_t ndim = 2);
 
 
    // Template constructors from a pointer to any C++ class of type PtrObj with a specific member function of type
@@ -54,33 +54,33 @@ public:
       TF1(name,p,memFn,xmin,xmax,npar,ndim),
    fYmin(ymin), fYmax(ymax), fNpy(30), fContour(0)
    {
-      fNpx = 30; 
+      fNpx = 30;
    }
-   /// backward compatible ctor 
+   /// backward compatible ctor
    template <class PtrObj, typename MemFn>
    TF2(const char *name, const  PtrObj& p, MemFn memFn, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, Int_t npar, const char * , const char *) :
       TF1(name,p,memFn,xmin,xmax,npar,2),
    fYmin(ymin), fYmax(ymax), fNpy(30), fContour(0)
    {
-      fNpx = 30; 
+      fNpx = 30;
    }
-   
-   // Template constructors from any  C++ callable object,  defining  the operator() (double * , double *) 
-   // and returning a double.    
-   template <typename Func> 
-   TF2(const char *name, Func f, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, Int_t npar,Int_t ndim = 2) : 
+
+   // Template constructors from any  C++ callable object,  defining  the operator() (double * , double *)
+   // and returning a double.
+   template <typename Func>
+   TF2(const char *name, Func f, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, Int_t npar,Int_t ndim = 2) :
       TF1(name,f,xmin,xmax,npar,ndim),
    fYmin(ymin), fYmax(ymax), fNpy(30), fContour(0)
    {
-      fNpx = 30; 
+      fNpx = 30;
    }
-   /// backward compatible ctor 
-   template <typename Func> 
-   TF2(const char *name, Func f, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, Int_t npar,const char *) : 
+   /// backward compatible ctor
+   template <typename Func>
+   TF2(const char *name, Func f, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, Int_t npar,const char *) :
       TF1(name,f,xmin,xmax,npar,2),
    fYmin(ymin), fYmax(ymax), fNpy(30), fContour(0)
    {
-      fNpx = 30; 
+      fNpx = 30;
    }
 
 
@@ -99,9 +99,9 @@ public:
    virtual Double_t GetContourLevel(Int_t level) const;
           Int_t     GetNpy() const {return fNpy;}
    virtual char    *GetObjectInfo(Int_t px, Int_t py) const;
-       Double_t     GetRandom();
-       Double_t     GetRandom(Double_t xmin, Double_t xmax);
-   virtual void     GetRandom2(Double_t &xrandom, Double_t &yrandom);
+   Double_t GetRandom(TRandom * rng = nullptr, Option_t * opt = nullptr);
+   Double_t GetRandom(Double_t xmin, Double_t xmax, TRandom * rng = nullptr, Option_t * opt = nullptr);
+   virtual void     GetRandom2(Double_t &xrandom, Double_t &yrandom, TRandom * rng = nullptr);
    using TF1::GetRange;
    virtual void     GetRange(Double_t &xmin, Double_t &ymin, Double_t &xmax, Double_t &ymax) const;
    virtual void     GetRange(Double_t &xmin, Double_t &ymin, Double_t &zmin, Double_t &xmax, Double_t &ymax, Double_t &zmax) const;

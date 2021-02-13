@@ -19,10 +19,9 @@
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TVirtualViewer3D.h"
-#include "TClass.h"
 #include "TMath.h"
 
-#include <assert.h>
+#include <cassert>
 
 ClassImp(TShape);
 

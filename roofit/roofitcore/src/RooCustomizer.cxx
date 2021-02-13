@@ -147,22 +147,21 @@
 */
 
 
-#include "RooFit.h"
+#include "RooCustomizer.h"
 
-#include "TClass.h"
-#include "TStopwatch.h"
-
-#include "RooAbsCategoryLValue.h" 
+#include "RooAbsCategoryLValue.h"
 #include "RooAbsCategory.h"
 #include "RooAbsArg.h"
 #include "RooAbsPdf.h"
 #include "RooArgSet.h"
 #include "RooArgList.h"
 #include "RooMsgService.h"
+#include "RooHelpers.h"
 
-#include "RooCustomizer.h"
+#include <iostream>
+#include "strtok.h"
+#include "strlcpy.h"
 
-#include "Riostream.h"
 #include "RooWorkspace.h"
 #include "RooGlobalFunc.h"
 #include "RooConstVar.h"
@@ -179,10 +178,11 @@ using namespace std;
 ClassImp(RooCustomizer); 
 ;
 
+namespace {
 
 static Int_t init();
 
-static Int_t dummy = init() ;
+Int_t dummy = init() ;
 
 static Int_t init()
 {
@@ -192,6 +192,7 @@ static Int_t init()
   return 0 ;
 }
 
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor with a prototype and masterCat index category.
@@ -199,7 +200,7 @@ static Int_t init()
 /// replaceArg() and splitArg() functionality.
 /// \param[in] pdf Proto PDF to be customised.
 /// \param[in] masterCat Category to be used for splitting.
-/// \param[in/out] splitLeafs All nodes created in
+/// \param[in,out] splitLeafs All nodes created in
 /// the customisation process are added to this set.
 /// The user can provide nodes that are *taken*
 /// from the set if they have a name that matches `<parameterNameToBeReplaced>_<category>`.
@@ -210,7 +211,7 @@ static Int_t init()
 ///  auto yield1 = new RooFormulaVar("yieldSig_BBG1m2T","sigy1","M/3.360779",mass);
 ///  customisedLeafs.addOwned(*yield1);
 /// ```
-/// \param[in/out] splitLeafsAll All leafs that are used when customising are collected here.
+/// \param[in,out] splitLeafsAll All leafs that are used when customising are collected here.
 /// If this set already contains leaves, they will be used for customising if the names match
 /// as above.
 /// 
@@ -352,10 +353,10 @@ void RooCustomizer::replaceArg(const RooAbsArg& orig, const RooAbsArg& subst)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Build a clone of the prototype executing all registered 'replace' rules
-/// If verbose is set a message is printed for each leaf or branch node
+/// Build a clone of the prototype executing all registered 'replace' rules.
+/// If verbose is set, a message is printed for each leaf or branch node
 /// modification. The returned head node owns all cloned branch nodes
-/// that were created in the cloning proces
+/// that were created in the cloning process.
 
 RooAbsArg* RooCustomizer::build(Bool_t verbose) 
 {
@@ -441,7 +442,7 @@ RooAbsArg* RooCustomizer::doBuild(const char* masterCatState, Bool_t verbose)
       TString newName(node->GetName()) ;
       if (masterCatState) {
 	newName.Append("_") ;
-	newName.Append(splitCat->getLabel()) ;	
+	newName.Append(splitCat->getCurrentLabel()) ;	
       }
 
       // Check if this node instance already exists
@@ -475,7 +476,7 @@ RooAbsArg* RooCustomizer::doBuild(const char* masterCatState, Bool_t verbose)
 
 	TString newTitle(node->GetTitle()) ;
 	newTitle.Append(" (") ;
-	newTitle.Append(splitCat->getLabel()) ;
+	newTitle.Append(splitCat->getCurrentLabel()) ;
 	newTitle.Append(")") ;
       
 	// Create a new clone
@@ -679,7 +680,7 @@ void RooCustomizer::printMultiline(ostream& os, Int_t /*content*/, Bool_t /*verb
 void RooCustomizer::setCloneBranchSet(RooArgSet& cloneBranchSet) 
 {
   _cloneBranchList = &cloneBranchSet ;
-  _cloneBranchList->setHashTableSize(1000) ;
+  _cloneBranchList->useHashMapForFind(true);
 }
 
 
@@ -770,9 +771,10 @@ std::string RooCustomizer::CustIFace::create(RooFactoryWSTool& ft, const char* t
   if (instanceName) {
     // Set the desired name of the top level node
     targ->SetName(instanceName) ;
-    ft.ws().import(cust.cloneBranchList(),RooFit::Silence(),RooFit::NoRecursion(kTRUE)) ;
+    // Now import everything. What we didn't touch gets recycled, everything else was cloned here:
+    ft.ws().import(cust.cloneBranchList(), RooFit::Silence(true), RooFit::RecycleConflictNodes(true),    RooFit::NoRecursion(false));
   } else {
-    ft.ws().import(cust.cloneBranchList(),RooFit::Silence(),RooFit::RenameConflictNodes("orig",1),RooFit::NoRecursion(kTRUE)) ;    
+    ft.ws().import(cust.cloneBranchList(), RooFit::Silence(true), RooFit::RenameConflictNodes("orig",1), RooFit::NoRecursion(true));
   }
 
   return string(instanceName?instanceName:targ->GetName()) ;

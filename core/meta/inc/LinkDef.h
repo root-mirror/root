@@ -35,6 +35,8 @@
 #pragma link C++ class ROOT::TSchemaRule+;
 #pragma link C++ class ROOT::TSchemaRule::TSources+;
 #pragma link C++ class ROOT::Detail::TSchemaRuleSet-;
+#pragma link C++ options=version(0) class TVirtualObject-;
+#pragma link C++ options=version(0) class TVirtualArray-;
 #pragma link C++ class TGlobal;
 #pragma link C++ class TMethod;
 #pragma link C++ class TMethodArg;

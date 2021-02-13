@@ -22,20 +22,25 @@ using namespace TMVA::DNN::RNN;
 
 
 int main() {
+   TString rnnType = "RNN";
+
+   using Architecture_t = TCpu<Double_t>;
+
    std::cout << "Training RNN to identity first";
 
    //testFullRNN(size_t batchSize, size_t stateSize, size_t inputSize, size_t outputSize)
    // reconstruct 8 bit vector
-   // batchsize, statesize, inputsize, outputsize
-   testFullRNN<TCpu<double>>(2, 3, 2, 2) ;
-   //testFullRNN<TReference<double>>(64, 10, 8, 8) ;
-   //testFullRNN<TReference<double>>(3, 8, 100, 50) ;
+   bool iret = true;
+   bool debug = false;
+   // batchsize, statesize, inputsize, outputsize (timesteps = 1 fixed)
+   iret &= testFullRNN<Architecture_t>(rnnType,2, 3, 2, 2, debug) ;
 
    // test a full RNN with 5 time steps and different signal/backgrund time dependent shapes
    // batchsize, statesize , inputsize, seed
    int seed = 111;
-   std::cout << "Training RNN to simple time dependent data ";
-   testFullRNN2<TCpu<double>>(64, 10, 5, seed) ;
+   debug = false;
+   std::cout << "Training RNN to simple time dependent data " << std::endl;
+   iret &= testFullRNN2<Architecture_t>(rnnType, 64, 10, 5, seed, debug);
 
-   return 0;
+   return iret ? 0 : -1;
 }

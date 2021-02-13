@@ -39,6 +39,10 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <vector>
+#include <map>
+#include <string>
+#include <sstream>
+
 #include "TString.h"
 #include "TTree.h"
 #include "TRandom3.h"
@@ -56,7 +60,7 @@
 #define DNNCPU
 #endif
 #ifdef R__HAS_TMVAGPU
-#define DNNCUDA
+//#define DNNCUDA
 #endif
 
 #ifdef DNNCPU

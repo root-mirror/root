@@ -42,7 +42,7 @@ class REveTrack : public REveLine
    friend class REveTrackList;
 
 private:
-   REveTrack &operator=(const REveTrack &); // Not implemented
+   REveTrack &operator=(const REveTrack &) = delete;
 
 public:
    typedef std::vector<REvePathMarkD> vPathMark_t;
@@ -145,8 +145,8 @@ class REveTrackList : public REveElement,
                       public TAttLine
 {
 private:
-   REveTrackList(const REveTrackList &);            // Not implemented
-   REveTrackList &operator=(const REveTrackList &); // Not implemented
+   REveTrackList(const REveTrackList &) = delete;
+   REveTrackList &operator=(const REveTrackList &) = delete;
 
 protected:
    REveTrackPropagator *fPropagator{nullptr}; // Basic track rendering parameters, not enforced to elements.

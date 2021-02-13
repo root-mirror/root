@@ -1,16 +1,13 @@
 #ifndef TMVAMultiClassGui__HH
 #define TMVAMultiClassGui__HH
-#include <iostream>
-#include <vector>
 
 #include "TList.h"
-#include "TROOT.h"
 #include "TKey.h"
 #include "TString.h"
 #include "TControlBar.h"
-#include "TObjString.h"
 
 #include "tmvaglob.h"
+
 namespace TMVA{
 
 

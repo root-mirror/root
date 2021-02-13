@@ -66,7 +66,6 @@
 #include "Riostream.h"
 #include "TString.h"
 #include "TObjString.h"
-#include "TObjArray.h"
 #include "TMap.h"
 #include "TSystem.h"
 #include "TAlienJDL.h"

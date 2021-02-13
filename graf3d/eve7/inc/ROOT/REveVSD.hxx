@@ -23,8 +23,8 @@ namespace ROOT {
 namespace Experimental {
 
 class REveVSD : public TObject {
-   REveVSD(const REveVSD &);            // Not implemented
-   REveVSD &operator=(const REveVSD &); // Not implemented
+   REveVSD(const REveVSD &) = delete;
+   REveVSD &operator=(const REveVSD &) = delete;
 
 protected:
    TFile *fFile{nullptr};           //!

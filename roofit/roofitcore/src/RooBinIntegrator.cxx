@@ -19,8 +19,8 @@
 \class RooBinIntegrator
 \ingroup Roofitcore
 
-RooBinIntegrator implements an adaptive one-dimensional 
-numerical integration algorithm. 
+RooBinIntegrator computes the integral over a binned distribution by summing the bin
+contents of all bins.
 **/
 
 

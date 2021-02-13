@@ -12,9 +12,10 @@
 #ifndef ROOT_TGeoXtru
 #define ROOT_TGeoXtru
 
-#include <mutex>
-
 #include "TGeoBBox.h"
+
+#include <mutex>
+#include <vector>
 
 class TGeoPolygon;
 
@@ -52,8 +53,8 @@ protected:
    mutable Int_t                      fThreadSize; //! size of thread-specific array
    mutable std::mutex                 fMutex;      //! mutex for thread data
 
-   TGeoXtru(const TGeoXtru&);
-   TGeoXtru& operator=(const TGeoXtru&);
+   TGeoXtru(const TGeoXtru&) = delete;
+   TGeoXtru& operator=(const TGeoXtru&) = delete;
 
    // methods
    Double_t              DistToPlane(const Double_t *point, const Double_t *dir, Int_t iz, Int_t ivert, Double_t stepmax, Bool_t in) const;

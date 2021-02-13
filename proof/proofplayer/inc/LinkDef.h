@@ -24,7 +24,6 @@
 #pragma link C++ class TProofPlayerSlave+;
 #pragma link C++ class TProofPlayerSuperMaster+;
 
-#pragma link C++ class TVirtualPacketizer+;
 #pragma link C++ class TPacketizer+;
 #pragma link C++ class TPacketizerUnit+;
 #pragma link C++ class TPacketizerAdaptive+;

@@ -33,7 +33,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <string>
 #include <vector>
 
 #include "TMVA/GeneticGenes.h"

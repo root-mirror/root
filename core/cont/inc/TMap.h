@@ -44,8 +44,8 @@ friend class  TMapIter;
 private:
    THashTable   *fTable;     //Hash table used to store TPair's
 
-   TMap(const TMap& map);             // not implemented
-   TMap& operator=(const TMap& map);  // not implemented
+   TMap(const TMap& map) = delete;
+   TMap& operator=(const TMap& map) = delete;
 
 protected:
    enum EStatusBits { kIsOwnerValue = BIT(15) };
@@ -105,7 +105,7 @@ private:
    TObject  *fKey;
    TObject  *fValue;
 
-   TPair& operator=(const TPair&); // Not implemented
+   TPair& operator=(const TPair&) = delete;
 
 public:
    TPair(TObject *key, TObject *value) : fKey(key), fValue(value) { }
@@ -151,7 +151,7 @@ private:
    THashTableIter   *fCursor;      //current position in map
    Bool_t            fDirection;   //iteration direction
 
-   TMapIter() : fMap(0), fCursor(0), fDirection(kIterForward) { }
+   TMapIter() : fMap(nullptr), fCursor(nullptr), fDirection(kIterForward) { }
 
 public:
    TMapIter(const TMap *map, Bool_t dir = kIterForward);

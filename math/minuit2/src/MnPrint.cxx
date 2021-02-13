@@ -22,356 +22,434 @@
 #include "Minuit2/MnPlot.h"
 
 #include <iomanip>
+#include <utility>
+#include <cstring>
+#include <vector>
+#include <algorithm>
 
-#define PRECISION 13
-#define WIDTH     20
-
+constexpr int PRECISION = 10;
+constexpr int WIDTH = PRECISION + 7;
 
 namespace ROOT {
+namespace Minuit2 {
 
-   namespace Minuit2 {
+// we don't use a std::vector or std::array here, because we want a mix of the two;
+// a stack-allocated container with fixed capacity but dynamic size, i.e. the equivalent
+// of static_vector from the Boost Container library
+template <class T>
+class PrefixStack {
+public:
+   using const_pointer = const T *;
+   using const_reference = const T &;
 
-#ifdef DEBUG
-int gPrintLevel = 3;
-#else
-int gPrintLevel = 0;
-#endif
+   void Push(T prefix)
+   {
+      if (fSize < fMaxSize)
+         fData[fSize] = prefix;
+      else {
+         // crop the stack when it becomes too deep as a last resort, but this should not
+         // happen, fMaxSize should be increased instead if this occurs
+         fData[fMaxSize - 1] = prefix;
+         fData[fMaxSize - 2] = "...";
+      }
+      ++fSize;
+   }
 
+   void Pop()
+   {
+      assert(fSize > 0);
+      --fSize;
+   }
 
-int MnPrint::SetLevel(int level) {
-   int prevLevel  = gPrintLevel;
-   gPrintLevel = level;
-   return prevLevel;
+   const_pointer begin() const { return fData; }
+   const_pointer end() const { return fData + (fSize < fMaxSize ? fSize : fMaxSize); }
+   const_reference back() const { return *(end() - 1); }
+
+private:
+   static constexpr unsigned fMaxSize = 10; // increase as needed
+   T fData[fMaxSize];
+   unsigned fSize = 0;
+};
+
+// gShowPrefixStack determines how messages are printed, it acts on all threads;
+// race conditions when writing to this do not cause failures
+bool gShowPrefixStack = false;
+
+// writing to gPrefixFilter is not thread-safe, should be done only from main thread
+std::vector<std::string> gPrefixFilter;
+
+// gPrintLevel must be thread-local, because it may be manipulated by a thread to
+// temporarily turn logging on or off; Minuit2Minimizer does this, for example
+thread_local int gPrintLevel = 0;
+
+// gPrefixStack must be thread-local
+thread_local PrefixStack<const char *> gPrefixStack;
+
+MnPrint::MnPrint(const char *prefix, int level) : fLevel{level}
+{
+   gPrefixStack.Push(prefix);
 }
 
-int MnPrint::Level( ) {
+MnPrint::~MnPrint()
+{
+   gPrefixStack.Pop();
+}
+
+void MnPrint::ShowPrefixStack(bool yes)
+{
+   gShowPrefixStack = yes;
+}
+
+void MnPrint::AddFilter(const char *filter)
+{
+   gPrefixFilter.emplace_back(filter);
+}
+
+void MnPrint::ClearFilter()
+{
+   gPrefixFilter.clear();
+}
+
+int MnPrint::SetGlobalLevel(int level)
+{
+   // should use std::exchange or boost::exchange
+   std::swap(gPrintLevel, level);
+   return level;
+}
+
+int MnPrint::GlobalLevel()
+{
    return gPrintLevel;
 }
 
-void MnPrint::PrintFcn(std::ostream & os, double value, bool endline) {
-   int pr = os.precision(PRECISION);
-   os << value;
-   if (endline) os << std::endl;
-   os.precision(pr);
+int MnPrint::SetLevel(int level)
+{
+   // should use std::exchange or boost::exchange
+   std::swap(fLevel, level);
+   return level;
 }
 
-void MnPrint::PrintState(std::ostream & os, const MinimumState & state, const char * msg, int iter) {
-   // helper function to print function value, edm and ncalls from state in one single line
-   MnPrint::PrintState(os, state.Fval(), state.Edm(), state.NFcn(), msg, iter);
+int MnPrint::Level() const
+{
+   return fLevel;
 }
 
-void MnPrint::PrintState(std::ostream & os, double fval, double edm, int ncalls, const char * msg, int iter) {
-   // helper function to print function value, edm and ncalls  and message in one single line
-   os << msg;
-   if (iter>=0) os << std::setw(3) << iter;
-   int pr = os.precision(PRECISION);
-   const int width = PRECISION+3;
-   os << " - FCN = " <<  std::setw(width) << fval;
-   os.precision(pr);
-   os << " Edm = " <<  std::setw(12) << edm << " NCalls = " << std::setw(6) << ncalls;
-   os << std::endl;
-}
-
-
-std::ostream& operator<<(std::ostream& os, const LAVector& vec) {
-   // print a vector
-   os << "LAVector parameters:" << std::endl;
-   int pr = os.precision(PRECISION);
-   {
-      int nrow = vec.size();
-      for (int i = 0; i < nrow; i++) {
-         os.width(WIDTH);
-         os << vec(i) << std::endl;
-      }
+void StreamFullPrefix(std::ostringstream &os)
+{
+   const char *prev = "";
+   for (const auto cs : gPrefixStack) {
+      // skip repeated prefixes; repetition happens when class method calls another
+      // method of the same class and both set up a MnPrint instance
+      if (std::strcmp(cs, prev) != 0)
+         os << cs << ":";
+      prev = cs;
    }
-   os.precision(pr);
-   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const LASymMatrix& matrix) {
-   // print a matrix
-   os << "LASymMatrix parameters:" << std::endl;
-   int pr = os.precision(8);
-   {
-      //os << std::endl;
-      int n = matrix.Nrow();
-      for (int i = 0; i < n; i++) {
-         for (int j = 0; j < n; j++) {
-            os.width(15); os << matrix(i,j);
-         }
-         os << std::endl;
-      }
-   }
-   os.precision(pr);
-   return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const MnUserParameters& par) {
-   // print the MnUserParameter object
-   os << std::endl;
-
-   os << "# ext. |" << "|   Name    |" << "|   type  |" << "|     Value     |" << "|  Error +/- " << std::endl;
-
-   os << std::endl;
-   int pr = os.precision();
-
-   bool atLoLim = false;
-   bool atHiLim = false;
-   for(std::vector<MinuitParameter>::const_iterator ipar = par.Parameters().begin(); ipar != par.Parameters().end(); ++ipar) {
-      os << std::setw(4) << (*ipar).Number() << std::setw(5) << "||";
-      os << std::setw(10) << (*ipar).Name()   << std::setw(3) << "||";
-      if((*ipar).IsConst()) {
-         os << "  const  ||" << std::setprecision(PRECISION) << std::setw(WIDTH) << (*ipar).Value() << " ||" << std::endl;
-      } else if((*ipar).IsFixed()) {
-         os << "  fixed  ||" << std::setprecision(PRECISION) << std::setw(WIDTH) << (*ipar).Value() << " ||" << std::endl;
-      } else if((*ipar).HasLimits()) {
-         if((*ipar).Error() > 0.) {
-            os << " limited ||" << std::setprecision(PRECISION) << std::setw(WIDTH) << (*ipar).Value();
-            if(fabs((*ipar).Value() - (*ipar).LowerLimit()) < par.Precision().Eps2()) {
-               os <<"*";
-               atLoLim = true;
-            }
-            if(fabs((*ipar).Value() - (*ipar).UpperLimit()) < par.Precision().Eps2()) {
-               os <<"**";
-               atHiLim = true;
-            }
-            os << " ||" << std::setw(12) << (*ipar).Error() << std::endl;
-         } else
-            os << "  free   ||" << std::setprecision(PRECISION) << std::setw(WIDTH) << (*ipar).Value() << " ||" << std::setw(12) << "no" << std::endl;
-      } else {
-         if((*ipar).Error() > 0.)
-            os << "  free   ||" << std::setprecision(PRECISION) << std::setw(WIDTH) << (*ipar).Value() << " ||" << std::setw(12) << (*ipar).Error() << std::endl;
-         else
-            os << "  free   ||" << std::setprecision(PRECISION) << std::setw(WIDTH) << (*ipar).Value() << " ||" << std::setw(12) << "no" << std::endl;
-
-      }
-   }
-   os << std::endl;
-   if(atLoLim) os << "* Parameter is at Lower limit" << std::endl;
-   if(atHiLim) os << "** Parameter is at Upper limit" << std::endl;
-   os << std::endl;
-   os.precision(pr);
-
-   return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const MnUserCovariance& matrix) {
-   // print the MnUserCovariance
-   os << std::endl;
-
-   os << "MnUserCovariance: " << std::endl;
-   int pr = os.precision(6);
-   {
-      os << std::endl;
-      unsigned int n = matrix.Nrow();
-      for (unsigned int i = 0; i < n; i++) {
-         for (unsigned int j = 0; j < n; j++) {
-            os.width(13); os << matrix(i,j);
-         }
-         os << std::endl;
-      }
-   }
-
-   os << std::endl;
-   os << "MnUserCovariance Parameter correlations: " << std::endl;
-
-   {
-      os << std::endl;
-      unsigned int n = matrix.Nrow();
-      for (unsigned int i = 0; i < n; i++) {
-         double di = matrix(i,i);
-         for (unsigned int j = 0; j < n; j++) {
-            double dj = matrix(j,j);
-            os.width(13); os << matrix(i,j)/sqrt(fabs(di*dj));
-         }
-         os << std::endl;
-      }
-   }
-
-   os.precision(pr);
-   return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const MnGlobalCorrelationCoeff& coeff) {
-   // print the global correlation coefficient
-   os << std::endl;
-
-   os << "MnGlobalCorrelationCoeff: " << std::endl;
-   int pr =  os.precision(6);
-   {
-      os << std::endl;
-      for (unsigned int i = 0; i < coeff.GlobalCC().size(); i++) {
-         os.width(13); os << coeff.GlobalCC()[i];
-         os << std::endl;
-      }
-   }
-
-   os.precision(pr);
-   return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const MnUserParameterState& state) {
-   // print the MnUserParameterState
-   os << std::endl;
-
-   if(!state.IsValid()) {
-      os << std::endl;
-      os <<"WARNING: MnUserParameterState is not valid."<<std::endl;
-      os << std::endl;
-   }
-   int pr = os.precision(PRECISION);
-
-   os <<"# of function calls: "<<state.NFcn()<<std::endl;
-   os <<"function Value: " << state.Fval()<<std::endl;
-   os <<"expected distance to the Minimum (edm): " << state.Edm()<<std::endl;
-   os <<"external parameters: "<<state.Parameters()<<std::endl;
-   os <<"covariance matrix status: " << state.CovarianceStatus() << std::endl;
-   if(state.HasCovariance())
-      os <<"covariance matrix: "<<state.Covariance()<<std::endl;
-   else
-      os <<"covariance matrix is not present or not valid "<<std::endl;
-   if(state.HasGlobalCC())
-      os <<"global correlation coefficients : "<<state.GlobalCC()<<std::endl;
-
-   if(!state.IsValid())
-      os <<"WARNING: MnUserParameterState is not valid."<<std::endl;
-
-   os << std::endl;
-   os.precision(pr);
-
-   return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const FunctionMinimum& min) {
-   // print the FunctionMinimum
-   os << std::endl;
-   if(!min.IsValid()) {
-      os <<"WARNING: Minuit did not converge."<<std::endl;
-      os << std::endl;
+void MnPrint::StreamPrefix(std::ostringstream &os)
+{
+   if (gShowPrefixStack) {
+      // show full prefix stack, useful to set sharp filters and to see what calls what
+      StreamFullPrefix(os);
    } else {
-      os <<"Minuit did successfully converge."<<std::endl;
+      // show only the top of the prefix stack (the prefix of the innermost scope)
+      os << gPrefixStack.back();
    }
-   int pr = os.precision(PRECISION);
+}
 
-   os <<"# of function calls: "<<min.NFcn()<<std::endl;
-   os <<"minimum function Value: "  << min.Fval()<<std::endl;
-   os <<"minimum edm: "  << min.Edm()<<std::endl;
-   os <<"minimum internal state vector: "<<min.Parameters().Vec()<<std::endl;
-   if(min.HasValidCovariance())
-      os <<"minimum internal covariance matrix: "<<min.Error().Matrix()<<std::endl;
+bool MnPrint::Hidden()
+{
+   // Filtering is not implemented a very efficient way to keep it simple, but the
+   // implementation ensures that the performance drop is opt-in. Only when filters are
+   // used there is a performance loss.
 
-   os << min.UserParameters() << std::endl;
-   //os << min.UserCovariance() << std::endl;
-   //os << min.UserState().GlobalCC() << std::endl;
+   // The intended use case of filtering is for debugging, when highest performance
+   // does not matter. Filtering is only every attempted if the message passes the
+   // threshold level.
 
-   if(!min.IsValid()) {
-      os <<"WARNING: FunctionMinimum is invalid: " << std::endl;
-      if ( !min.State().IsValid() )
-         os << "\t State is invalid" << std::endl;
-      if ( min.IsAboveMaxEdm() )
-         os << "\t Edm is above max" << std::endl;
-      if ( min.HasReachedCallLimit() )
-         os << "\t Reached call limit" << std::endl;
+   // Filtering is very fast when the filter is empty.
+   if (gPrefixFilter.empty())
+      return false;
+
+   std::ostringstream os;
+   os << "^";
+   StreamFullPrefix(os);
+   std::string prefix = os.str();
+   // Filtering works like grep, the message is shown if any of the filter strings match.
+   // To only match the beginning of the prefix, use "^". For example "^MnHesse" only
+   // matches direct execution of MnHesse, but not MnHesse called by MnMigrad.
+   for (const auto &s : gPrefixFilter) {
+      if (prefix.find(s) != std::string::npos)
+         return false;
    }
+   return true;
+}
 
+MnPrint::Oneline::Oneline(double fcn, double edm, int ncalls, int iter)
+   : fFcn(fcn), fEdm(edm), fNcalls(ncalls), fIter(iter)
+{
+}
 
-   os << std::endl;
+MnPrint::Oneline::Oneline(const MinimumState &state, int iter)
+   : MnPrint::Oneline(state.Fval(), state.Edm(), state.NFcn(), iter)
+{
+}
+
+MnPrint::Oneline::Oneline(const FunctionMinimum &fmin, int iter) : MnPrint::Oneline(fmin.State(), iter) {}
+
+std::ostream &operator<<(std::ostream &os, const MnPrint::Oneline &x)
+{
+   // print iteration, function value, edm and ncalls in one single line
+   if (x.fIter >= 0)
+      os << std::setw(4) << x.fIter << " - ";
+   const int pr = os.precision(PRECISION);
+   os << "FCN = " << std::setw(WIDTH) << x.fFcn << " Edm = " << std::setw(WIDTH) << x.fEdm
+      << " NCalls = " << std::setw(6) << x.fNcalls;
+   os.precision(pr);
+   return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const LAVector &vec)
+{
+   // print a vector
+   const int pr = os.precision(PRECISION);
+   const int nrow = vec.size();
+   for (int i = 0; i < nrow; i++) {
+      os << '\n';
+      os.width(WIDTH);
+      os << vec(i);
+   }
+   os.precision(pr);
+   return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const LASymMatrix &matrix)
+{
+   // print a matrix
+   const int pr = os.precision(8);
+   const int n = matrix.Nrow();
+   for (int i = 0; i < n; i++) {
+      os << '\n';
+      for (int j = 0; j < n; j++) {
+         os.width(15);
+         os << matrix(i, j);
+      }
+   }
+   os.precision(pr);
+   return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const MnUserParameters &par)
+{
+   // print the MnUserParameter object
+   os << "\n  Pos |    Name    |  type   |      Value       |    Error +/-";
+
+   int pr = os.precision();
+
+   const double eps2 = par.Precision().Eps2();
+   for (auto &&p : par.Parameters()) {
+      os << "\n" << std::setw(5) << p.Number() << " | " << std::setw(10) << p.Name() << " |";
+      if (p.IsConst())
+         os << "  const  |";
+      else if (p.IsFixed())
+         os << "  fixed  |";
+      else if (p.HasLimits())
+         os << " limited |";
+      else
+         os << "  free   |";
+      os.precision(PRECISION);
+      os.width(WIDTH);
+      os << p.Value() << " | " << std::setw(12);
+      if (p.Error() > 0) {
+         os << p.Error();
+         if (p.HasLimits()) {
+            if (std::fabs(p.Value() - p.LowerLimit()) < eps2) {
+               os << " (at lower limit)";
+            } else if (std::fabs(p.Value() - p.UpperLimit()) < eps2) {
+               os << " (at upper limit)";
+            }
+         }
+      }
+   }
    os.precision(pr);
 
    return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const MinimumState& min) {
+std::ostream &operator<<(std::ostream &os, const MnUserCovariance &matrix)
+{
+   // print the MnUserCovariance
+   const int pr = os.precision(6);
 
-   os << std::endl;
-   int pr = os.precision(PRECISION);
+   unsigned int n = matrix.Nrow();
+   for (unsigned int i = 0; i < n; i++) {
+      os << '\n';
+      for (unsigned int j = 0; j < n; j++) {
+         os.width(13);
+         os << matrix(i, j);
+      }
+      os << " | ";
+      double di = matrix(i, i);
+      for (unsigned int j = 0; j < n; j++) {
+         double dj = matrix(j, j);
+         os.width(13);
+         os << matrix(i, j) / std::sqrt(std::fabs(di * dj));
+      }
+   }
+   os.precision(pr);
+   return os;
+}
 
-   os <<"minimum function Value: "  << min.Fval()<<std::endl;
-   os <<"minimum edm: " << min.Edm()<<std::endl;
-   os <<"minimum internal state vector: "<<min.Vec()<<std::endl;
-   os <<"minimum internal Gradient vector: "<<min.Gradient().Vec()<<std::endl;
-   if(min.HasCovariance())
-      os <<"minimum internal covariance matrix: "<<min.Error().Matrix()<<std::endl;
+std::ostream &operator<<(std::ostream &os, const MnGlobalCorrelationCoeff &coeff)
+{
+   // print the global correlation coefficient
+   const int pr = os.precision(6);
+   for (auto &&x : coeff.GlobalCC()) {
+      os << '\n';
+      os.width(6 + 7);
+      os << x;
+   }
+   os.precision(pr);
+   return os;
+}
 
-   os << std::endl;
+std::ostream &operator<<(std::ostream &os, const MnUserParameterState &state)
+{
+   // print the MnUserParameterState
+   const int pr = os.precision(PRECISION);
+   os << "\n  Valid         : " << (state.IsValid() ? "yes" : "NO") << "\n  Function calls: " << state.NFcn()
+      << "\n  Minimum value : " << state.Fval() << "\n  Edm           : " << state.Edm()
+      << "\n  Parameters    : " << state.Parameters() << "\n  CovarianceStatus: " << state.CovarianceStatus()
+      << "\n  Covariance and correlation matrix: ";
+   if (state.HasCovariance())
+      os << state.Covariance();
+   else
+      os << "matrix is not present or not valid";
+   if (state.HasGlobalCC())
+      os << "\n  Global correlation coefficients: " << state.GlobalCC();
+
+   os.precision(pr);
+   return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const FunctionMinimum &min)
+{
+   // print the FunctionMinimum
+   const int pr = os.precision(PRECISION);
+   os << "\n  Valid         : " << (min.IsValid() ? "yes" : "NO") << "\n  Function calls: " << min.NFcn()
+      << "\n  Minimum value : " << min.Fval() << "\n  Edm           : " << min.Edm()
+      << "\n  Internal parameters: " << min.Parameters().Vec();
+   if (min.HasValidCovariance())
+      os << "\n  Internal covariance matrix: " << min.Error().Matrix();
+   os << "\n  External parameters: " << min.UserParameters();
+   // os << min.UserCovariance() << '\n';
+   // os << min.UserState().GlobalCC() << '\n';
+
+   if (!min.IsValid()) {
+      os << "\n  FunctionMinimum is invalid:";
+      if (!min.State().IsValid())
+         os << "\n    State is invalid";
+      if (min.IsAboveMaxEdm())
+         os << "\n    Edm is above max";
+      if (min.HasReachedCallLimit())
+         os << "\n    Reached call limit";
+   }
+
    os.precision(pr);
 
    return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const MnMachinePrecision& prec) {
+std::ostream &operator<<(std::ostream &os, const MinimumState &min)
+{
+   const int pr = os.precision(PRECISION);
+   os << "\n  Minimum value : " << min.Fval() << "\n  Edm           : " << min.Edm()
+      << "\n  Internal parameters:" << min.Vec() << "\n  Internal gradient  :" << min.Gradient().Vec();
+   if (min.HasCovariance())
+      os << "\n  Internal covariance matrix:" << min.Error().Matrix();
+   os.precision(pr);
+   return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const MnMachinePrecision &prec)
+{
    // print the Precision
-   os << std::endl;
-
    int pr = os.precision(PRECISION);
-   os <<"current machine precision is set to "<<prec.Eps()<<std::endl;
-
-   os << std::endl;
+   os << "MnMachinePrecision " << prec.Eps() << '\n';
    os.precision(pr);
 
    return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const MinosError& me) {
+std::ostream &operator<<(std::ostream &os, const MinosError &me)
+{
    // print the Minos Error
-   os << std::endl;
+   os << "Minos # of function calls: " << me.NFcn() << '\n';
 
-   os <<"Minos # of function calls: "<<me.NFcn()<<std::endl;
-
-   if(!me.IsValid())
-      os << "Minos Error is not valid." <<std::endl;
-   if(!me.LowerValid())
-      os << "lower Minos Error is not valid." <<std::endl;
-   if(!me.UpperValid())
-      os << "upper Minos Error is not valid." <<std::endl;
-   if(me.AtLowerLimit())
-      os << "Minos Error is Lower limit of Parameter "<<me.Parameter()<<"." <<std::endl;
-   if(me.AtUpperLimit())
-      os << "Minos Error is Upper limit of Parameter "<<me.Parameter()<<"." <<std::endl;
-   if(me.AtLowerMaxFcn())
-      os << "Minos number of function calls for Lower Error exhausted."<<std::endl;
-   if(me.AtUpperMaxFcn())
-      os << "Minos number of function calls for Upper Error exhausted."<<std::endl;
-   if(me.LowerNewMin()) {
-      os << "Minos found a new Minimum in negative direction."<<std::endl;
-      os << me.LowerState() <<std::endl;
+   if (!me.IsValid())
+      os << "Minos Error is not valid." << '\n';
+   if (!me.LowerValid())
+      os << "lower Minos Error is not valid." << '\n';
+   if (!me.UpperValid())
+      os << "upper Minos Error is not valid." << '\n';
+   if (me.AtLowerLimit())
+      os << "Minos Error is Lower limit of Parameter " << me.Parameter() << "." << '\n';
+   if (me.AtUpperLimit())
+      os << "Minos Error is Upper limit of Parameter " << me.Parameter() << "." << '\n';
+   if (me.AtLowerMaxFcn())
+      os << "Minos number of function calls for Lower Error exhausted." << '\n';
+   if (me.AtUpperMaxFcn())
+      os << "Minos number of function calls for Upper Error exhausted." << '\n';
+   if (me.LowerNewMin()) {
+      os << "Minos found a new Minimum in negative direction." << '\n';
+      os << me.LowerState() << '\n';
    }
-   if(me.UpperNewMin()) {
-      os << "Minos found a new Minimum in positive direction."<<std::endl;
-      os << me.UpperState() <<std::endl;
+   if (me.UpperNewMin()) {
+      os << "Minos found a new Minimum in positive direction." << '\n';
+      os << me.UpperState() << '\n';
    }
 
    int pr = os.precision();
 
-   os << "# ext. |" << "|   Name    |" << "|   Value@min   |" << "|    negative   |" << "|   positive  " << std::endl;
+   os << "No  |"
+      << "|   Name    |"
+      << "|   Value@min   |"
+      << "|    negative   |"
+      << "|   positive  " << '\n';
    os << std::setw(4) << me.Parameter() << std::setw(5) << "||";
    os << std::setw(10) << me.LowerState().Name(me.Parameter()) << std::setw(3) << "||";
-   os << std::setprecision(PRECISION) << std::setw(WIDTH) << me.Min() << " ||" << std::setprecision(PRECISION) << std::setw(WIDTH) << me.Lower() << " ||" << std::setw(WIDTH) << me.Upper() << std::endl;
+   os << std::setprecision(PRECISION) << std::setw(WIDTH) << me.Min() << " ||" << std::setprecision(PRECISION)
+      << std::setw(WIDTH) << me.Lower() << " ||" << std::setw(WIDTH) << me.Upper() << '\n';
 
-   os << std::endl;
+   os << '\n';
    os.precision(pr);
 
    return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const ContoursError& ce) {
+std::ostream &operator<<(std::ostream &os, const ContoursError &ce)
+{
    // print the ContoursError
-   os << std::endl;
-   os <<"Contours # of function calls: "<<ce.NFcn()<<std::endl;
-   os << "MinosError in x: "<<std::endl;
-   os << ce.XMinosError() << std::endl;
-   os << "MinosError in y: "<<std::endl;
-   os << ce.YMinosError() << std::endl;
+   os << "Contours # of function calls: " << ce.NFcn() << '\n';
+   os << "MinosError in x: " << '\n';
+   os << ce.XMinosError() << '\n';
+   os << "MinosError in y: " << '\n';
+   os << ce.YMinosError() << '\n';
    MnPlot plot;
    plot(ce.XMin(), ce.YMin(), ce());
-   for(std::vector<std::pair<double,double> >::const_iterator ipar = ce().begin(); ipar != ce().end(); ++ipar) {
-      os << ipar - ce().begin() <<"  "<< (*ipar).first <<"  "<< (*ipar).second <<std::endl;
+   for (auto ipar = ce().begin(); ipar != ce().end(); ++ipar) {
+      os << ipar - ce().begin() << "  " << (*ipar).first << "  " << (*ipar).second << '\n';
    }
-   os << std::endl;
+   os << '\n';
 
    return os;
 }
 
-   }  // namespace Minuit2
+std::ostream &operator<<(std::ostream &os, const std::pair<double, double> &point)
+{
+   os << "\t x = " << point.first << "  y = " << point.second << std::endl;
+   return os;
+}
 
-}  // namespace ROOT
+} // namespace Minuit2
+} // namespace ROOT

@@ -10,25 +10,35 @@
 
 #include "RConfigure.h" // R__USE_IMT
 #include "ROOT/RDataSource.hxx"
+#include "ROOT/RDF/RDefineBase.hxx"
 #include "ROOT/RDF/RLoopManager.hxx"
+#include "ROOT/RDF/Utils.hxx"
+#include "ROOT/RLogger.hxx"
 #include "RtypesCore.h"
 #include "TBranch.h"
 #include "TBranchElement.h"
 #include "TClass.h"
 #include "TClassEdit.h"
 #include "TClassRef.h"
+#include "TError.h" // Info
 #include "TInterpreter.h"
 #include "TLeaf.h"
-#include "TObjArray.h"
-#include "TROOT.h" // IsImplicitMTEnabled, GetImplicitMTPoolSize
+#include "TROOT.h" // IsImplicitMTEnabled, GetThreadPoolSize
 #include "TTree.h"
 
 #include <stdexcept>
 #include <string>
+#include <cstring>
 #include <typeinfo>
 
 using namespace ROOT::Detail::RDF;
 using namespace ROOT::RDF;
+
+ROOT::Experimental::RLogChannel &ROOT::Detail::RDF::RDFLogChannel()
+{
+   static ROOT::Experimental::RLogChannel c("ROOT.RDF");
+   return c;
+}
 
 namespace ROOT {
 namespace Internal {
@@ -41,6 +51,12 @@ namespace RDF {
 const std::type_info &TypeName2TypeID(const std::string &name)
 {
    if (auto c = TClass::GetClass(name.c_str())) {
+      if (!c->GetTypeInfo()) {
+         std::string msg("Cannot extract type_info of type ");
+         msg += name.c_str();
+         msg += ".";
+         throw std::runtime_error(msg);
+      }
       return *c->GetTypeInfo();
    } else if (name == "char" || name == "Char_t")
       return typeid(char);
@@ -149,7 +165,10 @@ std::string GetBranchOrLeafTypeName(TTree &t, const std::string &colName)
 {
    // look for TLeaf either with GetLeaf(colName) or with GetLeaf(branchName, leafName) (splitting on last dot)
    auto leaf = t.GetLeaf(colName.c_str());
+   if (!leaf)
+      leaf = t.FindLeaf(colName.c_str()); // try harder
    if (!leaf) {
+      // try splitting branchname and leafname
       const auto dotPos = colName.find_last_of('.');
       const auto hasDot = dotPos != std::string::npos;
       if (hasDot) {
@@ -163,6 +182,8 @@ std::string GetBranchOrLeafTypeName(TTree &t, const std::string &colName)
 
    // we could not find a leaf named colName, so we look for a TBranchElement
    auto branch = t.GetBranch(colName.c_str());
+   if (!branch)
+      branch = t.FindBranch(colName.c_str()); // try harder
    if (branch) {
       static const TClassRef tbranchelement("TBranchElement");
       if (branch->InheritsFrom(tbranchelement)) {
@@ -173,10 +194,10 @@ std::string GetBranchOrLeafTypeName(TTree &t, const std::string &colName)
             // Here we have a special case for getting right the type of data members
             // of classes sorted in TClonesArrays: ROOT-9674
             auto mother = be->GetMother();
-            if (mother && mother->InheritsFrom(tbranchelement)) {
+            if (mother && mother->InheritsFrom(tbranchelement) && mother != be) {
                auto beMom = static_cast<TBranchElement *>(mother);
                auto beMomClass = beMom->GetClass();
-               if (beMomClass && 0 == strcmp("TClonesArray", beMomClass->GetName()))
+               if (beMomClass && 0 == std::strcmp("TClonesArray", beMomClass->GetName()))
                   return be->GetTypeName();
             }
             return be->GetClassName();
@@ -192,10 +213,10 @@ std::string GetBranchOrLeafTypeName(TTree &t, const std::string &colName)
 /// column created by Define. Throws if type name deduction fails.
 /// Note that for fixed- or variable-sized c-style arrays the returned type name will be RVec<T>.
 /// vector2rvec specifies whether typename 'std::vector<T>' should be converted to 'RVec<T>' or returned as is
-/// customColID is only used if isCustomColumn is true, and must correspond to the custom column's unique identifier
+/// customColID is only used if isDefine is true, and must correspond to the custom column's unique identifier
 /// returned by its `GetID()` method.
-std::string ColumnName2ColumnTypeName(const std::string &colName, unsigned int namespaceID, TTree *tree,
-                                      RDataSource *ds, bool isCustomColumn, bool vector2rvec, unsigned int customColID)
+std::string ColumnName2ColumnTypeName(const std::string &colName, TTree *tree, RDataSource *ds, RDefineBase *define,
+                                      bool vector2rvec)
 {
    std::string colType;
 
@@ -213,9 +234,8 @@ std::string ColumnName2ColumnTypeName(const std::string &colName, unsigned int n
       }
    }
 
-   if (colType.empty() && isCustomColumn) {
-      // this must be a temporary branch, we know there is an alias for its type
-      colType = "__rdf" + std::to_string(namespaceID) + "::" + colName + std::to_string(customColID) + "_type";
+   if (colType.empty() && define) {
+      colType = define->GetTypeName();
    }
 
    if (colType.empty())
@@ -245,10 +265,14 @@ char TypeName2ROOTTypeName(const std::string &b)
       return 'F';
    if (b == "Double_t" || b == "double")
       return 'D';
-   if (b == "Long64_t" || b == "long" || b == "long int")
+   if (b == "Long64_t" || b == "long long" || b == "long long int")
       return 'L';
-   if (b == "ULong64_t" || b == "unsigned long" || b == "unsigned long int")
+   if (b == "ULong64_t" || b == "unsigned long long" || b == "unsigned long long int")
       return 'l';
+   if (b == "Long_t" || b == "long" || b == "long int")
+      return 'G';
+   if (b == "ULong_t" || b == "unsigned long" || b == "unsigned long int")
+      return 'g';
    if (b == "Bool_t" || b == "bool")
       return 'O';
    return ' ';
@@ -259,7 +283,7 @@ unsigned int GetNSlots()
    unsigned int nSlots = 1;
 #ifdef R__USE_IMT
    if (ROOT::IsImplicitMTEnabled())
-      nSlots = ROOT::GetImplicitMTPoolSize();
+      nSlots = ROOT::GetThreadPoolSize();
 #endif // R__USE_IMT
    return nSlots;
 }
@@ -288,24 +312,40 @@ std::vector<std::string> ReplaceDotWithUnderscore(const std::vector<std::string>
 
 void InterpreterDeclare(const std::string &code)
 {
+   R__LOG_DEBUG(10, RDFLogChannel()) << "Declaring the following code to cling:\n\n" << code << '\n';
+
    if (!gInterpreter->Declare(code.c_str())) {
-      const auto msg = "\nAn error occurred while jitting. The lines above might indicate the cause of the crash\n";
+      const auto msg =
+         "\nRDataFrame: An error occurred during just-in-time compilation. The lines above might indicate the cause of "
+         "the crash\n All RDF objects that have not run an event loop yet should be considered in an invalid state.\n";
       throw std::runtime_error(msg);
    }
 }
 
 Long64_t InterpreterCalc(const std::string &code, const std::string &context)
 {
+   R__LOG_DEBUG(10, RDFLogChannel()) << "Jitting and executing the following code:\n\n" << code << '\n';
+
    TInterpreter::EErrorCode errorCode(TInterpreter::kNoError);
    auto res = gInterpreter->Calc(code.c_str(), &errorCode);
    if (errorCode != TInterpreter::EErrorCode::kNoError) {
-      std::string msg = "\nAn error occurred while jitting";
+      std::string msg = "\nAn error occurred during just-in-time compilation";
       if (!context.empty())
          msg += " in " + context;
-      msg += ". The lines above might indicate the cause of the crash\n";
+      msg += ". The lines above might indicate the cause of the crash\nAll RDF objects that have not run their event "
+             "loop yet should be considered in an invalid state.\n";
       throw std::runtime_error(msg);
    }
    return res;
+}
+
+bool IsInternalColumn(std::string_view colName)
+{
+   const auto str = colName.data();
+   const auto goodPrefix = colName.size() > 3 &&               // has at least more characters than {r,t}df
+                           ('r' == str[0] || 't' == str[0]) && // starts with r or t
+                           0 == strncmp("df", str + 1, 2);     // 2nd and 3rd letters are df
+   return goodPrefix && '_' == colName.back();                 // also ends with '_'
 }
 
 } // end NS RDF

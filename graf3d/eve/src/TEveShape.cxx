@@ -10,7 +10,7 @@
  *************************************************************************/
 
 #include "TEveShape.h"
-#include "Riostream.h"
+#include <iostream>
 
 /** \class TEveShape
 \ingroup TEve

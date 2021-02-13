@@ -31,7 +31,6 @@
 
 #include "Math/BasicMinimizer.h"
 
-
 #include "Math/IFunctionfwd.h"
 
 #include "Math/IParamFunctionfwd.h"
@@ -40,10 +39,7 @@
 
 #include "Math/MinimTransformVariable.h"
 
-
 #include <vector>
-#include <map>
-#include <string>
 
 namespace ROOT {
 

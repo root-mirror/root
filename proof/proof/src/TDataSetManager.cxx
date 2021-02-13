@@ -33,7 +33,6 @@
 #include "TMD5.h"
 #include "THashList.h"
 #include "TKey.h"
-#include "TObjArray.h"
 #include "TObjString.h"
 #include "TParameter.h"
 #include "TPRegexp.h"

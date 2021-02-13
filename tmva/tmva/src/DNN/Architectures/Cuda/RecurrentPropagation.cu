@@ -1,5 +1,5 @@
 // @(#)root/tmva/tmva/dnn:$Id$
-// Author: Saurav Shekhar 23/06/17 
+// Author: Saurav Shekhar 23/06/17
 
 /*************************************************************************
  * Copyright (C) 2017, Saurav Shekhar                                    *
@@ -19,9 +19,9 @@
 #include "TMVA/DNN/Architectures/Cuda/Device.h"
 #include "Kernels.cuh"
 
-namespace TMVA 
+namespace TMVA
 {
-namespace DNN  
+namespace DNN
 {
 
 //____________________________________________________________________________
@@ -32,12 +32,16 @@ TCudaMatrix<AFloat> &  TCuda<AFloat>::RecurrentLayerBackward(TCudaMatrix<AFloat>
                                            TCudaMatrix<AFloat> & bias_gradients,
                                            TCudaMatrix<AFloat> & df, //DxH
                                            const TCudaMatrix<AFloat> & state, // BxH
-                                           const TCudaMatrix<AFloat> & weights_input, // HxD 
+                                           const TCudaMatrix<AFloat> & weights_input, // HxD
                                            const TCudaMatrix<AFloat> & weights_state, // HxH
                                            const TCudaMatrix<AFloat> & input,  // BxD
                                            TCudaMatrix<AFloat> & input_gradient)
 {
-   ///LM: This needs to be fixed !
+
+   Fatal("TCuda::RecurrentLayerBackward", "Recurrent layers are not supported in the native Cuda architecture!!!");
+
+#if 0
+   /// LM: This needs to be fixed !
 
    // Compute element-wise product.
    TCuda<AFloat>::Hadamard(df, state_gradients_backward); // B x H
@@ -68,9 +72,12 @@ TCudaMatrix<AFloat> &  TCuda<AFloat>::RecurrentLayerBackward(TCudaMatrix<AFloat>
    if (bias_gradients.GetNoElements() > 0) {
       TCuda<AFloat>::SumColumns(bias_gradients, df);
    }
+#endif
+
    return input_gradient;
+
+
 }
 
 } // namespace DNN
 } // namespace TMVA
-

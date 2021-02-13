@@ -4,23 +4,25 @@
 # For the licensing terms see $ROOTSYS/LICENSE.
 # For the list of contributors see $ROOTSYS/README/CREDITS.
 
-cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+
 project(periodic)
 
 find_package(ROOT REQUIRED)
+include(${ROOT_USE_FILE})
 
 file(GLOB DBsources RELATIVE ${CMAKE_SOURCE_DIR} Ndb*.cxx)
 file(GLOB XSsources RELATIVE ${CMAKE_SOURCE_DIR} XS*.cxx)
 file(GLOB headers RELATIVE ${CMAKE_SOURCE_DIR} *.h)
 list(REMOVE_ITEM headers NdbLinkDef.h)
 
-include(${ROOT_USE_FILE})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ROOT_GENERATE_DICTIONARY(G__NdbDict ${headers} LINKDEF NdbLinkDef.h)
 
 #---Create a shared library with geneated dictionary
 
 add_library(NdbDict SHARED ${DBsources} G__NdbDict.cxx)
+
+target_include_directories(NdbDict PRIVATE ${CMAKE_SOURCE_DIR})
 
 # Do not add -Dname_EXPORTS to the command-line when building files in this
 # target. Doing so is actively harmful for the modules build because it

@@ -95,6 +95,7 @@ robust Streamer mechanism I opted for 3).
 #include "TString.h"
 #include "TSystem.h"
 #include "TClass.h"
+#include "TROOT.h"
 #include "TBufferFile.h"
 #include "TVirtualMutex.h"
 #include "mmprivate.h"
@@ -1232,9 +1233,15 @@ void TMapFile::operator delete(void *ptr)
 
 TMapFile *TMapFile::WhichMapFile(void *addr)
 {
-   if (!gROOT || !gROOT->GetListOfMappedFiles()) return 0;
+   // Don't use gROOT so that this routine does not trigger TROOT's initialization
+   // This is essential since this routine is called via operator delete
+   // which is used during RegisterModule (i.e. during library loading, including the initial
+   // start up).  Using gROOT leads to recursive call to RegisterModule and initialization of
+   // the interpreter in the middle of the execution of RegisterModule (i.e. undefined behavior).
+   if (!ROOT::Internal::gROOTLocal || !ROOT::Internal::gROOTLocal->GetListOfMappedFiles())
+      return 0;
 
-   TObjLink *lnk = ((TList *)gROOT->GetListOfMappedFiles())->LastLink();
+   TObjLink *lnk = ((TList *)ROOT::Internal::gROOTLocal->GetListOfMappedFiles())->LastLink();
    while (lnk) {
       TMapFile *mf = (TMapFile*)lnk->GetObject();
       if (!mf) return 0;

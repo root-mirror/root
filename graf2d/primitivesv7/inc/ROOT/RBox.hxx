@@ -14,7 +14,7 @@
 #include <ROOT/RPadPos.hxx>
 
 #include <initializer_list>
-#include <memory>
+
 
 namespace ROOT {
 namespace Experimental {
@@ -29,12 +29,10 @@ namespace Experimental {
 
 class RBox : public RDrawable {
 
-   /// Box's coordinates
-   RPadPos fP1, fP2;                    ///< box corners coordinates
-   RAttrBox fAttrBox{this, "box_"};     ///<! box attributes
+   RPadPos fP1, fP2;               ///< box corners coordinates
+   RAttrBox fAttrBox{this, "box"}; ///<! box attributes
 
 protected:
-
    // constructor for derived classes
    RBox(const std::string &subtype) : RDrawable(subtype) {}
 
@@ -47,14 +45,27 @@ public:
       fP2 = p2;
    }
 
-   RBox &SetP1(const RPadPos& p1) { fP1 = p1; return *this; }
-   RBox &SetP2(const RPadPos& p2) { fP2 = p2; return *this; }
+   RBox &SetP1(const RPadPos &p1)
+   {
+      fP1 = p1;
+      return *this;
+   }
 
-   const RPadPos& GetP1() const { return fP1; }
-   const RPadPos& GetP2() const { return fP2; }
+   RBox &SetP2(const RPadPos &p2)
+   {
+      fP2 = p2;
+      return *this;
+   }
+
+   const RPadPos &GetP1() const { return fP1; }
+   const RPadPos &GetP2() const { return fP2; }
 
    const RAttrBox &GetAttrBox() const { return fAttrBox; }
-   RBox &SetAttrBox(RAttrBox &box) { fAttrBox = box; return *this; }
+   RBox &SetAttrBox(RAttrBox &box)
+   {
+      fAttrBox = box;
+      return *this;
+   }
    RAttrBox &AttrBox() { return fAttrBox; }
 };
 

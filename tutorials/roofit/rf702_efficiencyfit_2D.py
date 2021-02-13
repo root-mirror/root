@@ -1,14 +1,14 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
-## Special p.d.f.'s: unbinned maximum likelihood fit of an efficiency eff(x) function
-## to a dataset D(x,cut), cut is a category encoding a selection whose efficiency as function of x should be described by eff(x)
+## Special pdf's: unbinned maximum likelihood fit of an efficiency eff(x) function
+## to a dataset D(x,cut), cut is a category encoding a selection whose efficiency as function
+## of x should be described by eff(x)
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -52,13 +52,13 @@ cut.defineType("reject", 0)
 # Construct conditional efficiency pdf E(cut|x,y)
 # ---------------------------------------------------------------------------------------------
 
-# Construct efficiency p.d.f eff(cut|x)
+# Construct efficiency pdf eff(cut|x)
 effPdf = ROOT.RooEfficiency("effPdf", "effPdf", effFunc, cut, "accept")
 
 # Generate data(x,y,cut) from a toy model
 # -------------------------------------------------------------------------------
 
-# Construct global shape p.d.f shape(x) and product model(x,cut) = eff(cut|x)*shape(x)
+# Construct global shape pdf shape(x) and product model(x,cut) = eff(cut|x)*shape(x)
 # (These are _only_ needed to generate some toy MC here to be used later)
 shapePdfX = ROOT.RooPolynomial(
     "shapePdfX", "shapePdfX", x, ROOT.RooArgList(
@@ -88,7 +88,7 @@ data = model.generate(ROOT.RooArgSet(x, y, cut), 10000)
 # Fit conditional efficiency pdf to data
 # --------------------------------------------------------------------------
 
-# Fit conditional efficiency p.d.f to data
+# Fit conditional efficiency pdf to data
 effPdf.fitTo(data, ROOT.RooFit.ConditionalObservables(ROOT.RooArgSet(x, y)))
 
 # Plot fitted, data efficiency

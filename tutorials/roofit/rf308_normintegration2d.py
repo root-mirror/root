@@ -1,13 +1,13 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
-## Multidimensional models: normalization and  integration of p.d.fs, construction of cumulative distribution functions from p.d.f.s in two dimensions
+## Multidimensional models: normalization and  integration of pdfs, construction of
+## cumulative distribution functions from pdfs in two dimensions
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 from __future__ import print_function
 import ROOT
@@ -19,7 +19,7 @@ import ROOT
 x = ROOT.RooRealVar("x", "x", -10, 10)
 y = ROOT.RooRealVar("y", "y", -10, 10)
 
-# Create p.d.f. gaussx(x,-2,3), gaussy(y,2,2)
+# Create pdf gaussx(x,-2,3), gaussy(y,2,2)
 gx = ROOT.RooGaussian(
     "gx", "gx", x, ROOT.RooFit.RooConst(-2), ROOT.RooFit.RooConst(3))
 gy = ROOT.RooGaussian(
@@ -28,7 +28,7 @@ gy = ROOT.RooGaussian(
 # gxy = gx(x)*gy(y)
 gxy = ROOT.RooProdPdf("gxy", "gxy", ROOT.RooArgList(gx, gy))
 
-# Retrieve raw & normalized values of RooFit p.d.f.s
+# Retrieve raw & normalized values of RooFit pdfs
 # --------------------------------------------------------------------------------------------------
 
 # Return 'raw' unnormalized value of gx
@@ -64,7 +64,7 @@ x.setRange("signal", -5, 5)
 y.setRange("signal", -3, 3)
 
 # Create an integral of gxy_Norm[x,y] over x and y in range "signal"
-# ROOT.This is the fraction of of p.d.f. gxy_Norm[x,y] which is in the
+# ROOT.This is the fraction of of pdf gxy_Norm[x,y] which is in the
 # range named "signal"
 
 igxy_sig = gxy.createIntegral(x_and_y, ROOT.RooFit.NormSet(

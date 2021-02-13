@@ -19,6 +19,7 @@
 #include "TAtt3D.h"
 #include "TAttBBox.h"
 #include "TEveCaloData.h"
+#include <vector>
 
 class TClass;
 class TEveRGBAPalette;
@@ -32,8 +33,8 @@ class TEveCaloViz : public TEveElement,
    friend class TEveCaloVizEditor;
 
 private:
-   TEveCaloViz(const TEveCaloViz&);        // Not implemented
-   TEveCaloViz& operator=(const TEveCaloViz&); // Not implemented
+   TEveCaloViz(const TEveCaloViz&) = delete;
+   TEveCaloViz& operator=(const TEveCaloViz&) = delete;
 
 protected:
    TEveCaloData* fData;           // event data reference
@@ -157,8 +158,8 @@ class TEveCalo3D : public TEveCaloViz
 {
    friend class TEveCalo3DGL;
 private:
-   TEveCalo3D(const TEveCalo3D&);            // Not implemented
-   TEveCalo3D& operator=(const TEveCalo3D&); // Not implemented
+   TEveCalo3D(const TEveCalo3D&) = delete;
+   TEveCalo3D& operator=(const TEveCalo3D&) = delete;
 
 protected:
    TEveCaloData::vCellId_t fCellList;
@@ -206,8 +207,8 @@ public:
    typedef std::vector<TEveCaloData::vCellId_t*>::iterator vBinCells_i;
 
 private:
-   TEveCalo2D(const TEveCalo2D&);            // Not implemented
-   TEveCalo2D& operator=(const TEveCalo2D&); // Not implemented
+   TEveCalo2D(const TEveCalo2D&) = delete;
+   TEveCalo2D& operator=(const TEveCalo2D&) = delete;
 
    TEveProjection::EPType_e  fOldProjectionType;
    void CellSelectionChangedInternal(TEveCaloData::vCellId_t& cells, std::vector<TEveCaloData::vCellId_t*>& cellLists);
@@ -257,8 +258,8 @@ public:
    enum EBoxMode_e    { kNone, kFrontBack, kBack};
 
 private:
-   TEveCaloLego(const TEveCaloLego&);            // Not implemented
-   TEveCaloLego& operator=(const TEveCaloLego&); // Not implemented
+   TEveCaloLego(const TEveCaloLego&) = delete;
+   TEveCaloLego& operator=(const TEveCaloLego&) = delete;
 
 protected:
    TEveCaloData::vCellId_t fCellList;

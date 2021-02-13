@@ -19,6 +19,7 @@
 #define TMVA_DNN_CNN_DESCRIPTORS
 
 #include <stddef.h>
+#include <vector>
 
 namespace TMVA
 {
@@ -28,7 +29,9 @@ namespace DNN
 struct TDescriptors {
    virtual ~TDescriptors() {}
 };
-struct TWorkspace {};
+struct TWorkspace {
+    virtual ~TWorkspace() {}
+};
 
 template <typename Layer_t>
 struct TDNNGenDescriptors : public TMVA::DNN::TDescriptors {
@@ -86,6 +89,43 @@ struct TCNNWorkspace : public TMVA::DNN::TWorkspace {
 };
 
 } // namespace CNN
+
+namespace RNN {
+template <typename Architecture_t>
+struct TRNNDescriptors : public TMVA::DNN::TDescriptors {
+
+   using LayerDescriptor_t = typename Architecture_t::RecurrentDescriptor_t; // Main layer operation
+   using WeightsDescriptor_t = typename Architecture_t::FilterDescriptor_t; // The weights that are modified (e.g filters)
+   using TensorDescriptor_t = typename Architecture_t::TensorDescriptor_t; // the vector of tensor descriptors
+   using HelperDescriptor_t = typename Architecture_t::DropoutDescriptor_t;  // use for dropout
+
+   LayerDescriptor_t LayerDescriptor;
+   WeightsDescriptor_t WeightsDescriptor;
+   WeightsDescriptor_t WeightsGradDescriptor;
+   HelperDescriptor_t HelperDescriptor;
+
+   // for RNN need 4 vectors of tensor descriptors
+
+   std::vector<TensorDescriptor_t> xDesc;
+   std::vector<TensorDescriptor_t> yDesc;
+   std::vector<TensorDescriptor_t> dxDesc;
+   std::vector<TensorDescriptor_t> dyDesc;
+};
+
+template <typename Layer_t>
+struct TRNNWorkspace : public TMVA::DNN::TWorkspace {
+
+   void *ForwardWorkspace = nullptr;
+   void *HelperWorkspace = nullptr;
+
+
+   size_t ForwardWorkspaceSize;
+   size_t HelperWorkspaceSize;
+};
+
+}  // end namespace RNN
+
+
 } // namespace DNN
 } // namespace TMVA
 

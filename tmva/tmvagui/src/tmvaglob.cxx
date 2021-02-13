@@ -5,7 +5,7 @@ using std::cout;
 using std::endl;
 
 // set the style
-void TMVA::TMVAGlob::SetSignalAndBackgroundStyle( TH1* sig, TH1* bkg, TH1* all ) 
+void TMVA::TMVAGlob::SetSignalAndBackgroundStyle( TH1* sig, TH1* bkg, TH1* all )
 {
    //signal
    // const Int_t FillColor__S = 38 + 150; // change of Color Scheme in ROOT-5.16.
@@ -28,7 +28,7 @@ void TMVA::TMVAGlob::SetSignalAndBackgroundStyle( TH1* sig, TH1* bkg, TH1* all )
       sig->SetFillStyle( FillStyle__S );
       sig->SetFillColor( FillColor__S );
    }
- 
+
    if (bkg != NULL) {
       bkg->SetLineColor( LineColor__B );
       bkg->SetLineWidth( LineWidth__B );
@@ -44,7 +44,7 @@ void TMVA::TMVAGlob::SetSignalAndBackgroundStyle( TH1* sig, TH1* bkg, TH1* all )
    }
 }
 
-void TMVA::TMVAGlob::SetMultiClassStyle( TObjArray* hists ) 
+void TMVA::TMVAGlob::SetMultiClassStyle( TObjArray* hists )
 {
    //signal
    // const Int_t FillColor__S = 38 + 150; // change of Color Scheme in ROOT-5.16.
@@ -94,19 +94,19 @@ void TMVA::TMVAGlob::SetFrameStyle( TH1* frame, Float_t scale )
 }
 
 void TMVA::TMVAGlob::SetTMVAStyle() {
-      
+
    TStyle *TMVAStyle = gROOT->GetStyle("TMVA");
    if(TMVAStyle!=0) {
       gROOT->SetStyle("TMVA");
       return;
    }
-         
+
    TMVAStyle = new TStyle(*gROOT->GetStyle("Plain")); // our style is based on Plain
    TMVAStyle->SetName("TMVA");
    TMVAStyle->SetTitle("TMVA style based on \"Plain\" with modifications defined in tmvaglob.C");
    gROOT->GetListOfStyles()->Add(TMVAStyle);
    gROOT->SetStyle("TMVA");
-         
+
    TMVAStyle->SetLineStyleString( 5, "[52 12]" );
    TMVAStyle->SetLineStyleString( 6, "[22 12]" );
    TMVAStyle->SetLineStyleString( 7, "[22 10 7 10]" );
@@ -219,31 +219,38 @@ void TMVA::TMVAGlob::imgconv( TCanvas* c, const TString & fname )
       // create directory if not existing
       TString f = fname;
       TString dir = f.Remove( f.Last( '/' ), f.Length() - f.Last( '/' ) );
-      gSystem->mkdir( dir );
+      // directory does not exists , try to make it
+      if (gSystem->AccessPathName(dir)) {
+         if (gSystem->mkdir(dir, kTRUE) != 0) {
+            Error("imgconv","Error creating plot directory: %s",dir.Data());
+         }
+      }
 
       TString pngName = fname + ".png";
       TString gifName = fname + ".gif";
       TString epsName = fname + ".eps";
+      TString pdfName = fname + ".pdf";
       c->cd();
 
       // create eps (other option: c->Print( epsName ))
       if (gConfig().fVariablePlotting.fUsePaperStyle) {
          c->Print(epsName);
-      } 
+      }
       else {
-         cout << "--- --------------------------------------------------------------------" << endl;
-         cout << "--- If you want to save the image as eps, gif or png, please comment out " << endl;
-         cout << "--- the corresponding lines (line no. 239-241) in tmvaglob.C" << endl;
-         cout << "--- --------------------------------------------------------------------" << endl;
-         c->Print(epsName);
-         c->Print(pngName);
-         // c->Print(gifName);
+         if (gConfig().fVariablePlotting.fPlotFormat == Config::VariablePlotting::kGIF)
+            c->Print(gifName);
+         else if (gConfig().fVariablePlotting.fPlotFormat == Config::VariablePlotting::kPDF)
+            c->Print(pdfName);
+         else if (gConfig().fVariablePlotting.fPlotFormat == Config::VariablePlotting::kEPS)
+            c->Print(epsName);
+         else
+            c->Print(pngName);
       }
    }
 }
 
-TImage * TMVA::TMVAGlob::findImage(const char * imageName) 
-{ 
+TImage * TMVA::TMVAGlob::findImage(const char * imageName)
+{
    // looks for the image in tutorialpath
    //TString tutorialPath = "$ROOTSYS/tutorials/tmva"; // look for the image in here
    TString tutorialPath = getenv ("ROOTSYS");
@@ -251,7 +258,7 @@ TImage * TMVA::TMVAGlob::findImage(const char * imageName)
    TImage *img(0);
    TString fullName = Form("%s/%s", tutorialPath.Data(), imageName);
    Bool_t fileFound = ! gSystem->AccessPathName(fullName);
-   
+
    if(fileFound) {
       img = TImage::Open(fullName);
    } else {
@@ -268,7 +275,7 @@ void TMVA::TMVAGlob::plot_logo( Float_t v_scale, Float_t skew )
       cout << "+++ Could not open image tmva_logo.gif" << endl;
       return;
    }
-      
+
    img->SetConstRatio(kFALSE);
    UInt_t h_ = img->GetHeight();
    UInt_t w_ = img->GetWidth();
@@ -280,8 +287,8 @@ void TMVA::TMVAGlob::plot_logo( Float_t v_scale, Float_t skew )
 
    Float_t d = 0.055;
    // absolute coordinates
-   Float_t x1R = 1 - gStyle->GetPadRightMargin(); 
-   Float_t y1B = 1 - gStyle->GetPadTopMargin()+.01; // we like the logo to sit a bit above the histo 
+   Float_t x1R = 1 - gStyle->GetPadRightMargin();
+   Float_t y1B = 1 - gStyle->GetPadTopMargin()+.01; // we like the logo to sit a bit above the histo
 
    Float_t x1L = x1R - d*r/skew;
    Float_t y1T = y1B + d*v_scale*skew;
@@ -303,9 +310,9 @@ void TMVA::TMVAGlob::plot_logo( Float_t v_scale, Float_t skew )
 
    p1->cd();
    img->Draw();
-} 
+}
 
-void TMVA::TMVAGlob::NormalizeHist( TH1* h ) 
+void TMVA::TMVAGlob::NormalizeHist( TH1* h )
 {
    if (h==0) return;
    if (h->GetSumw2N() == 0) h->Sumw2();
@@ -314,11 +321,11 @@ void TMVA::TMVAGlob::NormalizeHist( TH1* h )
       h->Scale( 1.0/h->GetSumOfWeights()/dx );
    }
 }
-void TMVA::TMVAGlob::NormalizeHists( TH1* sig, TH1* bkg ) 
+void TMVA::TMVAGlob::NormalizeHists( TH1* sig, TH1* bkg )
 {
    if (sig->GetSumw2N() == 0) sig->Sumw2();
    if (bkg && bkg->GetSumw2N() == 0) bkg->Sumw2();
-      
+
    if(sig->GetSumOfWeights()!=0) {
       Float_t dx = (sig->GetXaxis()->GetXmax() - sig->GetXaxis()->GetXmin())/sig->GetNbinsX();
       sig->Scale( 1.0/sig->GetSumOfWeights()/dx );
@@ -402,9 +409,9 @@ Int_t TMVA::TMVAGlob::GetNumberOfTargets( TDirectory *dir )
    TIter next(dir->GetListOfKeys());
    TKey* key    = 0;
    Int_t noTrgts = 0;
-      
+
    while ((key = (TKey*)next())) {
-      if (key->GetCycle() != 1) continue;        
+      if (key->GetCycle() != 1) continue;
       if (TString(key->GetName()).Contains("__Regression_target")) noTrgts++;
    }
    return noTrgts;
@@ -415,14 +422,14 @@ Int_t TMVA::TMVAGlob::GetNumberOfInputVariables( TDirectory *dir )
    TIter next(dir->GetListOfKeys());
    TKey* key    = 0;
    Int_t noVars = 0;
-         
+
    while ((key = (TKey*)next())) {
       if (key->GetCycle() != 1) continue;
-         
+
       // count number of variables (signal is sufficient), exclude target(s)
       if (TString(key->GetName()).Contains("__Signal") || (TString(key->GetName()).Contains("__Regression") && !(TString(key->GetName()).Contains("__Regression_target")))) noVars++;
    }
-      
+
    return noVars;
 }
 
@@ -431,7 +438,7 @@ std::vector<TString> TMVA::TMVAGlob::GetInputVariableNames(TDirectory *dir)
    TIter next(dir->GetListOfKeys());
    TKey* key = 0;
    std::vector<TString> names;
-      
+
    while ((key = (TKey*)next())) {
       if (key->GetCycle() != 1) continue;
       TClass *cl = gROOT->GetClass(key->GetClassName());
@@ -458,15 +465,15 @@ Int_t TMVA::TMVAGlob::GetNumberOfInputVariablesMultiClass( TDirectory *dir ){
    std::vector<TString> names(GetInputVariableNames(dir));
    return names.end() - names.begin();
 }
-   
+
 std::vector<TString> TMVA::TMVAGlob::GetClassNames(TDirectory *dir )
-{      
-      
+{
+
    TIter next(dir->GetListOfKeys());
    TKey* key = 0;
    //set<std::string> varnames;
    std::vector<TString> names;
-      
+
    while ((key = (TKey*)next())) {
       if (key->GetCycle() != 1) continue;
       TClass *cl = gROOT->GetClass(key->GetClassName());
@@ -521,7 +528,7 @@ TKey* TMVA::TMVAGlob::FindMethod( TString name, TDirectory *dir )
       mkey = (TKey*)mnext();
       if (mkey==0) {
          loop = kFALSE;
-      } 
+      }
       else {
          TString clname = mkey->GetClassName();
          TClass *cl = gROOT->GetClass(clname);
@@ -549,7 +556,7 @@ Bool_t TMVA::TMVAGlob::ExistMethodName( TString name, TDirectory *dir )
       mkey = (TKey*)mnext();
       if (mkey==0) {
          loop = kFALSE;
-      } 
+      }
       else {
          TString clname  = mkey->GetClassName();
          TString keyname = mkey->GetName();
@@ -569,7 +576,7 @@ Bool_t TMVA::TMVAGlob::ExistMethodName( TString name, TDirectory *dir )
                TClass *cl_ = gROOT->GetClass(clname_);
                if (cl_->InheritsFrom("TDirectory")) {
                   TString mname = mkey_->GetName(); // method name
-                  if (mname==name) { // target found!                  
+                  if (mname==name) { // target found!
                      return kTRUE;
                   }
                }
@@ -610,19 +617,19 @@ UInt_t TMVA::TMVAGlob::GetListOfJobs( TFile* file, TList& jobdirs)
    // get a list of all jobs in all method directories
    // based on ideas by Peter and Joerg found in macro deviations.C
    TIter next(file->GetListOfKeys());
-   TKey *key(0);   
+   TKey *key(0);
    while ((key = (TKey*)next())) {
-         
+
       if (TString(key->GetName()).BeginsWith("Method_")) {
          if (gROOT->GetClass(key->GetClassName())->InheritsFrom("TDirectory")) {
 
             TDirectory* mDir = (TDirectory*)key->ReadObj();
-               
+
             TIter keyIt(mDir->GetListOfKeys());
             TKey *jobkey;
             while ((jobkey = (TKey*)keyIt())) {
                if (!gROOT->GetClass(jobkey->GetClassName())->InheritsFrom("TDirectory")) continue;
-                  
+
                TDirectory *jobDir = (TDirectory *)jobkey->ReadObj();
                cout << "jobdir name  " << jobDir->GetName() << endl;
                jobdirs.Add(jobDir);
@@ -728,4 +735,3 @@ TDirectory *TMVA::TMVAGlob::GetCorrelationPlotsDir( TMVAGlob::TypeOfPlot type, T
    }
    return corrdir;
 }
-

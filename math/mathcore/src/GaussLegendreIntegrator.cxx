@@ -103,10 +103,10 @@ void GaussLegendreIntegrator::CalcGaussLegendreSamplingPoints()
    if (fNum<=0 || fEpsRel<=0)
       return;
 
-   if ( fX == 0 )
+   if ( fX )
       delete [] fX;
 
-   if ( fW == 0 )
+   if ( fW )
       delete [] fW;
 
    fX = new double[fNum];

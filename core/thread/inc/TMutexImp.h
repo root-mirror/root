@@ -22,10 +22,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Rtypes.h"
 #include "TObject.h"
-
-#include "TVirtualMutex.h"
 
 class TMutexImp : public TObject {
 

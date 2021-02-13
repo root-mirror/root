@@ -1618,3 +1618,12 @@
    fun:_ZN5cling5utils14isAddressValidEPKv
    fun:cling_runtime_internal_throwIfInvalidPointer
 }
+
+{
+   cling pointer checker on uninitialized memory (ROOT-8144)
+   Memcheck:Param
+   msync(start)
+   ...
+   fun:_ZN5cling5utils8platform13IsMemoryValidEPKv
+}
+

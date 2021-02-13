@@ -12,7 +12,7 @@
  *************************************************************************/
 #include "TGeoBoolNode.h"
 
-#include "Riostream.h"
+#include <iostream>
 
 #include "TVirtualPad.h"
 #include "TVirtualViewer3D.h"
@@ -132,12 +132,12 @@ void TGeoBoolNode::SetSelected(Int_t sel)
 
 TGeoBoolNode::TGeoBoolNode()
 {
-   fLeft     = 0;
-   fRight    = 0;
-   fLeftMat  = 0;
-   fRightMat = 0;
+   fLeft     = nullptr;
+   fRight    = nullptr;
+   fLeftMat  = nullptr;
+   fRightMat = nullptr;
    fNpoints  = 0;
-   fPoints   = 0;
+   fPoints   = nullptr;
    fThreadSize = 0;
    CreateThreadData(1);
 }
@@ -147,12 +147,12 @@ TGeoBoolNode::TGeoBoolNode()
 
 TGeoBoolNode::TGeoBoolNode(const char *expr1, const char *expr2)
 {
-   fLeft     = 0;
-   fRight    = 0;
-   fLeftMat  = 0;
-   fRightMat = 0;
+   fLeft     = nullptr;
+   fRight    = nullptr;
+   fLeftMat  = nullptr;
+   fRightMat = nullptr;
    fNpoints  = 0;
-   fPoints   = 0;
+   fPoints   = nullptr;
    fThreadSize = 0;
    CreateThreadData(1);
    if (!MakeBranch(expr1, kTRUE)) {
@@ -172,7 +172,7 @@ TGeoBoolNode::TGeoBoolNode(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, 
    fRight = right;
    fLeftMat = lmat;
    fNpoints  = 0;
-   fPoints   = 0;
+   fPoints   = nullptr;
    fThreadSize = 0;
    CreateThreadData(1);
    if (!fLeftMat) fLeftMat = gGeoIdentity;
@@ -201,6 +201,23 @@ TGeoBoolNode::~TGeoBoolNode()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Set fPoints array
+
+void TGeoBoolNode::AssignPoints(Int_t npoints, Double_t *points)
+{
+   if (fPoints) {
+      delete [] fPoints;
+      fPoints = nullptr;
+      fNpoints = 0;
+   }
+   if (points) {
+      fNpoints = npoints;
+      fPoints = new Double_t[3*fNpoints];
+      memcpy(fPoints, points, 3*fNpoints*sizeof(Double_t));
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Expands the boolean expression either on left or right branch, creating
 /// component elements (composite shapes and boolean nodes). Returns true on success.
 
@@ -212,7 +229,7 @@ Bool_t TGeoBoolNode::MakeBranch(const char *expr, Bool_t left)
       Error("MakeBranch", "invalid expression");
       return kFALSE;
    }
-   TGeoShape *shape = 0;
+   TGeoShape *shape = nullptr;
    TGeoMatrix *mat;
    TString newshape;
 
@@ -577,7 +594,7 @@ Int_t TGeoUnion::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
 /// Computes distance from a given point inside the shape to its boundary.
 
 Double_t TGeoUnion::DistFromInside(const Double_t *point, const Double_t *dir, Int_t iact,
-                              Double_t step, Double_t *safe) const
+                                   Double_t step, Double_t *safe) const
 {
    if (iact<3 && safe) {
       // compute safe distance
@@ -690,7 +707,7 @@ Double_t TGeoUnion::DistFromInside(const Double_t *point, const Double_t *dir, I
 /// Compute distance from a given outside point to the shape.
 
 Double_t TGeoUnion::DistFromOutside(const Double_t *point, const Double_t *dir, Int_t iact,
-                              Double_t step, Double_t *safe) const
+                                    Double_t step, Double_t *safe) const
 {
    if (iact<3 && safe) {
       // compute safe distance
@@ -747,9 +764,9 @@ Int_t TGeoUnion::GetNpoints()
       fLeftMat->MasterToLocal(&points[3*itot], point);
       if (!fLeft->Contains(point)) itot++;
    }
-   fNpoints = itot;
-   fPoints = new Double_t[3*fNpoints];
-   memcpy(fPoints, points, 3*fNpoints*sizeof(Double_t));
+
+   AssignPoints(itot, points);
+
    delete [] points1;
    delete [] points2;
    delete [] points;
@@ -1080,9 +1097,9 @@ Int_t TGeoSubtraction::GetNpoints()
       fLeftMat->MasterToLocal(&points[3*itot], point);
       if (fLeft->Contains(point)) itot++;
    }
-   fNpoints = itot;
-   fPoints = new Double_t[3*fNpoints];
-   memcpy(fPoints, points, 3*fNpoints*sizeof(Double_t));
+
+   AssignPoints(itot, points);
+
    delete [] points1;
    delete [] points2;
    delete [] points;
@@ -1506,9 +1523,9 @@ Int_t TGeoIntersection::GetNpoints()
       fLeftMat->MasterToLocal(&points[3*itot], point);
       if (fLeft->Contains(point)) itot++;
    }
-   fNpoints = itot;
-   fPoints = new Double_t[3*fNpoints];
-   memcpy(fPoints, points, 3*fNpoints*sizeof(Double_t));
+
+   AssignPoints(itot, points);
+
    delete [] points1;
    delete [] points2;
    delete [] points;

@@ -25,14 +25,14 @@ void histops()
    using namespace ROOT::Experimental;
    // Create a 2D histogram with an X axis with equidistant bins, and a y axis
    // with irregular binning.
-   RH2D hist1({100, 0., 1.}, {{0., 1., 2., 3., 10.}});
+   RH2D hist1({10, 0., 1.}, {{0., 1., 2., 3., 10.}});
 
    // Fill weight 1. at the coordinate 0.01, 1.02.
    hist1.Fill({0.01, 1.02});
 
    RH2D hist2({{{10, 0., 1.}, {{0., 1., 2., 3., 10.}}}});
-   // Fill weight 1. at the coordinate 0.01, 1.02.
-   hist2.Fill({0.01, 1.02});
+   // Fill weight 1. at the coordinate 0.02, 1.03 (that's the same bin).
+   hist2.Fill({0.02, 1.03});
 
    Add(hist1, hist2);
 

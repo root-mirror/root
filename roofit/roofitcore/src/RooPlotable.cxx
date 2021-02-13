@@ -27,7 +27,6 @@ most useful implementation of RooPlotable are RooHist and RooCurve.
 #include "RooFit.h"
 
 #include "RooPlotable.h"
-#include "RooPlotable.h"
 #include "TObject.h"
 #include "Riostream.h"
 

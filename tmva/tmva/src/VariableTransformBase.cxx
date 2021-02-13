@@ -41,12 +41,10 @@ Linear interpolation class.
 #include "TMVA/VariableInfo.h"
 #include "TMVA/Version.h"
 
-#include "TH1.h"
-#include "TH2.h"
 #include "THashTable.h"
 #include "TList.h"
+#include "TObjString.h"
 #include "TMath.h"
-#include "TProfile.h"
 #include "TVectorD.h"
 
 #include <algorithm>

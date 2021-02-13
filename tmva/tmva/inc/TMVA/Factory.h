@@ -50,7 +50,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <string>
 #include <vector>
 #include <map>
 #include "TCut.h"
@@ -152,22 +151,26 @@ namespace TMVA {
       Bool_t IsSilentFile() const { return fSilentFile;}
       Bool_t IsModelPersistence() const { return fModelPersistence; }
 
-      Double_t GetROCIntegral(DataLoader *loader, TString theMethodName, UInt_t iClass = 0);
-      Double_t GetROCIntegral(TString datasetname, TString theMethodName, UInt_t iClass = 0);
+      Double_t GetROCIntegral(DataLoader *loader, TString theMethodName, UInt_t iClass = 0,
+                              Types::ETreeType type = Types::kTesting);
+      Double_t GetROCIntegral(TString datasetname, TString theMethodName, UInt_t iClass = 0,
+                              Types::ETreeType type = Types::kTesting);
 
       // Methods to get a TGraph for an indicated method in dataset.
       // Optional title and axis added with fLegend=kTRUE.
       // Argument iClass used in multiclass settings, otherwise ignored.
-      TGraph* GetROCCurve(DataLoader *loader, TString theMethodName, Bool_t setTitles=kTRUE, UInt_t iClass=0);
-      TGraph* GetROCCurve(TString datasetname, TString theMethodName, Bool_t setTitles=kTRUE, UInt_t iClass=0);
+      TGraph *GetROCCurve(DataLoader *loader, TString theMethodName, Bool_t setTitles = kTRUE, UInt_t iClass = 0,
+                          Types::ETreeType type = Types::kTesting);
+      TGraph *GetROCCurve(TString datasetname, TString theMethodName, Bool_t setTitles = kTRUE, UInt_t iClass = 0,
+                          Types::ETreeType type = Types::kTesting);
 
       // Methods to get a TMultiGraph for a given class and all methods in dataset.
-      TMultiGraph* GetROCCurveAsMultiGraph(DataLoader *loader, UInt_t iClass);
-      TMultiGraph* GetROCCurveAsMultiGraph(TString datasetname, UInt_t iClass);
+      TMultiGraph *GetROCCurveAsMultiGraph(DataLoader *loader, UInt_t iClass, Types::ETreeType type = Types::kTesting);
+      TMultiGraph *GetROCCurveAsMultiGraph(TString datasetname, UInt_t iClass, Types::ETreeType type = Types::kTesting);
 
       // Draw all ROC curves of a given class for all methods in the dataset.
-      TCanvas* GetROCCurve(DataLoader *loader, UInt_t iClass=0);
-      TCanvas* GetROCCurve(TString datasetname, UInt_t iClass=0);
+      TCanvas *GetROCCurve(DataLoader *loader, UInt_t iClass = 0, Types::ETreeType type = Types::kTesting);
+      TCanvas *GetROCCurve(TString datasetname, UInt_t iClass = 0, Types::ETreeType type = Types::kTesting);
 
    private:
 

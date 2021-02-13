@@ -14,7 +14,9 @@
 
 #include <mutex>
 #include <thread>
+#include <map>
 
+#include "TNamed.h"
 #include "TObjArray.h"
 #include "TGeoNavigator.h"
 
@@ -57,8 +59,8 @@ protected:
    static UInt_t         fgExportPrecision; //! Precision to be used in ASCII exports
    static EDefaultUnits  fgDefaultUnits;    //! Default units in GDML if not explicit in some tags
 
-   TGeoManager(const TGeoManager&);
-   TGeoManager& operator=(const TGeoManager&);
+   TGeoManager(const TGeoManager&) = delete;
+   TGeoManager& operator=(const TGeoManager&) = delete;
 
 private :
    Double_t              fPhimin;           //! lowest range for phi cut
@@ -132,7 +134,6 @@ private :
    TGeoShape            *fClippingShape;    //! clipping shape for raytracing
    TGeoElementTable     *fElementTable;     //! table of elements
 
-   Int_t                *fNodeIdArray;      //! array of node id's
    Int_t                 fNLevel;           // maximum accepted level in geometry
    TGeoVolume           *fPaintVolume;      //! volume currently painted
    TGeoVolume           *fUserPaintVolume;  //!
@@ -476,9 +477,9 @@ public:
    static Bool_t          IsLocked();
    static void            SetExportPrecision(UInt_t prec) {fgExportPrecision = prec;}
    static UInt_t          GetExportPrecision() {return fgExportPrecision;}
-   static void            SetDefaultG4Units() {fgDefaultUnits = kG4Units;}
-   static void            SetDefaultRootUnits() {fgDefaultUnits = kRootUnits;}
+   static void            SetDefaultUnits(EDefaultUnits new_value);
    static EDefaultUnits   GetDefaultUnits();
+   static Bool_t          LockDefaultUnits(Bool_t new_value);
    Bool_t                 IsStreamingVoxels() const {return fStreamVoxels;}
    Bool_t                 IsCleaning() const {return fIsGeomCleaning;}
 

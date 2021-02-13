@@ -29,7 +29,9 @@
 #include "TMVA/DecisionTree.h"
 #include "TMVA/DataSet.h"
 #include "TMVA/Version.h"
-
+#include <vector>
+#include <string>
+#include <sstream>
 
 namespace TMVA {
 

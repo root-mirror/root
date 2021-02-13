@@ -14,11 +14,10 @@
 
 #include "TEveUtil.h"
 
-#include "TObject.h"
 #include "TArrayC.h"
 
 #include <vector>
-
+#include <set>
 
 /******************************************************************************/
 // TEveChunkManager
@@ -27,8 +26,8 @@
 class TEveChunkManager
 {
 private:
-   TEveChunkManager(const TEveChunkManager&);            // Not implemented
-   TEveChunkManager& operator=(const TEveChunkManager&); // Not implemented
+   TEveChunkManager(const TEveChunkManager&) = delete;
+   TEveChunkManager& operator=(const TEveChunkManager&) = delete;
 
 protected:
    Int_t fS;        // Size of atom

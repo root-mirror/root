@@ -16,7 +16,6 @@
 #ifndef ROO_NORMSET_CACHE
 #define ROO_NORMSET_CACHE
 
-#include <utility>
 #include <vector>
 #include <map>
 

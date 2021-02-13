@@ -21,7 +21,6 @@
 #include "TRootEmbeddedCanvas.h"
 #include "TCanvas.h"
 #include "TROOT.h"
-#include "Riostream.h"
 #include "TStyle.h"
 #include "TPluginManager.h"
 #include "TVirtualGL.h"
@@ -30,6 +29,9 @@
 #include "TImage.h"
 #include "TClass.h"
 #include "TUrl.h"
+#include "TVirtualX.h"
+
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //

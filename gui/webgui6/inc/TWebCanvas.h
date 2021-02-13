@@ -1,7 +1,7 @@
 // Author: Sergey Linev, GSI   7/12/2016
 
 /*************************************************************************
- * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2021, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -11,20 +11,11 @@
 #ifndef ROOT_TWebCanvas
 #define ROOT_TWebCanvas
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// TWebCanvas                                                           //
-//                                                                      //
-// Basic TCanvasImp ABI implementation for Web-based GUI                //
-// Provides painting of main ROOT6 classes in web browsers              //
-// Major interactive features implemented in TWebCanvasFull class       //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
 #include "TCanvasImp.h"
 
 #include "TString.h"
 #include "TList.h"
+#include "TWebPadOptions.h"
 
 #include <ROOT/RWebWindow.hxx>
 
@@ -36,12 +27,22 @@
 class TPad;
 class TPadWebSnapshot;
 class TWebPS;
+class TObjLink;
 
 class TWebCanvas : public TCanvasImp {
 
 public:
    /// Function type for signals, invoked when canvas drawing or update is completed
    using UpdatedSignal_t = std::function<void()>;
+
+   /// Function type for pad-related signals - like activate pad signal
+   using PadSignal_t = std::function<void(TPad *)>;
+
+   /// Function type for pad-click signals
+   using PadClickedSignal_t = std::function<void(TPad *, int, int)>;
+
+   /// Function type for signals, invoked when object is selected
+   using ObjectSelectSignal_t = std::function<void(TPad *, TObject *)>;
 
 protected:
 
@@ -60,7 +61,8 @@ protected:
 
    std::shared_ptr<ROOT::Experimental::RWebWindow> fWindow; ///!< configured display
 
-   bool fHasSpecials{false};       ///<! has special objects which may require pad ranges
+   Bool_t fReadOnly{true};         ///<! in read-only mode canvas cannot be changed from client side
+   Bool_t fHasSpecials{false};     ///<! has special objects which may require pad ranges
    Long64_t fCanvVersion{1};       ///<! actual canvas version, changed with every new Modified() call
    UInt_t fClientBits{0};          ///<! latest status bits from client like editor visible or not
    TList fPrimitivesLists;         ///<! list of lists of primitives, temporary collected during painting
@@ -70,8 +72,13 @@ protected:
    Int_t fJsonComp{0};             ///<! compression factor for messages send to the client
    std::string fCustomScripts;     ///<! custom JavaScript code or URL on JavaScript files to load before start drawing
    std::vector<std::string> fCustomClasses;  ///<! list of custom classes, which can be delivered as is to client
+   Bool_t fCanCreateObjects{kTRUE}; ///<! indicates if canvas allowed to create extra objects for interactive painting
 
    UpdatedSignal_t fUpdatedSignal; ///<! signal emitted when canvas updated or state is changed
+   PadSignal_t fActivePadChangedSignal; ///<! signal emitted when active pad changed in the canvas
+   PadClickedSignal_t fPadClickedSignal; ///<! signal emitted when simple mouse click performed on the pad
+   PadClickedSignal_t fPadDblClickedSignal; ///<! signal emitted when simple mouse click performed on the pad
+   ObjectSelectSignal_t fObjSelectSignal; ///<! signal emitted when new object selected in the pad
 
    void Lock() override {}
    void Unlock() override {}
@@ -103,19 +110,23 @@ protected:
 
    virtual Bool_t ProcessData(unsigned connid, const std::string &arg);
 
-   virtual Bool_t DecodePadOptions(const std::string &) { return kFALSE; }
+   virtual Bool_t DecodePadOptions(const std::string &);
 
-   virtual Bool_t CanCreateObject(const std::string &) { return !IsReadOnly(); }
+   virtual Bool_t CanCreateObject(const std::string &) { return !IsReadOnly() && fCanCreateObjects; }
+
+   TPad *ProcessObjectOptions(TWebObjectOptions &item, TPad *pad);
+
+   TObject *FindPrimitive(const std::string &id, TPad *pad = nullptr, TObjLink **padlnk = nullptr, TPad **objpad = nullptr);
 
 public:
-   TWebCanvas(TCanvas *c, const char *name, Int_t x, Int_t y, UInt_t width, UInt_t height);
+   TWebCanvas(TCanvas *c, const char *name, Int_t x, Int_t y, UInt_t width, UInt_t height, Bool_t readonly = kTRUE);
    virtual ~TWebCanvas() = default;
 
    void ShowWebWindow(const ROOT::Experimental::RWebDisplayArgs &user_args = "");
 
    const std::shared_ptr<ROOT::Experimental::RWebWindow> &GetWebWindow() const { return fWindow; }
 
-   virtual Bool_t IsReadOnly() const { return kTRUE; }
+   virtual Bool_t IsReadOnly() const { return fReadOnly; }
 
    Int_t InitWindow() override;
    void Close() override;
@@ -155,6 +166,13 @@ public:
    Bool_t HasToolTips() const override;
 
    void SetUpdatedHandler(UpdatedSignal_t func) { fUpdatedSignal = func; }
+   void SetActivePadChangedHandler(PadSignal_t func) { fActivePadChangedSignal = func; }
+   void SetPadClickedHandler(PadClickedSignal_t func) { fPadClickedSignal = func; }
+   void SetPadDblClickedHandler(PadClickedSignal_t func) { fPadDblClickedSignal = func; }
+   void SetObjSelectHandler(ObjectSelectSignal_t func) { fObjSelectSignal = func; }
+
+   void SetCanCreateObjects(Bool_t on = kTRUE) { fCanCreateObjects = on; }
+   Bool_t GetCanCreateObjects() const { return fCanCreateObjects; }
 
    void SetStyleDelivery(Int_t val) { fStyleDelivery = val; }
    Int_t GetStyleDelivery() const { return fStyleDelivery; }

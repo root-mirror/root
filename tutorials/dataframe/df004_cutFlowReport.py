@@ -1,6 +1,8 @@
 ## \file
 ## \ingroup tutorial_dataframe
 ## \notebook
+## Display cut/Filter efficiencies with RDataFrame.
+##
 ## This tutorial shows how to get information about the efficiency of the filters
 ## applied
 ##
@@ -8,14 +10,14 @@
 ## \macro_output
 ##
 ## \date May 2017
-## \author Danilo Piparo
+## \author Danilo Piparo (CERN)
 
 import ROOT
 
 def fill_tree(treeName, fileName):
-    tdf = ROOT.ROOT.RDataFrame(50)
-    tdf.Define("b1", "(double) tdfentry_")\
-       .Define("b2", "(int) tdfentry_ * tdfentry_").Snapshot(treeName, fileName)
+    df = ROOT.RDataFrame(50)
+    df.Define("b1", "(double) rdfentry_")\
+      .Define("b2", "(int) rdfentry_ * rdfentry_").Snapshot(treeName, fileName)
 
 # We prepare an input tree to run on
 fileName = 'df004_cutFlowReport_py.root'
@@ -24,8 +26,7 @@ fill_tree(treeName, fileName)
 
 # We read the tree from the file and create a RDataFrame, a class that
 # allows us to interact with the data contained in the tree.
-RDF = ROOT.ROOT.RDataFrame
-d = RDF(treeName, fileName)
+d = ROOT.RDataFrame(treeName, fileName)
 
 # ## Define cuts and create the report
 # An optional string parameter name can be passed to the Filter method to create a named filter.

@@ -23,7 +23,11 @@
 #include "RooCFunction4Binding.h"
 #include "TMath.h"
 
-static RooTMathReg dummy ;
+namespace {
+
+RooTMathReg dummy ;
+
+}
 
 RooTMathReg::RooTMathReg()
 {

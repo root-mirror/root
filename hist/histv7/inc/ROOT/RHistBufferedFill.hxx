@@ -1,4 +1,4 @@
-/// \file ROOT/RHistBufferedFill.h
+/// \file ROOT/RHistBufferedFill.hxx
 /// \ingroup Hist ROOT7
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-07-03
@@ -87,9 +87,6 @@ public:
 
 private:
    HIST &fHist;
-   size_t fCursor = 0;
-   std::array<CoordArray_t, SIZE> fXBuf;
-   std::array<Weight_t, SIZE> fWBuf;
 
    friend class Internal::RHistBufferedFillBase<RHistBufferedFill<HIST, SIZE>, HIST, SIZE>;
    void FlushImpl() { fHist.FillN(this->GetCoords(), this->GetWeights()); }

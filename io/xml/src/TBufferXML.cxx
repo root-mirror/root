@@ -35,7 +35,6 @@ There are limitations for complex objects like TTree, which can not be converted
 
 #include "Compression.h"
 #include "TXMLFile.h"
-#include "TObjArray.h"
 #include "TROOT.h"
 #include "TError.h"
 #include "TClass.h"
@@ -48,6 +47,7 @@ There are limitations for complex objects like TTree, which can not be converted
 #include "TStreamer.h"
 #include "RZip.h"
 #include "ROOT/RMakeUnique.hxx"
+#include "snprintf.h"
 
 ClassImp(TBufferXML);
 

@@ -14,8 +14,7 @@
 #include "THashList.h"
 #include "TMath.h"
 #include "THLimitsFinder.h"
-#include "Riostream.h"
-#include "TVirtualPad.h"
+#include <iostream>
 #include "TError.h"
 #include "TClass.h"
 
@@ -787,21 +786,27 @@ void TProfile3D::GetStats(Double_t *stats) const
    if (fBuffer) ((TProfile3D*)this)->BufferEmpty();
 
    // Loop on bins
-   if (fTsumw == 0 || fXaxis.TestBit(TAxis::kAxisRange) || fYaxis.TestBit(TAxis::kAxisRange)) {
+   if ( (fTsumw == 0 /* && fEntries > 0 */) || fXaxis.TestBit(TAxis::kAxisRange) || fYaxis.TestBit(TAxis::kAxisRange)) {
+
+      // check for labels axis . In that case corresponsing statistics do not make sense and it is set to zero
+      Bool_t labelXaxis = ((const_cast<TAxis &>(fXaxis)).GetLabels() && fXaxis.CanExtend());
+      Bool_t labelYaxis = ((const_cast<TAxis &>(fYaxis)).GetLabels() && fYaxis.CanExtend());
+      Bool_t labelZaxis = ((const_cast<TAxis &>(fZaxis)).GetLabels() && fZaxis.CanExtend());
+
       Int_t bin, binx, biny,binz;
       Double_t w, w2;
       Double_t x,y,z;
       for (bin=0;bin<kNstat;bin++) stats[bin] = 0;
       if (!fBinEntries.fArray) return;
       for (binz=fZaxis.GetFirst();binz<=fZaxis.GetLast();binz++) {
-         z = fZaxis.GetBinCenter(binz);
+         z = (!labelZaxis) ? fZaxis.GetBinCenter(binz) : 0;
          for (biny=fYaxis.GetFirst();biny<=fYaxis.GetLast();biny++) {
-            y = fYaxis.GetBinCenter(biny);
+            y = (!labelYaxis) ? fYaxis.GetBinCenter(biny) : 0;
             for (binx=fXaxis.GetFirst();binx<=fXaxis.GetLast();binx++) {
                bin = GetBin(binx,biny,binz);
                w         = fBinEntries.fArray[bin];
                w2        = (fBinSumw2.fN ? fBinSumw2.fArray[bin] : w );
-               x         = fXaxis.GetBinCenter(binx);
+               x         = (!labelXaxis) ? fXaxis.GetBinCenter(binx) : 0;
                stats[0]  += w;
                stats[1]  += w2;
                stats[2]  += w*x;
@@ -835,6 +840,41 @@ void TProfile3D::GetStats(Double_t *stats) const
    }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Reduce the number of bins for this axis to the number of bins having a label.
+
+void TProfile3D::LabelsDeflate(Option_t *ax)
+{
+   TProfileHelper::LabelsDeflate(this, ax);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Double the number of bins for axis.
+/// Refill histogram
+/// This function is called by TAxis::FindBin(const char *label)
+
+void TProfile3D::LabelsInflate(Option_t *ax)
+{
+   TProfileHelper::LabelsInflate(this, ax);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set option(s) to draw axis with labels.
+///
+/// option might have the following values:
+///
+///  - "a" sort by alphabetic order
+///  - ">" sort by decreasing values
+///  - "<" sort by increasing values
+///  - "h" draw labels horizontal
+///  - "v" draw labels vertical
+///  - "u" draw labels up (end of label right adjusted)
+///  - "d" draw labels down (start of label left adjusted)
+
+void TProfile3D::LabelsOption(Option_t */* option */, Option_t * /* ax */)
+{
+   Error("LabelsOption","Labels option function is not implemented for a TProfile3D");
+}
 ////////////////////////////////////////////////////////////////////////////////
 /// Merge all histograms in the collection in this histogram.
 ///
@@ -1074,7 +1114,7 @@ TProfile2D *TProfile3D::DoProjectProfile2D(const char* name, const char * title,
    // Since no axis range is considered when doing the projection TProfile3D->TH3D
    // the resulting histogram will have the same axis as the parent one
    // we need afterwards to set the range in the 3D histogram to considered it later
-   // when doing the projection in a Profile2D 
+   // when doing the projection in a Profile2D
    if (fXaxis.TestBit(TAxis::kAxisRange) ) {
       h3dW->GetXaxis()->SetRange(fXaxis.GetFirst(),fXaxis.GetLast());
       h3dN->GetXaxis()->SetRange(fXaxis.GetFirst(),fXaxis.GetLast());

@@ -49,14 +49,12 @@ Class that contains all the data information
 
 #include "TEventList.h"
 #include "TFile.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TProfile.h"
 #include "TRandom3.h"
 #include "TMatrixF.h"
 #include "TVectorF.h"
 #include "TMath.h"
-#include "TROOT.h"
+#include "TTree.h"
+#include "TBranch.h"
 
 #include "TMVA/MsgLogger.h"
 #include "TMVA/Configurable.h"
@@ -791,6 +789,9 @@ TMVA::DataSetFactory::BuildEventVector( TMVA::DataSetInfo& dsi,
          // count number of events in tree before cut
          classEventCounts.nInitialEvents += currentInfo.GetTree()->GetEntries();
 
+         // flag to control a warning message when size of array in disk are bigger than what requested
+         Bool_t foundLargerArraySize = kFALSE;
+
          // loop over events in ntuple
          const UInt_t nEvts = currentInfo.GetTree()->GetEntries();
          for (Long64_t evtIdx = 0; evtIdx < nEvts; evtIdx++) {
@@ -882,6 +883,26 @@ TMVA::DataSetFactory::BuildEventVector( TMVA::DataSetInfo& dsi,
                   auto formulaMap = fInputTableFormulas[ivar];
                   formula = formulaMap.first;
                   int inputVarIndex = formulaMap.second;
+                  // check fomula ndata size (in case of arrays variable)
+                  // enough to check for ivarindex = 0 then formula is the same
+                  // this check might take some time. Maybe do only in debug mode
+                  if (inputVarIndex == 0 && dsi.IsVariableFromArray(ivar)) {
+                     Int_t ndata = formula->GetNdata();
+                     Int_t arraySize = dsi.GetVarArraySize(dsi.GetVariableInfo(ivar).GetExpression());
+                     if (ndata < arraySize) {
+                        Log() << kFATAL << "Size of array " << dsi.GetVariableInfo(ivar).GetExpression()
+                              << " in the current tree " << currentInfo.GetTree()->GetName() << " for the event " << evtIdx
+                              << " is " << ndata << " instead of " << arraySize << Endl;
+                     } else if (ndata > arraySize && !foundLargerArraySize) {
+                        Log() << kWARNING << "Size of array " << dsi.GetVariableInfo(ivar).GetExpression()
+                              << " in the current tree " << currentInfo.GetTree()->GetName() << " for the event "
+                              << evtIdx << " is " << ndata << ", larger than " << arraySize << Endl;
+                        Log() << kWARNING << "Some data will then be ignored. This WARNING is printed only once, "
+                              << " check in case for the other variables and events " << Endl;
+                           // note that following warnings will be suppressed
+                        foundLargerArraySize = kTRUE;
+                     }
+                  }
                   formula->SetQuickLoad(true); // is this needed ???
 
                   vars[ivar] =  ( !haveAllArrayData ?

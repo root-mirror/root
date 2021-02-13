@@ -11,6 +11,7 @@
 ROOT_STANDARD_LIBRARY_PACKAGE(ROOTHist
   HEADERS
     ROOT/RAxis.hxx
+    ROOT/RAxisConfig.hxx
     ROOT/RHist.hxx
     ROOT/RHistBinIter.hxx
     ROOT/RHistBufferedFill.hxx

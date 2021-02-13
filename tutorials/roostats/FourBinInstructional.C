@@ -1,7 +1,7 @@
 /// \file
 /// \ingroup tutorial_roostats
 /// \notebook
-///  This example is a generalization of the on/off problem.
+/// This example is a generalization of the on/off problem.
 ///
 ///  This example is a generalization of the on/off problem.
 /// It's a common setup for SUSY searches.  Imagine that one has two

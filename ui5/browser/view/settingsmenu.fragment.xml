@@ -1,5 +1,5 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form">
-  <ViewSettingsDialog>
+  <ViewSettingsDialog confirm="handleSeetingsConfirm">
     <customTabs>
       <ViewSettingsCustomTab id="drawing-options" icon="sap-icon://signature" text="Drawing options" title="Drawing options" tooltip="Drawing options">
         <content>
@@ -54,6 +54,21 @@
               </f:Form>
             </content>
           </Panel>
+        </content>
+      </ViewSettingsCustomTab>
+      <ViewSettingsCustomTab icon="sap-icon://action-settings" >
+        <content>
+          <VBox>
+            <HBox>
+               <Label text="Sorting" wrapping="true" />
+               <ComboBox items="{ path: '/SortMethods' }" selectedKey="{/SortMethod}">
+                   <core:Item text="{name}" key="{value}"/>
+               </ComboBox>
+            </HBox>
+            <CheckBox text="Reverse order" selected="{/ReverseOrder}" />
+            <CheckBox text="Show hidden files" selected="{/ShowHiddenFiles}" />
+            <CheckBox text="Double click to run macro" selected="{/DBLCLKRun}" />
+          </VBox>
         </content>
       </ViewSettingsCustomTab>
       <ViewSettingsCustomTab icon="sap-icon://add-equipment" >

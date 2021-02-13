@@ -7,13 +7,11 @@
  *                                                                    *
  **********************************************************************/
 
-
 #ifdef __CINT__
 
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
-
 
 //#pragma link C++ namespace ROOT::Minuit2;
 
@@ -50,7 +48,7 @@
 #pragma link C++ class ROOT::Minuit2::MnMachinePrecision;
 #pragma link C++ class ROOT::Minuit2::MnTraceObject;
 
-#pragma link C++ class std::vector<ROOT::Minuit2::MinuitParameter >;
+#pragma link C++ class std::vector<ROOT::Minuit2::MinuitParameter>;
 
 #pragma link C++ class TMinuit2TraceObject;
 

@@ -11,7 +11,8 @@
 #include "rootcling_impl.h"
 #include "RConfigure.h"
 #include <ROOT/RConfig.hxx>
-#include <stdlib.h>
+#include <cstdlib>
+#include <string>
 
 extern "C" {
    R__DLLEXPORT void usedToIdentifyRootClingByDlSym() {}

@@ -29,13 +29,9 @@ side of that error will be used:
 \f]
 **/
 
-#include "RooFit.h"
-
-#include "Riostream.h"
-#include "Riostream.h"
-#include <math.h>
-
 #include "RooPullVar.h"
+
+#include "RooFit.h"
 #include "RooAbsReal.h"
 #include "RooRealVar.h"
 
@@ -59,7 +55,7 @@ RooPullVar::RooPullVar()
 ///
 /// \param[in] name  Name of the pull variable.
 /// \param[in] title The title (for plotting).
-/// \param[in] meas  The measurement. This variable needs to have an error.
+/// \param[in] meas  The measurement. This variable needs to have an error, and therefore is a RooRealVar.
 /// \param[in] truth The true value.
 RooPullVar::RooPullVar(const char* name, const char* title, RooRealVar& meas, RooAbsReal& truth) :
   RooAbsReal(name, title),

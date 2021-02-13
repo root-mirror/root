@@ -25,7 +25,6 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <utility>
 
 class TObject ;
 class RooAbsArg;
@@ -91,13 +90,8 @@ public:
   }
   virtual Bool_t isNonPoissonWeighted() const ;
 
-  virtual RooSpan<const double> getWeightBatch(std::size_t, std::size_t) const {
-    //TODO
-    std::cerr << "Retrieving weights in batches not yet implemented for RooDataHist." << std::endl;
-    assert(false);
-
-    return {};
-  }
+  virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const;
+  void getBatches(RooBatchCompute::RunContext& evalData, std::size_t begin, std::size_t len) const;
 
   Double_t sum(Bool_t correctForBinSize, Bool_t inverseCorr=kFALSE) const ;
   Double_t sum(const RooArgSet& sumSet, const RooArgSet& sliceSet, Bool_t correctForBinSize, Bool_t inverseCorr=kFALSE) ;
@@ -156,7 +150,7 @@ protected:
   RooDataHist(const char* name, const char* title, RooDataHist* h, const RooArgSet& varSubset, 
 	      const RooFormulaVar* cutVar, const char* cutRange, Int_t nStart, Int_t nStop, Bool_t copyCache) ;
   RooAbsData* reduceEng(const RooArgSet& varSubset, const RooFormulaVar* cutVar, const char* cutRange=0, 
-	                Int_t nStart=0, Int_t nStop=2000000000, Bool_t copyCache=kTRUE) ;
+	                std::size_t nStart=0, std::size_t nStop=std::numeric_limits<std::size_t>::max(), Bool_t copyCache=kTRUE) ;
   Double_t interpolateDim(RooRealVar& dim, const RooAbsBinning* binning, Double_t xval, Int_t intOrder, Bool_t correctForBinSize, Bool_t cdfBoundaries) ;
   void calculatePartialBinVolume(const RooArgSet& dimSet) const ;
   void checkBinBounds() const;

@@ -25,6 +25,7 @@
 #include "TNamed.h"
 
 class TTree;
+class TTreeFormula;
 
 class TVirtualIndex : public TNamed {
 
@@ -40,6 +41,7 @@ public:
    virtual Long64_t       GetEntryNumberWithBestIndex(Long64_t major, Long64_t minor) const = 0;
    virtual const char    *GetMajorName()    const = 0;
    virtual const char    *GetMinorName()    const = 0;
+   virtual Bool_t         IsValidFor(const TTree *parent) = 0;
    virtual Long64_t       GetN()            const = 0;
    virtual TTree         *GetTree()         const {return fTree;}
    virtual void           UpdateFormulaLeaves(const TTree *parent) = 0;

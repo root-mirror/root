@@ -15,6 +15,7 @@
 #include "TMatrixTBase.h"
 #include "TMatrixTUtils.h"
 
+#include <cstring>
 
 #ifdef CBLAS
 #include <vecLib/vBLAS.h>

@@ -14,6 +14,7 @@
 
 #include "TNamed.h"
 #include "TAttLine.h"
+#include "TList.h"
 
 class TParallelCoordVar;
 class TParallelCoord;
@@ -64,16 +65,6 @@ public:
    ClassDef(TParallelCoordRange,1); // A TParallelCoordRange is a range used for parallel coordinates plots.
 };
 
-#endif
-
-#ifndef ROOT_TParallelCoordSelect
-#define ROOT_TParallelCoordSelect
-
-#include "TAttLine.h"
-#include "TList.h"
-
-class TParallelCoord;
-class TParallelCoordRange;
 
 class TParallelCoordSelect : public TList, public TAttLine {
 public:

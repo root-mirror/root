@@ -17,6 +17,9 @@
 #include "TGLUtil.h"
 #include "TString.h"
 
+#include <vector>
+#include <utility>
+
 class TGLPlotCamera;
 class TAxis;
 class TH1;

@@ -34,7 +34,8 @@
 #include "TGLabel.h"
 #include "TList.h"
 #include "KeySymbols.h"
-
+#include "TVirtualX.h"
+#include "strlcpy.h"
 
 ClassImp(TGMsgBox);
 

@@ -84,11 +84,12 @@ public:
    virtual Int_t    Fill(const char *namex, Double_t y, const char *namez, Double_t w);
    virtual Int_t    Fill(const char *namex, const char *namey, Double_t z, Double_t w);
    virtual Int_t    Fill(Double_t x, const char *namey, const char *namez, Double_t w);
+   virtual Int_t    Fill(const char *namex, Double_t y, Double_t z, Double_t w);
    virtual Int_t    Fill(Double_t x, const char *namey, Double_t z, Double_t w);
    virtual Int_t    Fill(Double_t x, Double_t y, const char *namez, Double_t w);
 
-   virtual void     FillRandom(const char *fname, Int_t ntimes=5000);
-   virtual void     FillRandom(TH1 *h, Int_t ntimes=5000);
+   virtual void     FillRandom(const char *fname, Int_t ntimes=5000, TRandom * rng = nullptr);
+   virtual void     FillRandom(TH1 *h, Int_t ntimes=5000, TRandom * rng = nullptr);
    virtual void     FitSlicesZ(TF1 *f1=0,Int_t binminx=1, Int_t binmaxx=0,Int_t binminy=1, Int_t binmaxy=0,
                                         Int_t cut=0 ,Option_t *option="QNR"); // *MENU*
    virtual Int_t    GetBin(Int_t binx, Int_t biny, Int_t binz) const;
@@ -102,7 +103,7 @@ public:
    virtual Double_t GetBinWithContent3(Double_t c, Int_t &binx, Int_t &biny, Int_t &binz, Int_t firstx=0, Int_t lastx=0,Int_t firsty=0, Int_t lasty=0, Int_t firstz=0, Int_t lastz=0, Double_t maxdiff=0) const;
    virtual Double_t GetCorrelationFactor(Int_t axis1=1,Int_t axis2=2) const;
    virtual Double_t GetCovariance(Int_t axis1=1,Int_t axis2=2) const;
-   virtual void     GetRandom3(Double_t &x, Double_t &y, Double_t &z);
+   virtual void     GetRandom3(Double_t &x, Double_t &y, Double_t &, TRandom * rng = nullptr);
    virtual void     GetStats(Double_t *stats) const;
    virtual Double_t Integral(Option_t *option="") const;
    virtual Double_t Integral(Int_t binx1, Int_t binx2, Int_t biny1, Int_t biny2, Int_t binz1, Int_t binz2, Option_t *option="") const;

@@ -9,6 +9,9 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
+#ifndef ROOT_TGeoRCPtr
+#define ROOT_TGeoRCPtr
+
 /** \class TGeoRCPtr
 \ingroup Geometry_classes
 
@@ -114,3 +117,5 @@ public:
 private:
    T *fPtr;   //Actual pointer
 };
+
+#endif

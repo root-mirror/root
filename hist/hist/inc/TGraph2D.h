@@ -22,7 +22,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "TVirtualHistPainter.h"
 #include "TAttLine.h"
 #include "TAttFill.h"
 #include "TAttMarker.h"
@@ -30,10 +29,12 @@
 class TAxis;
 class TList;
 class TF2;
+class TH1;
 class TH2;
 class TH2D;
 class TView;
 class TDirectory;
+class TVirtualHistPainter;
 
 #include "TFitResultPtr.h"
 
@@ -89,6 +90,7 @@ public:
 
    TGraph2D& operator=(const TGraph2D &);
 
+   virtual void          AddPoint(Double_t x, Double_t y, Double_t z) { SetPoint(fNpoints, x, y, z); } ///< Append a new point to the graph.
    virtual void          Browse(TBrowser *);
    virtual void          Clear(Option_t *option="");
    virtual void          DirectoryAutoAdd(TDirectory *);

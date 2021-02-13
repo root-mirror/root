@@ -10,15 +10,15 @@
  *************************************************************************/
 
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "THashList.h"
 #include "TObjArray.h"
 #include "TGeometry.h"
 #include "TNode.h"
 #include "TMaterial.h"
 #include "TBrowser.h"
-#include "TClass.h"
 
-TGeometry *gGeometry = 0;
+TGeometry *gGeometry = nullptr;
 
 ClassImp(TGeometry);
 

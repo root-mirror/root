@@ -37,11 +37,11 @@
 #include "TMVA/Tools.h"
 #include "TMVA/Types.h"
 
-#include "Riostream.h"
 #include "TMatrix.h"
 #include "TVectorT.h"
 #include "TList.h"
 
+#include <iostream>
 #include <algorithm>
 
 REGISTER_METHOD(HMatrix)

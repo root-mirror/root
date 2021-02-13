@@ -36,7 +36,6 @@ or objects in the packets.
 #include "TEntryList.h"
 #include "TList.h"
 #include "TMap.h"
-#include "TObjString.h"
 #include "TRegexp.h"
 #include "TProofServ.h"
 #include "TSystem.h"

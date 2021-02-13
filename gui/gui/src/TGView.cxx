@@ -48,8 +48,7 @@
 #include "TMath.h"
 #include "KeySymbols.h"
 #include "RConfigure.h"
-
-
+#include "TVirtualX.h"
 
 ClassImp(TGViewFrame);
 

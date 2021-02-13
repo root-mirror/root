@@ -20,10 +20,7 @@
 #include <string>
 
 namespace ROOT {
-namespace Experimental {
-namespace Detail {
-
-class RRawFile;
+namespace Internal {
 
 /**
  * \class RRawFile RRawFile.hxx
@@ -38,7 +35,10 @@ class RRawFile;
  * If the transport protocol part and the :// separator are missing, the default protocol is local file. Files are
  * opened when required (on reading, getting file size) and closed on object destruction.
  *
- * RRawFiles manage system respources and are therefore made non-copyable. They can be explicitly cloned though.
+ * RRawFiles manage system resources and are therefore made non-copyable. They can be explicitly cloned though.
+ *
+ * RRawFile objects are conditionally thread safe. See the user manual for further details:
+ * https://root.cern/manual/thread_safety/
  */
 class RRawFile {
 public:
@@ -52,6 +52,8 @@ public:
    static constexpr int kFeatureHasSize = 0x01;
    /// Map() and Unmap() are implemented
    static constexpr int kFeatureHasMmap = 0x02;
+   /// File supports async IO
+   static constexpr int kFeatureHasAsyncIo = 0x04;
 
    /// On construction, an ROptions parameter can customize the RRawFile behavior
    struct ROptions {
@@ -146,7 +148,7 @@ public:
    virtual std::unique_ptr<RRawFile> Clone() const = 0;
 
    /// Factory method that returns a suitable concrete implementation according to the transport in the url
-   static RRawFile *Create(std::string_view url, ROptions options = ROptions());
+   static std::unique_ptr<RRawFile> Create(std::string_view url, ROptions options = ROptions());
    /// Returns only the file location, e.g. "server/file" for http://server/file
    static std::string GetLocation(std::string_view url);
    /// Returns only the transport protocol in lower case, e.g. "http" for HTTP://server/file
@@ -161,8 +163,12 @@ public:
    size_t Read(void *buffer, size_t nbytes);
    /// Change the cursor fFilePos
    void Seek(std::uint64_t offset);
+   /// Returns the offset for the next Read/Readln call
+   std::uint64_t GetFilePos() const { return fFilePos; }
    /// Returns the size of the file
    std::uint64_t GetSize();
+   /// Returns the url of the file
+   std::string GetUrl() const;
 
    /// Opens the file if necessary and calls ReadVImpl
    void ReadV(RIOVec *ioVec, unsigned int nReq);
@@ -180,10 +186,9 @@ public:
 
    /// Read the next line starting from the current value of fFilePos. Returns false if the end of the file is reached.
    bool Readln(std::string &line);
-};
+}; // class RRawFile
 
-} // namespace Detail
-} // namespace Experimental
+} // namespace Internal
 } // namespace ROOT
 
 #endif

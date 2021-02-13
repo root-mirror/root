@@ -13,8 +13,6 @@
 #include "TAxis.h"
 #include "TF1.h"
 #include "TMath.h"
-#include "TVirtualPad.h"
-#include "TLine.h"
 
 ClassImp(TGraphQQ);
 

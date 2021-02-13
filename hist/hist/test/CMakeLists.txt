@@ -14,6 +14,8 @@ ROOT_ADD_GTEST(testTKDE test_tkde.cxx LIBRARIES Hist)
 ROOT_ADD_GTEST(testTH1FindFirstBinAbove test_TH1_FindFirstBinAbove.cxx LIBRARIES Hist)
 ROOT_ADD_GTEST(test_TEfficiency test_TEfficiency.cxx LIBRARIES Hist)
 ROOT_ADD_GTEST(TGraphMultiErrorsTests TGraphMultiErrorsTests.cxx LIBRARIES Hist RIO)
+ROOT_ADD_GTEST(test_TF123_Moments test_TF123_Moments.cxx LIBRARIES Hist)
+ROOT_ADD_GTEST(test_THBinIterator test_THBinIterator.cxx LIBRARIES Hist)
 
 if(fftw3)
   ROOT_ADD_GTEST(testTF1 test_tf1.cxx LIBRARIES Hist)

@@ -502,7 +502,7 @@ void ToyMCSampler::GenerateGlobalObservables(RooAbsPdf& pdf) const {
             int nCat = channelCat.numTypes();
             for (int i=0; i < nCat; ++i){
                channelCat.setIndex(i);
-               RooAbsPdf* pdftmp = simPdf->getPdf(channelCat.getLabel());
+               RooAbsPdf* pdftmp = simPdf->getPdf(channelCat.getCurrentLabel());
                assert(pdftmp);
                RooArgSet* globtmp = pdftmp->getObservables(*fGlobalObservables);
                RooAbsPdf::GenSpec* gs = pdftmp->prepareMultiGen(*globtmp, NumEvents(1));

@@ -5,15 +5,12 @@
 # For the list of contributors see $ROOTSYS/README/CREDITS.
 
 project(mathmore-tests)
-find_package(ROOT REQUIRED)
-
-include_directories(${ROOT_INCLUDE_DIRS})
 
 set(Libraries Core RIO Net Hist Graf Graf3d Gpad Tree
-              Rint Postscript Matrix Physics MathCore Thread MathMore)
+              Rint Postscript Matrix Physics Thread MathCore MathMore)
 
 set(TestMathMoreSource
-      testChebyshev.cxx
+     testChebyshev.cxx
      testPermute.cxx
      testDerivation.cxx
      testGSLIntegration.cxx
@@ -29,26 +26,25 @@ set(TestMathMoreSource
      testStatFunc.cxx
      testFunctor.cxx
      testVavilov.cxx
-     simanTSP.cxx  )
+     simanTSP.cxx)
 
 set(testFunctor_LABELS longtest)
 set(testPermute_LABELS longtest)
 set(testRandom_LABELS longtest)
 set(testMCIntegration_LABELS longtest)
 
-if(ROOT_unuran_FOUND)
+if(unuran)
   list(APPEND Libraries Unuran)
   add_definitions(-DHAVE_UNURAN)
 endif()
 
-
-if(ROOT_minuit2_FOUND)
+if(minuit2)
   list(APPEND TestSource fit/testMinim.cxx)
   list(APPEND Libraries Minuit2)
 endif()
 
 #some tests requires directly gsl
-include_directories(${GSL_INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
+include_directories(${GSL_INCLUDE_DIR})
 add_definitions(-DHAVE_ROOTLIBS)
 
 #---Build and add all the defined test in the list---------------
@@ -58,4 +54,4 @@ foreach(file ${TestMathMoreSource})
   ROOT_ADD_TEST(mathmore-${testname} COMMAND ${testname} LABELS ${${testname}_LABELS})
 endforeach()
 
-ROOT_ADD_GTEST(stressMathMoreUnit testStress.cxx StatFunction.cxx LIBRARIES MathMore)
+ROOT_ADD_GTEST(stressMathMoreUnit testStress.cxx StatFunction.cxx LIBRARIES Core MathCore MathMore)

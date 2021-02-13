@@ -13,16 +13,14 @@
 #ifndef ROOT_Fit_PoissonLikelihoodFCN
 #define ROOT_Fit_PoissonLikelihoodFCN
 
+#include "ROOT/EExecutionPolicy.hxx"
 #include "Fit/BasicFCN.h"
-
+#include "Fit/BinData.h"
+#include "Fit/FitUtil.h"
 #include "Math/IParamFunction.h"
 
-#include "Fit/BinData.h"
-
-#include "Fit/FitUtil.h"
-
-
 #include <memory>
+#include <vector>
 
 //#define PARALLEL
 // #ifdef PARALLEL
@@ -60,7 +58,7 @@ public:
    /**
       Constructor from unbin data set and model function (pdf)
    */
-   PoissonLikelihoodFCN (const std::shared_ptr<BinData> & data, const std::shared_ptr<IModelFunction> & func, int weight = 0, bool extended = true, const ::ROOT::Fit::ExecutionPolicy &executionPolicy = ::ROOT::Fit::ExecutionPolicy::kSerial ) :
+   PoissonLikelihoodFCN (const std::shared_ptr<BinData> & data, const std::shared_ptr<IModelFunction> & func, int weight = 0, bool extended = true, const ::ROOT::EExecutionPolicy &executionPolicy = ::ROOT::EExecutionPolicy::kSequential ) :
       BaseFCN( data, func),
       fIsExtended(extended),
       fWeight(weight),
@@ -72,7 +70,7 @@ public:
    /**
       Constructor from unbin data set and model function (pdf) managed by the users
    */
-   PoissonLikelihoodFCN (const BinData & data, const IModelFunction & func, int weight = 0, bool extended = true, const ::ROOT::Fit::ExecutionPolicy &executionPolicy = ::ROOT::Fit::ExecutionPolicy::kSerial ) :
+   PoissonLikelihoodFCN (const BinData & data, const IModelFunction & func, int weight = 0, bool extended = true, const ::ROOT::EExecutionPolicy &executionPolicy = ::ROOT::EExecutionPolicy::kSequential ) :
       BaseFCN(std::shared_ptr<BinData>(const_cast<BinData*>(&data), DummyDeleter<BinData>()), std::shared_ptr<IModelFunction>(dynamic_cast<IModelFunction*>(func.Clone() ) ) ),
       fIsExtended(extended),
       fWeight(weight),
@@ -183,7 +181,7 @@ private:
 
    mutable std::vector<double> fGrad; // for derivatives
 
-   ::ROOT::Fit::ExecutionPolicy fExecutionPolicy; // Execution policy
+   ::ROOT::EExecutionPolicy fExecutionPolicy; // Execution policy
 };
 
       // define useful typedef's

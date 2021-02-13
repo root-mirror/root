@@ -13,12 +13,9 @@
 #include "Minuit2/MnConfig.h"
 #include "Minuit2/MnMatrix.h"
 
-#include <vector>
-
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class FCNBase;
 /**
@@ -33,34 +30,31 @@ class FCNBase;
 class MnFcn {
 
 public:
-
    /// constructor of
-   explicit MnFcn(const FCNBase& fcn, int ncall = 0) : fFCN(fcn), fNumCall(ncall) {}
+   explicit MnFcn(const FCNBase &fcn, int ncall = 0) : fFCN(fcn), fNumCall(ncall) {}
 
-  virtual ~MnFcn();
+   virtual ~MnFcn();
 
-  virtual double operator()(const MnAlgebraicVector&) const;
-  unsigned int NumOfCalls() const {return fNumCall;}
+   virtual double operator()(const MnAlgebraicVector &) const;
+   unsigned int NumOfCalls() const { return fNumCall; }
 
-  //
-  //forward interface
-  //
-  double ErrorDef() const;
-  double Up() const;
+   //
+   // forward interface
+   //
+   double ErrorDef() const;
+   double Up() const;
 
-  const FCNBase& Fcn() const {return fFCN;}
+   const FCNBase &Fcn() const { return fFCN; }
 
 private:
-
-  const FCNBase& fFCN;
+   const FCNBase &fFCN;
 
 protected:
-
-  mutable int fNumCall;
+   mutable int fNumCall;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MnFcn
+#endif // ROOT_Minuit2_MnFcn

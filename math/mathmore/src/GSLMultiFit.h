@@ -36,6 +36,7 @@
 
 #include "Math/IFunction.h"
 #include <string>
+#include <vector>
 #include <cassert>
 
 

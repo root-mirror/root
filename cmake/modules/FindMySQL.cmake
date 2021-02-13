@@ -62,7 +62,7 @@ endif()
 # handle the QUIETLY and REQUIRED arguments and set DCAP_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(MYSQL DEFAULT_MSG MYSQL_INCLUDE_DIR MYSQL_LIBRARIES)
+find_package_handle_standard_args(MySQL DEFAULT_MSG MYSQL_INCLUDE_DIR MYSQL_LIBRARIES)
 
 mark_as_advanced(
   MYSQL_CONFIG_EXECUTABLE

@@ -19,8 +19,6 @@
 #include "TTreePlayer.h"
 #include "TF3.h"
 
-#include "TColor.h"
-
 /** \class TEvePointSet
 \ingroup TEve
 TEvePointSet is a render-element holding a collection of 3D points with

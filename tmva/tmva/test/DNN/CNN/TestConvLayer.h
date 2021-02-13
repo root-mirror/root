@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 #include "TestConvNet.h"
 

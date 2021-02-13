@@ -49,8 +49,8 @@ private:
    Long64_t    fNStagedFiles;       // number of staged files
    Long64_t    fNCorruptFiles;      // number of corrupt files
 
-   TFileCollection(const TFileCollection&);             // not implemented
-   TFileCollection& operator=(const TFileCollection&);  // not implemented
+   TFileCollection(const TFileCollection&) = delete;
+   TFileCollection& operator=(const TFileCollection&) = delete;
 
    void PrintDetailed(TString &showOnly) const;
    void FormatSize(Long64_t bytes, TString &um, Double_t &size) const;
@@ -59,8 +59,8 @@ public:
    enum EStatusBits {
       kRemoteCollection = BIT(15)   // the collection is not staged
    };
-   TFileCollection(const char *name = 0, const char *title = 0,
-                   const char *file = 0, Int_t nfiles = -1, Int_t firstfile = 1);
+   TFileCollection(const char *name = nullptr, const char *title = nullptr,
+                   const char *file = nullptr, Int_t nfiles = -1, Int_t firstfile = 1);
    virtual ~TFileCollection();
 
    Int_t           Add(TFileInfo *info);

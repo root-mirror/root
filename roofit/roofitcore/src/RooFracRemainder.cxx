@@ -30,7 +30,6 @@ a constrained split
 #include "RooFit.h"
 
 #include "Riostream.h"
-#include "Riostream.h"
 #include <math.h>
 
 #include "RooFracRemainder.h"
@@ -43,7 +42,7 @@ a constrained split
 using namespace std;
 
 ClassImp(RooFracRemainder);
-;
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

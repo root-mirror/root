@@ -17,3 +17,9 @@ div.contents {
   top:0;
   width:1px;
 }
+
+.pyrootbox {
+  border: 1px solid #879ecb;
+  background-color: #f9fafc;
+  padding: 15px;
+}

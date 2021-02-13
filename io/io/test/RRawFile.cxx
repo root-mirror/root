@@ -1,42 +1,6 @@
-#include "RConfigure.h"
-#include "ROOT/RRawFile.hxx"
-#include "ROOT/RMakeUnique.hxx"
-
-#include <algorithm>
-#include <cstdio>
-#include <cstring>
-#include <fstream>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <utility>
-
-#include "gtest/gtest.h"
-
-using namespace ROOT::Experimental::Detail;
+#include "io_test.hxx"
 
 namespace {
-
-/**
- * An RAII wrapper around an open temporary file on disk. It cleans up the guarded file when the wrapper object
- * goes out of scope.
- */
-class FileRaii {
-private:
-   std::string fPath;
-public:
-   FileRaii(const std::string &path, const std::string &content) : fPath(path)
-   {
-      std::ofstream ostrm(path, std::ios::binary | std::ios::out | std::ios::trunc);
-      ostrm << content;
-   }
-   FileRaii(const FileRaii&) = delete;
-   FileRaii& operator=(const FileRaii&) = delete;
-   ~FileRaii() {
-      std::remove(fPath.c_str());
-   }
-};
-
 
 /**
  * A minimal RRawFile implementation that serves data from a string. It keeps a counter of the number of read calls
@@ -80,9 +44,10 @@ public:
 TEST(RRawFile, Empty)
 {
    FileRaii emptyGuard("testEmpty", "");
-   std::unique_ptr<RRawFile> f(RRawFile::Create("testEmpty"));
+   auto f = RRawFile::Create("testEmpty");
    EXPECT_TRUE(f->GetFeatures() & RRawFile::kFeatureHasSize);
    EXPECT_EQ(0u, f->GetSize());
+   EXPECT_EQ(0u, f->GetFilePos());
    EXPECT_EQ(0u, f->Read(nullptr, 0));
    EXPECT_EQ(0u, f->ReadAt(nullptr, 0, 1));
    std::string line;
@@ -93,7 +58,7 @@ TEST(RRawFile, Empty)
 TEST(RRawFile, Basic)
 {
    FileRaii basicGuard("testBasic", "foo\nbar");
-   std::unique_ptr<RRawFile> f(RRawFile::Create("testBasic"));
+   auto f = RRawFile::Create("testBasic");
    EXPECT_EQ(7u, f->GetSize());
    std::string line;
    EXPECT_TRUE(f->Readln(line));
@@ -102,14 +67,19 @@ TEST(RRawFile, Basic)
    EXPECT_STREQ("bar", line.c_str());
    EXPECT_FALSE(f->Readln(line));
    auto clone = f->Clone();
-   /// file pointer is reset by clone
+   // file pointer is reset by clone
+   EXPECT_TRUE(clone->Readln(line));
+   EXPECT_STREQ("foo", line.c_str());
+   // Rinse and repeat
+   EXPECT_EQ(4U, clone->GetFilePos());
+   clone->Seek(0);
    EXPECT_TRUE(clone->Readln(line));
    EXPECT_STREQ("foo", line.c_str());
 
-   std::unique_ptr<RRawFile> f2(RRawFile::Create("NoSuchFile"));
+   auto f2 = RRawFile::Create("NoSuchFile");
    EXPECT_THROW(f2->Readln(line), std::runtime_error);
 
-   std::unique_ptr<RRawFile> f3(RRawFile::Create("FiLE://testBasic"));
+   auto f3 = RRawFile::Create("FiLE://testBasic");
    EXPECT_EQ(7u, f3->GetSize());
 
    EXPECT_THROW(RRawFile::Create("://testBasic"), std::runtime_error);
@@ -120,7 +90,7 @@ TEST(RRawFile, Basic)
 TEST(RRawFile, Remote)
 {
 #ifdef R__HAS_DAVIX
-   std::unique_ptr<RRawFile> f(RRawFile::Create("http://root.cern.ch/files/davix.test"));
+   auto f = RRawFile::Create("http://root.cern.ch/files/davix.test");
    std::string line;
    EXPECT_TRUE(f->Readln(line));
    EXPECT_STREQ("Hello, World", line.c_str());
@@ -133,7 +103,7 @@ TEST(RRawFile, Remote)
 TEST(RRawFile, Readln)
 {
    FileRaii linebreakGuard("testLinebreak", "foo\r\none\nline\r\n\r\n");
-   std::unique_ptr<RRawFile> f(RRawFile::Create("testLinebreak"));
+   auto f = RRawFile::Create("testLinebreak");
    std::string line;
    EXPECT_TRUE(f->Readln(line));
    EXPECT_STREQ("foo", line.c_str());
@@ -148,7 +118,7 @@ TEST(RRawFile, Readln)
 TEST(RRawFile, ReadV)
 {
    FileRaii readvGuard("test_rawfile_readv", "Hello, World");
-   std::unique_ptr<RRawFile> f(RRawFile::Create("test_rawfile_readv"));
+   auto f = RRawFile::Create("test_rawfile_readv");
 
    char buffer[2];
    buffer[0] = buffer[1] = 0;
@@ -186,7 +156,7 @@ TEST(RRawFile, ReadDirect)
    char buffer;
    RRawFile::ROptions options;
    options.fBlockSize = 0;
-   std::unique_ptr<RRawFile> f(RRawFile::Create("testDirect"));
+   auto f = RRawFile::Create("testDirect");
    EXPECT_EQ(0u, f->Read(&buffer, 0));
    EXPECT_EQ(1u, f->Read(&buffer, 1));
    EXPECT_EQ('a', buffer);
@@ -248,7 +218,7 @@ TEST(RRawFile, Mmap)
 
    void *region;
    FileRaii basicGuard("test_rawfile_mmap", "foo");
-   std::unique_ptr<RRawFile> f(RRawFile::Create("test_rawfile_mmap"));
+   auto f = RRawFile::Create("test_rawfile_mmap");
    if (!(f->GetFeatures() & RRawFile::kFeatureHasMmap))
       return;
    region = f->Map(2, 1, mapdOffset);

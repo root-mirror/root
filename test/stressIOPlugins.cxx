@@ -55,7 +55,8 @@
 //_____________________________batch only_____________________
 #ifndef __CINT__
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <snprintf.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TH1.h>

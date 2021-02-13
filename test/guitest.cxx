@@ -44,7 +44,6 @@
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TSystemDirectory.h>
-#include <TEnv.h>
 #include <TFile.h>
 #include <TKey.h>
 #include <TGDockableFrame.h>

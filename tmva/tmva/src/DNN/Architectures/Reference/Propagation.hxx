@@ -116,8 +116,8 @@ void TReference<AReal>::Im2col(TMatrixT<AReal> &A, const TMatrixT<AReal> &B, siz
    size_t currLocalView = 0;
 
    // convolution centers
-   for (int i = -zeroPaddingHeight + fltHeight / 2; i <= imgHeightBound; i += strideRows) {
-      for (int j = -zeroPaddingWidth + fltWidth / 2; j <= imgWidthBound; j += strideCols) {
+   for (int i = -1*int(zeroPaddingHeight) + fltHeight / 2; i <= imgHeightBound; i += strideRows) {
+      for (int j = -1*int(zeroPaddingWidth) + fltWidth / 2; j <= imgWidthBound; j += strideCols) {
          size_t currLocalViewPixel = 0;
 
          // within the local view
@@ -213,7 +213,7 @@ void TReference<AReal>::CalculateConvActivationGradients(std::vector<TMatrixT<AR
                                                          size_t height, size_t width, size_t filterDepth,
                                                          size_t filterHeight, size_t filterWidth)
 {
-   
+
    if (activation_gradients_backward.size() == 0) return;
    // need to implement
    // Transform the weights

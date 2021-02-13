@@ -15,11 +15,8 @@
 
 #include "TGLFontManager.h"
 
-#include "TColor.h"
 #include "TGLabel.h"
-#include "TGColorSelect.h"
 #include "TGComboBox.h"
-#include "TGTextBuffer.h"
 #include "TGTextEntry.h"
 #include "TObjArray.h"
 #include "TObjString.h"

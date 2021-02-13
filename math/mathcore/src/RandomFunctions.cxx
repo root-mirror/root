@@ -16,7 +16,7 @@
 //
 #include "Math/RandomFunctions.h"
 
-#include "Math/DistFunc.h"
+#include "Math/DistFuncMathCore.h"
 
 #include "TMath.h"
 

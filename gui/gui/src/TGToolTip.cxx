@@ -43,6 +43,7 @@
 #include "TSystem.h"
 #include "TVirtualPad.h"
 #include "TBox.h"
+#include "TVirtualX.h"
 
 
 ClassImp(TGToolTip);

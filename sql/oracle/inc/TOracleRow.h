@@ -14,16 +14,10 @@
 
 #include "TSQLRow.h"
 
-#if !defined(__CINT__)
 #include <occi.h>
+
 #ifdef CONST
 #undef CONST
-#endif
-#else
-namespace oracle { namespace occi {
-class ResultSet;
-class MetaData;
-   }}
 #endif
 
 class TOracleRow : public TSQLRow {

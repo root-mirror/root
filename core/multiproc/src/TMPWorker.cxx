@@ -12,14 +12,11 @@
 
 #include "MPCode.h"
 #include "MPSendRecv.h"
-#include "TEnv.h"
 #include "TError.h"
 #include "TMPWorker.h"
 #include "TSystem.h"
 #include <memory> //unique_ptr
 #include <string>
-
-#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////
 ///

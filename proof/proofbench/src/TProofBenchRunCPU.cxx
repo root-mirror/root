@@ -43,9 +43,7 @@ No I/O activity is involved.
 #include "TQueryResult.h"
 #include "TMath.h"
 #include "TStyle.h"
-#include "TProofNodes.h"
 #include "TGraphErrors.h"
-#include "TLegend.h"
 
 ClassImp(TProofBenchRunCPU);
 

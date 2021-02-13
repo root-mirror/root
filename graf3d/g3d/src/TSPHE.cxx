@@ -11,12 +11,10 @@
 
 #include "TSPHE.h"
 #include "TNode.h"
-#include "TVirtualPad.h"
 #include "TBuffer.h"
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TGeometry.h"
-#include "TClass.h"
 #include "TMath.h"
 
 ClassImp(TSPHE);

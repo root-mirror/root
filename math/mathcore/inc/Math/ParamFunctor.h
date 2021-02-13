@@ -25,9 +25,8 @@
 //#ifndef __CINT__
 //#include <memory>
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 #include <functional>
-#include <vector>
 #include <iostream>
 
 namespace ROOT {

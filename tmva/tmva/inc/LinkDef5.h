@@ -40,7 +40,6 @@
 #pragma link C++ function TMVA::rulevisCorr;                         
 #pragma link C++ function TMVA::rulevis;                             
 #pragma link C++ function TMVA::rulevisHists;                        
-#pragma link C++ defined_in "TMVA/tmvaglob.h";                            
 #pragma link C++ function TMVA::TMVAGui;                             
 #pragma link C++ function TMVA::TMVAMultiClassGui;                   
 #pragma link C++ function TMVA::TMVARegGui;                          

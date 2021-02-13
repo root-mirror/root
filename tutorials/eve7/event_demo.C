@@ -34,7 +34,6 @@
 
 #include <ROOT/REveTrack.hxx>
 #include <ROOT/REveTrackPropagator.hxx>
-#include <ROOT/REveEllipsoid.hxx>
 
 namespace REX = ROOT::Experimental;
 
@@ -93,7 +92,7 @@ void addTracks()
 
    REX::REveElement* event = eveMng->GetEventScene();
    auto prop = new REX::REveTrackPropagator();
-   prop->SetMagFieldObj(new REX::REveMagFieldDuo(350, -3.5, 2.0));
+   prop->SetMagFieldObj(new REX::REveMagFieldDuo(350, 3.5, -2.0));
    prop->SetMaxR(300);
    prop->SetMaxZ(600);
    prop->SetMaxOrbs(6);
@@ -108,7 +107,7 @@ void addTracks()
    {
       TParticle* p = new TParticle();
 
-      int pdg = 11* (r.Integer(2) -1);
+      int pdg = 11 * (r.Integer(2) > 0 ? 1 : -1);
       p->SetPdgCode(pdg);
 
       p->SetProductionVertex(r.Uniform(-v,v), r.Uniform(-v,v), r.Uniform(-v,v), 1);
@@ -148,62 +147,11 @@ void addJets()
    event->AddElement(jetHolder);
 }
 
-void addVertex()
-{
-   float pos[3] = {1.46589e-06,-1.30522e-05,-1.98267e-05};
-
-   // symnetric matrix
-
-   double a[16] = {1.46589e-01,-1.30522e-02,-1.98267e-02, 0,
-                   -1.30522e-02, 4.22955e-02,-5.86628e-03, 0,
-                   -1.98267e-02,-5.86628e-03, 2.12836e-01, 0,
-                   0, 0, 0, 1};
-
-   REX::REveTrans t;
-   t.SetFrom(a);
-   TMatrixDSym xxx(3);
-   for(int i = 0; i < 3; i++)
-      for(int j = 0; j < 3; j++)
-      {
-         xxx(i,j) = t(i+1,j+1);
-      }
-
-   TMatrixDEigen eig(xxx);
-   TVectorD xxxEig ( eig.GetEigenValues() );
-   xxxEig = xxxEig.Sqrt();
-
-   TMatrixD vecEig = eig.GetEigenVectors();
-   REX::REveVector v[3]; int ei = 0;
-   for (int i = 0; i < 3; ++i)
-   {
-      v[i].Set(vecEig(0,i), vecEig(1,i), vecEig(2,i));
-      v[i] *=  xxxEig(i);
-   }
-   REX::REveEllipsoid* ell = new  REX::REveEllipsoid("VertexError");
-   ell->InitMainTrans();
-   ell->SetMainColor(kGreen + 10);
-   ell->SetLineWidth(2);
-   ell->SetBaseVectors(v[0], v[1], v[2]);
-   ell->Outline();
-   REX::REveElement *event = eveMng->GetEventScene();
-   event->AddElement(ell);
-   return;
-   //center
-   auto ps = new REX::REvePointSet();
-   ps->SetMainColor(kGreen + 10);
-   ps->SetNextPoint(pos[0], pos[1], pos[2]);
-   ps->SetMarkerStyle(4);
-   ps->SetMarkerSize(4);
-   event->AddElement(ps);
-}
-
-
 void makeEventScene()
 {
    addPoints();
    addTracks();
    addJets();
-   addVertex();
 }
 
 void makeGeometryScene()

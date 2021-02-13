@@ -16,25 +16,33 @@ using namespace ROOT::Experimental::Browsable;
 /////////////////////////////////////////////////////////////////////
 /// Find item with specified name
 /// Default implementation, should work for all
+/// If index specified, not only name but also index should match
 
-bool RLevelIter::Find(const std::string &name)
+bool RLevelIter::Find(const std::string &name, int indx)
 {
-   if (!Reset()) return false;
+   int i = -1;
 
    while (Next()) {
-      if (GetName() == name)
+      if (indx >= 0) {
+         i++;
+         if (i > indx) return false;
+         if (i < indx) continue;
+      }
+
+      if (GetItemName() == name)
          return true;
    }
 
    return false;
 }
 
-
 /////////////////////////////////////////////////////////////////////
 /// Create generic description item for RBrowser
 
 std::unique_ptr<RItem> RLevelIter::CreateItem()
 {
-   return HasItem() ? std::make_unique<RItem>(GetName(), CanHaveChilds(), CanHaveChilds() > 0 ? "sap-icon://folder-blank" : "sap-icon://document") : nullptr;
+   auto have_childs = CanItemHaveChilds();
+
+   return std::make_unique<RItem>(GetItemName(), have_childs ? -1 : 0, have_childs ? "sap-icon://folder-blank" : "sap-icon://document");
 }
 

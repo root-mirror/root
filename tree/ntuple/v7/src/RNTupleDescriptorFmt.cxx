@@ -43,6 +43,7 @@ struct ClusterInfo {
 };
 
 struct ColumnInfo {
+   ROOT::Experimental::DescriptorId_t fColumnId = 0;
    ROOT::Experimental::DescriptorId_t fFieldId = 0;
    std::uint64_t fLocalOrder = 0;
    std::uint64_t fNElements = 0;
@@ -112,10 +113,12 @@ void ROOT::Experimental::RNTupleDescriptor::PrintInfo(std::ostream &output) cons
    std::uint64_t nPages = 0;
    int compression = -1;
    for (const auto &column : fColumnDescriptors) {
-      auto element = Detail::RColumnElementBase::Generate(column.second.GetModel().GetType());
-      auto elementSize = element.GetSize();
+      // We generate the default memory representation for the given column type in order
+      // to report the size _in memory_ of column elements
+      auto elementSize = Detail::RColumnElementBase::Generate(column.second.GetModel().GetType())->GetSize();
 
       ColumnInfo info;
+      info.fColumnId = column.second.GetId();
       info.fFieldId = column.second.GetFieldId();
       info.fLocalOrder = column.second.GetIndex();
       info.fElementSize = elementSize;
@@ -142,8 +145,8 @@ void ROOT::Experimental::RNTupleDescriptor::PrintInfo(std::ostream &output) cons
       }
       columns.emplace_back(info);
    }
-   auto headerSize = SerializeHeader(nullptr);
-   auto footerSize = SerializeFooter(nullptr);
+   auto headerSize = GetHeaderSize();
+   auto footerSize = GetFooterSize();
    output << "============================================================" << std::endl;
    output << "NTUPLE:      " << GetName() << std::endl;
    output << "Compression: " << compression << std::endl;
@@ -168,7 +171,7 @@ void ROOT::Experimental::RNTupleDescriptor::PrintInfo(std::ostream &output) cons
    for (unsigned int i = 0; i < clusters.size(); ++i) {
       output << "  # " << std::setw(5) << i
              << "   Entry range:     [" << clusters[i].fFirstEntry << ".."
-             << clusters[i].fFirstEntry + clusters[i].fNEntries << ")  --  " << clusters[i].fNEntries << std::endl;
+             << clusters[i].fFirstEntry + clusters[i].fNEntries - 1 << "]  --  " << clusters[i].fNEntries << std::endl;
       output << "         "
              << "   # Pages:         " << clusters[i].fNPages << std::endl;
       output << "         "
@@ -187,8 +190,10 @@ void ROOT::Experimental::RNTupleDescriptor::PrintInfo(std::ostream &output) cons
    for (const auto &col : columns) {
       auto avgPageSize = (col.fNPages == 0) ? 0 : (col.fBytesOnStorage / col.fNPages);
       auto avgElementsPerPage = (col.fNPages == 0) ? 0 : (col.fNElements / col.fNPages);
-      output << "  " << col.fFieldName << " [#" << col.fLocalOrder << "]" << "  --  "
-             << GetColumnTypeName(col.fType) << std::endl;
+      std::string nameAndType = std::string("  ") + col.fFieldName + " [#" + std::to_string(col.fLocalOrder) + "]"
+         + "  --  " + GetColumnTypeName(col.fType);
+      std::string id = std::string("{id:") + std::to_string(col.fColumnId) + "}";
+      output << nameAndType << std::setw(60 - nameAndType.length()) << id << std::endl;
       output << "    # Elements:          " << col.fNElements << std::endl;
       output << "    # Pages:             " << col.fNPages << std::endl;
       output << "    Avg elements / page: " << avgElementsPerPage << std::endl;

@@ -59,7 +59,6 @@ void TCudnn<AFloat>::InitializeGauss(TCudaTensor<AFloat> & A)
       xhost[i] = rand.Gaus(0,sigma);
    }
    A.GetDeviceBuffer().CopyFrom(xhost);
-   //PrintTensor(A,"A after init Gaus");
 }
 
 //______________________________________________________________________________
@@ -74,9 +73,6 @@ void TCudnn<AFloat>::InitializeUniform(TCudaTensor<AFloat> & A)
    TRandom &  rand = GetRandomGenerator();
 
    Double_t range = sqrt(2.0 / ((Double_t) n));
-
-   // range = 1;
-   // rand.SetSeed(111);
 
    size_t nelements = A.GetSize();
    TCudaHostBuffer<AFloat> xhost(nelements);
@@ -111,9 +107,6 @@ void TCudnn<AFloat>::InitializeGlorotNormal(TCudaTensor<AFloat> & A)
    TRandom &  rand = GetRandomGenerator();
    Double_t sigma = sqrt(2.0 /((Double_t) n + (Double_t) m) );
 
-   //std::cout << "Initialize Glorot normal for tensor " << n <<","<<m << " ";
-   //A.PrintShape();
-
    size_t nsize = A.GetSize();
    TCudaHostBuffer<AFloat> xhost(nsize);
    for (size_t i = 0; i < nsize; i++) {
@@ -121,13 +114,9 @@ void TCudnn<AFloat>::InitializeGlorotNormal(TCudaTensor<AFloat> & A)
          do {
             value = rand.Gaus(0.0, sigma);
          } while ( std::abs(value) > 2*sigma);
-         R__ASSERT( std::abs(value) < 2*sigma);
          xhost[i] = value;
    }
    A.GetDeviceBuffer().CopyFrom(xhost);
-
-   // if (A.GetNDim() == 2) assert( xhost[0] == A(0,0));
-   // if (A.GetNDim() == 4) assert( xhost[0] == A(0,0,0,0));
 }
 
 //______________________________________________________________________________
@@ -138,17 +127,6 @@ void TCudnn<AFloat>::InitializeGlorotNormal(TCudaTensor<AFloat> & A)
 template<typename AFloat>
 void TCudnn<AFloat>::InitializeGlorotUniform(TCudaTensor<AFloat> & A)
 {
-   // n,m  are the input/output  units of the tensor
-   // size_t n = 0;
-   // size_t m = 0;
-   // if (A.GetNDim() > 2) {
-   //    n = A.GetFirstSize();
-   //    m = A.GetCSize();
-   // }
-   // else {
-   //    n = A.GetNrows();
-   //    m = A.GetNcols();
-   // }
    size_t n = A.GetShape()[0]; // output size
    size_t m = A.GetShape()[1]; // input size
    // for convolutions
@@ -162,9 +140,6 @@ void TCudnn<AFloat>::InitializeGlorotUniform(TCudaTensor<AFloat> & A)
 
    TRandom &  rand = GetRandomGenerator();
    Double_t range = sqrt(6.0 /( (Double_t) n +  (Double_t) m) );
-
-   //std::cout << "Initialize Glorot uniform for tensor " << n << "," << m << " ";
-   //A.PrintShape();
 
    size_t nsize = A.GetSize();
    TCudaHostBuffer<AFloat> xhost(nsize);
@@ -195,7 +170,6 @@ void TCudnn<AFloat>::InitializeIdentity(TCudaTensor<AFloat> & A)
    }
    TCudaMatrix<AFloat> mB = B;
    A.GetDeviceBuffer() = mB.GetDeviceBuffer();
-   PrintTensor(A,"A after init Identity");
 }
 
 //______________________________________________________________________________
@@ -203,7 +177,7 @@ template<typename AFloat>
 void TCudnn<AFloat>::InitializeZero(TCudaTensor<AFloat> & A)
 {
    // use fast zero initialization on the device
-   A.Zero();
+   cudaMemset(A.GetDataPointer(), 0, sizeof(AFloat) * A.GetSize());
 }
 
 } // namespace DNN

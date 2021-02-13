@@ -21,6 +21,8 @@
 #include "ROOT/RHistDrawable.hxx"
 #include "ROOT/RCanvas.hxx"
 #include "ROOT/RPad.hxx"
+#include "ROOT/RStyle.hxx"
+#include "ROOT/RDirectory.hxx"
 #include "TRandom.h"
 
 // macro must be here while cling is not capable to load
@@ -62,5 +64,19 @@ void draw_subpads()
   subsubpads[1][0]->Draw(pHist2)->AttrLine().SetColor(RColor::kGreen);
   subsubpads[0][1]->Draw(pHist3)->AttrLine().SetColor(RColor::kRed);
 
+   auto style = RStyle::Parse(
+        "frame {"              // select type frame for RFrame
+        "   gridx: true;"      // enable grid drawing
+        "   gridy: true;"
+        "   ticksx: 2;"        // enable ticks drawing on both sides
+        "   ticksy: 2;"
+        "   x_labels_size: 0.05;" // below 1 is scaling factor for pad height
+        "   y_labels_size: 20;"   // just a font size in pixel
+        "   y_labels_color_name: green;"  // and name labels color
+        "}");
+  canvas->UseStyle(style);
+  RDirectory::Heap().Add("style", style); // required to keep style alive
+
+  canvas->SetSize(1200, 600);
   canvas->Show();
 }

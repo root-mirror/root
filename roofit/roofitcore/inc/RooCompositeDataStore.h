@@ -16,10 +16,13 @@
 #ifndef ROO_COMPOSITE_DATA_STORE
 #define ROO_COMPOSITE_DATA_STORE
 
-#include "RooAbsDataStore.h" 
-#include "TString.h"
+#include "RooAbsDataStore.h"
+#include "RunContext.h"
+
 #include <map>
 #include <string>
+#include <vector>
+#include <list>
 
 class RooAbsArg ;
 class RooArgList ;
@@ -93,18 +96,20 @@ public:
   virtual void recalculateCache(const RooArgSet* /*proj*/, Int_t /*firstEvent*/, Int_t /*lastEvent*/, Int_t /*stepSize*/, Bool_t /*skipZeroWeights*/) ;
   virtual Bool_t hasFilledCache() const ;
   
-  void loadValues(const RooAbsDataStore *tds, const RooFormulaVar* select=0, const char* rangeName=0, Int_t nStart=0, Int_t nStop=2000000000) ;
+  void loadValues(const RooAbsDataStore *tds, const RooFormulaVar* select=0, const char* rangeName=0,
+      std::size_t nStart=0, std::size_t nStop = std::numeric_limits<std::size_t>::max());
 
   virtual void forceCacheUpdate() ;
   
-  virtual std::vector<RooSpan<const double>> getBatch(std::size_t first, std::size_t last) const {
+  virtual RooBatchCompute::RunContext getBatches(std::size_t first, std::size_t len) const {
     //TODO
     std::cerr << "This functionality is not yet implemented for composite data stores." << std::endl;
-    assert(false);
-
-    std::vector<double> vec(first, last);
-    return {RooSpan<const double>(vec)};
+    throw std::logic_error("getBatches() not implemented for RooCompositeDataStore.");
+    (void)first; (void)len;
+    return {};
   }
+  virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const;
+
 
  protected:
 
@@ -114,6 +119,7 @@ public:
   RooCategory* _indexCat ;
   mutable RooAbsDataStore* _curStore ; //! Datastore associated with current event
   mutable Int_t _curIndex ; //! Index associated with current event
+  mutable std::unique_ptr<std::vector<double>> _weightBuffer; //! Buffer for weights in case a batch of values is requested.
   Bool_t _ownComps ; //! 
 
   ClassDef(RooCompositeDataStore,1) // Composite Data Storage class

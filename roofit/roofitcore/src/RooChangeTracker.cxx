@@ -89,7 +89,7 @@ for (const auto arg : trackSet) {
 
     for (unsigned int i=0; i < _catSet.size(); ++i) {
       auto cat = static_cast<const RooAbsCategory*>(_catSet.at(i));
-      _catRef[i++] = cat->getIndex() ;
+      _catRef[i++] = cat->getCurrentIndex() ;
     }
   }
 
@@ -156,10 +156,10 @@ Bool_t RooChangeTracker::hasChanged(Bool_t clearState)
     // Check if any of the categories changed
     for (unsigned int i=0; i < _catSet.size(); ++i) {
       auto cat = static_cast<const RooAbsCategory*>(_catSet.at(i));
-      if (cat->getIndex() != _catRef[i]) {
+      if (cat->getCurrentIndex() != _catRef[i]) {
         // cout << "RooChangeTracker(" << this << "," << GetName() << ") value of " << cat->GetName() << " has changed from " << _catRef[i-1] << " to " << cat->getIndex() << endl ;
         valuesChanged = kTRUE ;
-        _catRef[i] = cat->getIndex() ;
+        _catRef[i] = cat->getCurrentIndex() ;
       }
     }
 
@@ -189,7 +189,7 @@ Bool_t RooChangeTracker::hasChanged(Bool_t clearState)
     // Check if any of the categories changed
     for (unsigned int i=0; i < _catSet.size(); ++i) {
       auto cat = static_cast<const RooAbsCategory*>(_catSet.at(i));
-      if (cat->getIndex() != _catRef[i]) {
+      if (cat->getCurrentIndex() != _catRef[i]) {
         return kTRUE ;
       }
     }

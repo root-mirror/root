@@ -6,7 +6,6 @@
 
 // NOTE: #included by libCore and libCling. All symbols must be inline.
 
-#include <stdlib.h>
 #include <cstring>
 #include <string>
 #include <list>

@@ -20,6 +20,7 @@
 #include "RooListProxy.h"
 #include "RooAICRegistry.h"
 #include "RooObjCacheManager.h"
+#include <list>
 
 class RooRealSumFunc : public RooAbsReal {
 public:

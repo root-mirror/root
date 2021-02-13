@@ -22,10 +22,11 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-#include "TList.h"
 #include "TString.h"
 #include "TAttLine.h"
 #include "TAtt3D.h"
+
+class TList;
 
 
 class TPolyLine3D : public TObject, public TAttLine, public TAtt3D
@@ -39,10 +40,10 @@ protected:
 public:
    TPolyLine3D();
    TPolyLine3D(Int_t n, Option_t *option="");
-   TPolyLine3D(Int_t n, Float_t *p, Option_t *option="");
-   TPolyLine3D(Int_t n, Double_t *p, Option_t *option="");
-   TPolyLine3D(Int_t n, Float_t *x, Float_t *y, Float_t *z, Option_t *option="");
-   TPolyLine3D(Int_t n, Double_t *x, Double_t *y, Double_t *z, Option_t *option="");
+   TPolyLine3D(Int_t n, Float_t const* p, Option_t *option="");
+   TPolyLine3D(Int_t n, Double_t const* p, Option_t *option="");
+   TPolyLine3D(Int_t n, Float_t const* x, Float_t const* y, Float_t const* z, Option_t *option="");
+   TPolyLine3D(Int_t n, Double_t const* x, Double_t const* y, Double_t const* z, Option_t *option="");
    TPolyLine3D(const TPolyLine3D &polylin);
    TPolyLine3D& operator=(const TPolyLine3D &polylin);
    virtual ~TPolyLine3D();

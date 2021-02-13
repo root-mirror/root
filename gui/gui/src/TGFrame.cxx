@@ -69,14 +69,13 @@
 #include "TList.h"
 #include "TApplication.h"
 #include "TTimer.h"
-#include "Riostream.h"
 #include "TClass.h"
 
 #include "TObjString.h"
-#include "TObjArray.h"
 #include "TBits.h"
 #include "TColor.h"
 #include "TROOT.h"
+#include "TDatime.h"
 #include "KeySymbols.h"
 #include "TGFileDialog.h"
 #include "TGMsgBox.h"
@@ -89,6 +88,10 @@
 #include "TGDNDManager.h"
 #include "TImage.h"
 #include "TObjectSpy.h"
+#include "TVirtualX.h"
+
+#include <iostream>
+#include <fstream>
 
 
 Bool_t      TGFrame::fgInit = kFALSE;
@@ -96,11 +99,11 @@ Pixel_t     TGFrame::fgDefaultFrameBackground = 0;
 Pixel_t     TGFrame::fgDefaultSelectedBackground = 0;
 Pixel_t     TGFrame::fgWhitePixel = 0;
 Pixel_t     TGFrame::fgBlackPixel = 0;
-const TGGC *TGFrame::fgBlackGC = 0;
-const TGGC *TGFrame::fgWhiteGC = 0;
-const TGGC *TGFrame::fgHilightGC = 0;
-const TGGC *TGFrame::fgShadowGC = 0;
-const TGGC *TGFrame::fgBckgndGC = 0;
+const TGGC *TGFrame::fgBlackGC = nullptr;
+const TGGC *TGFrame::fgWhiteGC = nullptr;
+const TGGC *TGFrame::fgHilightGC = nullptr;
+const TGGC *TGFrame::fgShadowGC = nullptr;
+const TGGC *TGFrame::fgBckgndGC = nullptr;
 Time_t      TGFrame::fgLastClick = 0;
 UInt_t      TGFrame::fgLastButton = 0;
 Int_t       TGFrame::fgDbx = 0;
@@ -108,10 +111,10 @@ Int_t       TGFrame::fgDby = 0;
 Window_t    TGFrame::fgDbw = 0;
 UInt_t      TGFrame::fgUserColor = 0;
 
-const TGFont *TGGroupFrame::fgDefaultFont = 0;
-const TGGC   *TGGroupFrame::fgDefaultGC = 0;
+const TGFont *TGGroupFrame::fgDefaultFont = nullptr;
+const TGGC   *TGGroupFrame::fgDefaultGC = nullptr;
 
-TGLayoutHints *TGCompositeFrame::fgDefaultHints = 0;
+TGLayoutHints *TGCompositeFrame::fgDefaultHints = nullptr;
 
 static const char *gSaveMacroTypes[] = {
    "ROOT macros", "*.C",

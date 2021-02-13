@@ -28,7 +28,6 @@ reference count until zero, when the object is actually removed.
 #include "RooFit.h"
 
 #include "RooRefCountList.h"
-#include "RooRefCountList.h"
 
 #include "Riostream.h"
 #include <stdlib.h>

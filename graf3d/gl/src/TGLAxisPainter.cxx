@@ -14,7 +14,6 @@
 #include "TGLRnrCtx.h"
 #include "TGLCamera.h"
 #include "TGLIncludes.h"
-#include "TGLRnrCtx.h"
 #include "TGLFontManager.h"
 
 #include "TAttAxis.h"

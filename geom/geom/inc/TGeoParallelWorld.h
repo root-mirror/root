@@ -11,8 +11,7 @@
 #ifndef ROOT_TGeoParallelWorld
 #define ROOT_TGeoParallelWorld
 
-
-#include "TGeoVolume.h"
+#include "TNamed.h"
 
 // forward declarations
 class TGeoManager;
@@ -30,8 +29,8 @@ protected :
    TGeoPhysicalNode  *fLastState;      //! Last PN touched
    TObjArray         *fPhysical;       //! array of physical nodes
 
-   TGeoParallelWorld(const TGeoParallelWorld&);
-   TGeoParallelWorld& operator=(const TGeoParallelWorld&);
+   TGeoParallelWorld(const TGeoParallelWorld&) = delete;
+   TGeoParallelWorld& operator=(const TGeoParallelWorld&) = delete;
 
 public:
    // constructors

@@ -11,11 +11,11 @@
 #define ROOT_Minuit2_MinimumBuilder
 
 #include "Minuit2/MnTraceObject.h"
+#include "Minuit2/MnPrint.h"
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 class FunctionMinimum;
 class MnFcn;
@@ -27,42 +27,40 @@ class MnStrategy;
 class MinimumBuilder {
 
 public:
-
    MinimumBuilder();
 
    virtual ~MinimumBuilder() {}
 
-   virtual FunctionMinimum Minimum(const MnFcn&, const GradientCalculator&, const MinimumSeed&, const MnStrategy&, unsigned int, double) const = 0;
+   virtual FunctionMinimum Minimum(const MnFcn &, const GradientCalculator &, const MinimumSeed &, const MnStrategy &,
+                                   unsigned int, double) const = 0;
 
-   int StorageLevel() const {  return fStorageLevel; }
+   int StorageLevel() const { return fStorageLevel; }
    int PrintLevel() const { return fPrintLevel; }
 
    bool TraceIter() const { return (fTracer); }
-   MnTraceObject * TraceObject() const { return (fTracer); }
+   MnTraceObject *TraceObject() const { return (fTracer); }
 
-   virtual void SetPrintLevel(int level) { fPrintLevel = level;}
-   virtual void SetStorageLevel(int level) { fStorageLevel = level;}
+   virtual void SetPrintLevel(int level) { fPrintLevel = level; }
+   virtual void SetStorageLevel(int level) { fStorageLevel = level; }
 
    // set trace object (user manages it)
-   virtual void SetTraceObject(MnTraceObject & obj) {
-      fTracer = &obj;
-   }
+   virtual void SetTraceObject(MnTraceObject &obj) { fTracer = &obj; }
 
-   void TraceIteration(int iter, const MinimumState & state) const {
-      if (fTracer) (*fTracer)(iter, state);
+   void TraceIteration(int iter, const MinimumState &state) const
+   {
+      if (fTracer)
+         (*fTracer)(iter, state);
    }
 
 private:
-
    int fPrintLevel;
    int fStorageLevel;
 
-   MnTraceObject * fTracer; //! tracer object (it is managed by user)
-
+   MnTraceObject *fTracer; //! tracer object (it is managed by user)
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_MinimumBuilder
+#endif // ROOT_Minuit2_MinimumBuilder

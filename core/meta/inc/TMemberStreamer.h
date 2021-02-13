@@ -12,7 +12,6 @@
 #ifndef ROOT_TMemberStreamer
 #define ROOT_TMemberStreamer
 
-#include "Rtypes.h"
 #include "TClassRef.h"
 
 //////////////////////////////////////////////////////////////////////////

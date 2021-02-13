@@ -41,35 +41,35 @@ namespace RooStats {
       }
 
       ~HybridCalculator() {
-         if(fPriorNuisanceNullExternal == false) delete fPriorNuisanceNull;
-         if(fPriorNuisanceAltExternal == false) delete fPriorNuisanceAlt;
+         if(!fPriorNuisanceNullExternal) delete fPriorNuisanceNull;
+         if(!fPriorNuisanceAltExternal) delete fPriorNuisanceAlt;
       }
 
 
       /// Override the distribution used for marginalizing nuisance parameters that is inferred from ModelConfig
       virtual void ForcePriorNuisanceNull(RooAbsPdf& priorNuisance) {
-         if(fPriorNuisanceNullExternal == false) delete fPriorNuisanceNull;
-         fPriorNuisanceNull = &priorNuisance; fPriorNuisanceNullExternal = true;
+         if(!fPriorNuisanceNullExternal) delete fPriorNuisanceNull;
+         fPriorNuisanceNull = &priorNuisance; 
+         fPriorNuisanceNullExternal = true;
       }
       virtual void ForcePriorNuisanceAlt(RooAbsPdf& priorNuisance) {
-         if(fPriorNuisanceAltExternal == false) delete fPriorNuisanceAlt;
-         fPriorNuisanceAlt = &priorNuisance; fPriorNuisanceAltExternal = true;
+         if(!fPriorNuisanceAltExternal) delete fPriorNuisanceAlt;
+         fPriorNuisanceAlt = &priorNuisance; 
+         fPriorNuisanceAltExternal = true;
       }
 
       virtual void SetNullModel(const ModelConfig &nullModel) {
          fNullModel = &nullModel;
-         if(fPriorNuisanceNullExternal == false) {
-            delete fPriorNuisanceNull;
-            fPriorNuisanceNull = MakeNuisancePdf(nullModel, "PriorNuisanceNull");
-         }
+         if(!fPriorNuisanceNullExternal) delete fPriorNuisanceNull;
+         fPriorNuisanceNull = MakeNuisancePdf(nullModel, "PriorNuisanceNull");
+         fPriorNuisanceAltExternal = false;
       }
 
       virtual void SetAlternateModel(const ModelConfig &altModel) {
          fAltModel = &altModel;
-         if(fPriorNuisanceAltExternal == false) {
-            delete fPriorNuisanceAlt;
-            fPriorNuisanceAlt = MakeNuisancePdf(altModel, "PriorNuisanceAlt");
-         }
+         if(!fPriorNuisanceAltExternal) delete fPriorNuisanceAlt;
+         fPriorNuisanceAlt = MakeNuisancePdf(altModel, "PriorNuisanceAlt");
+         fPriorNuisanceAltExternal = false; 
       }
 
       /// set number of toys

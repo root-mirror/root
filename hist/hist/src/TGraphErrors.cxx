@@ -9,23 +9,22 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <string.h>
 
-#include "Riostream.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TGraphErrors.h"
 #include "TStyle.h"
 #include "TMath.h"
-#include "TArrow.h"
-#include "TBox.h"
 #include "TVirtualPad.h"
 #include "TH1.h"
 #include "TF1.h"
-#include "TVector.h"
 #include "TVectorD.h"
-#include "TStyle.h"
-#include "TClass.h"
 #include "TSystem.h"
+#include "strtok.h"
+
+#include <iostream>
+#include <fstream>
+#include <cstring>
 #include <string>
 
 ClassImp(TGraphErrors);
@@ -398,6 +397,37 @@ void TGraphErrors::Apply(TF1 *f)
 
       SetPoint(i, x, f->Eval(x, y));
       SetPointError(i, ex, TMath::Abs(f->Eval(x, y + ey) - f->Eval(x, y - ey)) / 2.);
+   }
+   if (gPad) gPad->Modified();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// apply function to all the data points
+/// x = f(x,y)
+///
+/// The error is calculated as ex=(f(x+ex,y)-f(x-ex,y))/2
+/// This is the same as error(fx) = df/dx * ex for small errors
+///
+/// For generic functions the symmetric errors might become non-symmetric
+/// and are averaged here. Use TGraphAsymmErrors if desired.
+///
+/// error on y doesn't change
+
+void TGraphErrors::ApplyX(TF1 *f)
+{
+   Double_t x, y, ex, ey;
+
+   if (fHistogram) {
+      delete fHistogram;
+      fHistogram = 0;
+   }
+   for (Int_t i = 0; i < GetN(); i++) {
+      GetPoint(i, x, y);
+      ex = GetErrorX(i);
+      ey = GetErrorY(i);
+
+      SetPoint(i, f->Eval(x,y), y);
+      SetPointError(i, TMath::Abs(f->Eval(x + ex, y) - f->Eval(x - ex, y)) / 2. , ey);
    }
    if (gPad) gPad->Modified();
 }

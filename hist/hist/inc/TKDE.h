@@ -17,7 +17,10 @@
 
 #include "Math/Math.h"
 
-//#include "TF1.h"
+#include <string>
+#include <vector>
+#include <memory>
+
 class TGraphErrors;
 class TF1;
 
@@ -31,6 +34,9 @@ Physics. Computer Physics Communications 136:198-207,2001" - e-Print Archive: he
 class TKDE : public TNamed  {
 public:
 
+   /// Types of Kernel functions
+   /// They can be set using the function SetKernelType()
+   // or as a string in the constructor
    enum EKernelType { // Kernel function type option
       kGaussian,
       kEpanechnikov,
@@ -40,46 +46,63 @@ public:
       kTotalKernels // Internal use only for member initialization
    };
 
-   enum EIteration { // KDE fitting option
+   /// Iteration types. They can be set using SetIteration()
+   enum EIteration {
       kAdaptive,
       kFixed
    };
 
-   enum EMirror { // Data "mirroring" option to address the probability "spill out" boundary effect
+   /// Data "mirroring" option to address the probability "spill out" boundary effect
+   /// They can be set using SetMirror()
+   enum EMirror {
       kNoMirror,
       kMirrorLeft,
       kMirrorRight,
       kMirrorBoth,
       kMirrorAsymLeft,
-      kMirrorAsymLeftRight,
+      kMirrorRightAsymLeft,
       kMirrorAsymRight,
       kMirrorLeftAsymRight,
       kMirrorAsymBoth
    };
 
-   enum EBinning{ // Data binning option
+   /// Data binning option.
+   /// They can be set using SetBinning()
+   enum EBinning{
       kUnbinned,
       kRelaxedBinning, // The algorithm is allowed to use binning if the data is large enough
       kForcedBinning
    };
 
-   
-   TKDE();                    // defaul constructor used only by I/O 
+   ///  default constructor used only by I/O
+   TKDE();
 
+   /// Constructor for unweighted data
+   /// Varius option for TKDE can be passed in the option string as below.
+   /// Note that min and max will define the plotting range but will not restrict the data in the unbinned case
+   /// Instead when use binning, only the data in the range will be considered.
+   /// Note also, that when some data exists outside the range, one should not use the mirror option with unbinned.
+   /// Adaptive will be soon very slow especially for Nevents > 10000.
+   /// For this reason, by default for Nevents >=10000, the data are automatically binned  in
+   /// nbins=Min(10000,Nevents/10)
+   /// In case of ForceBinning option the default number of bins is 1000
    TKDE(UInt_t events, const Double_t* data, Double_t xMin = 0.0, Double_t xMax = 0.0, const Option_t* option =
                  "KernelType:Gaussian;Iteration:Adaptive;Mirror:noMirror;Binning:RelaxedBinning", Double_t rho = 1.0) {
       Instantiate( nullptr,  events, data, nullptr, xMin, xMax, option, rho);
    }
 
+   /// Constructor for weighted data
    TKDE(UInt_t events, const Double_t* data, const Double_t* dataWeight, Double_t xMin = 0.0, Double_t xMax = 0.0, const Option_t* option =
         "KernelType:Gaussian;Iteration:Adaptive;Mirror:noMirror;Binning:RelaxedBinning", Double_t rho = 1.0) {
       Instantiate( nullptr,  events, data, dataWeight, xMin, xMax, option, rho);
    }
 
+   /// Constructor for unwweighted data and a user defined kernel function
    template<class KernelFunction>
    TKDE(const Char_t* /*name*/, const KernelFunction& kernfunc, UInt_t events, const Double_t* data, Double_t xMin = 0.0, Double_t xMax = 0.0, const Option_t* option = "KernelType:UserDefined;Iteration:Adaptive;Mirror:noMirror;Binning:RelaxedBinning", Double_t rho = 1.0)  {
       Instantiate(new ROOT::Math::WrappedFunction<const KernelFunction&>(kernfunc), events, data, nullptr, xMin, xMax, option, rho);
    }
+   /// Constructor for weighted data and a user defined kernel function
    template<class KernelFunction>
    TKDE(const Char_t* /*name*/, const KernelFunction& kernfunc, UInt_t events, const Double_t* data, const Double_t * dataWeight, Double_t xMin = 0.0, Double_t xMax = 0.0, const Option_t* option = "KernelType:UserDefined;Iteration:Adaptive;Mirror:noMirror;Binning:RelaxedBinning", Double_t rho = 1.0)  {
       Instantiate(new ROOT::Math::WrappedFunction<const KernelFunction&>(kernfunc), events, data, dataWeight, xMin, xMax, option, rho);
@@ -129,18 +152,33 @@ public:
    const Double_t * GetAdaptiveWeights() const;
 
 
+public:
+
+   class TKernel {
+      TKDE *fKDE;
+      UInt_t fNWeights;               // Number of kernel weights (bandwidth as vectorized for binning)
+      std::vector<Double_t> fWeights; // Kernel weights (bandwidth)
+   public:
+      TKernel(Double_t weight, TKDE *kde);
+      void ComputeAdaptiveWeights();
+      Double_t operator()(Double_t x) const;
+      Double_t GetWeight(Double_t x) const;
+      Double_t GetFixedWeight() const;
+      const std::vector<Double_t> &GetAdaptiveWeights() const;
+   };
+
+   friend class TKernel;
+
 private:
 
    TKDE(TKDE& kde);           // Disallowed copy constructor
    TKDE operator=(TKDE& kde); // Disallowed assign operator
 
+   // Kernel funciton pointer. It is managed by class for internal kernels or exernally for user defined kernels
    typedef ROOT::Math::IBaseFunctionOneDim* KernelFunction_Ptr;
-   KernelFunction_Ptr fKernelFunction;  //! pointer to kernel function
+   KernelFunction_Ptr fKernelFunction;  ///<! pointer to kernel function
 
-   class TKernel;
-   friend class TKernel;
-
-   TKernel* fKernel;             //! internal kernel class. Transient because it is recreated after reading from a file
+   std::unique_ptr<TKernel> fKernel;             ///<! internal kernel class. Transient because it is recreated after reading from a file
 
    std::vector<Double_t> fData;   // Data events
    std::vector<Double_t> fEvents; // Original data storage
@@ -152,7 +190,7 @@ private:
    TF1* fApproximateBias; //! Output Kernel Density Estimation approximate bias
    TGraphErrors* fGraph;  //! Graph with the errors
 
-   EKernelType fKernelType;    
+   EKernelType fKernelType;
    EIteration fIteration;
    EMirror fMirror;
    EBinning fBinning;
@@ -188,7 +226,7 @@ private:
    struct KernelIntegrand;
    friend struct KernelIntegrand;
 
-   void Instantiate(KernelFunction_Ptr kernfunc, UInt_t events, const Double_t* data, const Double_t* weight, 
+   void Instantiate(KernelFunction_Ptr kernfunc, UInt_t events, const Double_t* data, const Double_t* weight,
                     Double_t xMin, Double_t xMax, const Option_t* option, Double_t rho);
 
    inline Double_t GaussianKernel(Double_t x) const {
@@ -251,7 +289,7 @@ private:
    TF1* GetPDFUpperConfidenceInterval(Double_t confidenceLevel = 0.95, UInt_t npx = 100, Double_t xMin = 1.0, Double_t xMax = 0.0);
    TF1* GetPDFLowerConfidenceInterval(Double_t confidenceLevel = 0.95, UInt_t npx = 100, Double_t xMin = 1.0, Double_t xMax = 0.0);
 
-   ClassDef(TKDE, 2) // One dimensional semi-parametric Kernel Density Estimation
+   ClassDef(TKDE, 3) // One dimensional semi-parametric Kernel Density Estimation
 
 };
 

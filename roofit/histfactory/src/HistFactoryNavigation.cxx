@@ -1,6 +1,6 @@
 
 /** \class RooStats::HistFactory::HistFactoryNavigation
- *  \ingroup HistFactory 
+ *  \ingroup HistFactory
  */
 
 #include <iomanip>
@@ -8,8 +8,6 @@
 
 #include "TFile.h"
 #include "TRegexp.h"
-#include "TCanvas.h"
-#include "TLegend.h"
 #include "TMath.h"
 
 #include "RooRealSumPdf.h"
@@ -787,10 +785,8 @@ namespace RooStats {
 
 	// Iterate over the categories and get the
 	// pdf and observables for each category
-	TIterator* iter = channelCat->typeIterator() ;
-	RooCatType* tt = NULL;
-        while((tt=(RooCatType*) iter->Next())) {
-	  std::string ChannelName = tt->GetName();
+	for (const auto& nameIdx : *channelCat) {
+	  const std::string& ChannelName = nameIdx.first;
 	  fChannelNameVec.push_back( ChannelName );
 	  RooAbsPdf* pdftmp = simPdf->getPdf(ChannelName.c_str()) ;
 	  RooArgSet* obstmp = pdftmp->getObservables(*observables) ;

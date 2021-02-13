@@ -1,3 +1,6 @@
+#include <vector>
+#include <map>
+
 typedef std::multimap<TObject*, TF1*>::iterator fPrevFitIter;
 typedef std::vector<TF1*>::iterator             fSystemFuncIter;
 

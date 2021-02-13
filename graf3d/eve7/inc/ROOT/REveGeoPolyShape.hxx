@@ -28,20 +28,20 @@ class REveRenderData;
 class REveGeoPolyShape : public TGeoBBox
 {
 private:
-   REveGeoPolyShape(const REveGeoPolyShape&);            // Not implemented
-   REveGeoPolyShape& operator=(const REveGeoPolyShape&); // Not implemented
+   REveGeoPolyShape(const REveGeoPolyShape&) = delete;
+   REveGeoPolyShape& operator=(const REveGeoPolyShape&) = delete;
 
 protected:
    std::vector<Double_t> fVertices;
    std::vector<Double_t> fNormals;
-   std::vector<Int_t>    fPolyDesc;
+   std::vector<UInt_t>   fPolyDesc;
    Int_t                 fNbPols{0};
 
    virtual void FillBuffer3D(TBuffer3D &buffer, Int_t reqSections, Bool_t localFrame) const;
 
    void SetFromBuff3D(const TBuffer3D &buffer);
 
-   Int_t CheckPoints(const Int_t *source, Int_t *dest) const;
+   Int_t CheckPoints(const UInt_t *source, UInt_t *dest) const;
 
    static Bool_t Eq(const Double_t *p1, const Double_t *p2);
 

@@ -20,7 +20,9 @@
 \ingroup Roofitcore
 
 Class RooBinningCategory provides a real-to-category mapping defined
-by a series of thresholds.
+by a series of thresholds. It evaluates the value of `inputVar` passed in the
+constructor, and converts this into a bin number using a binning defined for
+the inputVar. The name of this binning is passed in the constructor.
 **/
 
 
@@ -28,9 +30,7 @@ by a series of thresholds.
 
 #include "RooFit.h"
 #include "Riostream.h"
-#include "TString.h"
 #include "RooStreamParser.h"
-#include "RooMsgService.h"
 
 using namespace std;
 
@@ -77,12 +77,12 @@ RooBinningCategory::~RooBinningCategory()
 
 void RooBinningCategory::initialize(const char* catTypeName)
 {
-  Int_t nbins = ((RooAbsRealLValue&)_inputVar.arg()).getBinning(_bname.Length()>0?_bname.Data():0).numBins() ;
+  const int nbins = _inputVar->getBinning(_bname.Length() > 0 ? _bname.Data() : nullptr).numBins();
   for (Int_t i=0 ; i<nbins ; i++) {
     string name = catTypeName!=0 ? Form("%s%d",catTypeName,i)
             : (_bname.Length()>0 ? Form("%s_%s_bin%d",_inputVar.arg().GetName(),_bname.Data(),i) 
             : Form("%s_bin%d",_inputVar.arg().GetName(),i)) ;
-    defineType(name.c_str(),i) ;
+    defineState(name,i);
   }
 }
 
@@ -92,18 +92,17 @@ void RooBinningCategory::initialize(const char* catTypeName)
 ////////////////////////////////////////////////////////////////////////////////
 /// Calculate and return the value of the mapping function
 
-RooCatType RooBinningCategory::evaluate() const
+RooAbsCategory::value_type RooBinningCategory::evaluate() const
 {
-  Int_t ibin = ((RooAbsRealLValue&)_inputVar.arg()).getBin(_bname.Length()>0?_bname.Data():0) ;
-  const RooCatType* cat = lookupType(ibin) ;
-  if (!cat) {
+  Int_t ibin = _inputVar->getBin(_bname.Length() > 0 ? _bname.Data() : nullptr);
 
+  if (!hasIndex(ibin)) {
     string name = (_bname.Length()>0) ? Form("%s_%s_bin%d",_inputVar.arg().GetName(),_bname.Data(),ibin) 
 	                              : Form("%s_bin%d",_inputVar.arg().GetName(),ibin) ;
-    cat = const_cast<RooBinningCategory*>(this)->defineType(name.c_str(),ibin) ;     
+    const_cast<RooBinningCategory*>(this)->defineState(name,ibin);
   }
 
-  return *cat ;
+  return ibin;
 }
 
 

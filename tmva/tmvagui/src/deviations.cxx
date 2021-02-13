@@ -1,9 +1,8 @@
 #include "TMVA/deviations.h"
 #include "TMVA/Types.h"
-#include "TLegend.h"
-#include "TText.h"
 #include "TH2.h"
 #include "TLine.h"
+#include "TObjString.h"
 
 
 // this macro plots the resulting MVA distributions (Signal and

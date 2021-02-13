@@ -58,6 +58,8 @@ have to appear in any specific place in the list.
 #include "RooCustomizer.h"
 #include "RooRealIntegral.h"
 #include "RooTrace.h"
+#include "RooBatchCompute.h"
+#include "strtok.h"
 
 #include <cstring>
 #include <sstream>
@@ -67,21 +69,15 @@ have to appear in any specific place in the list.
 #include <strings.h>
 #endif
 
-
-#include "TSystem.h"
-
 using namespace std;
 
 ClassImp(RooProdPdf);
-;
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Default constructor
 
 RooProdPdf::RooProdPdf() :
-  _curNormSet(0),
   _cutOff(0),
   _extendedIndex(-1),
   _useDefaultGen(kFALSE),
@@ -241,8 +237,9 @@ RooProdPdf::RooProdPdf(const char* name, const char* title, const RooArgList& in
 ///
 /// <table>
 /// <tr><th> Argument                 <th> Description
-/// <tr><td> `Conditional(pdfSet,depSet)` <td> Add PDF to product with condition that it
+/// <tr><td> `Conditional(pdfSet,depSet,depsAreCond=false)` <td> Add PDF to product with condition that it
 /// only be normalized over specified observables. Any remaining observables will be conditional observables.
+/// (Setting `depsAreCond` to true inverts this, so the observables in depSet will be the conditional observables.)
 /// </table>
 ///
 /// For example, given a PDF \f$ F(x,y) \f$ and \f$ G(y) \f$,
@@ -449,28 +446,17 @@ RooProdPdf::~RooProdPdf()
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Overload getVal() to intercept normalization set for use in evaluate()
-
-Double_t RooProdPdf::getValV(const RooArgSet* set) const
-{
-  _curNormSet = (RooArgSet*)set ;
-  return RooAbsPdf::getValV(set) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
 /// Calculate current value of object
 
 Double_t RooProdPdf::evaluate() const
 {
   Int_t code ;
-  CacheElem* cache = (CacheElem*) _cacheMgr.getObj(_curNormSet,0,&code) ;
+  CacheElem* cache = (CacheElem*) _cacheMgr.getObj(_normSet, 0, &code) ;
 
   // If cache doesn't have our configuration, recalculate here
   if (!cache) {
-    code = getPartIntList(_curNormSet, nullptr) ;
-    cache = (CacheElem*) _cacheMgr.getObj(_curNormSet,0,&code) ;
+    code = getPartIntList(_normSet, nullptr) ;
+    cache = (CacheElem*) _cacheMgr.getObj(_normSet, 0, &code) ;
   }
 
 
@@ -514,26 +500,23 @@ Double_t RooProdPdf::calculate(const RooProdPdf::CacheElem& cache, Bool_t /*verb
   }
 }
 
-RooSpan<double> RooProdPdf::evaluateBatch(std::size_t begin, std::size_t size) const {
+
+////////////////////////////////////////////////////////////////////////////////
+/// Evaluate product of PDFs using input data in `evalData`.
+RooSpan<double> RooProdPdf::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
   int code;
-  auto cache = static_cast<CacheElem*>(_cacheMgr.getObj(_curNormSet, nullptr, &code));
+  auto cache = static_cast<CacheElem*>(_cacheMgr.getObj(normSet, nullptr, &code));
 
   // If cache doesn't have our configuration, recalculate here
   if (!cache) {
-    code = getPartIntList(_curNormSet, nullptr);
-    cache = static_cast<CacheElem*>(_cacheMgr.getObj(_curNormSet, nullptr, &code));
+    code = getPartIntList(normSet, nullptr);
+    cache = static_cast<CacheElem*>(_cacheMgr.getObj(normSet, nullptr, &code));
   }
 
   if (cache->_isRearranged) {
-    if (dologD(Eval)) {
-      cxcoutD(Eval) << "RooProdPdf::calculate(" << GetName() << ") rearranged product calculation"
-                    << " calculate: num = " << cache->_rearrangedNum->GetName() << " = " << cache->_rearrangedNum->getVal() << endl ;
-      cxcoutD(Eval) << "calculate: den = " << cache->_rearrangedDen->GetName() << " = " << cache->_rearrangedDen->getVal() << endl ;
-    }
-
-    auto outputs = _batchData.makeWritableBatchUnInit(begin, size);
-    auto numerator = cache->_rearrangedNum->getValBatch(begin, size);
-    auto denominator = cache->_rearrangedDen->getValBatch(begin, size);
+    auto numerator = cache->_rearrangedNum->getValues(evalData, normSet);
+    auto denominator = cache->_rearrangedDen->getValues(evalData, normSet);
+    auto outputs = evalData.makeBatch(this, numerator.size());
 
     for (std::size_t i=0; i < outputs.size(); ++i) {
       outputs[i] = numerator[i] / denominator[i];
@@ -541,24 +524,27 @@ RooSpan<double> RooProdPdf::evaluateBatch(std::size_t begin, std::size_t size) c
 
     return outputs;
   } else {
-
-    auto outputs = _batchData.makeWritableBatchInit(begin, size, 1.);
     assert(cache->_normList.size() == cache->_partList.size());
+    RooSpan<double> outputs;
     for (std::size_t i = 0; i < cache->_partList.size(); ++i) {
       const auto& partInt = static_cast<const RooAbsReal&>(cache->_partList[i]);
-      const auto normSet = cache->_normList[i].get();
+      const auto partNorm = cache->_normList[i].get();
 
-      const auto partialInts = partInt.getValBatch(begin, size, normSet->getSize() > 0 ? normSet : nullptr);
+      const auto partialInt = partInt.getValues(evalData, partNorm->getSize() > 0 ? partNorm : nullptr);
+
+      if (outputs.empty()) {
+        outputs = evalData.makeBatch(this,  partialInt.size());
+        for (double& val : outputs) val = 1.;
+      }
+
       for (std::size_t j=0; j < outputs.size(); ++j) {
-        outputs[j] *= partialInts[j];
+        outputs[j] *= partialInt[j];
       }
     }
 
     return outputs;
   }
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Factorize product in irreducible terms for given choice of integration/normalization

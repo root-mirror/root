@@ -12,6 +12,12 @@
 
 #include <ROOT/RMakeUnique.hxx>
 
+/** \class TWebPS
+\ingroup webgui6
+
+*/
+
+
 TWebPS::TWebPS()
 {
    CreatePainting();

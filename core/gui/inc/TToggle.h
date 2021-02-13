@@ -34,11 +34,15 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
-#include "TMethodCall.h"
-#include "TMethod.h"
 #include "TNamed.h"
 
+#ifdef R__LESS_INCLUDES
+class TMethodCall;
+class TMethod;
+#else
+#include "TMethodCall.h"
+#include "TMethod.h"
+#endif
 
 class TToggle: public TNamed {
 

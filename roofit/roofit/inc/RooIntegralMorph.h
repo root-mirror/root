@@ -17,9 +17,11 @@
 #include "RooCategoryProxy.h"
 #include "RooAbsReal.h"
 #include "RooAbsCategory.h"
-class RooBrentRootFinder ;
+#include <vector>
 
-class TH1D ;
+class RooBrentRootFinder;
+
+class TH1D;
 
 class RooIntegralMorph : public RooAbsCachedPdf {
 public:

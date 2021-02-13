@@ -63,7 +63,7 @@ get_filename_component(_thisdir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 @ROOT_BINARY_DIR_SETUP@
 
 # Python version used to build ROOT
-set(ROOT_PYTHON_VERSION @PYTHON_VERSION_STRING@)
+set(ROOT_PYTHON_VERSION @PYTHON_VERSION_STRING_Development_Main@)
 
 #----------------------------------------------------------------------------
 # Include RootMacros.cmake to get ROOT's CMake macros
@@ -83,6 +83,13 @@ set(_root_all_options @ROOT_ALL_OPTIONS@)
 foreach(_opt ${_root_enabled_options})
   set(ROOT_${_opt}_FOUND TRUE)
 endforeach()
+
+#----------------------------------------------------------------------------
+# Find external packages which were used in ROOT
+if (NOT ROOT_builtin_nlohmannjson_FOUND)
+  include(CMakeFindDependencyMacro)
+  find_dependency(nlohmann_json @nlohmann_json_VERSION@)
+endif()
 
 #----------------------------------------------------------------------------
 # Now set them to ROOT_LIBRARIES

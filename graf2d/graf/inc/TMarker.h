@@ -13,10 +13,9 @@
 #define ROOT_TMarker
 
 
+#include "TObject.h"
 #include "TAttMarker.h"
-#include "TNamed.h"
 #include "TAttBBox2D.h"
-#include "GuiTypes.h"
 
 class TPoint;
 

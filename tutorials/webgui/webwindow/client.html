@@ -1,57 +1,55 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <title>RWebWindow test</title>
-
-    <script src="/jsrootsys/scripts/JSRootCore.js" type="text/javascript"></script>
+    <script src="jsrootsys/scripts/JSRoot.core.js" type="text/javascript"></script>
   </head>
 
   <body>
-     <button onclick="SendMsg('get_text')">Text</button> 
-     <button onclick="SendMsg('get_binary')">Binary</button> 
-     <button onclick="SendMsg('halt')">Halt</button> 
+     <button onclick="SendMsg('get_text')">Text</button>
+     <button onclick="SendMsg('get_binary')">Binary</button>
+     <button onclick="SendMsg('halt')">Halt</button>
      <div id="main"></div>
   </body>
 
   <script>
 
-    var conn_handle = null;
+    let conn_handle = null;
 
     function SendMsg(txt) {
        if (conn_handle)
-          conn_handle.Send(txt);
+          conn_handle.send(txt);
     }
-    
+
     function AddOutput(msg) {
        document.getElementById("main").innerHTML += msg + "<br>";
     }
 
-    JSROOT.ConnectWebWindow({
+    JSROOT.connectWebWindow({
        // prereq: "2d",  /* one could specify different JSROOT components like 2d or geom
        // prereq_logdiv: "main",  /* div id where loading of JSROOT scripts will be logged */
        // callback: function(handle) { AddOutput("init done"); },  /* if necessary, initial callback can be cacthed */
        receiver: {
           // method called when connection to server is established
-          OnWebsocketOpened: function(handle) {
-             handle.Send("Init msg from client");
+          onWebsocketOpened: function(handle) {
+             handle.send("Init msg from client");
              conn_handle = handle;
              AddOutput("Connected");
           },
-      
+
           // method with new message from server
-          OnWebsocketMsg: function(handle, msg, offset) {
+          onWebsocketMsg: function(handle, msg, offset) {
              if (typeof msg != "string") {
-                var arr = new Float32Array(msg, offset);
+                let arr = new Float32Array(msg, offset);
                 AddOutput("bin: " + arr.toString());
-             } else { 
+             } else {
                 AddOutput("txt: " + msg);
              }
           },
-          
+
           // method called when connection is gone
-          OnWebsocketClosed: function(handle) {
+          onWebsocketClosed: function(handle) {
              conn_handle = null;
              // when connection closed, close panel as well
              if (window) window.close();

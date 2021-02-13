@@ -22,6 +22,7 @@
 #include "TNetXNGSystem.h"
 #include "THashList.h"
 #include "TFileInfo.h"
+#include "TUrl.h"
 #include "TFileCollection.h"
 #include <XrdCl/XrdClFileSystem.hh>
 

@@ -11,7 +11,6 @@
 
 #include <typeinfo>
 
-#include "TVirtualGL.h"
 #include "KeySymbols.h"
 #include "TVirtualX.h"
 #include "Buttons.h"

@@ -13,6 +13,7 @@
 
 // STD
 #include <map>
+#include <cstring>
 // ROOT
 #include "TObject.h"
 #include "TTimeStamp.h"

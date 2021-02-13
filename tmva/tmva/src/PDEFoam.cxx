@@ -87,7 +87,6 @@ PDEFoamEventDensity.
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <iomanip>
 #include <limits>
 #include <sstream>
 

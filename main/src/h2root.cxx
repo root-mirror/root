@@ -19,20 +19,23 @@
 //                convertex to lower case
 /////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <iostream>
 
-#include "Riostream.h"
 #include "TFile.h"
 #include "TDirectoryFile.h"
 #include "TTree.h"
+#include "TBranch.h"
 #include "TLeafI.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TProfile.h"
 #include "TGraph.h"
 #include "TMath.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 //  Define the names of the Fortran common blocks for the different OSs
 // Note that with gcc3.4 or above the size of PAWC_SIZE must be the same

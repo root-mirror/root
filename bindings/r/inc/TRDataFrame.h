@@ -136,7 +136,7 @@ namespace ROOT {
          2 |1
       \endcode
 
-      </h2>Working with colunms between dataframes</h2><br>
+      <h2>Working with colunms between dataframes</h2><br>
       \code{.cpp}
       df2["v3"]<<df1["strings"];
 

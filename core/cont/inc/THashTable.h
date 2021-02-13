@@ -49,8 +49,8 @@ private:
 
    void        AddImpl(Int_t slot, TObject *object);
 
-   THashTable(const THashTable&);             // not implemented
-   THashTable& operator=(const THashTable&);  // not implemented
+   THashTable(const THashTable&) = delete;
+   THashTable& operator=(const THashTable&) = delete;
 
 public:
    THashTable(Int_t capacity = TCollection::kInitHashTableCapacity, Int_t rehash = 0);
@@ -63,6 +63,7 @@ public:
    Int_t         Collisions(const char *name) const;
    Int_t         Collisions(TObject *obj) const;
    void          Delete(Option_t *option="");
+   Bool_t        Empty() const { return fEntries == 0; }
    TObject      *FindObject(const char *name) const;
    TObject      *FindObject(const TObject *obj) const;
    const TList  *GetListForObject(const char *name) const;
@@ -118,7 +119,7 @@ private:
    TListIter        *fListCursor;  //current position in collision list
    Bool_t            fDirection;   //iteration direction
 
-   THashTableIter() : fTable(0), fCursor(0), fListCursor(0), fDirection(kIterForward) { }
+   THashTableIter() : fTable(nullptr), fCursor(0), fListCursor(nullptr), fDirection(kIterForward) { }
    Int_t             NextSlot();
 
 public:

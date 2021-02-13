@@ -1,4 +1,4 @@
-/// \file ROOT/RHistBinIter.h
+/// \file ROOT/RHistBinIter.hxx
 /// \ingroup Hist ROOT7
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-08-07

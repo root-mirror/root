@@ -2197,7 +2197,7 @@ TClass *TFormLeafInfoMethod::ReturnTClass(TMethodCall *mc)
    R__WRITE_LOCKGUARD(ROOT::gCoreMutex);
 
    {
-      TInterpreter::SuspendAutoloadingRAII autoloadOff(gInterpreter);
+      TInterpreter::SuspendAutoLoadingRAII autoloadOff(gInterpreter);
       TClassEdit::GetNormalizedName(return_type, mc->GetMethod()->GetReturnTypeName());
    }
    // Beyhond this point we no longer 'need' the lock.

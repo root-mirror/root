@@ -56,7 +56,6 @@ matrix.
 For more details please read the misalignment section in the Users Guide.
 */
 
-#include "TClass.h"
 #include "TGeoManager.h"
 #include "TGeoVoxelFinder.h"
 #include "TGeoCache.h"
@@ -65,7 +64,6 @@ For more details please read the misalignment section in the Users Guide.
 #include "TGeoCompositeShape.h"
 #include "TGeoBoolNode.h"
 #include "TGeoVolume.h"
-#include "TVirtualGeoPainter.h"
 
 #include "TGeoPhysicalNode.h"
 
@@ -106,35 +104,6 @@ TGeoPhysicalNode::TGeoPhysicalNode(const char *path) : TNamed(path,"")
    SetVisibleFull(kFALSE);
    SetIsVolAtt(kTRUE);
    SetAligned(kFALSE);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///copy constructor
-
-TGeoPhysicalNode::TGeoPhysicalNode(const TGeoPhysicalNode& gpn) :
-  TNamed(gpn),
-  TAttLine(gpn),
-  fLevel(gpn.fLevel),
-  fMatrices(gpn.fMatrices),
-  fNodes(gpn.fNodes),
-  fMatrixOrig(gpn.fMatrixOrig)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///assignment operator
-
-TGeoPhysicalNode& TGeoPhysicalNode::operator=(const TGeoPhysicalNode& gpn)
-{
-   if(this!=&gpn) {
-      TNamed::operator=(gpn);
-      TAttLine::operator=(gpn);
-      fLevel=gpn.fLevel;
-      fMatrices=gpn.fMatrices;
-      fNodes=gpn.fNodes;
-      fMatrixOrig=gpn.fMatrixOrig;
-   }
-   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

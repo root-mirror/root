@@ -29,7 +29,6 @@ functions that implement the RooAbsFunc interface.
 
 
 #include "RooAbsIntegrator.h"
-#include "RooAbsIntegrator.h"
 #include "RooMsgService.h"
 #include "TClass.h"
 

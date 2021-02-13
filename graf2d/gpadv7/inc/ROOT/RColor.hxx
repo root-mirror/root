@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -9,13 +9,16 @@
 #ifndef ROOT7_RColor
 #define ROOT7_RColor
 
-#include <ROOT/RAttrBase.hxx>
-
+#include <cstdint>
+#include <vector>
+#include <string>
 #include <array>
-
+#include <DllImport.h>
 
 namespace ROOT {
 namespace Experimental {
+
+class RAttrColor;
 
 // TODO: see also imagemagick's C++ interface for RColor operations!
 // https://www.imagemagick.org/api/magick++-classes.php
@@ -29,169 +32,215 @@ namespace Experimental {
 \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 */
 
-class RColor : public RAttrBase {
+class RColor {
 
-   R__ATTR_CLASS(RColor, "color_", AddString("rgb", "").AddString("a", "").AddString("name", "").AddBool("auto", false));
+   friend class RAttrColor;
 
-   using RGB_t = std::array<int, 3>;
+   using RGB_t = std::array<uint8_t, 3>;
 
 private:
 
-   static std::string toHex(int v);
+   std::vector<uint8_t> fRGBA;  ///<  RGB + Alpha
+   std::string fName;           ///<  name of color - if any
 
-   /** Set RGB values as floats, each from 0..1. Real color values will be stored in hex format */
-   RColor &SetRGBFloat(float r, float g, float b)
-   {
-      return SetRGB(int(r*255),int(g*255),int(b*255));
-   }
+   static std::string toHex(uint8_t v);
 
-   bool GetRGBFloat(float &r, float &g, float &b) const;
+   static bool ConvertToRGB(const std::string &name, std::vector<uint8_t> &rgba);
 
-   int GetColorComponent(int indx) const;
+   bool SetRGBHex(const std::string &hex);
+   bool SetAlphaHex(const std::string &hex);
 
 public:
 
+   RColor() = default;
+
    /** Construct color with provided r,g,b values */
-   RColor(int r, int g, int b) : RColor() { SetRGB(r, g, b); }
+   RColor(uint8_t r, uint8_t g, uint8_t b) { SetRGB(r, g, b); }
 
    /** Construct color with provided r,g,b and alpha values */
-   RColor(int r, int g, int b, float alpha) : RColor()
+   RColor(uint8_t r, uint8_t g, uint8_t b, float alpha)
    {
-      SetRGB(r, g, b);
-      SetAlpha(alpha);
+      SetRGBA(r, g, b, alpha);
    }
 
    /** Construct color with provided RGB_t value */
-   RColor(const RGB_t &rgb) : RColor() { SetRGB(rgb); }
+   RColor(const RGB_t &rgb) { SetRGB(rgb[0], rgb[1], rgb[2]); };
 
-   /** Set r/g/b/ components of color as hex code, default for the color */
-   RColor &SetRGB(const RGB_t &rgb) { return SetRGB(rgb[0], rgb[1], rgb[2]); }
+   /** Construct color with provided name */
+   RColor(const std::string &name) { SetName(name); };
 
-   /** Set r/g/b/ components of color as hex code, default for the color */
-   RColor &SetRGB(int r, int g, int b) { return SetHex(toHex(r) + toHex(g) + toHex(b)); }
+   /** Set r/g/b components of color */
+   void SetRGB(const RGB_t &rgb) { SetRGB(rgb[0], rgb[1], rgb[2]); }
 
-   /** Set color as hex string like 00FF00 */
-   RColor &SetHex(const std::string &_hex)
+   /** Set r/g/b components of color */
+   void SetRGB(uint8_t r, uint8_t g, uint8_t b)
    {
-      SetValue("rgb", _hex);
-      return *this;
+      fName.clear();
+      if (fRGBA.size() < 3)
+         fRGBA.resize(3);
+      fRGBA[0] = r;
+      fRGBA[1] = g;
+      fRGBA[2] = b;
    }
 
-   /** Return color as hex string like 00FF00 */
-   std::string GetHex() const { return GetValue<std::string>("rgb"); }
+   /** Set r/g/b/a components of color */
+   void SetRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t alpha)
+   {
+      fName.clear();
+      fRGBA.resize(4);
+      SetRGB(r,g,b);
+      SetAlpha(alpha);
+   }
 
-   bool GetRGB(int &r, int &g, int &b) const;
+   /** Set r/g/b/a components of color */
+   void SetRGBA(uint8_t r, uint8_t g, uint8_t b, float alpha)
+   {
+      fName.clear();
+      fRGBA.resize(4);
+      SetRGB(r,g,b);
+      SetAlphaFloat(alpha);
+   }
+
+   /** Set alpha as float value from range 0..1 */
+   void SetAlphaFloat(float alpha)
+   {
+      if (alpha <= 0.)
+         SetAlpha(0);
+      else if (alpha >= 1.)
+         SetAlpha(255);
+      else
+         SetAlpha((uint8_t)(alpha * 255));
+   }
+
+   /** Set alpha as value from range 0..255 */
+   void SetAlpha(uint8_t alpha)
+   {
+      if (fRGBA.empty()) {
+         ConvertToRGB(fName, fRGBA);
+         fName.clear();
+      }
+
+      if (fRGBA.size() < 4)
+         fRGBA.resize(4);
+
+      fRGBA[3] = alpha;
+   }
+
+   /** Returns true if color alpha (opacity) was specified */
+   bool HasAlpha() const { return fRGBA.size() == 4; }
+
+   /** Returns true if no color is specified */
+   bool IsEmpty() const { return fName.empty() && (fRGBA.size() == 0); }
+
+   /** Returns color as RGBA array - when exists */
+   const std::vector<uint8_t> &GetRGBA() const { return fRGBA; }
+
+   /** Returns color as RGBA array, trying also convert color name into RGBA value */
+   std::vector<uint8_t> AsRGBA() const;
 
    /** Returns red color component 0..255 */
-   int GetRed() const { return GetColorComponent(0); }
+   uint8_t GetRed() const
+   {
+      if (fRGBA.size() > 2)
+         return fRGBA[0];
+
+      std::vector<uint8_t> rgb;
+      return ConvertToRGB(fName, rgb) ? rgb[0] : 0;
+   }
 
    /** Returns green color component 0..255 */
-   int GetGreen() const { return GetColorComponent(1); }
+   uint8_t GetGreen() const
+   {
+      if (fRGBA.size() > 2)
+         return fRGBA[1];
+
+      std::vector<uint8_t> rgb;
+      return ConvertToRGB(fName, rgb) ? rgb[1] : 0;
+   }
 
    /** Returns blue color component 0..255 */
-   int GetBlue() const { return GetColorComponent(2); }
-
-   /** Clear RGB color value (if any) */
-   void ClearRGB()
+   uint8_t GetBlue() const
    {
-      ClearValue("rgb");
+      if (fRGBA.size() > 2)
+         return fRGBA[2];
+
+      std::vector<uint8_t> rgb;
+      return ConvertToRGB(fName, rgb) ? rgb[2] : 0;
+   }
+
+   /** Returns color alpha (opacity) as uint8_t 0..255 */
+   uint8_t GetAlpha() const
+   {
+      if (fRGBA.size() > 0)
+         return fRGBA.size() == 4 ? fRGBA[3] : 255;
+
+      std::vector<uint8_t> rgba;
+      if (ConvertToRGB(fName, rgba) && (rgba.size() == 3))
+         return rgba[3];
+
+      return 255;
+   }
+
+   /** Returns color alpha (opacity) as float from 0..1 */
+   float GetAlphaFloat() const
+   {
+      return GetAlpha() / 255.;
    }
 
    /** Set color as plain SVG name like "white" or "lightblue". Clears RGB component before */
-   RColor &SetName(const std::string &_name)
+   RColor &SetName(const std::string &name)
    {
-      ClearRGB();
-      SetValue("name", _name);
+      fRGBA.clear();
+      fName = name;
       return *this;
    }
 
    /** Returns color as plain SVG name like "white" or "lightblue" */
-   std::string GetName() const { return GetValue<std::string>("name"); }
-
-   /** Clear color plain SVG name (if any) */
-   void ClearName() { ClearValue("name"); }
-
-   /** Returns color alpha (opacity) as float from 0. to 1. */
-   float GetAlpha() const
-   {
-      auto hex = GetAlphaHex();
-      if (hex.empty())
-         return 1.;
-      return std::strtol(hex.c_str(), nullptr, 16) / 255.;
-   }
-
-   /** Returns color alpha (opacity) as hex string like FF. Default is empty */
-   std::string GetAlphaHex() const { return GetValue<std::string>("a"); }
-
-   /** Returns true if color alpha (opacity) was specified */
-   bool HasAlpha() const { return HasValue("a"); }
-
-   /** Set color alpha (opacity) value - from 0 to 1 */
-   RColor &SetAlpha(float _alpha) { return SetAlphaHex(toHex((int)(_alpha * 255))); }
-
-   /** Set color alpha (opacity) value as hex string */
-   RColor &SetAlphaHex(const std::string &_alfa)
-   {
-      SetValue("a", _alfa);
-      return *this;
-   }
-
-   /** Clear alpha value of the color */
-   void ClearAlpha() { ClearValue("a"); }
-
-   /** Returns true if color should get auto value when primitive drawing is performed */
-   bool IsAuto() const { return GetValue<bool>("auto"); }
-
-   /** Set automatic mode for RColor, will be assigned before primitive painted on the canvas */
-   RColor &SetAuto(bool on = true)
-   {
-      SetValue("auto", on);
-      return *this;
-   }
-
-   /** Clear auto flag of the RColor */
-   void ClearAuto() { ClearValue("auto"); }
+   const std::string &GetName() const { return fName; }
 
    /** Return the Hue, Light, Saturation (HLS) definition of this RColor */
    bool GetHLS(float &hue, float &light, float &satur) const;
 
    /** Set the Red Green and Blue (RGB) values from the Hue, Light, Saturation (HLS). */
-   RColor &SetHLS(float hue, float light, float satur);
+   void SetHLS(float hue, float light, float satur);
 
-   /** Returns color value as it will be used in SVG drawing
-    * It either include hex format #66FF66 or just plain SVG name */
-   std::string AsSVG() const
-   {
-      auto hex = GetHex();
-      if (!hex.empty())
-         return std::string("#") + hex + GetAlphaHex();
-
-
-      // check that alpha is not specified
-      return GetName();
-   }
+   std::string AsHex(bool with_alpha = false) const;
+   std::string AsSVG() const;
 
    void Clear()
    {
-      ClearRGB();
-      ClearName();
-      ClearAlpha();
-      ClearAuto();
+      fRGBA.clear();
+      fName.clear();
    }
 
-   static constexpr RGB_t kRed{{255, 0, 0}};
-   static constexpr RGB_t kGreen{{0, 255, 0}};
-   static constexpr RGB_t kBlue{{0, 0, 255}};
-   static constexpr RGB_t kWhite{{255, 255, 255}};
-   static constexpr RGB_t kBlack{{0, 0, 0}};
-   static constexpr double kTransparent{0.};
-   static constexpr double kOpaque{1.};
+   R__DLLEXPORT static constexpr RGB_t kBlack{{0, 0, 0}};
+   R__DLLEXPORT static constexpr RGB_t kGreen{{0, 0x80, 0}};
+   R__DLLEXPORT static constexpr RGB_t kLime{{0, 0xFF, 0}};
+   R__DLLEXPORT static constexpr RGB_t kAqua{{0, 0xFF, 0xFF}};
+   R__DLLEXPORT static constexpr RGB_t kPurple{{0x80, 0, 0x80}};
+   R__DLLEXPORT static constexpr RGB_t kGrey{{0x80, 0x80, 0x80}};
+   R__DLLEXPORT static constexpr RGB_t kFuchsia{{0xFF, 0, 0xFF}};
+   R__DLLEXPORT static constexpr RGB_t kNavy{{0, 0, 0x80}};
+   R__DLLEXPORT static constexpr RGB_t kBlue{{0, 0, 0xff}};
+   R__DLLEXPORT static constexpr RGB_t kTeal{{0, 0x80, 0x80}};
+   R__DLLEXPORT static constexpr RGB_t kOlive{{0x80, 0x80, 0}};
+   R__DLLEXPORT static constexpr RGB_t kSilver{{0xc0, 0xc0, 0xc0}};
+   R__DLLEXPORT static constexpr RGB_t kMaroon{{0x80, 0, 0}};
+   R__DLLEXPORT static constexpr RGB_t kRed{{0xff, 0, 0}};
+   R__DLLEXPORT static constexpr RGB_t kYellow{{0xff, 0xff, 0}};
+   R__DLLEXPORT static constexpr RGB_t kWhite{{0xff, 0xff, 0xff}};
+   R__DLLEXPORT static constexpr float kTransparent{0.};
+   R__DLLEXPORT static constexpr float kSemiTransparent{0.5};
+   R__DLLEXPORT static constexpr float kOpaque{1.};
 
    friend bool operator==(const RColor &lhs, const RColor &rhs)
    {
-      // auto flag is not taken into account when comparing colors
-      return (lhs.GetHex() == rhs.GetHex()) && (lhs.GetName() == rhs.GetName()) &&
-             (lhs.GetAlphaHex() == rhs.GetAlphaHex()); //  && (lhs.IsAuto() == rhs.IsAuto());
+      if ((lhs.fName == rhs.fName) && (lhs.fRGBA == rhs.fRGBA)) return true;
+
+      auto l = lhs.AsRGBA();
+      auto r = rhs.AsRGBA();
+
+      return !l.empty() && (l==r);
    }
 };
 

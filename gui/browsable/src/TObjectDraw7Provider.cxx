@@ -10,7 +10,7 @@
 
 #include "TObject.h"
 #include <ROOT/RCanvas.hxx>
-#include <ROOT/RObjectDrawable.hxx>
+#include <ROOT/TObjectDrawable.hxx>
 
 using namespace ROOT::Experimental::Browsable;
 
@@ -32,7 +32,8 @@ public:
             subpad->GetCanvas()->Update(true);
          }
 
-         subpad->Draw<ROOT::Experimental::RObjectDrawable>(tobj, opt);
+         subpad->Draw<ROOT::Experimental::TObjectDrawable>(tobj, opt);
+         subpad->GetCanvas()->Update(true);
          return true;
       });
 

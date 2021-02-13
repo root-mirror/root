@@ -12,7 +12,6 @@
 #ifndef ROOT_TClassDocOutput
 #define ROOT_TClassDocOutput
 
-#include "Rtypes.h"
 #include "TDocOutput.h"
 
 class TDocParser;

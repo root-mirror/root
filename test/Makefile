@@ -526,12 +526,8 @@ ifeq ($(PLATFORM),win32)
 		$(MT_EXE)
 		@echo "$@ done"
 else
-ifeq ($(HASTHREAD),yes)
 		$(LD) $(LDFLAGS) $^ $(LIBS) -lThread $(OutPutOpt)$@
 		@echo "$@ done"
-else
-		@echo "This version of ROOT has no thread support, $@ not built"
-endif
 endif
 
 $(QPRANDOM):    $(QPRANDOMO)
@@ -605,8 +601,8 @@ $(STRESSHEPIX): $(STRESSHEPIXO) $(STRESSGEOMETRY) $(STRESSFIT) $(STRESSL) \
 		$(MT_EXE)
 		@echo "$@ done"
 
-$(STRESSROOFITO): stressRooFit_tests.cxx
-$(STRESSROOSTATSO): stressRooStats_tests.cxx stressRooStats_models.cxx
+$(STRESSROOFITO): stressRooFit_tests.h
+$(STRESSROOSTATSO): stressRooStats_tests.h stressRooStats_models.h
 $(STRESSHISTFACTORYO): stressHistFactory_tests.cxx stressHistFactory_models.cxx
 
 ifeq ($(shell $(RC) --has-mathmore),yes)

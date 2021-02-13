@@ -37,12 +37,10 @@
 ///
 
 #include "RooFit.h"
-#include "Riostream.h"
 
-#include <math.h>
+#include <cmath>
+
 #include "TClass.h"
-#include "TObjString.h"
-#include "TTree.h"
 #include "RooLinearVar.h"
 #include "RooStreamParser.h"
 #include "RooArgSet.h"

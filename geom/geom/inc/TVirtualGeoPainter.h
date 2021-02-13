@@ -8,6 +8,7 @@
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
+
 #ifndef ROOT_TVirtualGeoPainter
 #define ROOT_TVirtualGeoPainter
 
@@ -63,14 +64,13 @@ public:
    virtual void       CheckShape(TGeoShape *shape, Int_t testNo, Int_t nsamples, Option_t *option) = 0;
    virtual void       CheckBoundaryErrors(Int_t ntracks=1000000, Double_t radius=-1.) = 0;
    virtual void       CheckBoundaryReference(Int_t icheck=-1) = 0;
-   virtual void       CheckGeometryFull(Bool_t checkoverlaps=kTRUE, Bool_t checkcrossings=kTRUE, Int_t nrays=10000, const Double_t *vertex=NULL) = 0;
+   virtual void       CheckGeometryFull(Bool_t checkoverlaps=kTRUE, Bool_t checkcrossings=kTRUE, Int_t nrays=10000, const Double_t *vertex=nullptr) = 0;
    virtual void       CheckGeometry(Int_t nrays, Double_t startx, Double_t starty, Double_t startz) const = 0;
    virtual void       CheckOverlaps(const TGeoVolume *vol, Double_t ovlp=0.1, Option_t *option="") const = 0;
    virtual Int_t      CountVisibleNodes() = 0;
    virtual void       DefaultAngles() = 0;
    virtual void       DefaultColors() = 0;
    virtual Int_t      DistanceToPrimitiveVol(TGeoVolume *vol, Int_t px, Int_t py) = 0;
-   virtual void       Draw(Option_t *option="") = 0;
    virtual void       DrawBatemanSol(TGeoBatemanSol *sol, Option_t *option="") = 0;
    virtual void       DrawShape(TGeoShape *shape, Option_t *option="") = 0;
    virtual void       DrawOnly(Option_t *option="") = 0;
@@ -105,13 +105,13 @@ public:
                             Int_t nphi=90, Double_t phimin=0., Double_t phimax=360.,
                             Double_t rmin=0., Double_t rmax=9999999, Option_t *option="") = 0;
    virtual void       ModifiedPad(Bool_t update=kFALSE) const = 0;
-   virtual void       OpProgress(const char *opname, Long64_t current, Long64_t size, TStopwatch *watch=0, Bool_t last=kFALSE, Bool_t refresh=kFALSE, const char *msg="") = 0;
+   virtual void       OpProgress(const char *opname, Long64_t current, Long64_t size, TStopwatch *watch=nullptr, Bool_t last=kFALSE, Bool_t refresh=kFALSE, const char *msg="") = 0;
    virtual void       Paint(Option_t *option="") = 0;
-   virtual void       PaintNode(TGeoNode *node, Option_t *option="", TGeoMatrix* global=0) = 0;
+   virtual void       PaintNode(TGeoNode *node, Option_t *option="", TGeoMatrix* global=nullptr) = 0;
    virtual void       PaintShape(TGeoShape *shape, Option_t *option="") = 0;
    virtual void       PaintOverlap(void *ovlp, Option_t *option="")  = 0;
    virtual void       PrintOverlaps() const = 0;
-   virtual void       PaintVolume(TGeoVolume *vol, Option_t *option="", TGeoMatrix* global=0) = 0;
+   virtual void       PaintVolume(TGeoVolume *vol, Option_t *option="", TGeoMatrix* global=nullptr) = 0;
    virtual void       RandomPoints(const TGeoVolume *vol, Int_t npoints, Option_t *option="") = 0;
    virtual void       RandomRays(Int_t nrays, Double_t startx, Double_t starty, Double_t startz, const char *target_vol, Bool_t check_norm) = 0;
    virtual void       Raytrace(Option_t *option="") = 0;

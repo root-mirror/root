@@ -10,28 +10,16 @@
  *************************************************************************/
 
 #include "TROOT.h"
-#include "TClass.h"
 #include "TStyle.h"
 #include "TVirtualPad.h"
 #include "TEfficiency.h"
 #include "Riostream.h"
-
-#include "TObject.h"
-#include "TNamed.h"
-#include "TAttLine.h"
-#include "TAttFill.h"
-#include "TAttMarker.h"
 
 #include "TArrayD.h"
 #include "TVector.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TMath.h"
-#include "TGaxis.h"
-#include "TVirtualGraphPainter.h"
-#include "TGraphPainter.h"
-#include "TBox.h"
-#include "TArrow.h"
 #include "Math/QuantFuncMathCore.h"
 
 #include "TGraphMultiErrors.h"

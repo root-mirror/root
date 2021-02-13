@@ -10,7 +10,6 @@
 *************************************************************************/
 
 #include "TStructViewerGUI.h"
-#include <TRandom.h>
 #include "TStructViewer.h"
 #include "TStructNodeEditor.h"
 #include "TStructNodeProperty.h"
@@ -27,8 +26,6 @@
 #include <TDataMember.h>
 #include <TExMap.h>
 #include <TPolyLine3D.h>
-#include <TObjArray.h>
-#include <TColor.h>
 #include <TGTab.h>
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>

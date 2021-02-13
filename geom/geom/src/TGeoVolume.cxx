@@ -377,14 +377,15 @@ To define an assembly one should just input a name, then start adding other
 volumes (or volume assemblies) as content.
 */
 
-#include "Riostream.h"
+#include <fstream>
+#include <iomanip>
+
 #include "TString.h"
+#include "TBuffer.h"
 #include "TBrowser.h"
 #include "TStyle.h"
 #include "TH2F.h"
-#include "TPad.h"
 #include "TROOT.h"
-#include "TClass.h"
 #include "TEnv.h"
 #include "TMap.h"
 #include "TFile.h"
@@ -1715,6 +1716,7 @@ TGeoVolume *TGeoVolume::CloneVolume() const
    TGeoVolume *vol = new TGeoVolume(GetName(), fShape, fMedium);
    Int_t i;
    // copy volume attributes
+   vol->SetTitle(GetTitle());
    vol->SetLineColor(GetLineColor());
    vol->SetLineStyle(GetLineStyle());
    vol->SetLineWidth(GetLineWidth());
@@ -1859,7 +1861,7 @@ TGeoVolume *TGeoVolume::MakeReflectedVolume(const char *newname) const
    // Reflect the shape (if any) and connect it.
    if (fShape) {
       TGeoShape *reflected_shape =
-         TGeoScaledShape::MakeScaledShape("", fShape, new TGeoScale(1.,1.,-1.));
+         TGeoScaledShape::MakeScaledShape(fShape->GetName(), fShape, new TGeoScale(1.,1.,-1.));
       vol->SetShape(reflected_shape);
    }
    // Reflect the daughters.
@@ -2851,6 +2853,7 @@ TGeoVolume *TGeoVolumeAssembly::CloneVolume() const
    vol->SetOption(fOption);
    vol->SetNumber(fNumber);
    vol->SetNtotal(fNtotal);
+   vol->SetTitle(GetTitle());
    return vol;
 }
 

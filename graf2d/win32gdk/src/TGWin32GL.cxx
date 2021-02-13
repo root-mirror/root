@@ -23,6 +23,7 @@ The TGWin32GL is win32gdk implementation of TVirtualGLImp class.
 #include "TVirtualX.h"
 #include "TError.h"
 #include "TROOT.h"
+#include "TList.h"
 
 #include "Windows4Root.h"
 #include "gdk/gdk.h"

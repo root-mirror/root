@@ -1,12 +1,14 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -nodraw
-/// Organization and simultaneous fits: RooCustomizer and RooSimWSTool interface in factory workspace tool in a complex
-/// standalone B physics example
+/// Organization and simultaneous fits: RooCustomizer and RooSimWSTool interface in factory
+/// workspace tool in a complex standalone B physics example
 ///
 /// \macro_output
 /// \macro_code
-/// \author 04/2009 - Wouter Verkerke
+///
+/// \date July 2009
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -54,7 +56,7 @@ void rf513_wsfactory_tools()
    // RooSimWSTool operation:
    //     - Make 4 clones of model (for each tagCat) state, that will gain an individual
    //       copy of parameters w,dw and biasC. The other parameters remain common
-   //     - Make a simultaneous p.d.f. of the 4 clones assigning each to the appropriate
+   //     - Make a simultaneous pdf of the 4 clones assigning each to the appropriate
    //       state of the tagCat index category
 
    // RooSimWSTool is interfaced as meta-type SIMCLONE in the factory. The $SplitParam()
@@ -64,7 +66,7 @@ void rf513_wsfactory_tools()
    // E x a m p l e   o f   R o o C u s t o m i z e r   i n t e r f a c e
    // -------------------------------------------------------------------
    //
-   // Class RooCustomizer makes clones of existing p.d.f.s with certain prescribed
+   // Class RooCustomizer makes clones of existing pdfs with certain prescribed
    // modifications (branch of leaf node replacements)
    //
    // Here we take our model (the original before RooSimWSTool modifications)

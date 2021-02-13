@@ -22,6 +22,7 @@ Both key and value must inherit from TObject.
 #include "TMap.h"
 #include "THashTable.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TBrowser.h"
 #include "TRegexp.h"
 

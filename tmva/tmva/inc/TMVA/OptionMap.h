@@ -12,10 +12,8 @@
 #define ROOT_TMVA_OptionMap
 
 #include <sstream>
-#include<iostream>
-#include<map>
-
-#include <TNamed.h>
+#include <map>
+#include <string>
 
 #include "TMVA/MsgLogger.h"
 

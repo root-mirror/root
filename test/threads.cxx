@@ -1,7 +1,6 @@
 #include "TApplication.h"
 #include "TObject.h"
 #include "TH1.h"
-#include "TMath.h"
 #include "TCanvas.h"
 #include "TRandom.h"
 #include "TThread.h"

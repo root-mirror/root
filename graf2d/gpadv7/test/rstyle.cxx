@@ -15,9 +15,9 @@
 using namespace ROOT::Experimental;
 
 class CustomDrawable : public RDrawable {
-   RAttrLine  fAttrLine{this, "line_"};    ///<! line attributes
-   RAttrBox   fAttrBox{this, "box_"};      ///<! box attributes
-   RAttrText  fAttrText{this, "text_"};    ///<! text attributes
+   RAttrLine  fAttrLine{this, "line"};    ///<! line attributes
+   RAttrBox   fAttrBox{this, "box"};      ///<! box attributes
+   RAttrText  fAttrText{this, "text"};    ///<! text attributes
 
 public:
    CustomDrawable() : RDrawable("custom") {}
@@ -58,6 +58,27 @@ TEST(RStyleTest, CreateStyle)
 
    EXPECT_DOUBLE_EQ(drawable.GetAttrText().GetSize(), 3.);
 }
+
+
+TEST(RStyleTest, CreateCss)
+{
+   auto style = RStyle::Parse("custom { line_width: 2; } #customid { box_fill_style: 5; } .custom_class { text_size: 3; }");
+
+   ASSERT_NE(style, nullptr);
+
+   CustomDrawable drawable;
+   drawable.SetId("customid");
+   drawable.SetCssClass("custom_class");
+
+   drawable.UseStyle(style);
+
+   EXPECT_DOUBLE_EQ(drawable.GetAttrLine().GetWidth(), 2.);
+
+   EXPECT_EQ(drawable.AttrBox().GetAttrFill().GetStyle(), 5);
+
+   EXPECT_DOUBLE_EQ(drawable.GetAttrText().GetSize(), 3.);
+}
+
 
 TEST(RStyleTest, LostStyle)
 {

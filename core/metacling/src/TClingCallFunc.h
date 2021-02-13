@@ -30,7 +30,9 @@
 
 #include "TClingMethodInfo.h"
 #include "TClingClassInfo.h"
+#include "TClingUtils.h"
 #include "TInterpreter.h"
+#include <string>
 
 #include "cling/Interpreter/Value.h"
 
@@ -38,9 +40,10 @@
 
 namespace clang {
 class BuiltinType;
+class CXXMethodDecl;
+class DeclContext;
 class Expr;
 class FunctionDecl;
-class CXXMethodDecl;
 }
 
 namespace cling {
@@ -112,7 +115,7 @@ private:
    tcling_callfunc_Wrapper_t make_wrapper();
 
    tcling_callfunc_ctor_Wrapper_t
-   make_ctor_wrapper(const TClingClassInfo* info);
+   make_ctor_wrapper(const TClingClassInfo *, ROOT::TMetaUtils::EIOCtorCategory, const std::string &);
 
    tcling_callfunc_dtor_Wrapper_t
    make_dtor_wrapper(const TClingClassInfo* info);
@@ -175,11 +178,13 @@ public:
 
    TClingCallFunc &operator=(const TClingCallFunc &rhs) = delete;
 
-   void* ExecDefaultConstructor(const TClingClassInfo* info, void* address = 0,
-                                unsigned long nary = 0UL);
-   void ExecDestructor(const TClingClassInfo* info, void* address = 0,
+   void* ExecDefaultConstructor(const TClingClassInfo* info,
+                                ROOT::TMetaUtils::EIOCtorCategory kind,
+                                const std::string &type_name,
+                                void* address = nullptr, unsigned long nary = 0UL);
+   void ExecDestructor(const TClingClassInfo* info, void* address = nullptr,
                        unsigned long nary = 0UL, bool withFree = true);
-   void ExecWithReturn(void* address, void* ret = 0);
+   void ExecWithReturn(void* address, void *ret = nullptr);
    void ExecWithArgsAndReturn(void* address,
                               const void* args[] = 0,
                               int nargs = 0,
@@ -197,18 +202,22 @@ public:
    void* InterfaceMethod();
    bool IsValid() const;
    TInterpreter::CallFuncIFacePtr_t IFacePtr();
-   const clang::FunctionDecl *GetDecl() {
-      if (!fDecl)
-         fDecl = fMethod->GetMethodDecl();
-      return fDecl;
-   }
+   const clang::DeclContext *GetDeclContext() const;
 
    int get_wrapper_code(std::string &wrapper_name, std::string &wrapper);
 
+   const clang::FunctionDecl *GetDecl() {
+      if (!fDecl)
+         fDecl = fMethod->GetTargetFunctionDecl();
+      return fDecl;
+   }
    const clang::FunctionDecl* GetDecl() const {
       if (fDecl)
          return fDecl;
-      return fMethod->GetMethodDecl();
+      return fMethod->GetTargetFunctionDecl();
+   }
+   const clang::Decl *GetFunctionOrShadowDecl() const {
+      return fMethod->GetDecl();
    }
    void ResetArg();
    void SetArg(long arg);

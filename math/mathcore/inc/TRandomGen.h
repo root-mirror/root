@@ -28,7 +28,7 @@
 //       can be created for different state N.                          //
 //    * ROOT::MATH::StdEngine to create genersators based on engines    //
 //      provided by the C++ standard libraries
-//    
+//
 //  Convenient typedef are defines to define the different types of
 //  generators. These typedef are
 //   * TRandomMixMax for the MixMaxEngine<240,0>  (MIXMAX with state N=240)
@@ -36,11 +36,13 @@
 //   * TRandomMixMax256 for the MixMaxEngine<256,2> (MIXMAX with state N=256 )
 //   * TRandomMT64 for the  StdEngine<std::mt19937_64> ( MersenneTwister 64 bits)
 //   * TRandomRanlux48 for the  StdEngine<std::ranlux48> (Ranlux 48 bits)
-//       
+//
 //                                                                     //
 //////////////////////////////////////////////////////////////////////////
 
 #include "TRandom.h"
+
+#include <string>
 
 template<class Engine>
 class TRandomGen : public TRandom {
@@ -74,6 +76,7 @@ public:
 // some useful typedef
 #include "Math/StdEngine.h"
 #include "Math/MixMaxEngine.h"
+#include "Math/RanluxppEngine.h"
 
 // not working wight now for this classes
 //#define  DEFINE_TEMPL_INSTANCE
@@ -84,6 +87,8 @@ extern template class TRandomGen<ROOT::Math::MixMaxEngine<256,2>>;
 extern template class TRandomGen<ROOT::Math::MixMaxEngine<256,4>>;
 extern template class TRandomGen<ROOT::Math::MixMaxEngine<17,0>>;
 extern template class TRandomGen<ROOT::Math::MixMaxEngine<17,1>>;
+
+extern template class TRandomGen<ROOT::Math::RanluxppEngine2048>;
 
 extern template class  TRandomGen<ROOT::Math::StdEngine<std::mt19937_64> >;
 extern template class  TRandomGen<ROOT::Math::StdEngine<std::ranlux48> >;
@@ -123,6 +128,9 @@ typedef TRandomGen<ROOT::Math::MixMaxEngine<17,0>> TRandomMixMax17;
   
  */
 typedef TRandomGen<ROOT::Math::MixMaxEngine<256,2>> TRandomMixMax256;
+
+typedef TRandomGen<ROOT::Math::RanluxppEngine2048> TRandomRanluxpp;
+
 /**
   @ingroup Random
   Generator based on a the Mersenne-Twister generator with 64 bits, 

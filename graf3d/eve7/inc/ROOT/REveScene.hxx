@@ -35,8 +35,8 @@ class REveScene : public REveElement
    friend class REveManager;
 
 private:
-   REveScene(const REveScene &);            // Not implemented
-   REveScene &operator=(const REveScene &); // Not implemented
+   REveScene(const REveScene &) = delete;
+   REveScene &operator=(const REveScene &) = delete;
 
 protected:
    struct SceneCommand
@@ -45,7 +45,7 @@ protected:
       std::string fIcon;
       std::string fElementClass;
       std::string fAction;
-      ElementId_t fElementId;
+      ElementId_t fElementId{0};
 
       SceneCommand(const std::string& name, const std::string& icon,
                    const REveElement* element, const std::string& action) :
@@ -118,8 +118,7 @@ public:
    void AddSubscriber(std::unique_ptr<REveClient> &&sub);
    void RemoveSubscriber(unsigned int);
 
-   void AddCommand(const std::string &name, const std::string &icon, const REveElement *element, const std::string &action)
-   { fCommands.emplace_back(name, icon, element, action); }
+   void AddCommand(const std::string &name, const std::string &icon, const REveElement *element, const std::string &action);
 };
 
 /******************************************************************************/
@@ -130,12 +129,12 @@ public:
 class REveSceneList : public REveElement
 {
 private:
-   REveSceneList(const REveSceneList &);            // Not implemented
-   REveSceneList &operator=(const REveSceneList &); // Not implemented
+   REveSceneList(const REveSceneList &) = delete;
+   REveSceneList &operator=(const REveSceneList &) = delete;
 
 protected:
 public:
-   REveSceneList(const std::string& n = "REveSceneList", const std::string& t = "");
+   REveSceneList(const std::string &n = "REveSceneList", const std::string &t = "");
    virtual ~REveSceneList() {}
 
    void DestroyScenes();

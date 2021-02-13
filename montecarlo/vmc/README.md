@@ -43,7 +43,7 @@ See more detailed description in [the dedicated README](README.multiple.md).
 ## Authors
 
 The concept of Virtual MonteCarlo has been developed by the [ALICE Software Project](http://aliceinfo.cern.ch/Offline/).<br>
-Authors: R.Brun<sup>1</sup>, F.Carminati<sup>1</sup>, A. Gheata<sup>1</sup>, I.Hrivnacova<sup>2</sup>, A.Morsch<sup>1</sup>, B.Volkel<sup>1</sup>;<br>
+Authors: R. Brun<sup>1</sup>, F. Carminati<sup>1</sup>, A. Gheata<sup>1</sup>, I. Hrivnacova<sup>2</sup>, A. Morsch<sup>1</sup>, B. Volkel<sup>1</sup>;<br>
 <sup>1</sup>European Organization for Nuclear Research (CERN), Geneva, Switzerland;<br>
 <sup>2</sup>Institut de Physique Nucléaire dʼOrsay (IPNO), Université Paris-Sud, CNRS-IN2P3, Orsay, France 
 

@@ -19,6 +19,8 @@
 #include <TFormula.h>
 
 #include <memory>
+#include <vector>
+#include <map>
 
 class TString;
 

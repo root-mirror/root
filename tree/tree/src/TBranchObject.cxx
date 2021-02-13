@@ -30,7 +30,7 @@ A Branch for the case of an object.
 #include "TRealData.h"
 #include "TStreamerInfo.h"
 #include "TTree.h"
-#include "TVirtualPad.h"
+#include "snprintf.h"
 
 ClassImp(TBranchObject);
 

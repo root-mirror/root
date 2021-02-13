@@ -1,10 +1,9 @@
 sap.ui.define([
-   'sap/ui/core/mvc/Controller',
    'sap/m/Button',
    'sap/m/ButtonRenderer',
    'sap/m/Dialog',
    'sap/ui/commons/ColorPicker'
-], function (Controller, Button, ButtonRenderer, Dialog, ColorPicker) {
+], function (Button, ButtonRenderer, Dialog, ColorPicker) {
 
    "use strict";
 

@@ -4,7 +4,6 @@
 #include "ROOT/RDataSource.hxx"
 #include <string>
 #include <vector>
-#include <map>
 
 class RNonCopiable {
 public:

@@ -230,7 +230,7 @@ RooExpensiveObjectCache::ExpensiveObject::ExpensiveObject(Int_t uidIn, const cha
     } else {
       RooAbsCategory* cat = dynamic_cast<RooAbsCategory*>(arg) ;
       if (cat) {
-	_catRefParams[cat->GetName()] = cat->getIndex() ;
+	_catRefParams[cat->GetName()] = cat->getCurrentIndex() ;
       } else {
 	oocoutW(&inPayload,Caching) << "RooExpensiveObject::registerObject() WARNING: ignoring non-RooAbsReal/non-RooAbsCategory reference parameter " << arg->GetName() << endl ;
       }
@@ -287,7 +287,7 @@ Bool_t RooExpensiveObjectCache::ExpensiveObject::matches(TClass* tc, const RooAr
     } else {
       RooAbsCategory* cat = dynamic_cast<RooAbsCategory*>(arg) ;
       if (cat) {
-	if (cat->getIndex() != _catRefParams[cat->GetName()]) {
+	if (cat->getCurrentIndex() != _catRefParams[cat->GetName()]) {
 	  delete iter ;
 	  return kFALSE ;
 	}

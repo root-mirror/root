@@ -9,15 +9,14 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TAttAxis.h"
 #include "TBuffer.h"
 #include "TStyle.h"
 #include "TVirtualPad.h"
 #include "TColor.h"
-#include "TClass.h"
 #include "TMathBase.h"
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
 
 ClassImp(TAttAxis);
 

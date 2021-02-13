@@ -9,7 +9,6 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TAttLine.h"
 #include "TVirtualPad.h"
 #include "TStyle.h"
@@ -17,6 +16,7 @@
 #include "TVirtualPadEditor.h"
 #include "TColor.h"
 #include <cmath>
+#include <iostream>
 
 ClassImp(TAttLine);
 using std::sqrt;

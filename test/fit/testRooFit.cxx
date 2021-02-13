@@ -14,6 +14,7 @@
 #include <TF1.h>
 #include <TTree.h>
 #include <TRandom3.h>
+#include <TBranch.h>
 
 #include "TStopwatch.h"
 

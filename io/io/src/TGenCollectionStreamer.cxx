@@ -28,7 +28,6 @@ size(), clear(), resize(). resize() may be a void operation.
 #include "TROOT.h"
 #include "TStreamerInfo.h"
 #include "TStreamerElement.h"
-#include "Riostream.h"
 #include "TVirtualCollectionIterators.h"
 
 TGenCollectionStreamer::TGenCollectionStreamer(const TGenCollectionStreamer& copy)
@@ -62,7 +61,7 @@ TVirtualCollectionProxy* TGenCollectionStreamer::Generate() const
 }
 
 template <typename T>
-static T* getaddress(TGenCollectionProxy::StreamHelper &itm);
+T* getaddress(TGenCollectionProxy::StreamHelper &itm);
 
 template <>
 bool* getaddress<bool>(TGenCollectionProxy::StreamHelper &itm)

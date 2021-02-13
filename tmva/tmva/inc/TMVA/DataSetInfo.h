@@ -36,6 +36,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <iosfwd>
+#include <vector>
+#include <map>
 
 #include "TObject.h"
 #include "TString.h"

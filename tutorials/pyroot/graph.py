@@ -45,3 +45,6 @@ c1.GetFrame().SetFillColor( 21 )
 c1.GetFrame().SetBorderSize( 12 )
 c1.Modified()
 c1.Update()
+# If the graph does not appear, try using the "i" flag, e.g. "python3 -i graph.py"
+# This will access the interactive mode after executing the script, and thereby persist
+# long enough for the graph to appear.

@@ -12,7 +12,7 @@
 #ifndef ROOT_THttpWSEngine
 #define ROOT_THttpWSEngine
 
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 #include "THttpCallArg.h"
 

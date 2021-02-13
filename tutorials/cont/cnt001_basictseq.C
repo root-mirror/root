@@ -17,7 +17,7 @@ void cnt001_basictseq()
       cout << "Element " << i << endl;
    }
    //
-   cout << "Loop on sequence of integers from 3 to 29 in steps of 6" << endl;
+   cout << "Loop on sequence of integers from -5 to 29 in steps of 6" << endl;
    for (auto i : TSeqI(-5, 29, 6)) {
       cout << "Element " << i << endl;
    }

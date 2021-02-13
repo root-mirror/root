@@ -26,6 +26,7 @@
 #include "Bytes.h"
 
 #include <vector>
+#include <string>
 
 #ifdef R__OLDHPACC
 namespace std {

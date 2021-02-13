@@ -1,13 +1,13 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook -nodraw
-##
-## Organization and simultaneous fits: illustration use of ROOT.RooCustomizer and ROOT.RooSimWSTool interface in factory workspace tool in a complex standalone B physics example
+## Organization and simultaneous fits: illustration use of ROOT.RooCustomizer and
+## ROOT.RooSimWSTool interface in factory workspace tool in a complex standalone B physics example
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -46,7 +46,7 @@ w.factory("SUM::model( Nsig[5000,0,10000]*sig, NBkg[500,0,10000]*bkg )")
 # ROOT.RooSimWSTool operation:
 #     - Make 4 clones of model (for each tagCat) state, will gain an individual
 #       copy of parameters w, and biasC. The other parameters remain common
-#     - Make a simultaneous p.d.f. of the 4 clones assigning each to the appropriate
+#     - Make a simultaneous pdf of the 4 clones assigning each to the appropriate
 #       state of the tagCat index category
 
 # ROOT.RooSimWSTool is interfaced as meta-type SIMCLONE in the factory. The $SplitParam()
@@ -58,7 +58,7 @@ w.factory(
 # Example of RooCustomizer interface
 # -------------------------------------------------------------------
 #
-# Class ROOT.RooCustomizer makes clones of existing p.d.f.s with certain prescribed
+# Class ROOT.RooCustomizer makes clones of existing pdfs with certain prescribed
 # modifications (branch of leaf node replacements)
 #
 # Here we take our model (the original before ROOT.RooSimWSTool modifications)

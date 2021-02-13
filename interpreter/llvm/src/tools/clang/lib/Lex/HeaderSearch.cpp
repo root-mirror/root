@@ -138,6 +138,7 @@ std::string HeaderSearch::getModuleFileName(Module *Module) {
 std::string HeaderSearch::getModuleFileName(StringRef ModuleName,
                                             StringRef ModuleMapPath,
                                             bool UsePrebuiltPath) {
+  std::string ModuleCachePath = getModuleCachePath();
   if (UsePrebuiltPath) {
     if (HSOpts->PrebuiltModulePaths.empty())
       return std::string();
@@ -146,9 +147,14 @@ std::string HeaderSearch::getModuleFileName(StringRef ModuleName,
     for (const std::string &Dir : HSOpts->PrebuiltModulePaths) {
       SmallString<256> Result(Dir);
       llvm::sys::fs::make_absolute(Result);
-
+      bool CacheFailure = true;
+      // If we have the same ModuleCachePath and PrebuiltModulePath pointing
+      // to the same folder we should not cache the file lookup failure as it
+      // may be currently building an implicit module.
+      if (!ModuleCachePath.empty() && ModuleCachePath == Result)
+        CacheFailure = false;
       llvm::sys::path::append(Result, ModuleName + ".pcm");
-      if (getFileMgr().getFile(Result.str()))
+      if (getFileMgr().getFile(Result.str(), /*Open=*/false, CacheFailure))
         return Result.str().str();
     }
     return std::string();
@@ -156,10 +162,10 @@ std::string HeaderSearch::getModuleFileName(StringRef ModuleName,
 
   // If we don't have a module cache path or aren't supposed to use one, we
   // can't do anything.
-  if (getModuleCachePath().empty())
+  if (ModuleCachePath.empty())
     return std::string();
 
-  SmallString<256> Result(getModuleCachePath());
+  SmallString<256> Result(ModuleCachePath);
   llvm::sys::fs::make_absolute(Result);
 
   if (HSOpts->DisableModuleHash) {

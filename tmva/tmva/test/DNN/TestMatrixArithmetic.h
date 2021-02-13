@@ -15,8 +15,10 @@
 
 #include "TMatrix.h"
 #include "Utility.h"
-#include "math.h"
 #include "TMVA/DNN/Architectures/Reference.h"
+
+#include <cmath>
+#include <vector>
 
 /** Test multiplication (standard, transpose ) operation on
  *  architecture specific matrix types and compare with results

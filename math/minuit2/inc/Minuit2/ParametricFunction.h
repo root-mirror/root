@@ -18,9 +18,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
-
+namespace Minuit2 {
 
 /**
 
@@ -45,155 +43,133 @@ the Up() member function. That is not really good...
 class ParametricFunction : public FCNBase {
 
 public:
+   /**
 
+   Constructor which initializes the ParametricFunction with the
+   parameters given as input.
 
-  /**
+   @param params vector containing the initial Parameter values
 
-  Constructor which initializes the ParametricFunction with the
-  parameters given as input.
+   */
 
-  @param params vector containing the initial Parameter values
+   ParametricFunction(const std::vector<double> &params) : par(params) {}
 
-  */
+   /**
 
-  ParametricFunction(const std::vector<double>& params) : par(params) {}
+   Constructor which initializes the ParametricFunction by setting
+   the number of parameters.
 
+   @param nparams number of parameters of the parametric function
 
+   */
 
-  /**
+   ParametricFunction(int nparams) : par(nparams) {}
 
-  Constructor which initializes the ParametricFunction by setting
-  the number of parameters.
+   virtual ~ParametricFunction() {}
 
-  @param nparams number of parameters of the parametric function
+   /**
 
-  */
+   Sets the parameters of the ParametricFunction.
 
-  ParametricFunction(int nparams) : par(nparams) {}
+   @param params vector containing the Parameter values
 
+   */
 
+   virtual void SetParameters(const std::vector<double> &params) const
+   {
 
-  virtual ~ParametricFunction() {}
+      assert(params.size() == par.size());
+      par = params;
+   }
 
+   /**
 
+   Accessor for the state of the parameters.
 
-  /**
+   @return vector containing the present Parameter settings
 
-  Sets the parameters of the ParametricFunction.
+   */
 
-  @param params vector containing the Parameter values
+   virtual const std::vector<double> &GetParameters() const { return par; }
 
-  */
+   /**
 
-  virtual void SetParameters(const std::vector<double>& params) const {
+   Accessor for the number of  parameters.
 
-    assert(params.size() == par.size());
-    par = params;
+   @return the number of function parameters
 
-  }
+   */
+   virtual unsigned int NumberOfParameters() const { return par.size(); }
 
+   // Why do I need to declare it here, it should be inherited without
+   // any problems, no?
 
+   /**
 
-  /**
+   Evaluates the function with the given coordinates.
 
-  Accessor for the state of the parameters.
+   @param x vector containing the input coordinates
 
-  @return vector containing the present Parameter settings
+   @return the result of the function evaluation with the given
+   coordinates.
 
-  */
+   */
 
-  virtual const std::vector<double> & GetParameters() const { return par; }
+   virtual double operator()(const std::vector<double> &x) const = 0;
 
+   /**
 
+   Evaluates the function with the given coordinates and Parameter
+   values. This member function is useful to implement when speed
+   is an issue as it is faster to call only one function instead
+   of two (SetParameters and operator()). The default implementation,
+   provided for convenience, does the latter.
 
+   @param x vector containing the input coordinates
 
-  /**
+   @param params vector containing the Parameter values
 
-  Accessor for the number of  parameters.
+   @return the result of the function evaluation with the given
+   coordinates and parameters
 
-  @return the number of function parameters
+   */
 
-  */
-  virtual unsigned int  NumberOfParameters() const { return par.size(); }
+   virtual double operator()(const std::vector<double> &x, const std::vector<double> &params) const
+   {
+      SetParameters(params);
+      return operator()(x);
+   }
 
-  // Why do I need to declare it here, it should be inherited without
-  // any problems, no?
+   /**
 
-  /**
+   Member function returning the Gradient of the function with respect
+   to its variables (but without including gradients with respect to
+   its internal parameters).
 
-  Evaluates the function with the given coordinates.
+   @param x vector containing the coordinates of the point where the
+   Gradient is to be calculated.
 
-  @param x vector containing the input coordinates
+   @return the Gradient vector of the function at the given point.
 
-  @return the result of the function evaluation with the given
-  coordinates.
+   */
 
-  */
+   virtual std::vector<double> GetGradient(const std::vector<double> &x) const;
 
-  virtual double operator()(const std::vector<double>& x) const=0;
+protected:
+   /**
 
+   The vector containing the parameters of the function
+   It is mutable for "historical reasons" as in the hierarchy
+   methods and classes are const and all the implications of changing
+   them back to non-const are not clear.
 
+   */
 
-  /**
-
-  Evaluates the function with the given coordinates and Parameter
-  values. This member function is useful to implement when speed
-  is an issue as it is faster to call only one function instead
-  of two (SetParameters and operator()). The default implementation,
-  provided for convenience, does the latter.
-
-  @param x vector containing the input coordinates
-
-  @param params vector containing the Parameter values
-
-  @return the result of the function evaluation with the given
-  coordinates and parameters
-
-  */
-
-  virtual double operator()(const std::vector<double>& x, const std::vector<double>& params) const {
-    SetParameters(params);
-    return operator()(x);
-
-  }
-
-
-  /**
-
-  Member function returning the Gradient of the function with respect
-  to its variables (but without including gradients with respect to
-  its internal parameters).
-
-  @param x vector containing the coordinates of the point where the
-  Gradient is to be calculated.
-
-  @return the Gradient vector of the function at the given point.
-
-  */
-
-  virtual std::vector<double>  GetGradient(const std::vector<double>& x) const;
-
-
-
-
- protected:
-
-  /**
-
-  The vector containing the parameters of the function
-  It is mutable for "historical reasons" as in the hierarchy
-  methods and classes are const and all the implications of changing
-  them back to non-const are not clear.
-
-  */
-
-
-  mutable std::vector<double> par;
-
+   mutable std::vector<double> par;
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_ParametricFunction
+#endif // ROOT_Minuit2_ParametricFunction

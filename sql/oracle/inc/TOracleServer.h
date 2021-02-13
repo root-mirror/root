@@ -14,21 +14,15 @@
 
 #include "TSQLServer.h"
 
-#if !defined(__CINT__)
 #ifndef R__WIN32
 #include <sys/time.h>
 #endif
+
 #include <occi.h>
+
 #ifdef CONST
 #undef CONST
 #endif
-#else
-namespace oracle { namespace occi {
-class Environment;
-class Connection;
-}}
-#endif
-
 
 class TOracleServer : public TSQLServer {
 

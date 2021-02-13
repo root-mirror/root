@@ -48,7 +48,7 @@ public:
    void    PrepareBasket(Long64_t entry);
    virtual Int_t   ReadBasketBuffers(Long64_t pos, Int_t len, TFile *file);
    virtual Int_t   ReadBasketBytes(Long64_t pos, TFile *file);
-   virtual void    Reset();
+
    TSQLResult * GetResultSet() { return *fResultPtr;}
    void CreateBuffer(const char *name, TString title, std::vector<Int_t> * vc, TBranch *branch, TSQLResult ** rs);
 

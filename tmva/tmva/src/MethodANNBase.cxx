@@ -55,15 +55,14 @@ Base class for all TMVA methods using artificial neural networks.
 #include "TMVA/Version.h"
 
 #include "TString.h"
-#include "TTree.h"
 #include "TDirectory.h"
-#include "Riostream.h"
 #include "TRandom3.h"
 #include "TH2F.h"
 #include "TH1.h"
 #include "TMath.h"
 #include "TMatrixT.h"
 
+#include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <stdexcept>

@@ -42,8 +42,8 @@ class TBaseClass : public TDictionary {
 #endif
 
 private:
-   TBaseClass(const TBaseClass &);          // Not implemented
-   TBaseClass&operator=(const TBaseClass&); // Not implemented
+   TBaseClass(const TBaseClass &) = delete;
+   TBaseClass&operator=(const TBaseClass &) = delete;
 
 private:
    BaseClassInfo_t    *fInfo;      //!pointer to CINT base class info
@@ -54,7 +54,7 @@ private:
    Int_t               fSTLType;   // cache of IsSTLContainer()
 
 public:
-   TBaseClass(BaseClassInfo_t *info = 0, TClass *cl = 0);
+   TBaseClass(BaseClassInfo_t *info = nullptr, TClass *cl = nullptr);
    virtual     ~TBaseClass();
    virtual void   Browse(TBrowser *b);
    const char    *GetTitle() const;

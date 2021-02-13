@@ -81,9 +81,12 @@ S. Jadach, Computer Physics Communications 152 (2003) 55.
 #include "TFoamMaxwt.h"
 #include "TFoamVect.h"
 #include "TFoamCell.h"
-#include "Riostream.h"
+#include <iostream>
+#include <iomanip>
+#include <fstream>
 #include "TH1.h"
 #include "TRefArray.h"
+#include "TObjArray.h"
 #include "TMethodCall.h"
 #include "TRandom.h"
 #include "TMath.h"
@@ -146,7 +149,7 @@ TFoam::TFoam() :
    fNBin(0), fNSampl(0), fEvPerBin(0),
    fMaskDiv(0), fInhiDiv(0), fOptPRD(0), fXdivPRD(0),
    fNoAct(0), fLastCe(0), fCells(0),
-   fMCMonit(0), fMaxWtRej(0), fCellsAct(0), fPrimAcu(0),
+   fMCMonit(0), fMaxWtRej(0), fPrimAcu(0),
    fHistEdg(0), fHistDbg(0), fHistWt(0),
    fMCvect(0), fMCwt(0), fRvec(0),
    fRho(0), fMethodCall(0), fPseRan(0),
@@ -167,7 +170,7 @@ TFoam::TFoam(const Char_t* Name) :
    fNBin(0), fNSampl(0), fEvPerBin(0),
    fMaskDiv(0), fInhiDiv(0), fOptPRD(0), fXdivPRD(0),
    fNoAct(0), fLastCe(0), fCells(0),
-   fMCMonit(0), fMaxWtRej(0), fCellsAct(0), fPrimAcu(0),
+   fMCMonit(0), fMaxWtRej(0), fPrimAcu(0),
    fHistEdg(0), fHistDbg(0), fHistWt(0),
    fMCvect(0), fMCwt(0), fRvec(0),
    fRho(0), fMethodCall(0), fPseRan(0),
@@ -189,7 +192,6 @@ TFoam::TFoam(const Char_t* Name) :
    fXdivPRD  = 0;             // Lists of division values encoded in one vector per direction
    fCells    = 0;
    fAlpha    = 0;
-   fCellsAct = 0;
    fPrimAcu  = 0;
    fHistEdg  = 0;
    fHistWt   = 0;
@@ -233,7 +235,6 @@ TFoam::~TFoam()
       for(i=0; i<fNCells; i++) delete fCells[i]; // TFoamCell*[]
       delete [] fCells;
    }
-   if (fCellsAct) delete fCellsAct ; // WVE FIX LEAK
    if (fRvec)    delete [] fRvec;    //double[]
    if (fAlpha)   delete [] fAlpha;   //double[]
    if (fMCvect)  delete [] fMCvect;  //double[]
@@ -967,36 +968,33 @@ Int_t TFoam::Divide(TFoamCell *cell)
 
 void TFoam::MakeActiveList()
 {
-   Long_t n, iCell;
+   Long_t iCell;
    Double_t sum;
    // flush previous result
    if(fPrimAcu  != 0) delete [] fPrimAcu;
-   if(fCellsAct != 0) delete fCellsAct;
-
-   // Allocate tables of active cells
-   fCellsAct = new TRefArray();
+   fCellsAct.clear();
+   fCellsAct.reserve(fNoAct);
 
    // Count Active cells and find total Primary
    // Fill-in tables of active cells
 
-   fPrime = 0.0; n = 0;
+   fPrime = 0.0;
    for(iCell=0; iCell<=fLastCe; iCell++) {
       if (fCells[iCell]->GetStat()==1) {
          fPrime += fCells[iCell]->GetPrim();
-         fCellsAct->Add(fCells[iCell]);
-         n++;
+         fCellsAct.push_back(iCell);
       }
    }
 
-   if(fNoAct != n)  Error("MakeActiveList", "Wrong fNoAct               \n"  );
+   if(fNoAct != static_cast<Int_t>(fCellsAct.size()))  Error("MakeActiveList", "Wrong fNoAct               \n"  );
    if(fPrime == 0.) Error("MakeActiveList", "Integrand function is zero  \n"  );
 
    fPrimAcu  = new  Double_t[fNoAct]; // cumulative primary for MC generation
-   if( fCellsAct==0 || fPrimAcu==0 ) Error("MakeActiveList", "Cant allocate fCellsAct or fPrimAcu \n");
+   if( fPrimAcu==0 ) Error("MakeActiveList", "Cant allocate fCellsAct or fPrimAcu \n");
 
    sum =0.0;
    for(iCell=0; iCell<fNoAct; iCell++) {
-      sum = sum + ( (TFoamCell *) (fCellsAct->At(iCell)) )->GetPrim()/fPrime;
+      sum = sum + ( fCells[fCellsAct[iCell]] )->GetPrim()/fPrime;
       fPrimAcu[iCell]=sum;
    }
 
@@ -1112,9 +1110,9 @@ void TFoam::GenerCel2(TFoamCell *&pCell)
       }
    }
    if (fPrimAcu[lo]>random)
-      pCell = (TFoamCell *) fCellsAct->At(lo);
+      pCell = fCells[fCellsAct[lo]];
    else
-      pCell = (TFoamCell *) fCellsAct->At(hi);
+      pCell = fCells[fCellsAct[hi]];
 }       // TFoam::GenerCel2
 
 

@@ -19,7 +19,6 @@
 #include <memory>
 
 class TKeyXML;
-class TList;
 class TStreamerElement;
 class TStreamerInfo;
 

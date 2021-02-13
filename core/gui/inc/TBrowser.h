@@ -48,6 +48,8 @@ protected:
    TContextMenu  *fContextMenu;        //!Context menu pointer
    Bool_t         fNeedRefresh;        //True if the browser needs refresh
 
+   Bool_t         InitGraphics();
+
 public:
    enum EStatusBits {
       kNoHidden     = BIT(9)   // don't show '.' files and directories

@@ -9,8 +9,6 @@
 # @author Pere Mato, CERN
 ############################################################################
 
-include_directories(${FREETYPE_INCLUDE_DIRS})
-
 ROOT_STANDARD_LIBRARY_PACKAGE(Graf
   HEADERS
     TArc.h
@@ -101,3 +99,5 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Graf
   BUILTINS
     FREETYPE
 )
+
+target_include_directories(Graf PRIVATE ${FREETYPE_INCLUDE_DIRS})

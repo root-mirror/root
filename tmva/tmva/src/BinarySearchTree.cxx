@@ -43,7 +43,6 @@ A simple Binary search tree including a volume search method.
 #include "TMath.h"
 
 #include "TMatrixDBase.h"
-#include "TObjString.h"
 #include "TTree.h"
 
 #include "TMVA/MsgLogger.h"

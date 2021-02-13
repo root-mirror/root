@@ -14,6 +14,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.regularizers import l2
 from keras.optimizers import SGD
+from keras.utils import plot_model
 
 # Setup the model here
 num_input_nodes = 4
@@ -57,7 +58,6 @@ model.summary()
 
 # Visualize model as graph
 try:
-    from keras.utils.visualize_util import plot
-    plot(model, to_file='model.png', show_shapes=True)
+    plot_model(model, to_file='model.png', show_shapes=True)
 except:
     print('[INFO] Failed to make model plot')

@@ -20,7 +20,6 @@
 #include <map>
 #include <string>
 #include <cmath>
-#include <cassert>
 #include <memory>
 
 namespace ROOT {

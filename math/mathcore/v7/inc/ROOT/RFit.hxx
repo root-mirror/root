@@ -1,4 +1,4 @@
-/// \file ROOT/RFit.h
+/// \file ROOT/RFit.hxx
 /// \ingroup MathCore ROOT7
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-09-06

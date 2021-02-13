@@ -31,9 +31,10 @@
 #ifndef ROOT_Math_VavilovAccurateCdf
 #define ROOT_Math_VavilovAccurateCdf
 
-
 #include "Math/IParamFunction.h"
 #include "Math/VavilovAccurate.h"
+
+#include <string>
 
 namespace ROOT {
 namespace Math {

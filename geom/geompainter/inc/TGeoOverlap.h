@@ -46,8 +46,8 @@ enum EOverlapType {
 };
 
 private:
-   TGeoOverlap(const TGeoOverlap&); // Not implemented
-   TGeoOverlap& operator=(const TGeoOverlap&); // Not implemented
+   TGeoOverlap(const TGeoOverlap&) = delete;
+   TGeoOverlap& operator=(const TGeoOverlap&) = delete;
 
 protected:
    Double_t         fOverlap;     // overlap distance
@@ -55,7 +55,7 @@ protected:
    TGeoVolume      *fVolume2;     // second volume
    TGeoHMatrix     *fMatrix1;     // positioning matrix for first volume
    TGeoHMatrix     *fMatrix2;     // positioning matrix for second volume
-   TPolyMarker3D   *fMarker;     // points in the overlapping region
+   TPolyMarker3D   *fMarker;      // points in the overlapping region
 
 public:
    TGeoOverlap();

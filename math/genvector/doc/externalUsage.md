@@ -1,37 +1,41 @@
-// example on using with exteral classes (doxygen page)
-
-/**
-
-  \page ExtUsagePage Examples with External Packages
+\page ExtUsagePage Examples with External Packages
 
 ### Connection to Linear Algebra classes
 
-It is possible to use the Vector and Rotation classes together with the Linear Algebra classes. It is possible to set and get the contents of any 3D or 4D Vector from a Linear Agebra Vector class which implements an iterator or something which behaves like an iterator. For example a pointer to a C array (double *) behaves like an iterator. It is then assumed that the coordinates, like (x,y,z) will be stored contiguosly.
+It is possible to use the Vector and Rotation classes together with the Linear Algebra
+classes. It is possible to set and get the contents of any 3D or 4D Vector from a Linear
+Algebra Vector class which implements an iterator or something which behaves like an iterator.
+For example a pointer to a C array (double *) behaves like an iterator. It is then assumed
+that the coordinates, like (x,y,z) will be stored contiguously.
 
-<pre>TVectorD       r2(N)                        // %ROOT Linear Algebra Vector containing many vectors
+```
+TVectorD       r2(N)                        // %ROOT Linear Algebra Vector containing many vectors
 XYZVector      v2;
 v2.SetCoordinates(&r2[INDEX],&r2[index]+3); // construct vector from x=r[INDEX], y=r[INDEX+1], z=r[INDEX+2]
-</pre>
+```
 
 To fill a Linear Algebra Vector from a 3D or 4D Vector, with GetCoordinates() one can get the internal coordinate data.
 
-<pre>HepVector      c(3);                        // CLHEP Linear algebra vector
+```
+HepVector      c(3);                        // CLHEP Linear algebra vector
 v2.GetCoordinates(&c[0],&c[index]+3 )       // fill HepVector c with c[0] = x, c[1] = y , c[2] = z
-</pre>
+```
 
 Or using TVectorD
 
-<pre>double * data[3];
+```
+double * data[3];
 v2.GetCoordinates(data,data+3);
 TVectorD       r1(3,data);                  // create a new Linear Algebra vector copying the data
-</pre>
+```
 
 In the case of transformations, constructor and method to set/get components exist with Linear Algebra matrices. The requisite is that the matrix data are stored, for example in the cse of a LorentzRotation, from (0,0) thru (3,3)
 
-<pre>TMatrixD(4,4) m;
+```
+TMatrixD(4,4) m;
 LorentzRotation r(m)                        // create LorentzRotation from matrix m
 r.GetComponents(m)                          // fill matrix m with LorentzRotation components
-</pre>
+```
 
 ### Connection to Other Vector classes
 
@@ -40,13 +44,13 @@ The 3D and 4D vectors of the GenVector package can be constructed and assigned f
 *   for 3D Vectors and Points must implement the x(), y() ans z() methods
 *   for LorentzVectors must implement the x(), y(), z() and t() methods.
 
-<pre>CLHEP::Hep3Vector hv;
+```
+CLHEP::Hep3Vector hv;
 XYZVector  v1(hv);                          //  create  3D Vector from  CLHEP 3D Vector
 
 HepGeom::Point3D <double>hp;
 XYZPoint p1(hp);                            // create a 3D Point from CLHEP geom Point
 
 CLHEP::HepLorentzVector  hq;
-XYZTVector    q(hq);                        // create a LorentzVector  from CLHEP L.V.</double> </pre>
-
-*/
+XYZTVector    q(hq);                        // create a LorentzVector  from CLHEP L.V.</double>
+```

@@ -885,6 +885,8 @@ endforeach()
 add_subdirectory(projects)
 
 if( LLVM_INCLUDE_TOOLS )
+  # For external LLVM this is set in interpreter/CMakeLists.txt
+  set(Clang_DIR ${LLVM_BINARY_DIR}/tools/clang/)
   add_subdirectory(tools)
 endif()
 

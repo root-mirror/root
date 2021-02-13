@@ -8,11 +8,6 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "TClass.h"
-#include "Riostream.h"
-#include "TSystem.h"
-#include "TEnv.h"
-#include "TGResourcePool.h"
 #include "TTreeTableInterface.h"
 #include "TTreeFormula.h"
 #include "TError.h"
@@ -20,7 +15,6 @@
 #include "TEntryList.h"
 #include "TSelectorDraw.h"
 #include "TTreeFormulaManager.h"
-#include "TTreeFormula.h"
 
 ClassImp(TTreeTableInterface);
 

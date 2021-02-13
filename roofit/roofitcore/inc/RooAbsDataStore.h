@@ -17,16 +17,19 @@
 #define ROO_ABS_DATA_STORE
 
 #include "Rtypes.h"
-#include "RooArgSet.h" 
+#include "RooArgSet.h"
 #include "RooAbsData.h"
 #include "TNamed.h"
 #include <list>
-
+#include <vector>
 
 class RooAbsArg ;
 class RooArgList ;
 class TIterator ;
 class TTree ;
+namespace RooBatchCompute {
+struct RunContext;
+}
 
 class RooAbsDataStore : public TNamed, public RooPrintable {
 public:
@@ -53,8 +56,9 @@ public:
   virtual Double_t weight(Int_t index) const = 0 ;
   virtual Bool_t isWeighted() const = 0 ;
 
-  virtual std::vector<RooSpan<const double>> getBatch(std::size_t first, std::size_t last) const = 0;
-  virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t last) const;
+  /// Retrieve batches for all observables in this data store.
+  virtual RooBatchCompute::RunContext getBatches(std::size_t first, std::size_t len) const = 0;
+  virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const = 0;
 
   // Change observable name
   virtual Bool_t changeObservableName(const char* from, const char* to) =0 ;
@@ -116,7 +120,8 @@ public:
   virtual const TTree* tree() const { return 0 ; }
   virtual void dump() {} 
 
-  virtual void loadValues(const RooAbsDataStore *tds, const RooFormulaVar* select=0, const char* rangeName=0, Int_t nStart=0, Int_t nStop=2000000000) = 0 ;
+  virtual void loadValues(const RooAbsDataStore *tds, const RooFormulaVar* select=0, const char* rangeName=0,
+      std::size_t nStart=0, std::size_t nStop = std::numeric_limits<std::size_t>::max()) = 0 ;
 
   virtual void forceCacheUpdate() {} ;
   

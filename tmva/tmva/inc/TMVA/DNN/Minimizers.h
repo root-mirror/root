@@ -15,6 +15,7 @@
 #include "Functions.h"
 
 #include <limits>
+#include <vector>
 
 namespace TMVA {
 namespace DNN {

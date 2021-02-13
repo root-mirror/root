@@ -4,6 +4,7 @@
 # For the licensing terms see $ROOTSYS/LICENSE.
 # For the list of contributors see $ROOTSYS/README/CREDITS.
 
+add_subdirectory(batchcompute)
 add_subdirectory(roofitcore)
 add_subdirectory(roofit)
 if(mathmore)

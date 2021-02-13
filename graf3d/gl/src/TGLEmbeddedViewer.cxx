@@ -9,7 +9,6 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "TGFrame.h"
 #include "TGLayout.h"
 #include "TGLWidget.h"
 #include "TGLSAFrame.h"

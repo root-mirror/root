@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <typeinfo>
 
 #include <TRandom2.h>
 #include <TStopwatch.h>

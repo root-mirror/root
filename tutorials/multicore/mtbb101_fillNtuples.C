@@ -32,7 +32,6 @@ void fillRandom(TNtuple &ntuple, TRandom3 &rndm, UInt_t n)
 
 Int_t mtbb101_fillNtuples()
 {
-   ROOT::EnableThreadSafety();
    // No nuisance for batch execution
    gROOT->SetBatch();
 
@@ -40,7 +39,7 @@ Int_t mtbb101_fillNtuples()
 
    // Create a random generator and and Ntuple to hold the numbers
    TRandom3 rndm(1);
-   TFile ofile("mp101_singleCore.root", "RECREATE");
+   TFile ofile("mtbb101_singleCore.root", "RECREATE");
    TNtuple randomNumbers("singleCore", "Random Numbers", "r");
    fillRandom(randomNumbers, rndm, nNumbers);
    randomNumbers.Write();
@@ -52,7 +51,7 @@ Int_t mtbb101_fillNtuples()
    auto workItem = [](UInt_t workerID) {
       // One generator, file and ntuple per worker
       TRandom3 workerRndm(workerID); // Change the seed
-      TFile ofile(Form("mp101_multiCore_%u.root", workerID), "RECREATE");
+      TFile ofile(Form("mtbb101_multiCore_%u.root", workerID), "RECREATE");
       TNtuple workerRandomNumbers("multiCore", "Random Numbers", "r");
       fillRandom(workerRandomNumbers, workerRndm, workSize);
       workerRandomNumbers.Write();

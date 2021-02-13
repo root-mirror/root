@@ -22,14 +22,24 @@
 
 void ROOT::Experimental::Detail::RPagePool::RegisterPage(const RPage &page, const RPageDeleter &deleter)
 {
+   std::lock_guard<std::mutex> lockGuard(fLock);
    fPages.emplace_back(page);
    fReferences.emplace_back(1);
+   fDeleters.emplace_back(deleter);
+}
+
+void ROOT::Experimental::Detail::RPagePool::PreloadPage(const RPage &page, const RPageDeleter &deleter)
+{
+   std::lock_guard<std::mutex> lockGuard(fLock);
+   fPages.emplace_back(page);
+   fReferences.emplace_back(0);
    fDeleters.emplace_back(deleter);
 }
 
 void ROOT::Experimental::Detail::RPagePool::ReturnPage(const RPage& page)
 {
    if (page.IsNull()) return;
+   std::lock_guard<std::mutex> lockGuard(fLock);
 
    unsigned int N = fPages.size();
    for (unsigned i = 0; i < N; ++i) {
@@ -52,9 +62,10 @@ void ROOT::Experimental::Detail::RPagePool::ReturnPage(const RPage& page)
 ROOT::Experimental::Detail::RPage ROOT::Experimental::Detail::RPagePool::GetPage(
    ColumnId_t columnId, NTupleSize_t globalIndex)
 {
+   std::lock_guard<std::mutex> lockGuard(fLock);
    unsigned int N = fPages.size();
    for (unsigned int i = 0; i < N; ++i) {
-      if (fReferences[i] == 0) continue;
+      if (fReferences[i] < 0) continue;
       if (fPages[i].GetColumnId() != columnId) continue;
       if (!fPages[i].Contains(globalIndex)) continue;
       fReferences[i]++;
@@ -66,9 +77,10 @@ ROOT::Experimental::Detail::RPage ROOT::Experimental::Detail::RPagePool::GetPage
 ROOT::Experimental::Detail::RPage ROOT::Experimental::Detail::RPagePool::GetPage(
    ColumnId_t columnId, const RClusterIndex &clusterIndex)
 {
+   std::lock_guard<std::mutex> lockGuard(fLock);
    unsigned int N = fPages.size();
    for (unsigned int i = 0; i < N; ++i) {
-      if (fReferences[i] == 0) continue;
+      if (fReferences[i] < 0) continue;
       if (fPages[i].GetColumnId() != columnId) continue;
       if (!fPages[i].Contains(clusterIndex)) continue;
       fReferences[i]++;

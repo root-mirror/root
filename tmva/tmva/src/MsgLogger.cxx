@@ -39,14 +39,13 @@ ostringstream derivative to redirect and format output
 #include "TMVA/Types.h"
 
 // ROOT include(s):
-#include "Riostream.h"
 #include "Rtypes.h"
 #include "TObject.h"
 
 // STL include(s):
-#include <assert.h>
+#include <cassert>
 #include <cstdlib>
-#include <iomanip>
+#include <iostream>
 #include <memory>
 
 
@@ -164,6 +163,14 @@ std::string TMVA::MsgLogger::GetFormattedSource() const
    }
 
    return source_name;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// returns the maximum source size
+
+UInt_t TMVA::MsgLogger::GetMaxSourceSize()
+{
+   return static_cast<UInt_t>(fgMaxSourceSize);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

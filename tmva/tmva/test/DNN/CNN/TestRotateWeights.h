@@ -28,7 +28,6 @@
 // Testing the Rotate Weights function                            //
 ////////////////////////////////////////////////////////////////////
 
-#include <iostream>
 #include <cmath>
 
 #include "TestConvNet.h"

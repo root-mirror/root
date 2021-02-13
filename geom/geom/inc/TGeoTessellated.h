@@ -21,7 +21,7 @@ class TGeoFacet {
    using VertexVec_t = Tessellated::VertexVec_t;
 
 private:
-   int fIvert[4] = {0};              // Vertex indices in the array
+   int fIvert[4] = {0, 0, 0, 0};     // Vertex indices in the array
    VertexVec_t *fVertices = nullptr; //! array of vertices
    int fNvert = 0;                   // number of vertices (can be 3 or 4)
    bool fShared = false;             // Vector of vertices shared flag
@@ -123,9 +123,6 @@ public:
    TGeoTessellated(const char *name, const std::vector<Vertex_t> &vertices);
    // destructor
    virtual ~TGeoTessellated() {}
-
-   TGeoTessellated(const TGeoTessellated &);
-   TGeoTessellated &operator=(const TGeoTessellated &);
 
    void ComputeBBox();
    void CloseShape(bool check = true, bool fixFlipped = true, bool verbose = true);

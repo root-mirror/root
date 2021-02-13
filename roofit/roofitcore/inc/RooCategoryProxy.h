@@ -17,64 +17,11 @@
 #define ROO_CATEGORY_PROXY
 
 #include "RooAbsCategory.h"
-#include "RooArgProxy.h"
 #include "RooAbsCategoryLValue.h"
+#include "RooTemplateProxy.h"
 
-class RooCategoryProxy : public RooArgProxy {
-public:
-
-  // Constructors, assignment etc.
-  RooCategoryProxy() {
-    // Default constructor
-  } ;
-  RooCategoryProxy(const char* name, const char* desc, RooAbsArg* owner,
-		   Bool_t valueServer=kTRUE, Bool_t shapeServer=kFALSE, Bool_t proxyOwnsArg=kFALSE) ;
-  RooCategoryProxy(const char* name, const char* desc, RooAbsArg* owner, RooAbsCategory& ref,
-		   Bool_t valueServer=kTRUE, Bool_t shapeServer=kFALSE, Bool_t proxyOwnsArg=kFALSE) ;
-  RooCategoryProxy(const char* name, RooAbsArg* owner, const RooCategoryProxy& other) ;
-  virtual TObject* Clone(const char* newName=0) const { return new RooCategoryProxy(newName,_owner,*this); }
-  virtual ~RooCategoryProxy();
-
-  // Accessors
-  inline operator Int_t() const { 
-    // Facilitates use of proxy as integer
-    return ((RooAbsCategory*)_arg)->getIndex() ; 
-  }
-  inline const char* label() const { 
-    // Facilitates use of proxy as string value
-    return ((RooAbsCategory*)_arg)->getLabel() ; 
-  }
-  inline const RooAbsCategory& arg() const { 
-    // Return proxies argument
-    return (RooAbsCategory&)*_arg ; 
-  }
-  inline Bool_t hasRange(const char* rangeName) const { 
-    // Returns true if proxied argument has range with given name
-    return arg().hasRange(rangeName) ; 
-  }
-
-  // Modifier
-  virtual Bool_t setArg(RooAbsCategory& newRef) ;
-			
-protected:
-
-  RooAbsCategoryLValue* lvptr() const ;
-
-public:
-
-  // LValue operations 
-  RooCategoryProxy& operator=(Int_t index) { 
-    // Assignment operator with index value
-    lvptr()->setIndex(index) ; return *this ; 
-  }
-  RooCategoryProxy& operator=(const char* _label) { 
-    // Assignment value with string value
-    lvptr()->setLabel(_label) ; return *this ; 
-  }
-
-protected:
-
-  ClassDef(RooCategoryProxy,1) // Proxy for a RooAbsCategory object
-};
+/// Compatibility typedef replacing the RooCategoryProxy class.
+/// \deprecated Use RooTemplateProxy<RooAbsCategory> or more appropriate template parameters.
+using RooCategoryProxy = RooTemplateProxy<RooAbsCategory>;
 
 #endif

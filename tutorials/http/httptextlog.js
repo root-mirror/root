@@ -6,13 +6,7 @@
 ///
 /// \author  Sergey Linev
 
-(function(){
-
-   if (typeof JSROOT != "object") {
-      var e1 = new Error("httptextlog.js requires JSROOT to be already loaded");
-      e1.source = "httptextlog.js";
-      throw e1;
-   }
+JSROOT.require("painter").then(jsrp => {
 
    function MakeMsgListRequest(hitem, item) {
       // this function produces url for http request
@@ -50,45 +44,51 @@
 
    function DrawMsgList(divid, lst, opt) {
 
-      var painter = new JSROOT.TBasePainter();
-      painter.SetDivId(divid);
+      let painter = new JSROOT.BasePainter(divid);
 
       painter.Draw = function(lst) {
          if (!lst) return;
 
-         var frame = this.select_main();
+         let frame = this.selectDom();
 
-         var main = frame.select("div");
+         let main = frame.select("div");
          if (main.empty()) {
             main = frame.append("div")
                         .style('max-width','100%')
                         .style('max-height','100%')
                         .style('overflow','auto');
             // (re) set painter to first child element
-            this.SetDivId(this.divid);
+            this.setTopPainter();
          }
 
-         var old = main.selectAll("pre");
-         var newsize = old.size() + lst.arr.length - 1;
+         let old = main.selectAll("pre");
+         let newsize = old.size() + lst.arr.length - 1;
 
          // in the browser keep maximum 1000 entries
          if (newsize > 1000)
             old.select(function(d,i) { return i < newsize - 1000 ? this : null; }).remove();
 
-         for (var i=lst.arr.length-1;i>0;i--)
+         for (let i = lst.arr.length - 1; i > 0; i--)
             main.append("pre").style('margin','2px').html(lst.arr[i].fString);
       }
 
-      painter.RedrawObject = function(obj) {
+      painter.redrawObject = function(obj) {
          this.Draw(obj);
          return true;
       }
 
       painter.Draw(lst);
-      return painter.DrawingReady();
+      return Promise.resolve(painter);
    }
 
    // register draw function to JSROOT
-   JSROOT.addDrawFunc({name:"TMsgList", icon:"img_text", make_request:MakeMsgListRequest, after_request:AfterMsgListRequest, func:DrawMsgList, opt:"list"});
+   jsrp.addDrawFunc({
+      name: "TMsgList",
+      icon: "img_text",
+      make_request: MakeMsgListRequest,
+      after_request: AfterMsgListRequest,
+      func: DrawMsgList,
+      opt:"list"
+   });
 
-})();
+})

@@ -1,13 +1,15 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Basic functionality: Calculating chi^2 from histograms and curves in RooPlots, making histogram of residual and pull
-/// distributions
+/// Basic functionality: Calculating chi^2 from histograms and curves in RooPlots, making
+/// histogram of residual and pull distributions
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"

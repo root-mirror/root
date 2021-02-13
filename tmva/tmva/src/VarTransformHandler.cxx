@@ -35,16 +35,9 @@
 
 #include "TMath.h"
 #include "TVectorD.h"
-#include "TFile.h"
-#include "TTree.h"
 #include "TMatrix.h"
 #include "TMatrixTSparse.h"
 #include "TMatrixDSparsefwd.h"
-#include "TCanvas.h"
-#include "TGraph.h"
-#include "TStyle.h"
-#include "TLegend.h"
-#include "TH2.h"
 
 #include <algorithm>
 #include <iomanip>

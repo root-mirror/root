@@ -8,17 +8,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-
 #ifndef ROOT_TWebSnapshot
 #define ROOT_TWebSnapshot
-
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// TWebSnapshot                                                         //
-//                                                                      //
-// Paint state of object to transfer to JavaScript side                 //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
 

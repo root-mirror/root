@@ -26,6 +26,8 @@
 
 #include "TMVA/Event.h"
 
+#include <vector>
+
 namespace TMVA {
 
    class Node;

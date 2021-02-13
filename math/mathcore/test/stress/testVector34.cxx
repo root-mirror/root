@@ -38,7 +38,7 @@ public:
    Vector34Test() : fVectorTest(fNGen) {}
 };
 
-TYPED_TEST_CASE_P(Vector34Test);
+TYPED_TEST_SUITE_P(Vector34Test);
 
 // test of Svector of dim 3 or 4
 TYPED_TEST_P(Vector34Test, TestVector34)
@@ -78,8 +78,8 @@ TYPED_TEST_P(Vector34Test, TestVector34)
    EXPECT_TRUE(IsNear(this->VecTypeName() + "_D32 after read", s1, sref1, 1.E9));
 }
 
-REGISTER_TYPED_TEST_CASE_P(Vector34Test, TestVector34);
+REGISTER_TYPED_TEST_SUITE_P(Vector34Test, TestVector34);
 
 typedef testing::Types<Vector32TestDimWrapper<3>, Vector32TestDimWrapper<4>> SMatrixVectorTypes_t;
 
-INSTANTIATE_TYPED_TEST_CASE_P(SMatrix, Vector34Test, SMatrixVectorTypes_t);
+INSTANTIATE_TYPED_TEST_SUITE_P(SMatrix, Vector34Test, SMatrixVectorTypes_t);

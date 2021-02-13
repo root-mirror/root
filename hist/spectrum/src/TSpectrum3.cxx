@@ -64,7 +64,7 @@ TSpectrum3::TSpectrum3() :TNamed("Spectrum", "Miroslav Morhac peak finder")
    fPositionY  = new Double_t[n];
    fPositionZ  = new Double_t[n];
    fResolution = 1;
-   fHistogram  = 0;
+   fHistogram  = nullptr;
    fNPeaks     = 0;
 }
 
@@ -85,7 +85,7 @@ TSpectrum3::TSpectrum3(Int_t maxpositions, Double_t resolution) :TNamed("Spectru
    fPositionX = new Double_t[n];
    fPositionY = new Double_t[n];
    fPositionZ = new Double_t[n];
-   fHistogram = 0;
+   fHistogram = nullptr;
    fNPeaks    = 0;
    SetResolution(resolution);
 }
@@ -886,6 +886,11 @@ const char* TSpectrum3::SmoothMarkov(Double_t***source, Int_t ssizex, Int_t ssiz
       }
    }
    if(maxch == 0) {
+      for(i = 0;i < ssizex; i++){
+         for(j = 0;j < ssizey; j++)
+            delete[] working_space[i][j];
+         delete[] working_space[i];
+      }
       delete [] working_space;
       return 0;
    }
@@ -1633,6 +1638,11 @@ const char *TSpectrum3::Deconvolution(Double_t***source, const Double_t***resp,
       }
    }
    if (lhx == -1 || lhy == -1 || lhz == -1) {
+      for(i = 0;i < ssizex; i++){
+         for(j = 0;j < ssizey; j++)
+            delete[] working_space[i][j];
+         delete[] working_space[i];
+      }
       delete [] working_space;
       return ("Zero response data");
    }
@@ -1783,6 +1793,11 @@ const char *TSpectrum3::Deconvolution(Double_t***source, const Double_t***resp,
          for (k = 0; k < ssizez; k++)
             source[(i + positx) % ssizex][(j + posity) % ssizey][(k + positz) % ssizez] = area * working_space[i][j][k + 3 * ssizez];
       }
+   }
+   for(i = 0;i < ssizex; i++){
+      for(j = 0;j < ssizey; j++)
+         delete[] working_space[i][j];
+      delete[] working_space[i];
    }
    delete [] working_space;
    return 0;
@@ -2370,6 +2385,13 @@ Int_t TSpectrum3::SearchHighRes(const Double_t***source,Double_t***dest, Int_t s
          }
       }
       if(maxch == 0) {
+         k = (Int_t)(4 * sigma + 0.5);
+         k = 4 * k;
+         for(i = 0;i < ssizex + k; i++){
+            for(j = 0;j < ssizey + k; j++)
+               delete[] working_space[i][j];
+            delete[] working_space[i];
+         }
          delete [] working_space;
          return 0;
       }
@@ -3592,6 +3614,13 @@ Int_t TSpectrum3::SearchFast(const Double_t***source, Double_t***dest, Int_t ssi
          }
       }
       if(maxch == 0) {
+         k = (Int_t)(4 * sigma + 0.5);
+         k = 4 * k;
+         for(i = 0;i < ssizex + k; i++){
+            for(j = 0;j < ssizey + k; j++)
+               delete[] working_space[i][j];
+            delete[] working_space[i];
+         }
          delete [] working_space;
          return 0;
       }

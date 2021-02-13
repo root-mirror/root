@@ -53,12 +53,13 @@ the table of contents.
 #pragma optimize("",off)
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <fstream>
 
-#include "Riostream.h"
 #include "TROOT.h"
+#include "TDatime.h"
 #include "TColor.h"
 #include "TVirtualPad.h"
 #include "TPoints.h"
@@ -69,8 +70,8 @@ the table of contents.
 #include "TText.h"
 #include "zlib.h"
 #include "TObjString.h"
-#include "TClass.h"
 #include "TObjArray.h"
+#include "snprintf.h"
 
 // To scale fonts to the same size as the old TT version
 const Float_t kScale = 0.93376068;
@@ -94,6 +95,7 @@ const Int_t kObjFirstPage        = 51; // First page object
 const Int_t kNumberOfFonts = 15;
 
 Int_t TPDF::fgLineJoin = 0;
+Int_t TPDF::fgLineCap  = 0;
 
 ClassImp(TPDF);
 
@@ -1615,6 +1617,10 @@ void TPDF::NewPage()
       WriteInteger(fgLineJoin);
       PrintFast(2," j");
    }
+   if (fgLineCap) {
+      WriteInteger(fgLineCap);
+      PrintFast(2," J");
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1660,6 +1666,7 @@ void TPDF::Open(const char *fname, Int_t wtype)
    fAlpha     = -1.;
    fType      = abs(wtype);
    SetLineJoin(gStyle->GetJoinLinePS());
+   SetLineCap(gStyle->GetCapLinePS());
    SetLineScale(gStyle->GetLineScalePS()/4.);
    gStyle->GetPaperSize(fXsize, fYsize);
    Float_t xrange, yrange;
@@ -1745,11 +1752,20 @@ void TPDF::Open(const char *fname, Int_t wtype)
    PrintStr("@");
    PrintStr("/CreationDate (");
    TDatime t;
-   char str[17];
-   snprintf(str,17,"D:%4.4d%2.2d%2.2d%2.2d%2.2d%2.2d",
-                t.GetYear()  , t.GetMonth(),
-                t.GetDay()   , t.GetHour(),
-                t.GetMinute(), t.GetSecond());
+   Int_t toff = t.Convert(kFALSE) - t.Convert(kTRUE); // time zone and dst offset
+   toff = toff/60;
+   char str[24];
+   snprintf(str,24,"D:%4.4d%2.2d%2.2d%2.2d%2.2d%2.2d%c%2.2d'%2.2d'",
+            t.GetYear()  , t.GetMonth(),
+            t.GetDay()   , t.GetHour(),
+            t.GetMinute(), t.GetSecond(),
+            toff < 0 ? '-' : '+',
+            // TMath::Abs(toff/60), TMath::Abs(toff%60)); // format-truncation warning
+            TMath::Abs(toff/60) & 0x3F, TMath::Abs(toff%60) & 0x3F); // now 2 digits
+   PrintStr(str);
+   PrintStr(")");
+   PrintStr("@");
+   PrintStr("/ModDate (");
    PrintStr(str);
    PrintStr(")");
    PrintStr("@");
@@ -1797,6 +1813,671 @@ void TPDF::Open(const char *fname, Int_t wtype)
 
    NewPage();
    fPageNotEmpty = kFALSE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Output the string str in the output buffer
+
+void TPDF::PrintStr(const char *str)
+{
+   Int_t len = strlen(str);
+   if (len == 0) return;
+   fPageNotEmpty = kTRUE;
+
+   if (fCompress) {
+      if (fLenBuffer+len >= fSizBuffer) {
+         fBuffer  = TStorage::ReAllocChar(fBuffer, 2*fSizBuffer, fSizBuffer);
+         fSizBuffer = 2*fSizBuffer;
+      }
+      strcpy(fBuffer + fLenBuffer, str);
+      fLenBuffer += len;
+      return;
+   }
+
+   TVirtualPS::PrintStr(str);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Fast version of Print
+
+void TPDF::PrintFast(Int_t len, const char *str)
+{
+   fPageNotEmpty = kTRUE;
+   if (fCompress) {
+      if (fLenBuffer+len >= fSizBuffer) {
+         fBuffer  = TStorage::ReAllocChar(fBuffer, 2*fSizBuffer, fSizBuffer);
+         fSizBuffer = 2*fSizBuffer;
+      }
+      strcpy(fBuffer + fLenBuffer, str);
+      fLenBuffer += len;
+      return;
+   }
+
+   TVirtualPS::PrintFast(len, str);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set the range for the paper in centimetres
+
+void TPDF::Range(Float_t xsize, Float_t ysize)
+{
+   Float_t xps, yps, xncm, yncm, dxwn, dywn, xwkwn, ywkwn, xymax;
+
+   fXsize = xsize;
+   fYsize = ysize;
+
+   xps = xsize;
+   yps = ysize;
+
+   if (xsize <= xps && ysize < yps) {
+      if ( xps > yps) xymax = xps;
+      else            xymax = yps;
+      xncm  = xsize/xymax;
+      yncm  = ysize/xymax;
+      dxwn  = ((xps/xymax)-xncm)/2;
+      dywn  = ((yps/xymax)-yncm)/2;
+   } else {
+      if (xps/yps < 1) xwkwn = xps/yps;
+      else             xwkwn = 1;
+      if (yps/xps < 1) ywkwn = yps/xps;
+      else             ywkwn = 1;
+
+      if (xsize < ysize)  {
+         xncm = ywkwn*xsize/ysize;
+         yncm = ywkwn;
+         dxwn = (xwkwn-xncm)/2;
+         dywn = 0;
+         if (dxwn < 0) {
+            xncm = xwkwn;
+            dxwn = 0;
+            yncm = xwkwn*ysize/xsize;
+            dywn = (ywkwn-yncm)/2;
+         }
+      } else {
+         xncm = xwkwn;
+         yncm = xwkwn*ysize/xsize;
+         dxwn = 0;
+         dywn = (ywkwn-yncm)/2;
+         if (dywn < 0) {
+            yncm = ywkwn;
+            dywn = 0;
+            xncm = ywkwn*xsize/ysize;
+            dxwn = (xwkwn-xncm)/2;
+         }
+      }
+   }
+   fRange = kTRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set the alpha channel value.
+
+void TPDF::SetAlpha(Float_t a)
+{
+   if (a == fAlpha) return;
+   fAlpha = a;
+   if (fAlpha  <= 0.000001) fAlpha  = 0;
+
+   Bool_t known = kFALSE;
+   for (int i=0; i<(int)fAlphas.size(); i++) {
+      if (fAlpha == fAlphas[i]) {
+         known = kTRUE;
+         break;
+      }
+   }
+   if (!known) fAlphas.push_back(fAlpha);
+   PrintStr(Form(" /ca%3.2f gs /CA%3.2f gs",fAlpha,fAlpha));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set color with its color index.
+
+void TPDF::SetColor(Int_t color)
+{
+   if (color < 0) color = 0;
+   TColor *col = gROOT->GetColor(color);
+
+   if (col) {
+      SetColor(col->GetRed(), col->GetGreen(), col->GetBlue());
+      SetAlpha(col->GetAlpha());
+   } else {
+      SetColor(1., 1., 1.);
+      SetAlpha(1.);
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set color with its R G B components:
+///
+///  - r: % of red in [0,1]
+///  - g: % of green in [0,1]
+///  - b: % of blue in [0,1]
+
+void TPDF::SetColor(Float_t r, Float_t g, Float_t b)
+{
+   if (r == fRed && g == fGreen && b == fBlue) return;
+
+   fRed   = r;
+   fGreen = g;
+   fBlue  = b;
+   if (fRed   <= 0.000001) fRed   = 0;
+   if (fGreen <= 0.000001) fGreen = 0;
+   if (fBlue  <= 0.000001) fBlue  = 0;
+
+   if (gStyle->GetColorModelPS()) {
+      Double_t colCyan, colMagenta, colYellow;
+      Double_t colBlack = TMath::Min(TMath::Min(1-fRed,1-fGreen),1-fBlue);
+      if (colBlack==1) {
+         colCyan    = 0;
+         colMagenta = 0;
+         colYellow  = 0;
+      } else {
+         colCyan    = (1-fRed-colBlack)/(1-colBlack);
+         colMagenta = (1-fGreen-colBlack)/(1-colBlack);
+         colYellow  = (1-fBlue-colBlack)/(1-colBlack);
+      }
+      if (colCyan    <= 0.000001) colCyan    = 0;
+      if (colMagenta <= 0.000001) colMagenta = 0;
+      if (colYellow  <= 0.000001) colYellow  = 0;
+      if (colBlack   <= 0.000001) colBlack   = 0;
+      WriteReal(colCyan);
+      WriteReal(colMagenta);
+      WriteReal(colYellow);
+      WriteReal(colBlack);
+      PrintFast(2," K");
+      WriteReal(colCyan);
+      WriteReal(colMagenta);
+      WriteReal(colYellow);
+      WriteReal(colBlack);
+      PrintFast(2," k");
+   } else {
+      WriteReal(fRed);
+      WriteReal(fGreen);
+      WriteReal(fBlue);
+      PrintFast(3," RG");
+      WriteReal(fRed);
+      WriteReal(fGreen);
+      WriteReal(fBlue);
+      PrintFast(3," rg");
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set color index for fill areas
+
+void TPDF::SetFillColor( Color_t cindex )
+{
+   fFillColor = cindex;
+   if (gStyle->GetFillColor() <= 0) cindex = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set the fill patterns (1 to 25) for fill areas
+
+void TPDF::SetFillPatterns(Int_t ipat, Int_t color)
+{
+   char cpat[10];
+   TColor *col = gROOT->GetColor(color);
+   if (!col) return;
+   PrintStr(" /Cs8 cs");
+   Double_t colRed   = col->GetRed();
+   Double_t colGreen = col->GetGreen();
+   Double_t colBlue  = col->GetBlue();
+   if (gStyle->GetColorModelPS()) {
+      Double_t colBlack = TMath::Min(TMath::Min(1-colRed,1-colGreen),1-colBlue);
+      if (colBlack==1) {
+         WriteReal(0);
+         WriteReal(0);
+         WriteReal(0);
+         WriteReal(colBlack);
+      } else {
+         Double_t colCyan    = (1-colRed-colBlack)/(1-colBlack);
+         Double_t colMagenta = (1-colGreen-colBlack)/(1-colBlack);
+         Double_t colYellow  = (1-colBlue-colBlack)/(1-colBlack);
+         WriteReal(colCyan);
+         WriteReal(colMagenta);
+         WriteReal(colYellow);
+         WriteReal(colBlack);
+      }
+   } else {
+      WriteReal(colRed);
+      WriteReal(colGreen);
+      WriteReal(colBlue);
+   }
+   snprintf(cpat,10," /P%2.2d scn", ipat);
+   PrintStr(cpat);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set color index for lines
+
+void TPDF::SetLineColor( Color_t cindex )
+{
+   fLineColor = cindex;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set the value of the global parameter TPDF::fgLineJoin.
+/// This parameter determines the appearance of joining lines in a PDF
+/// output.
+/// It takes one argument which may be:
+///   - 0 (miter join)
+///   - 1 (round join)
+///   - 2 (bevel join)
+/// The default value is 0 (miter join).
+///
+/// \image html postscript_1.png
+///
+/// To change the line join behaviour just do:
+/// ~~~ {.cpp}
+/// gStyle->SetJoinLinePS(2); // Set the PDF line join to bevel.
+/// ~~~
+
+void TPDF::SetLineJoin( Int_t linejoin )
+{
+   fgLineJoin = linejoin;
+   if (fgLineJoin<0) fgLineJoin=0;
+   if (fgLineJoin>2) fgLineJoin=2;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set the value of the global parameter TPDF::fgLineCap.
+/// This parameter determines the appearance of line caps in a PDF
+/// output.
+/// It takes one argument which may be:
+///   - 0 (butt caps)
+///   - 1 (round caps)
+///   - 2 (projecting caps)
+/// The default value is 0 (butt caps).
+///
+/// \image html postscript_2.png
+///
+/// To change the line cap behaviour just do:
+/// ~~~ {.cpp}
+/// gStyle->SetCapLinePS(2); // Set the PDF line cap to projecting.
+/// ~~~
+
+void TPDF::SetLineCap( Int_t linecap )
+{
+   fgLineCap = linecap;
+   if (fgLineCap<0) fgLineCap=0;
+   if (fgLineCap>2) fgLineCap=2;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Change the line style
+///
+///  - linestyle = 2 dashed
+///  - linestyle = 3 dotted
+///  - linestyle = 4 dash-dotted
+///  - linestyle = else solid (1 in is used most of the time)
+
+void TPDF::SetLineStyle(Style_t linestyle)
+{
+   if ( linestyle == fLineStyle) return;
+   fLineStyle = linestyle;
+   TString st = (TString)gStyle->GetLineStyleString(linestyle);
+   PrintFast(2," [");
+   TObjArray *tokens = st.Tokenize(" ");
+   for (Int_t j = 0; j<tokens->GetEntries(); j++) {
+      Int_t it;
+      sscanf(((TObjString*)tokens->At(j))->GetName(), "%d", &it);
+      WriteInteger((Int_t)(it/4));
+   }
+   delete tokens;
+   PrintFast(5,"] 0 d");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Change the line width
+
+void TPDF::SetLineWidth(Width_t linewidth)
+{
+   if (linewidth == fLineWidth) return;
+   fLineWidth = linewidth;
+   if (fLineWidth!=0) {
+      WriteReal(fLineScale*fLineWidth);
+      PrintFast(2," w");
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set color index for markers.
+
+void TPDF::SetMarkerColor( Color_t cindex )
+{
+   fMarkerColor = cindex;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set color index for text
+
+void TPDF::SetTextColor( Color_t cindex )
+{
+   fTextColor = cindex;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Draw text
+///
+///  - xx: x position of the text
+///  - yy: y position of the text
+///  - chars: text to be drawn
+
+void TPDF::Text(Double_t xx, Double_t yy, const char *chars)
+{
+   if (fTextSize <= 0) return;
+
+   const Double_t kDEGRAD = TMath::Pi()/180.;
+   char str[8];
+   Double_t x = xx;
+   Double_t y = yy;
+
+   // Font and text size
+   Int_t font = abs(fTextFont)/10;
+   if (font > kNumberOfFonts || font < 1) font = 1;
+
+   Double_t wh = (Double_t)gPad->XtoPixel(gPad->GetX2());
+   Double_t hh = (Double_t)gPad->YtoPixel(gPad->GetY1());
+   Float_t tsize, ftsize;
+   if (wh < hh) {
+      tsize = fTextSize*wh;
+      Int_t sizeTTF = (Int_t)(tsize*kScale+0.5); // TTF size
+      ftsize = (sizeTTF*fXsize*gPad->GetAbsWNDC())/wh;
+   } else {
+      tsize = fTextSize*hh;
+      Int_t sizeTTF = (Int_t)(tsize*kScale+0.5); // TTF size
+      ftsize = (sizeTTF*fYsize*gPad->GetAbsHNDC())/hh;
+   }
+   Double_t fontsize = 72*(ftsize)/2.54;
+   if (fontsize <= 0) return;
+
+   // Text color
+   SetColor(Int_t(fTextColor));
+
+   // Clipping
+   PrintStr(" q");
+   Double_t x1 = XtoPDF(gPad->GetX1());
+   Double_t x2 = XtoPDF(gPad->GetX2());
+   Double_t y1 = YtoPDF(gPad->GetY1());
+   Double_t y2 = YtoPDF(gPad->GetY2());
+   WriteReal(x1);
+   WriteReal(y1);
+   WriteReal(x2 - x1);
+   WriteReal(y2 - y1);
+   PrintStr(" re W n");
+
+   // Start the text
+   if (!fCompress) PrintStr("@");
+
+   // Text alignment
+   Float_t tsizex = gPad->AbsPixeltoX(Int_t(tsize))-gPad->AbsPixeltoX(0);
+   Float_t tsizey = gPad->AbsPixeltoY(0)-gPad->AbsPixeltoY(Int_t(tsize));
+   Int_t txalh = fTextAlign/10;
+   if (txalh < 1) txalh = 1; else if (txalh > 3) txalh = 3;
+   Int_t txalv = fTextAlign%10;
+   if (txalv < 1) txalv = 1; else if (txalv > 3) txalv = 3;
+   if (txalv == 3) {
+      y -= 0.8*tsizey*TMath::Cos(kDEGRAD*fTextAngle);
+      x += 0.8*tsizex*TMath::Sin(kDEGRAD*fTextAngle);
+   } else if (txalv == 2) {
+      y -= 0.4*tsizey*TMath::Cos(kDEGRAD*fTextAngle);
+      x += 0.4*tsizex*TMath::Sin(kDEGRAD*fTextAngle);
+   }
+
+   if (txalh > 1) {
+      TText t;
+      UInt_t w=0, h;
+      t.SetTextSize(fTextSize);
+      t.SetTextFont(fTextFont);
+      t.GetTextExtent(w, h, chars);
+      Double_t twx = gPad->AbsPixeltoX(w)-gPad->AbsPixeltoX(0);
+      Double_t twy = gPad->AbsPixeltoY(0)-gPad->AbsPixeltoY(w);
+      if (txalh == 2) {
+         x = x-(twx/2)*TMath::Cos(kDEGRAD*fTextAngle);
+         y = y-(twy/2)*TMath::Sin(kDEGRAD*fTextAngle);
+      }
+      if (txalh == 3) {
+         x = x-twx*TMath::Cos(kDEGRAD*fTextAngle);
+         y = y-twy*TMath::Sin(kDEGRAD*fTextAngle);
+      }
+   }
+
+   // Text angle
+   if (fTextAngle == 0) {
+      PrintStr(" 1 0 0 1");
+      WriteReal(XtoPDF(x));
+      WriteReal(YtoPDF(y));
+   } else if (fTextAngle == 90) {
+      PrintStr(" 0 1 -1 0");
+      WriteReal(XtoPDF(x));
+      WriteReal(YtoPDF(y));
+   } else if (fTextAngle == 270) {
+      PrintStr(" 0 -1 1 0");
+      WriteReal(XtoPDF(x));
+      WriteReal(YtoPDF(y));
+   } else {
+      WriteReal(TMath::Cos(kDEGRAD*fTextAngle));
+      WriteReal(TMath::Sin(kDEGRAD*fTextAngle));
+      WriteReal(-TMath::Sin(kDEGRAD*fTextAngle));
+      WriteReal(TMath::Cos(kDEGRAD*fTextAngle));
+      WriteReal(XtoPDF(x));
+      WriteReal(YtoPDF(y));
+   }
+   PrintStr(" cm");
+
+   // Symbol Italic tan(15) = .26794
+   if (font == 15) PrintStr(" 1 0 0.26794 1 0 0 cm");
+
+   PrintStr(" BT");
+
+   snprintf(str,8," /F%d",font);
+   PrintStr(str);
+   WriteReal(fontsize);
+   PrintStr(" Tf");
+
+   const Int_t len=strlen(chars);
+
+   // Calculate the individual character placements.
+   // Otherwise, if a string is printed in one line the kerning is not
+   // performed. In order to measure the precise character positions we need to
+   // trick FreeType into rendering high-resolution characters otherwise it will
+   // stick to the screen pixel grid which is far worse than we can achieve on
+   // print.
+   const Float_t scale = 16.0;
+   // Save current text attributes.
+   TText saveAttText;
+   saveAttText.TAttText::operator=(*this);
+   TText t;
+   t.SetTextSize(fTextSize * scale);
+   t.SetTextFont(fTextFont);
+   UInt_t wa1=0, wa0=0;
+   t.GetTextAdvance(wa0, chars, kFALSE);
+   t.GetTextAdvance(wa1, chars);
+   t.TAttText::Modify();
+   Bool_t kerning;
+   if (wa0-wa1 != 0) kerning = kTRUE;
+   else              kerning = kFALSE;
+   Int_t *charDeltas = 0;
+   if (kerning) {
+        charDeltas = new Int_t[len];
+        for (Int_t i = 0;i < len;i++) {
+            UInt_t ww=0;
+            t.GetTextAdvance(ww, chars + i);
+            charDeltas[i] = wa1 - ww;
+        }
+        for (Int_t i = len - 1;i > 0;i--) {
+            charDeltas[i] -= charDeltas[i-1];
+        }
+        char tmp[2];
+        tmp[1] = 0;
+        for (Int_t i = 1;i < len;i++) {
+            tmp[0] = chars[i-1];
+            UInt_t width=0;
+            t.GetTextAdvance(width, &tmp[0], kFALSE);
+            Double_t wwl = gPad->AbsPixeltoX(width - charDeltas[i]) - gPad->AbsPixeltoX(0);
+            wwl -= 0.5*(gPad->AbsPixeltoX(1) - gPad->AbsPixeltoX(0)); // half a pixel ~ rounding error
+            charDeltas[i] = (Int_t)((1000.0/Float_t(fontsize))*(XtoPDF(wwl) - XtoPDF(0))/scale);
+        }
+   }
+   // Restore text attributes.
+   saveAttText.TAttText::Modify();
+
+   // Output the text. Escape some characters if needed
+   if (kerning) PrintStr(" [");
+   else         PrintStr(" (");
+
+   for (Int_t i=0; i<len;i++) {
+      if (chars[i]!='\n') {
+         if (kerning) PrintStr("(");
+         if (chars[i]=='(' || chars[i]==')') {
+            snprintf(str,8,"\\%c",chars[i]);
+         } else {
+            snprintf(str,8,"%c",chars[i]);
+         }
+         PrintStr(str);
+         if (kerning) {
+            PrintStr(") ");
+            if (i < len-1) {
+               WriteInteger(charDeltas[i+1]);
+            }
+         }
+      }
+   }
+
+   if (kerning) PrintStr("] TJ ET Q");
+   else         PrintStr(") Tj ET Q");
+   if (!fCompress) PrintStr("@");
+   if (kerning) delete [] charDeltas;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Write a string of characters
+///
+/// This method writes the string chars into a PDF file
+/// at position xx,yy in world coordinates.
+
+void TPDF::Text(Double_t, Double_t, const wchar_t *)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Write a string of characters in NDC
+
+void TPDF::TextNDC(Double_t u, Double_t v, const char *chars)
+{
+   Double_t x = gPad->GetX1() + u*(gPad->GetX2() - gPad->GetX1());
+   Double_t y = gPad->GetY1() + v*(gPad->GetY2() - gPad->GetY1());
+   Text(x, y, chars);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Write a string of characters in NDC
+
+void TPDF::TextNDC(Double_t u, Double_t v, const wchar_t *chars)
+{
+   Double_t x = gPad->GetX1() + u*(gPad->GetX2() - gPad->GetX1());
+   Double_t y = gPad->GetY1() + v*(gPad->GetY2() - gPad->GetY1());
+   Text(x, y, chars);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Convert U from NDC coordinate to PDF
+
+Double_t TPDF::UtoPDF(Double_t u)
+{
+   Double_t cm = fXsize*(gPad->GetAbsXlowNDC() + u*gPad->GetAbsWNDC());
+   return 72*cm/2.54;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Convert V from NDC coordinate to PDF
+
+Double_t TPDF::VtoPDF(Double_t v)
+{
+   Double_t cm = fYsize*(gPad->GetAbsYlowNDC() + v*gPad->GetAbsHNDC());
+   return 72*cm/2.54;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Convert X from world coordinate to PDF
+
+Double_t TPDF::XtoPDF(Double_t x)
+{
+   Double_t u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
+   return  UtoPDF(u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Convert Y from world coordinate to PDF
+
+Double_t TPDF::YtoPDF(Double_t y)
+{
+   Double_t v = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
+   return  VtoPDF(v);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Write the buffer in a compressed way
+
+void TPDF::WriteCompressedBuffer()
+{
+   z_stream stream;
+   int err;
+   char *out = new char[2*fLenBuffer];
+
+   stream.next_in   = (Bytef*)fBuffer;
+   stream.avail_in  = (uInt)fLenBuffer;
+   stream.next_out  = (Bytef*)out;
+   stream.avail_out = (uInt)2*fLenBuffer;
+   stream.zalloc    = (alloc_func)0;
+   stream.zfree     = (free_func)0;
+   stream.opaque    = (voidpf)0;
+
+   err = deflateInit(&stream, Z_DEFAULT_COMPRESSION);
+   if (err != Z_OK) {
+      Error("WriteCompressedBuffer", "error in deflateInit (zlib)");
+      delete [] out;
+      return;
+   }
+
+   err = deflate(&stream, Z_FINISH);
+   if (err != Z_STREAM_END) {
+      deflateEnd(&stream);
+      Error("WriteCompressedBuffer", "error in deflate (zlib)");
+      delete [] out;
+      return;
+   }
+
+   err = deflateEnd(&stream);
+
+   fStream->write(out, stream.total_out);
+
+   fNByte += stream.total_out;
+   fStream->write("\n",1); fNByte++;
+   fLenBuffer = 0;
+   delete [] out;
+   fCompress = kFALSE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Write a Real number to the file.
+/// This method overwrites TVirtualPS::WriteReal. Some PDF reader like
+/// Acrobat do not work when a PDF file contains reals with exponent. This
+/// method writes the real number "z" using the format "%f" instead of the
+/// format "%g" when writing it with "%g" generates a number with exponent.
+
+void TPDF::WriteReal(Float_t z, Bool_t space)
+{
+   char str[15];
+   if (space) {
+      snprintf(str,15," %g", z);
+      if (strstr(str,"e") || strstr(str,"E")) snprintf(str,15," %10.8f", z);
+   } else {
+      snprintf(str,15,"%g", z);
+      if (strstr(str,"e") || strstr(str,"E")) snprintf(str,15,"%10.8f", z);
+   }
+   PrintStr(str);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2198,641 +2879,4 @@ void TPDF::PatternEncode()
    fNByte += 56;
    PrintStr("endstream@");
    PrintStr("endobj@");
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Output the string str in the output buffer
-
-void TPDF::PrintStr(const char *str)
-{
-   Int_t len = strlen(str);
-   if (len == 0) return;
-   fPageNotEmpty = kTRUE;
-
-   if (fCompress) {
-      if (fLenBuffer+len >= fSizBuffer) {
-         fBuffer  = TStorage::ReAllocChar(fBuffer, 2*fSizBuffer, fSizBuffer);
-         fSizBuffer = 2*fSizBuffer;
-      }
-      strcpy(fBuffer + fLenBuffer, str);
-      fLenBuffer += len;
-      return;
-   }
-
-   TVirtualPS::PrintStr(str);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Fast version of Print
-
-void TPDF::PrintFast(Int_t len, const char *str)
-{
-   fPageNotEmpty = kTRUE;
-   if (fCompress) {
-      if (fLenBuffer+len >= fSizBuffer) {
-         fBuffer  = TStorage::ReAllocChar(fBuffer, 2*fSizBuffer, fSizBuffer);
-         fSizBuffer = 2*fSizBuffer;
-      }
-      strcpy(fBuffer + fLenBuffer, str);
-      fLenBuffer += len;
-      return;
-   }
-
-   TVirtualPS::PrintFast(len, str);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set the range for the paper in centimetres
-
-void TPDF::Range(Float_t xsize, Float_t ysize)
-{
-   Float_t xps, yps, xncm, yncm, dxwn, dywn, xwkwn, ywkwn, xymax;
-
-   fXsize = xsize;
-   fYsize = ysize;
-
-   xps = xsize;
-   yps = ysize;
-
-   if (xsize <= xps && ysize < yps) {
-      if ( xps > yps) xymax = xps;
-      else            xymax = yps;
-      xncm  = xsize/xymax;
-      yncm  = ysize/xymax;
-      dxwn  = ((xps/xymax)-xncm)/2;
-      dywn  = ((yps/xymax)-yncm)/2;
-   } else {
-      if (xps/yps < 1) xwkwn = xps/yps;
-      else             xwkwn = 1;
-      if (yps/xps < 1) ywkwn = yps/xps;
-      else             ywkwn = 1;
-
-      if (xsize < ysize)  {
-         xncm = ywkwn*xsize/ysize;
-         yncm = ywkwn;
-         dxwn = (xwkwn-xncm)/2;
-         dywn = 0;
-         if (dxwn < 0) {
-            xncm = xwkwn;
-            dxwn = 0;
-            yncm = xwkwn*ysize/xsize;
-            dywn = (ywkwn-yncm)/2;
-         }
-      } else {
-         xncm = xwkwn;
-         yncm = xwkwn*ysize/xsize;
-         dxwn = 0;
-         dywn = (ywkwn-yncm)/2;
-         if (dywn < 0) {
-            yncm = ywkwn;
-            dywn = 0;
-            xncm = ywkwn*xsize/ysize;
-            dxwn = (xwkwn-xncm)/2;
-         }
-      }
-   }
-   fRange = kTRUE;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set the alpha channel value.
-
-void TPDF::SetAlpha(Float_t a)
-{
-   if (a == fAlpha) return;
-   fAlpha = a;
-   if (fAlpha  <= 0.000001) fAlpha  = 0;
-
-   Bool_t known = kFALSE;
-   for (int i=0; i<(int)fAlphas.size(); i++) {
-      if (fAlpha == fAlphas[i]) {
-         known = kTRUE;
-         break;
-      }
-   }
-   if (!known) fAlphas.push_back(fAlpha);
-   PrintStr(Form(" /ca%3.2f gs /CA%3.2f gs",fAlpha,fAlpha));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set color with its color index.
-
-void TPDF::SetColor(Int_t color)
-{
-   if (color < 0) color = 0;
-   TColor *col = gROOT->GetColor(color);
-
-   if (col) {
-      SetColor(col->GetRed(), col->GetGreen(), col->GetBlue());
-      SetAlpha(col->GetAlpha());
-   } else {
-      SetColor(1., 1., 1.);
-      SetAlpha(1.);
-   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set color with its R G B components:
-///
-///  - r: % of red in [0,1]
-///  - g: % of green in [0,1]
-///  - b: % of blue in [0,1]
-
-void TPDF::SetColor(Float_t r, Float_t g, Float_t b)
-{
-   if (r == fRed && g == fGreen && b == fBlue) return;
-
-   fRed   = r;
-   fGreen = g;
-   fBlue  = b;
-   if (fRed   <= 0.000001) fRed   = 0;
-   if (fGreen <= 0.000001) fGreen = 0;
-   if (fBlue  <= 0.000001) fBlue  = 0;
-
-   if (gStyle->GetColorModelPS()) {
-      Double_t colCyan, colMagenta, colYellow;
-      Double_t colBlack = TMath::Min(TMath::Min(1-fRed,1-fGreen),1-fBlue);
-      if (colBlack==1) {
-         colCyan    = 0;
-         colMagenta = 0;
-         colYellow  = 0;
-      } else {
-         colCyan    = (1-fRed-colBlack)/(1-colBlack);
-         colMagenta = (1-fGreen-colBlack)/(1-colBlack);
-         colYellow  = (1-fBlue-colBlack)/(1-colBlack);
-      }
-      if (colCyan    <= 0.000001) colCyan    = 0;
-      if (colMagenta <= 0.000001) colMagenta = 0;
-      if (colYellow  <= 0.000001) colYellow  = 0;
-      if (colBlack   <= 0.000001) colBlack   = 0;
-      WriteReal(colCyan);
-      WriteReal(colMagenta);
-      WriteReal(colYellow);
-      WriteReal(colBlack);
-      PrintFast(2," K");
-      WriteReal(colCyan);
-      WriteReal(colMagenta);
-      WriteReal(colYellow);
-      WriteReal(colBlack);
-      PrintFast(2," k");
-   } else {
-      WriteReal(fRed);
-      WriteReal(fGreen);
-      WriteReal(fBlue);
-      PrintFast(3," RG");
-      WriteReal(fRed);
-      WriteReal(fGreen);
-      WriteReal(fBlue);
-      PrintFast(3," rg");
-   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set color index for fill areas
-
-void TPDF::SetFillColor( Color_t cindex )
-{
-   fFillColor = cindex;
-   if (gStyle->GetFillColor() <= 0) cindex = 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set the fill patterns (1 to 25) for fill areas
-
-void TPDF::SetFillPatterns(Int_t ipat, Int_t color)
-{
-   char cpat[10];
-   TColor *col = gROOT->GetColor(color);
-   if (!col) return;
-   PrintStr(" /Cs8 cs");
-   Double_t colRed   = col->GetRed();
-   Double_t colGreen = col->GetGreen();
-   Double_t colBlue  = col->GetBlue();
-   if (gStyle->GetColorModelPS()) {
-      Double_t colBlack = TMath::Min(TMath::Min(1-colRed,1-colGreen),1-colBlue);
-      if (colBlack==1) {
-         WriteReal(0);
-         WriteReal(0);
-         WriteReal(0);
-         WriteReal(colBlack);
-      } else {
-         Double_t colCyan    = (1-colRed-colBlack)/(1-colBlack);
-         Double_t colMagenta = (1-colGreen-colBlack)/(1-colBlack);
-         Double_t colYellow  = (1-colBlue-colBlack)/(1-colBlack);
-         WriteReal(colCyan);
-         WriteReal(colMagenta);
-         WriteReal(colYellow);
-         WriteReal(colBlack);
-      }
-   } else {
-      WriteReal(colRed);
-      WriteReal(colGreen);
-      WriteReal(colBlue);
-   }
-   snprintf(cpat,10," /P%2.2d scn", ipat);
-   PrintStr(cpat);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set color index for lines
-
-void TPDF::SetLineColor( Color_t cindex )
-{
-   fLineColor = cindex;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set the value of the global parameter TPDF::fgLineJoin.
-/// This parameter determines the appearance of joining lines in a PDF
-/// output.
-/// It takes one argument which may be:
-///   - 0 (miter join)
-///   - 1 (round join)
-///   - 2 (bevel join)
-/// The default value is 0 (miter join).
-///
-/// \image html postscript_1.png
-///
-/// To change the line join behaviour just do:
-/// ~~~ {.cpp}
-/// gStyle->SetJoinLinePS(2); // Set the PDF line join to bevel.
-/// ~~~
-
-void TPDF::SetLineJoin( Int_t linejoin )
-{
-   fgLineJoin = linejoin;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Change the line style
-///
-///  - linestyle = 2 dashed
-///  - linestyle = 3 dotted
-///  - linestyle = 4 dash-dotted
-///  - linestyle = else solid (1 in is used most of the time)
-
-void TPDF::SetLineStyle(Style_t linestyle)
-{
-   if ( linestyle == fLineStyle) return;
-   fLineStyle = linestyle;
-   TString st = (TString)gStyle->GetLineStyleString(linestyle);
-   PrintFast(2," [");
-   TObjArray *tokens = st.Tokenize(" ");
-   for (Int_t j = 0; j<tokens->GetEntries(); j++) {
-      Int_t it;
-      sscanf(((TObjString*)tokens->At(j))->GetName(), "%d", &it);
-      WriteInteger((Int_t)(it/4));
-   }
-   delete tokens;
-   PrintFast(5,"] 0 d");
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Change the line width
-
-void TPDF::SetLineWidth(Width_t linewidth)
-{
-   if (linewidth == fLineWidth) return;
-   fLineWidth = linewidth;
-   if (fLineWidth!=0) {
-      WriteReal(fLineScale*fLineWidth);
-      PrintFast(2," w");
-   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set color index for markers.
-
-void TPDF::SetMarkerColor( Color_t cindex )
-{
-   fMarkerColor = cindex;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Set color index for text
-
-void TPDF::SetTextColor( Color_t cindex )
-{
-   fTextColor = cindex;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Draw text
-///
-///  - xx: x position of the text
-///  - yy: y position of the text
-///  - chars: text to be drawn
-
-void TPDF::Text(Double_t xx, Double_t yy, const char *chars)
-{
-   if (fTextSize <= 0) return;
-
-   const Double_t kDEGRAD = TMath::Pi()/180.;
-   char str[8];
-   Double_t x = xx;
-   Double_t y = yy;
-
-   // Font and text size
-   Int_t font = abs(fTextFont)/10;
-   if (font > kNumberOfFonts || font < 1) font = 1;
-
-   Double_t wh = (Double_t)gPad->XtoPixel(gPad->GetX2());
-   Double_t hh = (Double_t)gPad->YtoPixel(gPad->GetY1());
-   Float_t tsize, ftsize;
-   if (wh < hh) {
-      tsize = fTextSize*wh;
-      Int_t sizeTTF = (Int_t)(tsize*kScale+0.5); // TTF size
-      ftsize = (sizeTTF*fXsize*gPad->GetAbsWNDC())/wh;
-   } else {
-      tsize = fTextSize*hh;
-      Int_t sizeTTF = (Int_t)(tsize*kScale+0.5); // TTF size
-      ftsize = (sizeTTF*fYsize*gPad->GetAbsHNDC())/hh;
-   }
-   Double_t fontsize = 72*(ftsize)/2.54;
-   if (fontsize <= 0) return;
-
-   // Text color
-   SetColor(Int_t(fTextColor));
-
-   // Clipping
-   PrintStr(" q");
-   Double_t x1 = XtoPDF(gPad->GetX1());
-   Double_t x2 = XtoPDF(gPad->GetX2());
-   Double_t y1 = YtoPDF(gPad->GetY1());
-   Double_t y2 = YtoPDF(gPad->GetY2());
-   WriteReal(x1);
-   WriteReal(y1);
-   WriteReal(x2 - x1);
-   WriteReal(y2 - y1);
-   PrintStr(" re W n");
-
-   // Start the text
-   if (!fCompress) PrintStr("@");
-
-   // Text alignment
-   Float_t tsizex = gPad->AbsPixeltoX(Int_t(tsize))-gPad->AbsPixeltoX(0);
-   Float_t tsizey = gPad->AbsPixeltoY(0)-gPad->AbsPixeltoY(Int_t(tsize));
-   Int_t txalh = fTextAlign/10;
-   if (txalh < 1) txalh = 1; else if (txalh > 3) txalh = 3;
-   Int_t txalv = fTextAlign%10;
-   if (txalv < 1) txalv = 1; else if (txalv > 3) txalv = 3;
-   if (txalv == 3) {
-      y -= 0.8*tsizey*TMath::Cos(kDEGRAD*fTextAngle);
-      x += 0.8*tsizex*TMath::Sin(kDEGRAD*fTextAngle);
-   } else if (txalv == 2) {
-      y -= 0.4*tsizey*TMath::Cos(kDEGRAD*fTextAngle);
-      x += 0.4*tsizex*TMath::Sin(kDEGRAD*fTextAngle);
-   }
-
-   if (txalh > 1) {
-      TText t;
-      UInt_t w=0, h;
-      t.SetTextSize(fTextSize);
-      t.SetTextFont(fTextFont);
-      t.GetTextExtent(w, h, chars);
-      Double_t twx = gPad->AbsPixeltoX(w)-gPad->AbsPixeltoX(0);
-      Double_t twy = gPad->AbsPixeltoY(0)-gPad->AbsPixeltoY(w);
-      if (txalh == 2) {
-         x = x-(twx/2)*TMath::Cos(kDEGRAD*fTextAngle);
-         y = y-(twy/2)*TMath::Sin(kDEGRAD*fTextAngle);
-      }
-      if (txalh == 3) {
-         x = x-twx*TMath::Cos(kDEGRAD*fTextAngle);
-         y = y-twy*TMath::Sin(kDEGRAD*fTextAngle);
-      }
-   }
-
-   // Text angle
-   if (fTextAngle == 0) {
-      PrintStr(" 1 0 0 1");
-      WriteReal(XtoPDF(x));
-      WriteReal(YtoPDF(y));
-   } else if (fTextAngle == 90) {
-      PrintStr(" 0 1 -1 0");
-      WriteReal(XtoPDF(x));
-      WriteReal(YtoPDF(y));
-   } else if (fTextAngle == 270) {
-      PrintStr(" 0 -1 1 0");
-      WriteReal(XtoPDF(x));
-      WriteReal(YtoPDF(y));
-   } else {
-      WriteReal(TMath::Cos(kDEGRAD*fTextAngle));
-      WriteReal(TMath::Sin(kDEGRAD*fTextAngle));
-      WriteReal(-TMath::Sin(kDEGRAD*fTextAngle));
-      WriteReal(TMath::Cos(kDEGRAD*fTextAngle));
-      WriteReal(XtoPDF(x));
-      WriteReal(YtoPDF(y));
-   }
-   PrintStr(" cm");
-
-   // Symbol Italic tan(15) = .26794
-   if (font == 15) PrintStr(" 1 0 0.26794 1 0 0 cm");
-
-   PrintStr(" BT");
-
-   snprintf(str,8," /F%d",font);
-   PrintStr(str);
-   WriteReal(fontsize);
-   PrintStr(" Tf");
-
-   const Int_t len=strlen(chars);
-
-   // Calculate the individual character placements.
-   // Otherwise, if a string is printed in one line the kerning is not
-   // performed. In order to measure the precise character positions we need to
-   // trick FreeType into rendering high-resolution characters otherwise it will
-   // stick to the screen pixel grid which is far worse than we can achieve on
-   // print.
-   const Float_t scale = 16.0;
-   // Save current text attributes.
-   TText saveAttText;
-   saveAttText.TAttText::operator=(*this);
-   TText t;
-   t.SetTextSize(fTextSize * scale);
-   t.SetTextFont(fTextFont);
-   UInt_t wa1=0, wa0=0;
-   t.GetTextAdvance(wa0, chars, kFALSE);
-   t.GetTextAdvance(wa1, chars);
-   t.TAttText::Modify();
-   Bool_t kerning;
-   if (wa0-wa1 != 0) kerning = kTRUE;
-   else              kerning = kFALSE;
-   Int_t *charDeltas = 0;
-   if (kerning) {
-        charDeltas = new Int_t[len];
-        for (Int_t i = 0;i < len;i++) {
-            UInt_t ww=0;
-            t.GetTextAdvance(ww, chars + i);
-            charDeltas[i] = wa1 - ww;
-        }
-        for (Int_t i = len - 1;i > 0;i--) {
-            charDeltas[i] -= charDeltas[i-1];
-        }
-        char tmp[2];
-        tmp[1] = 0;
-        for (Int_t i = 1;i < len;i++) {
-            tmp[0] = chars[i-1];
-            UInt_t width=0;
-            t.GetTextAdvance(width, &tmp[0], kFALSE);
-            Double_t wwl = gPad->AbsPixeltoX(width - charDeltas[i]) - gPad->AbsPixeltoX(0);
-            wwl -= 0.5*(gPad->AbsPixeltoX(1) - gPad->AbsPixeltoX(0)); // half a pixel ~ rounding error
-            charDeltas[i] = (Int_t)((1000.0/Float_t(fontsize))*(XtoPDF(wwl) - XtoPDF(0))/scale);
-        }
-   }
-   // Restore text attributes.
-   saveAttText.TAttText::Modify();
-
-   // Output the text. Escape some characters if needed
-   if (kerning) PrintStr(" [");
-   else         PrintStr(" (");
-
-   for (Int_t i=0; i<len;i++) {
-      if (chars[i]!='\n') {
-         if (kerning) PrintStr("(");
-         if (chars[i]=='(' || chars[i]==')') {
-            snprintf(str,8,"\\%c",chars[i]);
-         } else {
-            snprintf(str,8,"%c",chars[i]);
-         }
-         PrintStr(str);
-         if (kerning) {
-            PrintStr(") ");
-            if (i < len-1) {
-               WriteInteger(charDeltas[i+1]);
-            }
-         }
-      }
-   }
-
-   if (kerning) PrintStr("] TJ ET Q");
-   else         PrintStr(") Tj ET Q");
-   if (!fCompress) PrintStr("@");
-   if (kerning) delete [] charDeltas;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Write a string of characters
-///
-/// This method writes the string chars into a PDF file
-/// at position xx,yy in world coordinates.
-
-void TPDF::Text(Double_t, Double_t, const wchar_t *)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Write a string of characters in NDC
-
-void TPDF::TextNDC(Double_t u, Double_t v, const char *chars)
-{
-   Double_t x = gPad->GetX1() + u*(gPad->GetX2() - gPad->GetX1());
-   Double_t y = gPad->GetY1() + v*(gPad->GetY2() - gPad->GetY1());
-   Text(x, y, chars);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Write a string of characters in NDC
-
-void TPDF::TextNDC(Double_t u, Double_t v, const wchar_t *chars)
-{
-   Double_t x = gPad->GetX1() + u*(gPad->GetX2() - gPad->GetX1());
-   Double_t y = gPad->GetY1() + v*(gPad->GetY2() - gPad->GetY1());
-   Text(x, y, chars);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Convert U from NDC coordinate to PDF
-
-Double_t TPDF::UtoPDF(Double_t u)
-{
-   Double_t cm = fXsize*(gPad->GetAbsXlowNDC() + u*gPad->GetAbsWNDC());
-   return 72*cm/2.54;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Convert V from NDC coordinate to PDF
-
-Double_t TPDF::VtoPDF(Double_t v)
-{
-   Double_t cm = fYsize*(gPad->GetAbsYlowNDC() + v*gPad->GetAbsHNDC());
-   return 72*cm/2.54;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Convert X from world coordinate to PDF
-
-Double_t TPDF::XtoPDF(Double_t x)
-{
-   Double_t u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
-   return  UtoPDF(u);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Convert Y from world coordinate to PDF
-
-Double_t TPDF::YtoPDF(Double_t y)
-{
-   Double_t v = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
-   return  VtoPDF(v);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Write the buffer in a compressed way
-
-void TPDF::WriteCompressedBuffer()
-{
-   z_stream stream;
-   int err;
-   char *out = new char[2*fLenBuffer];
-
-   stream.next_in   = (Bytef*)fBuffer;
-   stream.avail_in  = (uInt)fLenBuffer;
-   stream.next_out  = (Bytef*)out;
-   stream.avail_out = (uInt)2*fLenBuffer;
-   stream.zalloc    = (alloc_func)0;
-   stream.zfree     = (free_func)0;
-   stream.opaque    = (voidpf)0;
-
-   err = deflateInit(&stream, Z_DEFAULT_COMPRESSION);
-   if (err != Z_OK) {
-      Error("WriteCompressedBuffer", "error in deflateInit (zlib)");
-      return;
-   }
-
-   err = deflate(&stream, Z_FINISH);
-   if (err != Z_STREAM_END) {
-      deflateEnd(&stream);
-      Error("WriteCompressedBuffer", "error in deflate (zlib)");
-      return;
-   }
-
-   err = deflateEnd(&stream);
-
-   fStream->write(out, stream.total_out);
-
-   fNByte += stream.total_out;
-   fStream->write("\n",1); fNByte++;
-   fLenBuffer = 0;
-   delete [] out;
-   fCompress = kFALSE;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Write a Real number to the file.
-/// This method overwrites TVirtualPS::WriteReal. Some PDF reader like
-/// Acrobat do not work when a PDF file contains reals with exponent. This
-/// method writes the real number "z" using the format "%f" instead of the
-/// format "%g" when writing it with "%g" generates a number with exponent.
-
-void TPDF::WriteReal(Float_t z, Bool_t space)
-{
-   char str[15];
-   if (space) {
-      snprintf(str,15," %g", z);
-      if (strstr(str,"e") || strstr(str,"E")) snprintf(str,15," %10.8f", z);
-   } else {
-      snprintf(str,15,"%g", z);
-      if (strstr(str,"e") || strstr(str,"E")) snprintf(str,15,"%10.8f", z);
-   }
-   PrintStr(str);
 }

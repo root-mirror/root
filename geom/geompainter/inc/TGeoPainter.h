@@ -66,110 +66,110 @@ private:
    TGeoShape         *fClippingShape;    // clipping shape
    TGeoVolume        *fTopVolume;        // top drawn volume
    TGeoVolume        *fLastVolume;       // last drawn volume
-   TGeoIteratorPlugin
-                     *fPlugin;           // User iterator plugin for changing pain volume properties
+   TGeoIteratorPlugin *fPlugin;          // User iterator plugin for changing pain volume properties
    TObjArray         *fVisVolumes;       // list of visible volumes
    Bool_t             fIsEditable;       // flag that geometry is editable
 
-   void               DefineColors() const;
-   void               LocalToMasterVect(const Double_t *local, Double_t *master) const;
+   void       DefineColors() const;
+   void       LocalToMasterVect(const Double_t *local, Double_t *master) const;
 
 protected:
-   virtual void       ClearVisibleVolumes();
+   void       ClearVisibleVolumes();
 
 public:
    TGeoPainter(TGeoManager *manager);
    virtual ~TGeoPainter();
-   virtual void       AddSize3D(Int_t numpoints, Int_t numsegs, Int_t numpolys);
-   virtual TVirtualGeoTrack *AddTrack(Int_t id, Int_t pdgcode, TObject *part);
-   virtual void       AddTrackPoint(Double_t *point, Double_t *box, Bool_t reset=kFALSE);
-   virtual void       BombTranslation(const Double_t *tr, Double_t *bombtr);
-   virtual void       CheckBoundaryErrors(Int_t ntracks=1000000, Double_t radius=-1.);
-   virtual void       CheckBoundaryReference(Int_t icheck=-1);
-   virtual void       CheckGeometryFull(Bool_t checkoverlaps=kTRUE, Bool_t checkcrossings=kTRUE, Int_t nrays=10000, const Double_t *vertex=NULL);
-   virtual void       CheckGeometry(Int_t nrays, Double_t startx, Double_t starty, Double_t startz) const;
-   void               CheckEdit();
-   virtual void       CheckPoint(Double_t x=0, Double_t y=0, Double_t z=0, Option_t *option="");
-   virtual void       CheckShape(TGeoShape *shape, Int_t testNo, Int_t nsamples, Option_t *option);
-   virtual void       CheckOverlaps(const TGeoVolume *vol, Double_t ovlp=0.1, Option_t *option="") const;
-   Int_t              CountNodes(TGeoVolume *vol, Int_t level) const;
-   virtual Int_t      CountVisibleNodes();
-   virtual void       DefaultAngles();
-   virtual void       DefaultColors();
-   virtual Int_t      DistanceToPrimitiveVol(TGeoVolume *vol, Int_t px, Int_t py);
-   virtual void       Draw(Option_t *option="");
-   virtual void       DrawBatemanSol(TGeoBatemanSol *sol, Option_t *option="");
-   virtual void       DrawOverlap(void *ovlp, Option_t *option="");
-   virtual void       DrawCurrentPoint(Int_t color);
-   virtual void       DrawOnly(Option_t *option="");
-   virtual void       DrawPanel();
-   virtual void       DrawPath(const char *path, Option_t *option="");
-   virtual void       DrawPolygon(const TGeoPolygon *poly);
-   virtual void       DrawShape(TGeoShape *shape, Option_t *option="");
-   virtual void       DrawVolume(TGeoVolume *vol, Option_t *option="");
-   virtual void       EditGeometry(Option_t *option="");
-   virtual void       EstimateCameraMove(Double_t tmin, Double_t tmax, Double_t *start, Double_t *end);
-   virtual void       ExecuteManagerEvent(TGeoManager *geom, Int_t event, Int_t px, Int_t py);
-   virtual void       ExecuteShapeEvent(TGeoShape *shape, Int_t event, Int_t px, Int_t py);
-   virtual void       ExecuteVolumeEvent(TGeoVolume *volume, Int_t event, Int_t px, Int_t py);
-   virtual const char*GetVolumeInfo(const TGeoVolume *volume, Int_t px, Int_t py) const;
-   virtual void       GetBombFactors(Double_t &bombx, Double_t &bomby, Double_t &bombz, Double_t &bombr) const
-                                    {bombx=fBombX; bomby=fBombY; bombz=fBombZ; bombr=fBombR;}
-   virtual Int_t      GetBombMode() const      {return fExplodedView;}
-   virtual TGeoNode  *GetCheckedNode() {return fCheckedNode;}
-   TGeoChecker       *GetChecker();
-   virtual Int_t      GetColor(Int_t base, Float_t light) const;
-   virtual const char *GetDrawPath() const     {return fVisBranch.Data();}
-   virtual TGeoVolume *GetDrawnVolume() const;
-   virtual TGeoVolume *GetTopVolume() const {return fTopVolume;}
-   virtual Int_t      GetVisLevel() const      {return fVisLevel;}
-   virtual Int_t      GetVisOption() const     {return fVisOption;}
-   Int_t              GetNsegments() const     {return fNsegments;}
-   virtual void       GrabFocus(Int_t nfr=0, Double_t dlong=0, Double_t dlat=0, Double_t dpsi=0);
-   virtual Double_t  *GetViewBox() {return &fCheckedBox[0];}
-   virtual void       GetViewAngles(Double_t &longitude, Double_t &latitude, Double_t &psi);
-   virtual Bool_t     IsExplodedView() const {return ((fExplodedView==kGeoVisDefault)?kFALSE:kTRUE);}
-   virtual Bool_t     IsRaytracing() const {return fIsRaytracing;}
-   virtual Bool_t     IsPaintingShape() const  {return fIsPaintingShape;}
-   TH2F              *LegoPlot(Int_t ntheta=60, Double_t themin=0., Double_t themax=180.,
-                            Int_t nphi=90, Double_t phimin=0., Double_t phimax=360.,
-                            Double_t rmin=0., Double_t rmax=9999999, Option_t *option="");
-   void               Lock(Bool_t flag = kTRUE) {fVisLock = flag;}
-   virtual void       ModifiedPad(Bool_t update=kFALSE) const;
-   virtual void       OpProgress(const char *opname, Long64_t current, Long64_t size, TStopwatch *watch=0, Bool_t last=kFALSE, Bool_t refresh=kFALSE, const char *msg="");
-   virtual void       Paint(Option_t *option="");
-   virtual void       PaintNode(TGeoNode *node, Option_t *option="", TGeoMatrix* global=0);
-   Bool_t             PaintShape(const TGeoShape & shape, Option_t * option) const;
-   virtual void       PaintShape(TGeoShape *shape, Option_t *option="");
-   virtual void       PaintOverlap(void *ovlp, Option_t *option="");
-   virtual void       PaintVolume(TGeoVolume *vol, Option_t *option="", TGeoMatrix* global=0);
-   virtual void       PrintOverlaps() const;
-   void               PaintPhysicalNode(TGeoPhysicalNode *node, Option_t *option="");
-   virtual void       RandomPoints(const TGeoVolume *vol, Int_t npoints, Option_t *option="");
-   virtual void       RandomRays(Int_t nrays, Double_t startx, Double_t starty, Double_t startz, const char *target_vol=0, Bool_t check_norm=kFALSE);
-   virtual void       Raytrace(Option_t *option="");
-   virtual TGeoNode  *SamplePoints(Int_t npoints, Double_t &dist, Double_t epsil, const char* g3path);
-   virtual void       SetBombFactors(Double_t bombx=1.3, Double_t bomby=1.3, Double_t bombz=1.3, Double_t bombr=1.3);
-   virtual void       SetClippingShape(TGeoShape *shape) {fClippingShape = shape;}
-   virtual void       SetExplodedView(Int_t iopt=0);
-   virtual void       SetNsegments(Int_t nseg=20);
-   virtual void       SetNmeshPoints(Int_t npoints);
-   virtual void       SetGeoManager(TGeoManager *geom) {fGeoManager=geom;}
-   virtual void       SetIteratorPlugin(TGeoIteratorPlugin *plugin) {fPlugin = plugin; ModifiedPad();}
-   virtual void       SetCheckedNode(TGeoNode *node);
-   virtual void       SetRaytracing(Bool_t flag=kTRUE) {fIsRaytracing = flag;}
-   virtual void       SetTopVisible(Bool_t vis=kTRUE);
-   virtual void       SetTopVolume(TGeoVolume *vol) {fTopVolume = vol;}
-   virtual void       SetVisLevel(Int_t level=3);
-   virtual void       SetVisOption(Int_t option=0);
-   virtual Int_t      ShapeDistancetoPrimitive(const TGeoShape *shape, Int_t numpoints, Int_t px, Int_t py) const;
-   virtual void       Test(Int_t npoints, Option_t *option);
-   virtual void       TestOverlaps(const char *path);
-   virtual Bool_t     TestVoxels(TGeoVolume *vol);
-   virtual void       UnbombTranslation(const Double_t *tr, Double_t *bombtr);
-   virtual Double_t   Weight(Double_t precision, Option_t *option="v");
 
-   ClassDef(TGeoPainter,0)  //geometry painter
+   void       AddSize3D(Int_t numpoints, Int_t numsegs, Int_t numpolys) override;
+   TVirtualGeoTrack *AddTrack(Int_t id, Int_t pdgcode, TObject *part) override;
+   void       AddTrackPoint(Double_t *point, Double_t *box, Bool_t reset=kFALSE) override;
+   void       BombTranslation(const Double_t *tr, Double_t *bombtr) override;
+   void       CheckBoundaryErrors(Int_t ntracks=1000000, Double_t radius=-1.) override;
+   void       CheckBoundaryReference(Int_t icheck=-1) override;
+   void       CheckGeometryFull(Bool_t checkoverlaps=kTRUE, Bool_t checkcrossings=kTRUE, Int_t nrays=10000, const Double_t *vertex=nullptr) override;
+   void       CheckGeometry(Int_t nrays, Double_t startx, Double_t starty, Double_t startz) const override;
+   void       CheckEdit();
+   void       CheckPoint(Double_t x=0, Double_t y=0, Double_t z=0, Option_t *option="") override;
+   void       CheckShape(TGeoShape *shape, Int_t testNo, Int_t nsamples, Option_t *option) override;
+   void       CheckOverlaps(const TGeoVolume *vol, Double_t ovlp=0.1, Option_t *option="") const override;
+   Int_t      CountNodes(TGeoVolume *vol, Int_t level) const;
+   Int_t      CountVisibleNodes() override;
+   void       DefaultAngles() override;
+   void       DefaultColors() override;
+   Int_t      DistanceToPrimitiveVol(TGeoVolume *vol, Int_t px, Int_t py) override;
+   void       Draw(Option_t *option="") override;
+   void       DrawBatemanSol(TGeoBatemanSol *sol, Option_t *option="") override;
+   void       DrawOverlap(void *ovlp, Option_t *option="") override;
+   void       DrawCurrentPoint(Int_t color) override;
+   void       DrawOnly(Option_t *option="") override;
+   void       DrawPanel() override;
+   void       DrawPath(const char *path, Option_t *option="") override;
+   void       DrawPolygon(const TGeoPolygon *poly) override;
+   void       DrawShape(TGeoShape *shape, Option_t *option="") override;
+   void       DrawVolume(TGeoVolume *vol, Option_t *option="") override;
+   void       EditGeometry(Option_t *option="") override;
+   void       EstimateCameraMove(Double_t tmin, Double_t tmax, Double_t *start, Double_t *end) override;
+   void       ExecuteManagerEvent(TGeoManager *geom, Int_t event, Int_t px, Int_t py) override;
+   void       ExecuteShapeEvent(TGeoShape *shape, Int_t event, Int_t px, Int_t py) override;
+   void       ExecuteVolumeEvent(TGeoVolume *volume, Int_t event, Int_t px, Int_t py) override;
+   const char *GetVolumeInfo(const TGeoVolume *volume, Int_t px, Int_t py) const override;
+   void       GetBombFactors(Double_t &bombx, Double_t &bomby, Double_t &bombz, Double_t &bombr) const override
+                                    {bombx=fBombX; bomby=fBombY; bombz=fBombZ; bombr=fBombR;}
+   Int_t      GetBombMode() const  override {return fExplodedView;}
+   TGeoNode  *GetCheckedNode() {return fCheckedNode;}
+   TGeoChecker       *GetChecker();
+   Int_t      GetColor(Int_t base, Float_t light) const override;
+   const char *GetDrawPath() const  override {return fVisBranch.Data();}
+   TGeoVolume *GetDrawnVolume() const override;
+   TGeoVolume *GetTopVolume() const override {return fTopVolume;}
+   Int_t      GetVisLevel() const  override     {return fVisLevel;}
+   Int_t      GetVisOption() const  override    {return fVisOption;}
+   Int_t      GetNsegments() const   override   {return fNsegments;}
+   void       GrabFocus(Int_t nfr=0, Double_t dlong=0, Double_t dlat=0, Double_t dpsi=0) override;
+   Double_t  *GetViewBox() override {return &fCheckedBox[0];}
+   void       GetViewAngles(Double_t &longitude, Double_t &latitude, Double_t &psi) override;
+   Bool_t     IsExplodedView() const  override {return (fExplodedView==kGeoVisDefault)?kFALSE:kTRUE;}
+   Bool_t     IsRaytracing() const override {return fIsRaytracing;}
+   Bool_t     IsPaintingShape() const  override {return fIsPaintingShape;}
+   TH2F      *LegoPlot(Int_t ntheta=60, Double_t themin=0., Double_t themax=180.,
+                       Int_t nphi=90, Double_t phimin=0., Double_t phimax=360.,
+                       Double_t rmin=0., Double_t rmax=9999999, Option_t *option="") override;
+   void       Lock(Bool_t flag = kTRUE) { fVisLock = flag; }
+   void       ModifiedPad(Bool_t update=kFALSE) const override;
+   void       OpProgress(const char *opname, Long64_t current, Long64_t size, TStopwatch *watch=nullptr, Bool_t last=kFALSE, Bool_t refresh=kFALSE, const char *msg="") override;
+   void       Paint(Option_t *option="") override;
+   void       PaintNode(TGeoNode *node, Option_t *option="", TGeoMatrix *global=nullptr) override;
+   Bool_t     PaintShape(const TGeoShape & shape, Option_t * option) const;
+   void       PaintShape(TGeoShape *shape, Option_t *option="") override;
+   void       PaintOverlap(void *ovlp, Option_t *option="") override;
+   void       PaintVolume(TGeoVolume *vol, Option_t *option="", TGeoMatrix *global=nullptr) override;
+   void       PrintOverlaps() const override;
+   void       PaintPhysicalNode(TGeoPhysicalNode *node, Option_t *option="");
+   void       RandomPoints(const TGeoVolume *vol, Int_t npoints, Option_t *option="") override;
+   void       RandomRays(Int_t nrays, Double_t startx, Double_t starty, Double_t startz, const char *target_vol = nullptr, Bool_t check_norm = kFALSE) override;
+   void       Raytrace(Option_t *option="") override;
+   TGeoNode  *SamplePoints(Int_t npoints, Double_t &dist, Double_t epsil, const char* g3path) override;
+   void       SetBombFactors(Double_t bombx=1.3, Double_t bomby=1.3, Double_t bombz=1.3, Double_t bombr=1.3) override;
+   void       SetClippingShape(TGeoShape *shape) override {fClippingShape = shape;}
+   void       SetExplodedView(Int_t iopt=0) override;
+   void       SetNsegments(Int_t nseg=20) override;
+   void       SetNmeshPoints(Int_t npoints) override;
+   void       SetGeoManager(TGeoManager *geom) override {fGeoManager=geom;}
+   void       SetIteratorPlugin(TGeoIteratorPlugin *plugin) override {fPlugin = plugin; ModifiedPad();}
+   void       SetCheckedNode(TGeoNode *node) override;
+   void       SetRaytracing(Bool_t flag=kTRUE) override {fIsRaytracing = flag;}
+   void       SetTopVisible(Bool_t vis=kTRUE) override;
+   void       SetTopVolume(TGeoVolume *vol) override {fTopVolume = vol;}
+   void       SetVisLevel(Int_t level=3) override;
+   void       SetVisOption(Int_t option=0) override;
+   Int_t      ShapeDistancetoPrimitive(const TGeoShape *shape, Int_t numpoints, Int_t px, Int_t py) const override;
+   void       Test(Int_t npoints, Option_t *option) override;
+   void       TestOverlaps(const char *path) override;
+   Bool_t     TestVoxels(TGeoVolume *vol) override;
+   void       UnbombTranslation(const Double_t *tr, Double_t *bombtr) override;
+   Double_t   Weight(Double_t precision, Option_t *option="v") override;
+
+   ClassDefOverride(TGeoPainter,0)  //geometry painter
 };
 
 #endif

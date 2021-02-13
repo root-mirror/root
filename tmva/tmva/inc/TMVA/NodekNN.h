@@ -31,9 +31,10 @@
 #include <list>
 #include <string>
 #include <iostream>
+#include <utility>
 
 // ROOT
-#include "Rtypes.h"
+#include "RtypesCore.h"
 
 /*! \class TMVA::kNN::Node
 \ingroup TMVA

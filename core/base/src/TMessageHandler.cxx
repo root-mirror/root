@@ -105,7 +105,7 @@ void TMessageHandler::Add()
 ////////////////////////////////////////////////////////////////////////////////
 /// Return counter for message with ID=messid.
 
-Int_t TMessageHandler::GetMessageCount(Int_t messId) const
+Int_t TMessageHandler::GetMessageCount(Long_t messId) const
 {
    if (fSize <= 0) return 0;
    for (Int_t i = 0; i < fSize; i++) {
@@ -130,7 +130,7 @@ Int_t TMessageHandler::GetTotalMessageCount() const
 ////////////////////////////////////////////////////////////////////////////////
 /// Store message origin, keep statistics and call Notify().
 
-void TMessageHandler::HandleMessage(Int_t id, const TObject *obj)
+void TMessageHandler::HandleMessage(Long_t id, const TObject *obj)
 {
    // check if message must be managed by this message handler
    if (fClass) {
@@ -152,7 +152,7 @@ void TMessageHandler::HandleMessage(Int_t id, const TObject *obj)
    if (fSize <= 0) {
       fSize    = 1;
       fCnts    = new Int_t[fSize];
-      fMessIds = new Int_t[fSize];
+      fMessIds = new Long_t[fSize];
    } else {
       // already existing message
       for (i = 0; i < fSize; i++) {
@@ -164,7 +164,7 @@ void TMessageHandler::HandleMessage(Int_t id, const TObject *obj)
       // new message
       fSize++;
       Int_t *newCnts    = new Int_t[fSize];
-      Int_t *newMessIds = new Int_t[fSize];
+      Long_t *newMessIds = new Long_t[fSize];
       for (i = 0; i < fSize-1; i++) {
          newCnts[i]    = fCnts[i];
          newMessIds[i] = fMessIds[i];
@@ -187,7 +187,7 @@ Bool_t TMessageHandler::Notify()
    // case of default handler
    // encode class number in message id
    if (!fMessObj) return kFALSE;
-   Int_t uid = Int_t(fMessObj->IsA()->GetUniqueID());
+   Long_t uid = Long_t(fMessObj->IsA()->GetUniqueID());
    fMessId += 10000*uid;
    fMessId = -fMessId;
    Notified();  // emit Notified() signal
@@ -201,7 +201,8 @@ void TMessageHandler::Print(Option_t *) const
 {
    printf("\n ****** Message Handler: %s has a total of %d messages\n",GetName(),GetTotalMessageCount());
    if (fSize <= 0) return;
-   Int_t id, uid;
+   Long_t id;
+   Int_t uid;
    const TClass *cl;
    TIter next(gROOT->GetListOfClasses());
    for (Int_t i = 0; i < fSize; i++) {
@@ -225,7 +226,7 @@ void TMessageHandler::Print(Option_t *) const
          printf("  Class: %-20s ERRORs         has %d counts\n",cl->GetName(),fCnts[i]);
          continue;
       }
-      printf("  Class: %-20s MessID = %5d has %d counts\n",cl->GetName(),id,fCnts[i]);
+      printf("  Class: %-20s MessID = %5ld has %d counts\n",cl->GetName(),id,fCnts[i]);
    }
 }
 

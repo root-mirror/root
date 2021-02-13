@@ -16,11 +16,14 @@ A TLeaf for a variable length string.
 */
 
 #include "TLeafC.h"
+#include "TBuffer.h"
 #include "TBranch.h"
 #include "TBasket.h"
 #include "TClonesArray.h"
-#include "Riostream.h"
+#include "strlcpy.h"
+
 #include <string>
+#include <iostream>
 
 ClassImp(TLeafC);
 

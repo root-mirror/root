@@ -28,14 +28,11 @@ The actual analytical integrations (if any) are done in the PDF themselves, the 
 integration is performed in the various implementations of the RooAbsIntegrator base class.
 **/
 
+#include "RooRealIntegral.h"
+
 #include "RooFit.h"
 
-#include "TClass.h"
 #include "RooMsgService.h"
-#include "Riostream.h"
-#include "TObjString.h"
-#include "TH1.h"
-#include "RooRealIntegral.h"
 #include "RooArgSet.h"
 #include "RooAbsRealLValue.h"
 #include "RooAbsCategoryLValue.h"
@@ -51,10 +48,13 @@ integration is performed in the various implementations of the RooAbsIntegrator 
 #include "RooDouble.h"
 #include "RooTrace.h"
 
+#include "TClass.h"
+
+#include <iostream>
+
 using namespace std;
 
-ClassImp(RooRealIntegral); 
-;
+ClassImp(RooRealIntegral);
 
 
 Int_t RooRealIntegral::_cacheAllNDim(2) ;
@@ -67,7 +67,6 @@ RooRealIntegral::RooRealIntegral() :
   _respectCompSelect(true),
   _funcNormSet(0),
   _iconfig(0),
-  _sumCatIter(0),
   _mode(0),
   _intOperMode(Hybrid),
   _restartNumIntEngine(kFALSE),
@@ -107,7 +106,6 @@ RooRealIntegral::RooRealIntegral(const char *name, const char *title,
 	    const_cast<RooAbsReal&>(function),kFALSE,kFALSE), 
   _iconfig((RooNumIntConfig*)config),
   _sumCat("!sumCat","SuperCategory for summation",this,kFALSE,kFALSE),
-  _sumCatIter(0),
   _mode(0),
   _intOperMode(Hybrid), 
   _restartNumIntEngine(kFALSE),
@@ -218,13 +216,10 @@ RooRealIntegral::RooRealIntegral(const char *name, const char *title,
     }
   }
   exclLVBranches.remove(depList,kTRUE,kTRUE) ;
-//    cout << "exclLVBranches = " << exclLVBranches << endl ;
 
   // Initial fill of list of LValue leaf servers (put in intDepList)
   RooArgSet exclLVServers("exclLVServers") ;
   exclLVServers.add(intDepList) ;
-
-//    cout << "begin exclLVServers = " << exclLVServers << endl ;
   
   // Obtain mutual exclusive dependence by iterative reduction
   Bool_t converged(kFALSE) ;
@@ -236,35 +231,36 @@ RooRealIntegral::RooRealIntegral(const char *name, const char *title,
     for (auto server : exclLVServers) {
       if (!servesExclusively(server,exclLVBranches,branchListVD)) {
         toBeRemoved.push_back(server);
-        //  	cout << "removing " << server->GetName() << " from exclLVServers because servesExclusively(" << server->GetName() << "," << exclLVBranches << ") faile" << endl ;
         converged=kFALSE ;
       }
-      exclLVServers.remove(toBeRemoved.begin(), toBeRemoved.end());
     }
+    exclLVServers.remove(toBeRemoved.begin(), toBeRemoved.end());
     
-    // Reduce exclLVBranches to only those depending exclusisvely on exclLVservers
-    for (auto branch : exclLVBranches) {
+    // Reduce exclLVBranches to only those depending exclusively on exclLVservers
+    // Attention: counting loop, since erasing from container
+    for (std::size_t i=0; i < exclLVBranches.size(); ++i) {
+      const RooAbsArg* branch = exclLVBranches[i];
       RooArgSet* brDepList = branch->getObservables(&intDepList) ;
       RooArgSet bsList(*brDepList,"bsList") ;
       delete brDepList ;
       bsList.remove(exclLVServers,kTRUE,kTRUE) ;
       if (bsList.getSize()>0) {
-	exclLVBranches.remove(*branch,kTRUE,kTRUE) ;
-// 	cout << "removing " << branch->GetName() << " from exclLVBranches" << endl ;
-	converged=kFALSE ;
+        exclLVBranches.remove(*branch,kTRUE,kTRUE) ;
+        --i;
+        converged=kFALSE ;
       }
     }
   }
 
   // Eliminate exclLVBranches that do not depend on any LVServer
-  for (auto branch : exclLVBranches) {
+  // Attention: Counting loop, since modifying container
+  for (std::size_t i=0; i < exclLVBranches.size(); ++i) {
+    const RooAbsArg* branch = exclLVBranches[i];
     if (!branch->dependsOnValue(exclLVServers)) {
-      //cout << "LV branch " << branch->GetName() << " does not depend on any LVServer (" << exclLVServers << ") and will be removed" << endl ; 
       exclLVBranches.remove(*branch,kTRUE,kTRUE) ;
+      --i;
     }
   }
-
-//   cout << "end exclLVServers = " << exclLVServers << endl ;
      
   // Replace exclusive lvalue branch servers with lvalue branches
   // WVE Don't do this for binned distributions - deal with this using numeric integration with transformed bin boundaroes
@@ -553,7 +549,6 @@ RooRealIntegral::RooRealIntegral(const char *name, const char *title,
   
   if (_sumList.getSize()>0) {
     RooSuperCategory *sumCat = new RooSuperCategory(Form("%s_sumCat",GetName()),"sumCat",_sumList) ;
-    _sumCatIter = sumCat->typeIterator() ;    
     _sumCat.addOwned(*sumCat) ;
   }
 
@@ -701,7 +696,6 @@ RooRealIntegral::RooRealIntegral(const RooRealIntegral& other, const char* name)
   _function("!func",this,other._function), 
   _iconfig(other._iconfig),
   _sumCat("!sumCat",this,other._sumCat),
-  _sumCatIter(0),
   _mode(other._mode),
   _intOperMode(other._intOperMode), 
   _restartNumIntEngine(kFALSE),
@@ -736,7 +730,6 @@ RooRealIntegral::~RooRealIntegral()
   if (_numIntEngine) delete _numIntEngine ;
   if (_numIntegrand) delete _numIntegrand ;
   if (_funcNormSet) delete _funcNormSet ;
-  if (_sumCatIter)  delete _sumCatIter ;
   if (_params) delete _params ;
 
   TRACE_DESTROY
@@ -959,13 +952,11 @@ Double_t RooRealIntegral::sum() const
     // Add integrals for all permutations of categories summed over
     Double_t total(0) ;
 
-    _sumCatIter->Reset() ;
-    RooCatType* type ;
     RooSuperCategory* sumCat = (RooSuperCategory*) _sumCat.first() ;
-    while((type=(RooCatType*)_sumCatIter->Next())) {
-      sumCat->setIndex(type->getVal()) ;
+    for (const auto& nameIdx : *sumCat) {
+      sumCat->setIndex(nameIdx);
       if (!_rangeName || sumCat->inRange(RooNameReg::str(_rangeName))) {
-	total += integrate() / jacobianProduct() ;
+        total += integrate() / jacobianProduct() ;
       }
     }
 

@@ -1,38 +1,9 @@
+#include "ROOTUnitTestSupport.h"
+
 #include "TFileMerger.h"
 
 #include "TMemFile.h"
 #include "TTree.h"
-
-#include "gtest/gtest.h"
-
-namespace {
-using testing::internal::GetCapturedStderr;
-using testing::internal::CaptureStderr;
-using testing::internal::RE;
-class ExpectedErrorRAII {
-   std::string ExpectedRegex;
-   void pop()
-   {
-      std::string Seen = GetCapturedStderr();
-      bool match = RE::FullMatch(Seen, RE(ExpectedRegex));
-      EXPECT_TRUE(match);
-      if (!match) {
-         std::string msg = "Match failed!\nSeen: '" + Seen + "'\nRegex: '" + ExpectedRegex + "'\n";
-         GTEST_NONFATAL_FAILURE_(msg.c_str());
-      }
-   }
-
-public:
-   ExpectedErrorRAII(std::string E) : ExpectedRegex(E) { CaptureStderr(); }
-   ~ExpectedErrorRAII() { pop(); }
-};
-}
-
-#define EXPECT_ROOT_ERROR(expression, expected_error) \
-   {                                                  \
-      ExpectedErrorRAII EE(expected_error);           \
-      expression;                                     \
-   }
 
 static void CreateATuple(TMemFile &file, const char *name, double value)
 {
@@ -94,5 +65,6 @@ TEST(TFileMerger, CreateWithUnwritableTFilePointer)
    // FIXME: The ctor of TMemFile sets the 'zombie' flag to all TMemFiles whose options are different than CREATE and
    // RECREATE. We should probably fix the API but until then work around it.
    output->SetWritable(false);
-   EXPECT_ROOT_ERROR(merger.OutputFile(std::move(output)), "Error in .* output file output.root is not writable\n");
+   ROOT_EXPECT_ERROR(merger.OutputFile(std::move(output)), "TFileMerger::OutputFile",
+                     "output file output.root is not writable");
 }

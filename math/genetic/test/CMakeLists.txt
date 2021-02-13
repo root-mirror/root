@@ -4,19 +4,19 @@
 # For the licensing terms see $ROOTSYS/LICENSE.
 # For the list of contributors see $ROOTSYS/README/CREDITS.
 
-project(genetic-tests)
-find_package(ROOT REQUIRED)
-
-include_directories(${ROOT_INCLUDE_DIRS})
+if(NOT DEFINED ROOT_SOURCE_DIR)
+   cmake_minimum_required(VERSION 3.9)
+   project(genetic-tests)
+   find_package(ROOT REQUIRED)
+   include(${ROOT_USE_FILE})
+endif()
 
 set(Libraries Core RIO Net Hist Graf Graf3d Gpad Tree
               Rint Postscript Matrix Physics MathCore Thread Genetic)
 
 set(TestGeneticSource
-    testGAMinimizer.cxx
-     GAMinTutorial.cxx )
-
-
+      testGAMinimizer.cxx
+      GAMinTutorial.cxx)
 
 
 #---Build and add all the defined test in the list---------------

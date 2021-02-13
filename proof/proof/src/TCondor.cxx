@@ -253,6 +253,9 @@ TList *TCondor::Claim(Int_t n, const char *cmd)
       }
    }
 
+   vms->Delete();
+   delete vms;
+
    return fClaims;
 }
 

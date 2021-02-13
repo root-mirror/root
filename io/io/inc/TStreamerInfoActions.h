@@ -17,7 +17,6 @@
 
 #include "TStreamerInfo.h"
 #include "TVirtualArray.h"
-#include <assert.h>
 
 /**
 \class TStreamerInfoActions::TConfiguration

@@ -1,12 +1,4 @@
-#include "gtest/gtest.h"
-
-#include <ROOT/RPageAllocator.hxx>
-#include <ROOT/RPagePool.hxx>
-
-using RPage = ROOT::Experimental::Detail::RPage;
-using RPageAllocatorHeap = ROOT::Experimental::Detail::RPageAllocatorHeap;
-using RPageDeleter = ROOT::Experimental::Detail::RPageDeleter;
-using RPagePool = ROOT::Experimental::Detail::RPagePool;
+#include "ntuple_test.hxx"
 
 TEST(Pages, Allocation)
 {

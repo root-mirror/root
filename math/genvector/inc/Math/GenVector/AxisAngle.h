@@ -113,14 +113,11 @@ public:
       The axis vector is automatically normalized to be a unit vector
    */
    template<class IT>
-#ifndef NDEBUG
    void SetComponents(IT begin, IT end) {
-#else
-   void SetComponents(IT begin, IT ) {
-#endif
       IT a = begin; IT b = ++begin; IT c = ++begin;
       fAxis.SetCoordinates(*a,*b,*c);
       fAngle = *(++begin);
+      (void)end;
       assert (++begin==end);
       // re-normalize the vector
       double tot = fAxis.R();
@@ -132,14 +129,11 @@ public:
       and another to the end of the desired data (4 past start).
    */
    template<class IT>
-#ifndef NDEBUG
    void GetComponents(IT begin, IT end) const {
-#else
-   void GetComponents(IT begin, IT ) const {
-#endif
       IT a = begin; IT b = ++begin; IT c = ++begin;
       fAxis.GetCoordinates(*a,*b,*c);
       *(++begin) = fAngle;
+      (void)end;
       assert (++begin==end);
    }
 

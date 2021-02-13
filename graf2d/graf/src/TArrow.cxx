@@ -9,12 +9,13 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
+#include <iostream>
 #include "TROOT.h"
 #include "TMath.h"
 #include "TArrow.h"
 #include "TVirtualPad.h"
 #include "TVirtualPS.h"
+#include "TVirtualX.h"
 
 Float_t TArrow::fgDefaultAngle      = 60;
 Float_t TArrow::fgDefaultArrowSize  = 0.05;
@@ -154,6 +155,7 @@ void TArrow::DrawArrow(Double_t x1, Double_t y1,Double_t x2, Double_t  y2,
 
 void TArrow::Paint(Option_t *option)
 {
+   if (!gPad) return; 
    Option_t *opt;
    if (option && strlen(option)) opt = option;
    else                          opt = (char*)GetOption();
@@ -172,13 +174,7 @@ void TArrow::Paint(Option_t *option)
 void TArrow::PaintArrow(Double_t x1, Double_t y1, Double_t x2, Double_t y2,
                         Float_t arrowsize, Option_t *option)
 {
-
-   // Option and attributes
-   TString opt = option;
-   opt.ToLower();
-   TAttLine::Modify();
-   TAttFill::Modify();
-
+   if (!gPad) return; 
    // Compute the gPad coordinates in TRUE normalized space (NDC)
    Int_t iw = gPad->GetWw();
    Int_t ih = gPad->GetWh();
@@ -188,6 +184,15 @@ void TArrow::PaintArrow(Double_t x1, Double_t y1, Double_t x2, Double_t y2,
    Int_t iy1 = (Int_t)(ih*y1p);
    Int_t ix2 = (Int_t)(iw*x2p);
    Int_t iy2 = (Int_t)(ih*y2p);
+   if (ix1==ix2||iy1==iy2) return; 
+   
+   // Option and attributes
+   TString opt = option;
+   opt.ToLower();
+   TAttLine::Modify();
+   TAttFill::Modify();
+
+
    Double_t wndc  = TMath::Min(1.,(Double_t)iw/(Double_t)ih);
    Double_t hndc  = TMath::Min(1.,(Double_t)ih/(Double_t)iw);
    Double_t rh    = hndc/(Double_t)ih;

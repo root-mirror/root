@@ -25,7 +25,6 @@ component pdfs.
 **/
 
 #include "RooFit.h"
-#include "Riostream.h"
 
 #include "RooSimSplitGenContext.h"
 #include "RooSimultaneous.h"
@@ -37,15 +36,15 @@ component pdfs.
 #include "RooRandom.h"
 #include "RooGlobalFunc.h"
 
-using namespace RooFit ;
+using namespace RooFit;
 
+#include <iostream>
 #include <string>
 
 using namespace std;
 
 ClassImp(RooSimSplitGenContext);
-;
-  
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor of specialized generator context for RooSimultaneous p.d.f.s. This
@@ -127,11 +126,11 @@ RooSimSplitGenContext::RooSimSplitGenContext(const RooSimultaneous &model, const
     RooAbsGenContext* cx = pdf->autoGenContext(*compVars,0,0,verbose,autoBinned,binnedTag) ;
     delete compVars ;
 
-    const RooCatType* state = idxCat->lookupType(proxy->name()) ; 
+    const auto state = idxCat->lookupIndex(proxy->name());
 
     cx->SetName(proxy->name()) ;
     _gcList.push_back(cx) ;
-    _gcIndex.push_back(state->getVal()) ;
+    _gcIndex.push_back(state);
     
     // Fill fraction threshold array
     _fracThresh[i] = _fracThresh[i-1] + pdf->expectedEvents(&allPdfVars) ;

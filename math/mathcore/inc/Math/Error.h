@@ -29,6 +29,7 @@
 // use std::iostream instead of ROOT
 
 #include <iostream>
+#include <string>
 
 #ifndef ROOT_MATH_LOG
 #define ROOT_MATH_OS std::cerr

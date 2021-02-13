@@ -20,7 +20,6 @@
 #include "TBufferFile.h"
 #include "TBufferText.h"
 #include "TMemberStreamer.h"
-#include "TError.h"
 #include "TClassEdit.h"
 #include "TVirtualCollectionIterators.h"
 #include "TProcessID.h"
@@ -2989,6 +2988,10 @@ void TStreamerInfo::Compile()
    fNfulldata = 0;
 
    TObjArray* infos = (TObjArray*) gROOT->GetListOfStreamerInfo();
+   if (fNumber < 0) {
+      ++fgCount;
+      fNumber = fgCount;
+   }
    if (fNumber >= infos->GetSize()) {
       infos->AddAtAndExpand(this, fNumber);
    } else {

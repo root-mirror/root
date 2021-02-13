@@ -14,6 +14,7 @@
 #include "TEveManager.h"
 #include "TEvePolygonSetProjected.h"
 
+#include "TEveGeoShape.h"
 #include "TEveGeoShapeExtract.h"
 #include "TEvePad.h"
 #include "TEveGeoPolyShape.h"

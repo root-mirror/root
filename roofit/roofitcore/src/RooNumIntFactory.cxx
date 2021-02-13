@@ -187,15 +187,15 @@ RooAbsIntegrator* RooNumIntFactory::createIntegrator(RooAbsFunc& func, const Roo
   TString method ;
   switch(ndim) {
   case 1:
-    method = openEnded ? config.method1DOpen().getLabel() : config.method1D().getLabel() ;
+    method = openEnded ? config.method1DOpen().getCurrentLabel() : config.method1D().getCurrentLabel() ;
     break ;
 
   case 2:
-    method = openEnded ? config.method2DOpen().getLabel() : config.method2D().getLabel() ;
+    method = openEnded ? config.method2DOpen().getCurrentLabel() : config.method2D().getCurrentLabel() ;
     break ;
 
   default:
-    method = openEnded ? config.methodNDOpen().getLabel() : config.methodND().getLabel() ;
+    method = openEnded ? config.methodNDOpen().getCurrentLabel() : config.methodND().getCurrentLabel() ;
     break ;
   }
 

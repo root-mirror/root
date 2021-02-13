@@ -9,19 +9,19 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TColor.h"
 #include "TObjArray.h"
 #include "TArrayI.h"
 #include "TArrayD.h"
-#include "TVirtualPad.h"
 #include "TVirtualX.h"
 #include "TError.h"
 #include "TMathBase.h"
 #include "TApplication.h"
+#include "snprintf.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 ClassImp(TColor);
 
@@ -1459,15 +1459,15 @@ void TColor::HLS2RGB(Float_t hue, Float_t light, Float_t satur,
    if (satur > 0) { rs = satur; if (rs > 1)   rs = 1; }
 
    if (rl <= 0.5)
-      rm2 = rl*(1.0 + rs);
+      rm2 = rl*(1.0f + rs);
    else
       rm2 = rl + rs - rl*rs;
-   rm1 = 2.0*rl - rm2;
+   rm1 = 2.0f*rl - rm2;
 
    if (!rs) { r = rl; g = rl; b = rl; return; }
-   r = HLStoRGB1(rm1, rm2, rh+120);
+   r = HLStoRGB1(rm1, rm2, rh+120.0f);
    g = HLStoRGB1(rm1, rm2, rh);
-   b = HLStoRGB1(rm1, rm2, rh-120);
+   b = HLStoRGB1(rm1, rm2, rh-120.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1476,11 +1476,11 @@ void TColor::HLS2RGB(Float_t hue, Float_t light, Float_t satur,
 Float_t TColor::HLStoRGB1(Float_t rn1, Float_t rn2, Float_t huei)
 {
    Float_t hue = huei;
-   if (hue > 360) hue = hue - 360;
-   if (hue < 0)   hue = hue + 360;
-   if (hue < 60 ) return rn1 + (rn2-rn1)*hue/60;
+   if (hue > 360) hue = hue - 360.0f;
+   if (hue < 0)   hue = hue + 360.0f;
+   if (hue < 60 ) return rn1 + (rn2-rn1)*hue/60.0f;
    if (hue < 180) return rn2;
-   if (hue < 240) return rn1 + (rn2-rn1)*(240-hue)/60;
+   if (hue < 240) return rn1 + (rn2-rn1)*(240.0f-hue)/60.0f;
    return rn1;
 }
 
@@ -1492,15 +1492,15 @@ void TColor::HLS2RGB(Int_t h, Int_t l, Int_t s, Int_t &r, Int_t &g, Int_t &b)
 {
    Float_t hh, ll, ss, rr, gg, bb;
 
-   hh = Float_t(h) * 360 / 255;
-   ll = Float_t(l) / 255;
-   ss = Float_t(s) / 255;
+   hh = Float_t(h) * 360.0f / 255.0f;
+   ll = Float_t(l) / 255.0f;
+   ss = Float_t(s) / 255.0f;
 
    TColor::HLStoRGB(hh, ll, ss, rr, gg, bb);
 
-   r = (Int_t) (rr * 255);
-   g = (Int_t) (gg * 255);
-   b = (Int_t) (bb * 255);
+   r = (Int_t) (rr * 255.0f);
+   g = (Int_t) (gg * 255.0f);
+   b = (Int_t) (bb * 255.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1526,7 +1526,7 @@ void TColor::HSV2RGB(Float_t hue, Float_t satur, Float_t value,
       return;
    }
 
-   hue /= 60;   // sector 0 to 5
+   hue /= 60.0f;   // sector 0 to 5
    i = (Int_t)floor(hue);
    f = hue-i;   // factorial part of hue
    p = value*(1-satur);
@@ -1608,7 +1608,7 @@ void TColor::RGB2HLS(Float_t rr, Float_t gg, Float_t bb,
    rnorm = gnorm = bnorm = 0;
    mdiff = maxval - minval;
    msum  = maxval + minval;
-   light = 0.5 * msum;
+   light = 0.5f * msum;
    if (maxval != minval) {
       rnorm = (maxval - r)/mdiff;
       gnorm = (maxval - g)/mdiff;
@@ -1621,17 +1621,17 @@ void TColor::RGB2HLS(Float_t rr, Float_t gg, Float_t bb,
    if (light < 0.5)
       satur = mdiff/msum;
    else
-      satur = mdiff/(2.0 - msum);
+      satur = mdiff/(2.0f - msum);
 
    if (r == maxval)
-      hue = 60.0 * (6.0 + bnorm - gnorm);
+      hue = 60.0f * (6.0f + bnorm - gnorm);
    else if (g == maxval)
-      hue = 60.0 * (2.0 + rnorm - bnorm);
+      hue = 60.0f * (2.0f + rnorm - bnorm);
    else
-      hue = 60.0 * (4.0 + gnorm - rnorm);
+      hue = 60.0f * (4.0f + gnorm - rnorm);
 
    if (hue > 360)
-      hue = hue - 360;
+      hue = hue - 360.0f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1668,13 +1668,13 @@ void TColor::RGB2HSV(Float_t r, Float_t g, Float_t b,
    if (r == max) {
       hue = (g-b)/delta;
    } else if (g == max) {
-      hue = 2+(b-r)/delta;
+      hue = 2.0f+(b-r)/delta;
    } else {
-      hue = 4+(r-g)/delta;
+      hue = 4.0f+(r-g)/delta;
    }
 
-   hue *= 60;
-   if (hue < 0) hue += 360;
+   hue *= 60.0f;
+   if (hue < 0.0f) hue += 360.0f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1685,15 +1685,15 @@ void TColor::RGB2HLS(Int_t r, Int_t g, Int_t b, Int_t &h, Int_t &l, Int_t &s)
 {
    Float_t rr, gg, bb, hue, light, satur;
 
-   rr = Float_t(r) / 255;
-   gg = Float_t(g) / 255;
-   bb = Float_t(b) / 255;
+   rr = Float_t(r) / 255.0f;
+   gg = Float_t(g) / 255.0f;
+   bb = Float_t(b) / 255.0f;
 
    TColor::RGBtoHLS(rr, gg, bb, hue, light, satur);
 
-   h = (Int_t) (hue/360 * 255);
-   l = (Int_t) (light * 255);
-   s = (Int_t) (satur * 255);
+   h = (Int_t) (hue/360.0f * 255.0f);
+   l = (Int_t) (light * 255.0f);
+   s = (Int_t) (satur * 255.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1726,19 +1726,19 @@ void TColor::SetRGB(Float_t r, Float_t g, Float_t b)
    Float_t dr, dg, db, lr, lg, lb;
 
    // set dark color
-   HLStoRGB(fHue, 0.7*fLight, fSaturation, dr, dg, db);
+   HLStoRGB(fHue, 0.7f*fLight, fSaturation, dr, dg, db);
    TColor *dark = gROOT->GetColor(100+fNumber);
    if (dark) {
       if (nplanes > 8) dark->SetRGB(dr, dg, db);
-      else             dark->SetRGB(0.3,0.3,0.3);
+      else             dark->SetRGB(0.3f,0.3f,0.3f);
    }
 
    // set light color
-   HLStoRGB(fHue, 1.2*fLight, fSaturation, lr, lg, lb);
+   HLStoRGB(fHue, 1.2f*fLight, fSaturation, lr, lg, lb);
    TColor *light = gROOT->GetColor(150+fNumber);
    if (light) {
       if (nplanes > 8) light->SetRGB(lr, lg, lb);
-      else             light->SetRGB(0.8,0.8,0.8);
+      else             light->SetRGB(0.8f,0.8f,0.8f);
    }
    gDefinedColors++;
 }
@@ -1758,6 +1758,8 @@ void TColor::Allocate()
 /// hex color string of form: "#rrggbb", where rr, gg and bb are in
 /// hex between [0,FF], e.g. "#c0c0c0".
 ///
+/// The color retrieval is done using a threshold defined by SetColorThreshold.
+///
 /// If specified color does not exist it will be created with as
 /// name "#rrggbb" with rr, gg and bb in hex between [0,FF].
 
@@ -1775,6 +1777,8 @@ Int_t TColor::GetColor(const char *hexcolor)
 ////////////////////////////////////////////////////////////////////////////////
 /// Static method returning color number for color specified by
 /// r, g and b. The r,g,b should be in the range [0,1].
+///
+/// The color retrieval is done using a threshold defined by SetColorThreshold.
 ///
 /// If specified color does not exist it will be created
 /// with as name "#rrggbb" with rr, gg and bb in hex between
@@ -1794,6 +1798,9 @@ Int_t TColor::GetColor(Float_t r, Float_t g, Float_t b)
 /// Static method returning color number for color specified by
 /// system dependent pixel value. Pixel values can be obtained, e.g.,
 /// from the GUI color picker.
+///
+/// The color retrieval is done using a threshold defined by SetColorThreshold.
+
 
 Int_t TColor::GetColor(ULong_t pixel)
 {
@@ -1839,6 +1846,9 @@ void TColor::SetColorThreshold(Float_t t)
 /// If the specified color does not exist it will be created
 /// with as name "#rrggbb" with rr, gg and bb in hex between
 /// [0,FF].
+///
+/// The color retrieval is done using a threshold defined by SetColorThreshold.
+
 
 Int_t TColor::GetColor(Int_t r, Int_t g, Int_t b)
 {
@@ -1861,9 +1871,9 @@ Int_t TColor::GetColor(Int_t r, Int_t g, Int_t b)
       return color->GetNumber();
 
    Float_t rr, gg, bb;
-   rr = Float_t(r)/255.;
-   gg = Float_t(g)/255.;
-   bb = Float_t(b)/255.;
+   rr = Float_t(r)/255.0f;
+   gg = Float_t(g)/255.0f;
+   bb = Float_t(b)/255.0f;
 
    TIter next(colors);
 
@@ -1872,9 +1882,9 @@ Int_t TColor::GetColor(Int_t r, Int_t g, Int_t b)
       thres = gColorThreshold;
    } else {
       Int_t nplanes = 16;
-      thres = 1.0/31.0;   // 5 bits per color : 0 - 0x1F !
+      thres = 1.0f/31.0f;   // 5 bits per color : 0 - 0x1F !
       if (gVirtualX) gVirtualX->GetPlanes(nplanes);
-      if (nplanes >= 24) thres = 1.0/255.0;       // 8 bits per color : 0 - 0xFF !
+      if (nplanes >= 24) thres = 1.0f/255.0f;       // 8 bits per color : 0 - 0xFF !
    }
 
    // Loop over all defined colors
@@ -1914,7 +1924,7 @@ Int_t TColor::GetColorBright(Int_t n)
 
    //Get the rgb of the the new bright color corresponding to color n
    Float_t r,g,b;
-   HLStoRGB(color->GetHue(), 1.2*color->GetLight(), color->GetSaturation(), r, g, b);
+   HLStoRGB(color->GetHue(), 1.2f*color->GetLight(), color->GetSaturation(), r, g, b);
 
    //Build the bright color (unless the slot nb is already used)
    Int_t nb = n+150;
@@ -1946,7 +1956,7 @@ Int_t TColor::GetColorDark(Int_t n)
 
    //Get the rgb of the the new dark color corresponding to color n
    Float_t r,g,b;
-   HLStoRGB(color->GetHue(), 0.7*color->GetLight(), color->GetSaturation(), r, g, b);
+   HLStoRGB(color->GetHue(), 0.7f*color->GetLight(), color->GetSaturation(), r, g, b);
 
    //Build the dark color (unless the slot nd is already used)
    Int_t nd = n+100;
@@ -2066,9 +2076,9 @@ void TColor::Pixel2RGB(ULong_t pixel, Float_t &r, Float_t &g, Float_t &b)
    ColorStruct_t color;
    color.fPixel = pixel;
    gVirtualX->QueryColor(gVirtualX->GetColormap(), color);
-   r = (Float_t)color.fRed / 65535;
-   g = (Float_t)color.fGreen / 65535;
-   b = (Float_t)color.fBlue / 65535;
+   r = (Float_t)color.fRed / 65535.0f;
+   g = (Float_t)color.fGreen / 65535.0f;
+   b = (Float_t)color.fBlue / 65535.0f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3100,7 +3110,7 @@ void TColor::SetPalette(Int_t ncolors, Int_t *colors, Float_t alpha)
       paletteType = ncolors;
       if (Idx>0) fgPalettesList.fArray[paletteType-51] = (Double_t)Idx;
       else       fgPalettesList.fArray[paletteType-51] = 0.;
-      if (alpha > 0.) fgPalettesList.fArray[paletteType-51] += alpha/10.;
+      if (alpha > 0.) fgPalettesList.fArray[paletteType-51] += alpha/10.0f;
       return;
    }
 

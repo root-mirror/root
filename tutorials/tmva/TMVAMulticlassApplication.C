@@ -41,9 +41,10 @@ void TMVAMulticlassApplication( TString myMethodList = "" )
    std::map<std::string,int> Use;
    Use["MLP"]             = 1;
    Use["BDTG"]            = 1;
-   Use["DNN_CPU"] = 0;
-   Use["FDA_GA"]          = 0;
-   Use["PDEFoam"]         = 0;
+   Use["DL_CPU"]          = 1;
+   Use["DL_GPU"]          = 1;
+   Use["FDA_GA"]          = 1;
+   Use["PDEFoam"]         = 1;
    //---------------------------------------------------------------
 
    std::cout << std::endl;
@@ -86,18 +87,29 @@ void TMVAMulticlassApplication( TString myMethodList = "" )
       if (it->second) {
         TString methodName = TString(it->first) + TString(" method");
         TString weightfile = dir + prefix + TString("_") + TString(it->first) + TString(".weights.xml");
-        reader->BookMVA( methodName, weightfile );
+        // check if file existing (i.e. method has been trained)
+        if (!gSystem->AccessPathName( weightfile ))
+           // file exists
+           reader->BookMVA( methodName, weightfile );
+        else {
+           std::cout << "TMVAMultiClassApplication: Skip " << methodName << " since it has not been trained !" << std::endl;
+           it->second = 0;
+        }
       }
    }
 
    // book output histograms
    UInt_t nbin = 100;
-   TH1F *histMLP_signal(0), *histBDTG_signal(0), *histFDAGA_signal(0), *histPDEFoam_signal(0), *histDNNCPU_signal(0);
+   TH1F *histMLP_signal(0), *histBDTG_signal(0), *histFDAGA_signal(0), *histPDEFoam_signal(0);
+   TH1F *histDLCPU_signal(0), *histDLGPU_signal(0); 
    if (Use["MLP"])
       histMLP_signal    = new TH1F( "MVA_MLP_signal",    "MVA_MLP_signal",    nbin, 0., 1.1 );
    if (Use["BDTG"])
       histBDTG_signal  = new TH1F( "MVA_BDTG_signal",   "MVA_BDTG_signal",   nbin, 0., 1.1 );
-   if (Use["DNN_CPU"]) histDNNCPU_signal = new TH1F("MVA_DNNCPU_signal", "MVA_DNNCPU_signal", nbin, 0., 1.1);
+   if (Use["DL_CPU"])
+      histDLCPU_signal = new TH1F("MVA_DLCPU_signal", "MVA_DLCPU_signal", nbin, 0., 1.1);
+   if (Use["DL_GPU"])
+      histDLGPU_signal = new TH1F("MVA_DLGPU_signal", "MVA_DLGPU_signal", nbin, 0., 1.1);
    if (Use["FDA_GA"])
       histFDAGA_signal = new TH1F( "MVA_FDA_GA_signal", "MVA_FDA_GA_signal", nbin, 0., 1.1 );
    if (Use["PDEFoam"])
@@ -105,12 +117,16 @@ void TMVAMulticlassApplication( TString myMethodList = "" )
 
 
    TFile *input(0);
-   TString fname = "./tmva_example_multiple_background.root";
+   TString fname = "./tmva_example_multiclass.root";
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    }
+   else {
+      TFile::SetCacheFileDir(".");
+      input = TFile::Open("http://root.cern.ch/files/tmva_multiclass_example.root", "CACHEREAD");
+   }
    if (!input) {
-      std::cout << "ERROR: could not open data file, please generate example data first!" << std::endl;
+      std::cout << "ERROR: could not open data file" << std::endl;
       exit(1);
    }
    std::cout << "--- TMVAMulticlassApp : Using input file: " << input->GetName() << std::endl;
@@ -141,7 +157,10 @@ void TMVAMulticlassApplication( TString myMethodList = "" )
          histMLP_signal->Fill((reader->EvaluateMulticlass( "MLP method" ))[0]);
       if (Use["BDTG"])
          histBDTG_signal->Fill((reader->EvaluateMulticlass( "BDTG method" ))[0]);
-      if (Use["DNN_CPU"]) histDNNCPU_signal->Fill((reader->EvaluateMulticlass("DNN_CPU method"))[0]);
+      if (Use["DL_CPU"])
+         histDLCPU_signal->Fill((reader->EvaluateMulticlass("DL_CPU method"))[0]);
+      if (Use["DL_GPU"])
+         histDLGPU_signal->Fill((reader->EvaluateMulticlass("DL_GPU method"))[0]);
       if (Use["FDA_GA"])
          histFDAGA_signal->Fill((reader->EvaluateMulticlass( "FDA_GA method" ))[0]);
       if (Use["PDEFoam"])
@@ -158,7 +177,10 @@ void TMVAMulticlassApplication( TString myMethodList = "" )
       histMLP_signal->Write();
    if (Use["BDTG"])
       histBDTG_signal->Write();
-   if (Use["DNN_CPU"]) histDNNCPU_signal->Write();
+   if (Use["DL_CPU"])
+      histDLCPU_signal->Write();
+   if (Use["DL_GPU"])
+      histDLGPU_signal->Write();
    if (Use["FDA_GA"])
       histFDAGA_signal->Write();
    if (Use["PDEFoam"])

@@ -229,14 +229,17 @@ To change the color model use `gStyle->SetColorModelPS(c)`.
 #pragma optimize("",off)
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <wchar.h>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <cwchar>
+#include <fstream>
 
-#include "Riostream.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 #include "Byteswap.h"
 #include "TROOT.h"
+#include "TDatime.h"
 #include "TColor.h"
 #include "TVirtualPad.h"
 #include "TPoints.h"
@@ -256,6 +259,7 @@ const Float_t kScale = 0.93376068;
 static Bool_t MustEmbed[32];
 
 Int_t TPostScript::fgLineJoin = 0;
+Int_t TPostScript::fgLineCap  = 0;
 
 ClassImp(TPostScript);
 
@@ -283,7 +287,6 @@ TPostScript::TPostScript() : TVirtualPS()
    fLastCellBlue    = 0;
    fLastCellGreen   = 0;
    fLastCellRed     = 0;
-   fLineJoin        = 0;
    fLineScale       = 0.;
    fMarkerSizeCur   = 0.;
    fMaxLines        = 0;
@@ -371,6 +374,7 @@ void TPostScript::Open(const char *fname, Int_t wtype)
    fSave          = 0;
    fFontEmbed     = kFALSE;
    SetLineJoin(gStyle->GetJoinLinePS());
+   SetLineCap(gStyle->GetCapLinePS());
    SetLineScale(gStyle->GetLineScalePS());
    gStyle->GetPaperSize(fXsize, fYsize);
    fMode          = fType%10;
@@ -2486,6 +2490,30 @@ void TPostScript::SetLineJoin( Int_t linejoin )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Set the value of the global parameter TPostScript::fgLineCap.
+/// This parameter determines the appearance of line caps in a PostScript
+/// output.
+/// It takes one argument which may be:
+///   - 0 (butt caps)
+///   - 1 (round caps)
+///   - 2 (projecting caps)
+/// The default value is 0 (butt caps).
+///
+/// \image html postscript_2.png
+///
+/// To change the line cap behaviour just do:
+/// ~~~ {.cpp}
+/// gStyle->SetCapLinePS(2); // Set the PS line cap to projecting.
+/// ~~~
+
+void TPostScript::SetLineCap( Int_t linecap )
+{
+   fgLineCap = linecap;
+   if (fgLineCap<0) fgLineCap=0;
+   if (fgLineCap>2) fgLineCap=2;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Change the line style
 ///
 ///  - linestyle = 2 dashed
@@ -3056,6 +3084,10 @@ void TPostScript::Zone()
    if (fgLineJoin) {
       WriteInteger(fgLineJoin);
       PrintFast(12," setlinejoin");
+   }
+   if (fgLineCap) {
+      WriteInteger(fgLineCap);
+      PrintFast(11," setlinecap");
    }
    PrintFast(6," 0 0 t");
    fRed     = -1;

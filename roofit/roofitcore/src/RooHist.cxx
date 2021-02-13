@@ -28,7 +28,6 @@ a RooPlot.
 #include "RooFit.h"
 
 #include "RooHist.h"
-#include "RooHist.h"
 #include "RooHistError.h"
 #include "RooCurve.h"
 #include "RooScaledFunc.h"

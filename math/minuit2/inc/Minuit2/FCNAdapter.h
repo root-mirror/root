@@ -12,9 +12,11 @@
 
 #include "Minuit2/FCNBase.h"
 
+#include <vector>
+
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
 /**
 
@@ -27,43 +29,32 @@ template wrapped class for adapting to FCNBase signature
 
 */
 
-template< class Function>
+template <class Function>
 class FCNAdapter : public FCNBase {
 
 public:
-
-   FCNAdapter(const Function & f, double up = 1.) :
-      fFunc(f) ,
-      fUp (up)
-   {}
+   FCNAdapter(const Function &f, double up = 1.) : fFunc(f), fUp(up) {}
 
    ~FCNAdapter() {}
 
-
-   double operator()(const std::vector<double>& v) const {
-      return fFunc.operator()(&v[0]);
-   }
-   double operator()(const double *  v) const {
-      return fFunc.operator()(v);
-   }
-   double Up() const {return fUp;}
+   double operator()(const std::vector<double> &v) const { return fFunc.operator()(&v[0]); }
+   double operator()(const double *v) const { return fFunc.operator()(v); }
+   double Up() const { return fUp; }
 
    void SetErrorDef(double up) { fUp = up; }
 
-   //virtual std::vector<double> Gradient(const std::vector<double>&) const;
+   // virtual std::vector<double> Gradient(const std::vector<double>&) const;
 
    // forward interface
-   //virtual double operator()(int npar, double* params,int iflag = 4) const;
+   // virtual double operator()(int npar, double* params,int iflag = 4) const;
 
 private:
-   const Function & fFunc;
+   const Function &fFunc;
    double fUp;
 };
 
-   } // end namespace Minuit2
+} // end namespace Minuit2
 
 } // end namespace ROOT
 
-
-
-#endif //ROOT_Minuit2_FCNAdapter
+#endif // ROOT_Minuit2_FCNAdapter

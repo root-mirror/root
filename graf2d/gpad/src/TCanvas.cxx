@@ -9,15 +9,18 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
 
-#include "Riostream.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TCanvas.h"
+#include "TCanvasImp.h"
+#include "TDatime.h"
 #include "TClass.h"
 #include "TStyle.h"
-#include "TText.h"
 #include "TBox.h"
 #include "TCanvasImp.h"
 #include "TDialogCanvas.h"
@@ -29,15 +32,20 @@
 #include "TInterpreter.h"
 #include "TApplication.h"
 #include "TColor.h"
+#include "TObjArray.h"
 #include "TVirtualPadEditor.h"
 #include "TVirtualViewer3D.h"
 #include "TPadPainter.h"
 #include "TVirtualGL.h"
 #include "TVirtualPS.h"
+#include "TVirtualX.h"
 #include "TAxis.h"
 #include "TH1.h"
 #include "TGraph.h"
+#include "TMath.h"
 #include "TView.h"
+#include "strlcpy.h"
+#include "snprintf.h"
 
 #include "TVirtualMutex.h"
 
@@ -383,6 +391,10 @@ void TCanvas::Constructor(const char *name, const char *title, Int_t ww, Int_t w
    if (ww < 0) {
       ww       = -ww;
       SetBit(kMenuBar,0);
+   }
+   if (wh <= 0) {
+      Error("Constructor", "Invalid canvas height: %d",wh);
+      return;
    }
    fCw       = ww;
    fCh       = wh;
@@ -1151,6 +1163,14 @@ void TCanvas::Flush()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Force canvas update
+
+void TCanvas::ForceUpdate()
+{
+   if (fCanvasImp) fCanvasImp->ForceUpdate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Force a copy of current style for all objects in canvas.
 
 void TCanvas::UseCurrentStyle()
@@ -1444,11 +1464,28 @@ void TCanvas::HandleInput(EEventType event, Int_t px, Int_t py)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Iconify canvas
+
+void TCanvas::Iconify()
+{
+   if (fCanvasImp)
+      fCanvasImp->Iconify();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Is folder ?
 
 Bool_t TCanvas::IsFolder() const
 {
    return fgIsFolder;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Is web canvas
+
+Bool_t TCanvas::IsWeb() const
+{
+   return fCanvasImp ? fCanvasImp->IsWeb() : kFALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1703,6 +1740,16 @@ void TCanvas::Resize(Option_t *)
    TPad::ResizePad();
 
    if (padsav) padsav->cd();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Raise canvas window
+
+void TCanvas::RaiseWindow()
+{
+   if (fCanvasImp)
+      fCanvasImp->RaiseWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2032,6 +2079,95 @@ void TCanvas::SetName(const char *name)
    if (gPad && TestBit(kMustCleanup)) gPad->Modified();
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+/// Function to resize a canvas so that the plot inside is shown in real aspect
+/// ratio
+///
+/// \param[in] axis 1 for resizing horizontally (x-axis) in order to get real
+///            aspect ratio, 2 for the resizing vertically (y-axis)
+/// \return false if error is encountered, true otherwise
+///
+/// ~~~ {.cpp}
+/// hpxpy->Draw();
+/// c1->SetRealAspectRatio();
+/// ~~~
+///
+///  - For defining the concept of real aspect ratio, it is assumed that x and y
+///    axes are in same units, e.g. both in MeV or both in ns.
+///  - You can resize either the width of the canvas or the height, but not both
+///    at the same time
+///  - Call this function AFTER drawing AND zooming (SetUserRange) your TGraph or
+///    Histogram, otherwise it cannot infer your actual axes lengths
+///  - This function ensures that the TFrame has a real aspect ratio, this does not
+///    mean that the full pad (i.e. the canvas or png output) including margins has
+///    exactly the same ratio
+///  - This function does not work if the canvas is divided in several subpads
+
+bool TCanvas::SetRealAspectRatio(const Int_t axis)
+{
+   Update();
+
+   //Get how many pixels are occupied by the canvas
+   Int_t npx = GetWw();
+   Int_t npy = GetWh();
+
+   //Get x-y coordinates at the edges of the canvas (extrapolating outside the axes, NOT at the edges of the histogram)
+   Double_t x1 = GetX1();
+   Double_t y1 = GetY1();
+   Double_t x2 = GetX2();
+   Double_t y2 = GetY2();
+
+   //Get the length of extrapolated x and y axes
+   Double_t xlength2 = x2 - x1;
+   Double_t ylength2 = y2 - y1;
+   Double_t ratio2   = xlength2/ylength2;
+
+   //Now get the number of pixels including the canvas borders
+   Int_t bnpx = GetWindowWidth();
+   Int_t bnpy = GetWindowHeight();
+
+   if (axis==1) {
+      SetCanvasSize(TMath::Nint(npy*ratio2), npy);
+      SetWindowSize((bnpx-npx)+TMath::Nint(npy*ratio2), bnpy);
+   } else if (axis==2) {
+      SetCanvasSize(npx, TMath::Nint(npx/ratio2));
+      SetWindowSize(bnpx, (bnpy-npy)+TMath::Nint(npx/ratio2));
+   } else {
+      Error("SetRealAspectRatio", "axis value %d is neither 1 (resize along x-axis) nor 2 (resize along y-axis).",axis);
+      return false;
+   }
+
+   //Check now that resizing has worked
+
+   Update();
+
+   //Get how many pixels are occupied by the canvas
+   npx = GetWw();
+   npy = GetWh();
+
+   //Get x-y coordinates at the edges of the canvas (extrapolating outside the axes,
+   //NOT at the edges of the histogram)
+   x1 = GetX1();
+   y1 = GetY1();
+   x2 = GetX2();
+   y2 = GetY2();
+
+   //Get the length of extrapolated x and y axes
+   xlength2 = x2 - x1;
+   ylength2 = y2 - y1;
+   ratio2 = xlength2/ylength2;
+
+   //Check accuracy +/-1 pixel due to rounding
+   if (abs(TMath::Nint(npy*ratio2) - npx)<2) {
+      return true;
+   } else {
+      Error("SetRealAspectRatio", "Resizing failed.");
+      return false;
+   }
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Set selected canvas.
 
@@ -2048,6 +2184,26 @@ void TCanvas::SetTitle(const char *title)
 {
    fTitle = title;
    if (fCanvasImp) fCanvasImp->SetWindowTitle(title);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set canvas window position
+
+void TCanvas::SetWindowPosition(Int_t x, Int_t y)
+{
+   if (fCanvasImp)
+      fCanvasImp->SetWindowPosition(x, y);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set canvas window size
+
+void TCanvas::SetWindowSize(UInt_t ww, UInt_t wh)
+{
+   if (fBatch)
+      SetCanvasSize((ww + fCw) / 2, (wh + fCh) / 2);
+   else if (fCanvasImp)
+      fCanvasImp->SetWindowSize(ww, wh);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2076,6 +2232,15 @@ void TCanvas::Size(Float_t xsize, Float_t ysize)
    fYsizeUser = ysize;
 
    Resize();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Show canvas
+
+void TCanvas::Show()
+{
+   if (fCanvasImp)
+      fCanvasImp->Show();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

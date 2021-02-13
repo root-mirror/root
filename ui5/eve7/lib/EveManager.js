@@ -47,11 +47,7 @@ sap.ui.define([], function() {
    /** Returns element with given ID */
    EveManager.prototype.GetElement = function(id)
    {
-      // AMT todo ... I think this check should be optional
-      if (id in this.map)
-	 return this.map[id];
-      else
-	 return undefined;
+      return this.map[id];
    }
 
    /** Attach websocket handle to manager, all communication runs through manager */
@@ -59,19 +55,36 @@ sap.ui.define([], function() {
    {
       this.handle = handle;
 
-      handle.SetReceiver(this);
-      handle.Connect();
+      handle.setReceiver(this);
+      handle.connect();
    }
 
-   EveManager.prototype.OnWebsocketClosed = function() {
-      for (var i = 0; i < this.controllers.length; ++i) {
-         if (typeof this.controllers[i].onDisconnect !== "undefined") {
-            this.controllers[i].onDisconnect();
-         }
-      }
+   EveManager.prototype.onWebsocketClosed = function() {
+      this.controllers.forEach(ctrl => {
+         if (typeof ctrl.onDisconnect === "function")
+             ctrl.onDisconnect();
+      });
    }
 
-   EveManager.prototype.OnWebsocketOpened = function() {
+   /** Checks if number of credits on the connection below threshold */
+   EveManager.prototype.CheckSendThreshold = function() {
+      if (!this.handle) return false;
+      let value = this.handle.getRelCanSend();
+      let below = (value <= 0.2);
+      if (this.credits_below_threshold === undefined)
+         this.credits_below_threshold = false;
+      if (this.credits_below_threshold === below)
+         return below;
+
+      this.credits_below_threshold = below;
+      this.controllers.forEach(ctrl => {
+         if (typeof ctrl.onSendThresholdChanged === "function")
+             ctrl.onSendThresholdChanged(below, value);
+      });
+   }
+
+
+   EveManager.prototype.onWebsocketOpened = function() {
       // console.log("opened!!!");
    },
 
@@ -91,7 +104,7 @@ sap.ui.define([], function() {
    }
 
    /** Called when data comes via the websocket */
-   EveManager.prototype.OnWebsocketMsg = function(handle, msg, offset)
+   EveManager.prototype.onWebsocketMsg = function(handle, msg, offset)
    {
       // if (this.ignore_all) return;
 
@@ -104,13 +117,14 @@ sap.ui.define([], function() {
          return;
       }
 
-      // console.log("OnWebsocketMsg msg len=", msg.length, " txt:", msg.substr(0,120), "...");
+      if (JSROOT.EVE.gDebug)
+         console.log("onWebsocketMsg msg len=", msg.length, "txt:", (msg.length < 1000) ? msg : (msg.substr(0,1000) + "..."));
 
       let resp = JSON.parse(msg);
 
       if (resp === undefined)
       {
-         console.log("OnWebsocketMsg can't parse json: msg len=", msg.length, " txt:", msg.substr(0,120), "...");
+         console.log("onWebsocketMsg can't parse json: msg len=", msg.length, " txt:", msg.substr(0,120), "...");
          return;
       }
 
@@ -130,22 +144,40 @@ sap.ui.define([], function() {
       else if (resp.content == "EndChanges")
       {
          this.ServerEndRedrawCallback();
-         return;
       }
-      else
-      {
-         console.log("OnWebsocketMsg Unhandled message type: msg len=", msg.length, " txt:", msg.substr(0,120), "...");
+      else if (resp.content == "BrowseElement") {
+         this.BrowseElement(resp.id);
+      } else {
+         console.log("onWebsocketMsg Unhandled message type: msg len=", msg.length, " txt:", msg.substr(0,120), "...");
       }
    }
 
-
-   EveManager.prototype.SendMIR = function(mir)
+   /** Sending Method Invocation Request
+    * Special handling for offline case - some methods can be tried to handle without server */
+   EveManager.prototype.SendMIR = function(mir_call, element_id, element_class)
    {
-      if (!mir || ! this.handle) return;
+      if (!mir_call || !this.handle || !element_class) return;
 
-      if (this.handle.kind != "file")
-         this.handle.Send(JSON.stringify(mir));
+      // if (JSROOT.EVE.gDebug)
+         console.log('MIR', mir_call, element_id, element_class);
+
+      if (this.InterceptMIR(mir_call, element_id, element_class))
+         return;
+
+      // Sergey: NextEvent() here just to handle data recording in event_demo.C
+
+      if ((this.handle.kind != "file") || (mir_call == "NextEvent()")) {
+
+         var req = {
+            "mir" : mir_call,
+            "fElementId" : element_id,
+            "class" : element_class
+         }
+
+         this.handle.send(JSON.stringify(req));
+      }
    }
+
 
    /** Configure receiver for scene-respective events. Following event used:
     * onSceneChanged */
@@ -159,6 +191,13 @@ sap.ui.define([], function() {
 
       if (elem.$receivers.indexOf(receiver)<0)
          elem.$receivers.push(receiver);
+   }
+
+   /** Returns list of scene elements */
+   EveManager.prototype.getSceneElements = function()
+   {
+      if (!this.childs) return [];
+      return this.childs[0].childs[2].childs;
    }
 
    /** Invoke function on all receiver of scene events - when such function exists */
@@ -175,7 +214,6 @@ sap.ui.define([], function() {
    EveManager.prototype.ImportSceneJson = function(arr)
    {
       this.last_json = null;
-      // console.log("ImportSceneJson JSON", arr[0]);
 
       // remember commands in manager
       if (arr[0].commands && !this.commands)
@@ -218,10 +256,8 @@ sap.ui.define([], function() {
       }
 
       if (arr[0].fTotalBinarySize == 0) {
-         console.log("scene imported ", this.map[arr[0].fSceneId]);
          this.sceneImportComplete(arr[0]);
       }
-
    }
 
    //______________________________________________________________________________
@@ -358,8 +394,8 @@ sap.ui.define([], function() {
 
          if (em.changeBit & this.EChangeBits.kCBObjProps) {
             delete obj.render_data;
-	    // AMT note ... the REveSelection changes fall here
-	    // I think this should be a separate change bit
+            // AMT note ... the REveSelection changes fall here
+            // I think this should be a separate change bit
             delete obj.sel_list;
             jQuery.extend(obj, em);
             this.ParseUpdateTriggersAndProcessPostStream(obj);
@@ -504,7 +540,7 @@ sap.ui.define([], function() {
       var oldMap = new Map();
       sel.prev_sel_list.forEach(function(rec) {
          let iset = new Set(rec.sec_idcs);
-         let x    = { "valid": true, "implied": rec.implied, "set": iset };
+         let x    = { "valid": true, "implied": rec.implied, "set": iset, "extra": rec.extra };
          oldMap.set(rec.primary, x);
       });
 
@@ -516,7 +552,7 @@ sap.ui.define([], function() {
       var newMap = new Map();
       sel.sel_list.forEach(function(rec) {
          let iset = new Set(rec.sec_idcs);
-         let x    = { "valid": true, "implied": rec.implied, "set": iset };
+         let x    = { "valid": true, "implied": rec.implied, "set": iset, "extra": rec.extra };
          newMap.set(rec.primary, x);
       });
 
@@ -578,14 +614,14 @@ sap.ui.define([], function() {
             continue;
          }
          changedSet.add(iel.fSceneId);
-         this.SelectElement(sel, id, secIdcs);
+         this.SelectElement(sel, id, secIdcs, value.extra);
 
          for (var imp of value.implied)
          {
             if (JSROOT.EVE.DebugSelection)
                console.log("Sel impl", imp, this.GetElement(imp), this.GetElement(imp).fSceneId);
 
-            this.SelectElement(sel, imp, secIdcs);
+            this.SelectElement(sel, imp, secIdcs, value.extra);
             changedSet.add(this.GetElement(imp).fSceneId);
          }
       }
@@ -619,7 +655,7 @@ sap.ui.define([], function() {
       // So, we need something like reapply selections after new scenes arrive.
    }
 
-   EveManager.prototype.SelectElement = function(selection_obj, element_id, sec_idcs)
+   EveManager.prototype.SelectElement = function(selection_obj, element_id, sec_idcs, extra)
    {
       let element = this.GetElement(element_id);
       if ( ! element) return;
@@ -628,7 +664,7 @@ sap.ui.define([], function() {
       if (scene.$receivers) {
          for (let r of scene.$receivers)
          {
-            r.SelectElement(selection_obj, element_id, sec_idcs);
+            r.SelectElement(selection_obj, element_id, sec_idcs, extra);
          }
       }
 
@@ -671,6 +707,169 @@ sap.ui.define([], function() {
       this.busyProcessingChanges = false;
    }
 
+   /** Method invoked from server message to browse to element elid */
+   EveManager.prototype.BrowseElement = function(elid) {
+      var scenes = this.getSceneElements();
+
+      for (var i = 0; i < scenes.length; ++i) {
+         var scene = this.GetElement(scenes[i].fElementId);
+         this.callSceneReceivers(scene, "BrowseElement", elid);
+         break; // normally default scene is enough
+      }
+   }
+
+   /** Returns true if element match to some entry in selection */
+   EveManager.prototype.MatchSelection = function(globalid, eve_el, indx) {
+      let so = this.GetElement(globalid);
+
+      let a  = so ? so.prev_sel_list : null;
+      if (a && (a.length == 1))
+      {
+         let h = a[0];
+         if (h.primary == eve_el.fElementId || h.primary == eve_el.fMasterId) {
+            if (indx) {
+               if (h.sec_idcs && h.sec_idcs[0] == indx) {
+                  return true;
+               }
+            }
+            if ( ! indx && ! h.sec_idcs.length) {
+               return true;
+            }
+         }
+      }
+   }
+
+
+   //==============================================================================
+   // Offline handling
+   //==============================================================================
+
+
+   /** find elements ids where fMasterId equal to provided */
+   EveManager.prototype.FindElemetsForMaster = function(elementId, collect_ids) {
+      var res = [];
+
+      for (var elid in this.map) {
+         var el = this.map[elid];
+         if ((el.fMasterId === elementId) && (el.fElementId !== elementId))
+            res.push(collect_ids ? el.fElementId : el);
+      }
+
+      return res;
+   }
+
+   /** used to intercept NewElementPicked for hightlight and selection @private */
+   EveManager.prototype._intercept_NewElementPicked = function(elementId) {
+
+      var mirElem = this.GetElement(this._intercept_id);
+
+      var msg1 = { content: "BeginChanges" }, msg3 = { content: "EndChanges" },
+          msg2 = { arr: [ JSROOT.extend({UT_PostStream:"UT_Selection_Refresh_State", changeBit: 4}, mirElem) ],
+                   header:{ content:"ElementsRepresentaionChanges", fSceneId: mirElem.fSceneId, fTotalBinarySize:0, numRepresentationChanged:1, removedElements:[] }};
+
+      msg2.arr[0].sel_list = elementId ? [{primary: elementId, implied: this.FindElemetsForMaster(elementId, true), sec_idcs:[]}] : [];
+
+      msg2.arr[0].prev_sel_list = undefined;
+
+      this.handle.inject([msg1, msg2, msg3]);
+   }
+
+   /** used to intercept BrowseElement call @private */
+   EveManager.prototype._intercept_BrowseElement = function(elementId) {
+      var msg1 = { content: "BrowseElement", id: elementId },
+          msg2 = { content: "BeginChanges" },
+          msg3 = { content: "EndChanges" };
+
+      this.handle.inject([msg1, msg2, msg3]);
+   }
+
+   /** @summary used to intercept SetRnrSelf call
+     * @private */
+   EveManager.prototype._intercept_SetRnrSelf = function(flag) {
+      var messages = [{ content: "BeginChanges" }];
+
+      var mirElem = this.GetElement(this._intercept_id);
+      var msg = { arr: [{ changeBit:8, fElementId: mirElem.fElementId, fRnrChildren: mirElem.fRnrChildren, fRnrSelf: flag }],
+                  header:{ content: "ElementsRepresentaionChanges", fSceneId: mirElem.fSceneId, fTotalBinarySize:0, numRepresentationChanged:1, removedElements:[]}};
+
+      messages.push(msg);
+
+      this.FindElemetsForMaster(this._intercept_id).forEach(function(subElem) {
+         msg = { arr: [{ changeBit:8, fElementId: subElem.fElementId, fRnrChildren: subElem.fRnrChildren, fRnrSelf: flag }],
+                 header:{ content: "ElementsRepresentaionChanges", fSceneId: subElem.fSceneId, fTotalBinarySize:0, numRepresentationChanged:1, removedElements:[]}};
+         messages.push(msg);
+      });
+      messages.push({ content: "EndChanges" });
+
+      this.handle.inject(messages);
+   }
+
+   /** @summary used to intercept SetMainColorRGB
+     * @private */
+   EveManager.prototype._intercept_SetMainColorRGB = function(colr, colg, colb) {
+      var messages = [{ content: "BeginChanges" }];
+
+      var newColor = JSROOT.Painter.addColor("rgb(" + colr + "," + colg + "," + colb + ")");
+
+      var mirElem = this.GetElement(this._intercept_id);
+      var msg = { arr: [ JSROOT.extend({changeBit:1}, mirElem) ],
+                  header:{ content: "ElementsRepresentaionChanges", fSceneId: mirElem.fSceneId, fTotalBinarySize:0, numRepresentationChanged:1, removedElements:[]}};
+
+      msg.arr[0].fMainColor = newColor;
+      msg.arr[0].sel_list = msg.arr[0].prev_sel_list = msg.arr[0].render_data = undefined;
+
+      messages.push(msg);
+
+      this.FindElemetsForMaster(this._intercept_id).forEach(function(subElem) {
+         var msg = { arr: [ JSROOT.extend({changeBit:1}, subElem) ],
+               header: { content: "ElementsRepresentaionChanges", fSceneId: subElem.fSceneId, fTotalBinarySize:0, numRepresentationChanged:1, removedElements:[]}};
+         msg.arr[0].fMainColor = newColor;
+         msg.arr[0].sel_list = msg.arr[0].prev_sel_list = msg.arr[0].render_data = undefined;
+         messages.push(msg);
+      });
+      messages.push({ content: "EndChanges" });
+
+      this.handle.inject(messages);
+   }
+
+   /** Handling of MIR calls without sending data to the server.
+    * Can be used for debugging or as offline app */
+   EveManager.prototype.InterceptMIR = function(mir_call, element_id, element_class) {
+
+      if (this.handle.kind != "file")
+         return false;
+
+      // just do not intercept
+      var do_intercept = false;
+
+      if (((mir_call.indexOf("NewElementPicked(") == 0) && ((element_id == this.global_highlight_id) || (element_id == this.global_selection_id))) ||
+          ((mir_call.indexOf("BrowseElement(") == 0) && (element_id == 0)) ||
+          (mir_call.indexOf("SetRnrSelf(") == 0) || (mir_call.indexOf("SetMainColorRGB(") == 0))
+         do_intercept = true;
+
+      if (!do_intercept)
+         return false;
+
+      this._intercept_id = element_id;
+      this._intercept_class = element_class;
+
+      JSROOT.$eve7mir = this;
+
+      if (mir_call.indexOf("SetMainColorRGB(") == 0)
+         mir_call = mir_call.replace(/\(UChar_t\)/g, '');
+
+      var func = new Function('JSROOT.$eve7mir._intercept_' + mir_call);
+
+      try {
+         func();
+      } catch {
+         console.log("Fail to intercept MIR call:", mir_call);
+      }
+
+      delete JSROOT.$eve7mir;
+
+      return true;
+   }
 
    //==============================================================================
    // END protoype functions
@@ -679,6 +878,8 @@ sap.ui.define([], function() {
    JSROOT.EVE.EveManager = EveManager;
 
    JSROOT.EVE.DebugSelection = 0;
+
+   // JSROOT.EVE.gDebug = true;
 
    return EveManager;
 

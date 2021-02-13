@@ -1,12 +1,17 @@
-/// \file rf709_BarlowBeeston.C
+/// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Implementing the Barlow-Beeston method for taking into account the statistical uncertainty of a Monte-Carlo fit template.
+/// Implementing the Barlow-Beeston method for taking into account the statistical
+/// uncertainty of a Monte-Carlo fit template.
+///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 06/2019 - Stephan Hageboeck, CERN
+///
 /// Based on a demo by Wouter Verkerke
+//
+/// \date June 2019
+/// \author Stephan Hageboeck, CERN
 
 #include "RooRealVar.h"
 #include "RooGaussian.h"
@@ -33,13 +38,13 @@ void rf709_BarlowBeeston()
   // First, construct a likelihood model with a Gaussian signal on top of a uniform background
   RooRealVar x("x", "x", -20, 20);
   x.setBins(25);
-  
+
   RooRealVar meanG("meanG", "meanG", 1, -10, 10);
   RooRealVar sigG("sigG", "sigG", 1.5, -10, 10);
   RooGaussian g("g", "Gauss", x, meanG, sigG);
   RooUniform u("u", "Uniform", x);
-  
-  
+
+
   // Generate the data to be fitted
   std::unique_ptr<RooDataSet> sigData(g.generate(x, 50));
   std::unique_ptr<RooDataSet> bkgData(u.generate(x, 1000));
@@ -47,7 +52,7 @@ void rf709_BarlowBeeston()
   RooDataSet sumData("sumData", "Gauss + Uniform", x);
   sumData.append(*sigData);
   sumData.append(*bkgData);
-  
+
 
   // Make histogram templates for signal and background.
   // Let's take a signal distribution with low statistics and a more accurate
@@ -62,7 +67,7 @@ void rf709_BarlowBeeston()
   // Construct histogram shapes for signal and background
   RooHistFunc p_h_sig("p_h_sig","p_h_sig",x,*dh_sig);
   RooHistFunc p_h_bkg("p_h_bkg","p_h_bkg",x,*dh_bkg);
-  
+
   // Construct scale factors for adding the two distributions
   RooRealVar Asig0("Asig","Asig",1,0.01,5000);
   RooRealVar Abkg0("Abkg","Abkg",1,0.01,5000);
@@ -112,11 +117,11 @@ void rf709_BarlowBeeston()
   // synchronously. This reduces the number of parameters.
   RooParamHistFunc p_ph_sig2("p_ph_sig2", "p_ph_sig2", *dh_sig);
   RooParamHistFunc p_ph_bkg2("p_ph_bkg2", "p_ph_bkg2", *dh_bkg, p_ph_sig2, true);
-  
+
   RooRealVar Asig2("Asig","Asig",1,0.01,5000);
   RooRealVar Abkg2("Abkg","Abkg",1,0.01,5000);
 
-  // As before, construct the sum of signal2 and background2 
+  // As before, construct the sum of signal2 and background2
   RooRealSumPdf model2_tmp("sp_ph","sp_ph",
       RooArgList(p_ph_sig2,p_ph_bkg2),
       RooArgList(Asig2,Abkg2),
@@ -127,23 +132,23 @@ void rf709_BarlowBeeston()
 
   // Construct the joint model
   RooProdPdf model2("model2","model2",hc_sigbkg, RooFit::Conditional(model2_tmp,x));
-  
-  
+
+
 
   // ************ Fit all models to data and plot *********************
-  
+
   auto result0 = model0.fitTo(sumData, PrintLevel(0), Save());
   auto result1 = model1.fitTo(sumData, PrintLevel(0), Save());
   auto result2 = model2.fitTo(sumData, PrintLevel(0), Save());
- 
+
 
   TCanvas* can = new TCanvas("can", "", 1500, 600);
   can->Divide(3,1);
-  
+
   TPaveText pt(-19.5, 1, -2, 25);
   pt.SetFillStyle(0);
   pt.SetBorderSize(0);
-  
+
 
   can->cd(1);
   auto frame = x.frame(Title("No template uncertainties"));
@@ -157,10 +162,10 @@ void rf709_BarlowBeeston()
   model0.plotOn(frame, Components(p_h_sig), LineColor(kAzure));
   model0.plotOn(frame, Components(p_h_bkg), LineColor(kRed));
   model0.paramOn(frame);
-  
+
   sigData->plotOn(frame, MarkerColor(kBlue));
   frame->Draw();
-  
+
   for (auto text : {
     "No template uncertainties",
     "are taken into account.",
@@ -171,7 +176,7 @@ void rf709_BarlowBeeston()
     pt.AddText(text);
   }
   pt.DrawClone();
-  
+
 
   can->cd(2);
   frame = x.frame(Title("Barlow Beeston for Sig & Bkg separately"));
@@ -183,10 +188,10 @@ void rf709_BarlowBeeston()
   model1.plotOn(frame, Components(p_ph_sig1), LineColor(kAzure));
   model1.plotOn(frame, Components(p_ph_bkg1), LineColor(kRed));
   model1.paramOn(frame, Parameters(RooArgSet(Asig1, Abkg1)));
-  
+
   sigData->plotOn(frame, MarkerColor(kBlue));
   frame->Draw();
-  
+
   pt.Clear();
   for (auto text : {
     "With gamma parameters, the",
@@ -210,10 +215,10 @@ void rf709_BarlowBeeston()
   model2.plotOn(frame, Components(p_ph_sig2), LineColor(kAzure));
   model2.plotOn(frame, Components(p_ph_bkg2), LineColor(kRed));
   model2.paramOn(frame, Parameters(RooArgSet(Asig2, Abkg2)));
-  
+
   sigData->plotOn(frame, MarkerColor(kBlue));
   frame->Draw();
-  
+
   pt.Clear();
   for (auto text : {
     "When signal and background",
@@ -224,8 +229,8 @@ void rf709_BarlowBeeston()
     pt.AddText(text);
   }
   pt.DrawClone();
-  
-  
+
+
   std::cout << "Asig [normal ] = " << Asig0.getVal() << " +/- " << Asig0.getError() << std::endl;
   std::cout << "Asig [BB     ] = " << Asig1.getVal() << " +/- " << Asig1.getError() << std::endl;
   std::cout << "Asig [BBlight] = " << Asig2.getVal() << " +/- " << Asig2.getError() << std::endl;

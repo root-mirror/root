@@ -37,6 +37,8 @@
 
 #include "TMVA/Event.h"
 
+#include <vector>
+
 class TTree;
 
 namespace TMVA {

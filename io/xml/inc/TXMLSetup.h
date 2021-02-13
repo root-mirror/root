@@ -12,7 +12,7 @@
 #ifndef ROOT_TXMLSetup
 #define ROOT_TXMLSetup
 
-#include "TObject.h"
+#include "Rtypes.h"
 #include "TString.h"
 
 #ifdef Bool

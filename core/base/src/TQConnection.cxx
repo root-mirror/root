@@ -21,7 +21,6 @@ TQConnection:
    -  receiver is the object to which slot-method is applied
 */
 
-#include "Varargs.h"
 #include "TQConnection.h"
 #include "TROOT.h"
 #include "TRefCnt.h"
@@ -30,7 +29,7 @@ TQConnection:
 #include "TMethodArg.h"
 #include "TDataType.h"
 #include "TInterpreter.h"
-#include "Riostream.h"
+#include <iostream>
 #include "TVirtualMutex.h"
 #include "THashTable.h"
 

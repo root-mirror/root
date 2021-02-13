@@ -9,20 +9,21 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include "TView.h"
 #include "TPolyMarker3D.h"
 #include "TVirtualPad.h"
-#include "TH3.h"
 #include "TRandom.h"
+#include "TBuffer.h"
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TVirtualViewer3D.h"
 #include "TGeometry.h"
+#include "TH1.h"
 #include "TROOT.h"
 #include "TMath.h"
 
-#include <assert.h>
+#include <cassert>
+#include <iostream>
 
 ClassImp(TPolyMarker3D);
 

@@ -1,7 +1,7 @@
 // Author: Sergey Linev, GSI   7/12/2016
 
 /*************************************************************************
- * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2021, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -10,16 +10,6 @@
 
 #ifndef ROOT_TWebGuiFactory
 #define ROOT_TWebGuiFactory
-
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// TWebGuiFactory                                                       //
-//                                                                      //
-// This class is a proxy-factory for web-base ROOT GUI components.      //
-// It overrides the member functions of the X11/win32gdk-based          //
-// TGuiFactory.                                                     //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
 
 #include "TGuiFactory.h"
 

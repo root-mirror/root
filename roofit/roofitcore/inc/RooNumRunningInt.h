@@ -15,7 +15,7 @@
 #include "RooAbsCachedReal.h"
 #include "RooRealProxy.h"
 #include "RooAbsReal.h"
-
+#include <string>
 
 class RooNumRunningInt : public RooAbsCachedReal {
 public:

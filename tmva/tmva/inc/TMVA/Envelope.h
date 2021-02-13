@@ -11,10 +11,10 @@
 #ifndef ROOT_TMVA_Envelope
 #define ROOT_TMVA_Envelope
 
-#include <sstream>
-#include<iostream>
 #include <memory>
+#include <vector>
 
+#include <TString.h>
 #include <TROOT.h>
 #include <TStopwatch.h>
 
@@ -22,12 +22,9 @@
 #include <TProcPool.h>
 #endif
 
-#include <TStopwatch.h>
-
 #include <TMVA/OptionMap.h>
 #include <TMVA/Config.h>
 #include <TMVA/Tools.h>
-#include <TMVA/DataLoader.h>
 #include <TMVA/DataLoader.h>
 
 /*! \class TMVA::Envelope

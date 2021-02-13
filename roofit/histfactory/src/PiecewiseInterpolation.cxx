@@ -1,10 +1,21 @@
-/*****************************************************************************
-
- *****************************************************************************/
-
-//////////////////////////////////////////////////////////////////////////////
 /** \class PiecewiseInterpolation
  * \ingroup HistFactory
+ * The PiecewiseInterpolation is a class that can morph distributions into each other, which
+ * is useful to estimate systematic uncertainties. Given a nominal distribution and one or
+ * more altered or distorted ones, it computes a new shape depending on the value of the nuisance
+ * parameters \f$ \alpha_i \f$:
+ * \f[
+ *   A = \sum_i \mathrm{Interpolate}(\mathrm{low}_i, \mathrm{nominal}, \mathrm{high}_i, \alpha_i).
+ * \f]
+ * If an \f$ \alpha_i \f$ is zero, the distribution is identical to the nominal distribution, at
+ * \f$ \pm 1 \f$ it is identical to the up/down distribution for that specific \f$ i \f$.
+ *
+ * The class supports several interpolation methods, which can be selected for each parameter separately
+ * using setInterpCode(). The default interpolation code is 4. This performs
+ * - \f$ |\alpha | > 1 \f$: Linear extrapolation.
+ * - \f$ |\alpha | < 1 \f$: Polynomial interpolation. A sixth-order polynomial is used. Its coefficients
+ * are chosen such that function, first, and second derivative at \f$ \alpha \pm 1 \f$ match the values
+ * that the extrapolation procedure uses.
  */
 
 #include "RooStats/HistFactory/PiecewiseInterpolation.h"
@@ -18,8 +29,6 @@
 #include "RooAbsPdf.h"
 #include "RooErrorHandler.h"
 #include "RooArgSet.h"
-#include "RooNLLVar.h"
-#include "RooChi2Var.h"
 #include "RooRealVar.h"
 #include "RooMsgService.h"
 #include "RooNumIntConfig.h"
@@ -45,7 +54,17 @@ PiecewiseInterpolation::PiecewiseInterpolation()
 
 
 ////////////////////////////////////////////////////////////////////////////////
-
+/// Construct a new interpolation. The value of the function will be
+/// \f[
+///   A = \sum_i \mathrm{Interpolate}(\mathrm{low}_i, \mathrm{nominal}, \mathrm{high}_i).
+/// \f]
+/// \param name Name of the object.
+/// \param title Title (for e.g. plotting)
+/// \param nominal Nominal value of the function.
+/// \param lowSet  Set of down variations.
+/// \param highSet Set of up variations.
+/// \param paramSet Parameters that control the interpolation.
+/// \param takeOwnership If true, the PiecewiseInterpolation object will take ownership of the arguments in the low, high and parameter sets.
 PiecewiseInterpolation::PiecewiseInterpolation(const char* name, const char* title, const RooAbsReal& nominal,
 					       const RooArgList& lowSet, 
 					       const RooArgList& highSet,
@@ -59,12 +78,6 @@ PiecewiseInterpolation::PiecewiseInterpolation(const char* name, const char* tit
   _positiveDefinite(false)
 
 {
-  // Constructor with two set of RooAbsReals. The value of the function will be
-  //
-  //  A = sum_i lowSet(i)*highSet(i) 
-  //
-  // If takeOwnership is true the PiecewiseInterpolation object will take ownership of the arguments in sumSet
-
   // KC: check both sizes
   if (lowSet.getSize() != highSet.getSize()) {
     coutE(InputArguments) << "PiecewiseInterpolation::ctor(" << GetName() << ") ERROR: input lists should be of equal length" << endl ;

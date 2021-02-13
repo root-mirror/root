@@ -19,8 +19,8 @@
 #include "TMatrixD.h"
 #include "TVectorD.h"
 
-#include <vector>
-#include <string>
+#include <list>
+
 class RooChangeTracker;
 
 class RooMomentMorphFunc : public RooAbsReal {

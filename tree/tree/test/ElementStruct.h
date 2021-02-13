@@ -1,6 +1,3 @@
-#include "Rtypes.h"
-#include "TObject.h"
-
 /**
  * The ElementStruct has no purpose except to provide
  * inputs to the test cases.

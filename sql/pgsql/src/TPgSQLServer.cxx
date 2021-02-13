@@ -19,6 +19,11 @@
 #include "TUrl.h"
 #include "TList.h"
 
+#define pgsql_success(x) (((x) == PGRES_EMPTY_QUERY) \
+                        || ((x) == PGRES_COMMAND_OK) \
+                        || ((x) == PGRES_TUPLES_OK))
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /// PluginManager generator function
 

@@ -1,4 +1,4 @@
-# Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.
+# Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.
 # All rights reserved.
 #
 # For the licensing terms see $ROOTSYS/LICENSE.
@@ -14,6 +14,10 @@ if (WIN32)
 else ()
   set(rawfile_local_headers ROOT/RRawFileUnix.hxx)
   set(rawfile_local_sources src/RRawFileUnix.cxx)
+endif ()
+
+if (uring)
+  list(APPEND rawfile_local_headers ROOT/RIoUring.hxx)
 endif ()
 
 ROOT_LINKER_LIBRARY(RIO
@@ -54,17 +58,28 @@ ROOT_LINKER_LIBRARY(RIO
   $<TARGET_OBJECTS:RootPcmObjs>
   LIBRARIES
     ${CMAKE_DL_LIBS}
-    ${ROOT_ATOMIC_LIBS}
   DEPENDENCIES
     Core
     Thread
 )
 
 target_include_directories(RIO PRIVATE ${CMAKE_SOURCE_DIR}/core/clib/res)
+target_link_libraries(RIO PUBLIC ${ROOT_ATOMIC_LIBS})
+
+if(builtin_nlohmannjson)
+   target_include_directories(RIO PRIVATE ${CMAKE_SOURCE_DIR}/builtins)
+else()
+   target_link_libraries(RIO PRIVATE nlohmann_json::nlohmann_json)
+endif()
 
 if(root7)
   set(RIO_EXTRA_HEADERS ROOT/RFile.hxx)
   target_sources(RIO PRIVATE v7/src/RFile.cxx)
+endif()
+
+if(uring)
+  target_link_libraries(RIO PUBLIC ${LIBURING_LIBRARY})
+  target_include_directories(RIO PRIVATE ${LIBURING_INCLUDE_DIR})
 endif()
 
 ROOT_GENERATE_DICTIONARY(G__RIO
@@ -99,8 +114,6 @@ ROOT_GENERATE_DICTIONARY(G__RIO
   TStreamerInfoActions.h
   TVirtualCollectionIterators.h
   TStreamerInfo.h
-  TVirtualObject.h
-  TVirtualArray.h
   TZIPFile.h
   ${RIO_EXTRA_HEADERS}
   STAGE1

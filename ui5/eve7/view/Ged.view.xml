@@ -1,0 +1,21 @@
+<mvc:View
+   class="sapUiSizeCompact"
+   height="100%"
+   controllerName="rootui5.eve7.controller.Ged"
+   xmlns:mvc="sap.ui.core.mvc"
+   xmlns:l="sap.ui.layout"
+   xmlns="sap.m">
+    <Panel id="productDetailsPanel" class="eveGedHolder sapUiNoMarginTop sapUiNoMarginBottom" visible="true" height="100%">
+        <headerToolbar>
+            <OverflowToolbar>
+               <Title text="{ged>/title}"/>
+               <ToolbarSpacer/>
+               <Button icon="sap-icon://decline" press="closeGedEditor"/>
+            </OverflowToolbar>
+        </headerToolbar>
+        <content>
+           <l:VerticalLayout id="GED" width="100%">
+           </l:VerticalLayout>
+        </content>
+    </Panel>
+</mvc:View>

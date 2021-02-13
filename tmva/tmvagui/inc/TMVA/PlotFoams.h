@@ -1,19 +1,19 @@
 #ifndef PlotFoams__HH
 #define PlotFoams__HH
+
 #include "tmvaglob.h"
 #include "TControlBar.h"
 #include "TMap.h"
 #include "TVectorT.h"
-#include "TLine.h"
+#include "TString.h"
 #include "TPaveText.h"
 #include "TMVA/PDEFoamKernelBase.h"
 #include "TMVA/PDEFoamKernelTrivial.h"
 
-#include <sstream>
-#include <string>
 #include <cfloat>
 
 #include "TMVA/PDEFoam.h"
+
 namespace TMVA{
 
    void PlotFoams( TString fileName = "weights/TMVAClassification_PDEFoam.weights_foams.root",
@@ -33,4 +33,5 @@ namespace TMVA{
                   Double_t x, Double_t y,
                   Double_t xscale,  Double_t yscale );
 }
+
 #endif

@@ -74,8 +74,8 @@ private:
    static Bool_t      fgGraphNeeded;    // True if graphics libs need to be initialized
    static Bool_t      fgGraphInit;      // True if graphics libs initialized
 
-   TApplication(const TApplication&);             // not implemented
-   TApplication& operator=(const TApplication&);  // not implemented
+   TApplication(const TApplication&) = delete;
+   TApplication& operator=(const TApplication&) = delete;
 
 protected:
    TApplication      *fAppRemote;      //Current remote application, if defined

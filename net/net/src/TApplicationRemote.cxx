@@ -34,6 +34,7 @@
 #include "TServerSocket.h"
 #include "TSystem.h"
 #include "TRemoteObject.h"
+#include "snprintf.h"
 #ifdef WIN32
 #include <io.h>
 #include <sys/types.h>

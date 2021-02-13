@@ -67,6 +67,8 @@
 #pragma link C++ class TH2F-;
 #pragma link C++ class TH2Poly+;
 #pragma link C++ class TH2PolyBin+;
+#pragma link C++ class THistRange+;
+#pragma link C++ class TBinIterator+;
 #pragma link C++ class TProfile2Poly+;
 #pragma link C++ class TProfile2PolyBin+;
 #pragma link C++ class TH2S-;
@@ -165,6 +167,7 @@
 #pragma link C++ class TVirtualHistPainter+;
 #pragma link C++ class TVirtualGraphPainter+;
 #pragma link C++ class TVirtualFitter+;
+#pragma link C++ class TVirtualPaveStats+;
 #pragma link C++ class TBackCompFitter+;
 #pragma link C++ class TSVDUnfold+;
 #pragma link C++ class TEfficiency+;

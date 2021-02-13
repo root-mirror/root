@@ -1,13 +1,12 @@
 ## \file
 ## \ingroup tutorial_roofit
 ## \notebook
-##
 ## Validation and MC studies: toy Monte Carlo study that perform cycles of event generation and fitting
 ##
 ## \macro_code
 ##
 ## \date February 2018
-## \author Clemens Lange, Wouter Verkerke (C++ version)
+## \authors Clemens Lange, Wouter Verkerke (C++ version)
 
 import ROOT
 
@@ -28,12 +27,12 @@ sigma2 = ROOT.RooRealVar("sigma2", "width of gaussians", 1)
 sig1 = ROOT.RooGaussian("sig1", "Signal component 1", x, mean, sigma1)
 sig2 = ROOT.RooGaussian("sig2", "Signal component 2", x, mean, sigma2)
 
-# Build Chebychev polynomial p.d.f.
+# Build Chebychev polynomial pdf
 a0 = ROOT.RooRealVar("a0", "a0", 0.5, 0., 1.)
 a1 = ROOT.RooRealVar("a1", "a1", -0.2, -1, 1.)
 bkg = ROOT.RooChebychev("bkg", "Background", x, ROOT.RooArgList(a0, a1))
 
-# Sum the signal components into a composite signal p.d.f.
+# Sum the signal components into a composite signal pdf
 sig1frac = ROOT.RooRealVar(
     "sig1frac", "fraction of component 1 in signal", 0.8, 0., 1.)
 sig = ROOT.RooAddPdf(

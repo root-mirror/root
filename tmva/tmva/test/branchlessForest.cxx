@@ -6,7 +6,6 @@
 #include "TMVA/TreeInference/BranchlessTree.hxx"
 #include "TMVA/TreeInference/Objectives.hxx"
 
-#include <iostream>
 #include <vector>
 
 using namespace TMVA::Experimental;

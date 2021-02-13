@@ -226,6 +226,8 @@ void TMVA::MethodCrossValidation::ReadWeightsFromXML(void *parent)
    // SplitExpr
    if (fSplitExprString != TString("")) {
       fSplitExpr = std::unique_ptr<CvSplitKFoldsExpr>(new CvSplitKFoldsExpr(DataInfo(), fSplitExprString));
+   } else {
+      Log() << kFATAL << "MethodCrossValidation supports XML reading only for deterministic splitting !" << Endl;
    }
 }
 

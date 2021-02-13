@@ -16,27 +16,38 @@
 #ifndef ROO_REAL_VAR_SHARED_PROPERTY
 #define ROO_REAL_VAR_SHARED_PROPERTY
 
-#include "TObject.h"
 #include "RooSharedProperties.h"
-#include "RooLinkedList.h"
+
+#include <memory>
+#include <unordered_map>
+#include <string>
+
+class RooAbsBinning;
 
 class RooRealVarSharedProperties : public RooSharedProperties {
 public:
 
   RooRealVarSharedProperties() ;
-  RooRealVarSharedProperties(const RooRealVarSharedProperties&) ;
+  RooRealVarSharedProperties(const RooRealVarSharedProperties&);
   RooRealVarSharedProperties(const char* uuidstr) ;
   virtual ~RooRealVarSharedProperties() ;
+  void disownBinnings() {
+    _ownBinnings = false;
+  }
 
-  RooSharedProperties* clone() { return new RooRealVarSharedProperties(*this)  ; }
+  RooSharedProperties* clone() {
+    auto tmp = new RooRealVarSharedProperties(*this);
+    tmp->disownBinnings();
+    return tmp;
+  }
 
 protected:
 
   friend class RooRealVar ;
 
-  RooLinkedList _altBinning ;  // Optional alternative ranges and binnings
-
-  ClassDef(RooRealVarSharedProperties,1) // Shared properties of a RooRealVar clone set
+  std::unordered_map<std::string,RooAbsBinning*> _altBinning ;  // Optional alternative ranges and binnings
+  bool _ownBinnings{true}; //!
+  ClassDef(RooRealVarSharedProperties,2) // Shared properties of a RooRealVar clone set
 };
 
 

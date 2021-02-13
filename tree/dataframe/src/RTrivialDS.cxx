@@ -4,6 +4,8 @@
 #include <ROOT/RMakeUnique.hxx>
 #include <TError.h>
 
+#include <limits>
+
 namespace ROOT {
 
 namespace RDF {
@@ -23,6 +25,10 @@ std::vector<void *> RTrivialDS::GetColumnReadersImpl(std::string_view, const std
 }
 
 RTrivialDS::RTrivialDS(ULong64_t size, bool skipEvenEntries) : fSize(size), fSkipEvenEntries(skipEvenEntries)
+{
+}
+
+RTrivialDS::RTrivialDS() : fSize(std::numeric_limits<ULong64_t>::max()), fSkipEvenEntries(false)
 {
 }
 
@@ -47,7 +53,19 @@ std::string RTrivialDS::GetTypeName(std::string_view) const
 
 std::vector<std::pair<ULong64_t, ULong64_t>> RTrivialDS::GetEntryRanges()
 {
-   auto ranges(std::move(fEntryRanges)); // empty fEntryRanges
+   if (fSize == std::numeric_limits<ULong64_t>::max()) {
+      auto currentEntry = *std::max_element(fCounter.begin(), fCounter.end());
+      // infinite source, just make some ranges up
+      std::vector<std::pair<ULong64_t, ULong64_t>> ranges(fNSlots);
+      for (auto &range : ranges) {
+         range = std::make_pair(currentEntry, currentEntry + 10);
+         currentEntry += 10;
+      }
+      return ranges;
+   }
+
+   // empty fEntryRanges so we'll return an empty vector on subsequent calls
+   auto ranges = std::move(fEntryRanges);
    return ranges;
 }
 
@@ -71,6 +89,12 @@ void RTrivialDS::SetNSlots(unsigned int nSlots)
 
 void RTrivialDS::Initialise()
 {
+   if (fSize == std::numeric_limits<ULong64_t>::max()) {
+      // infinite source, nothing to do here
+      return;
+   }
+
+   // initialize fEntryRanges
    const auto chunkSize = fSize / fNSlots;
    auto start = 0UL;
    auto end = 0UL;
@@ -93,6 +117,12 @@ RInterface<RDFDetail::RLoopManager, RTrivialDS> MakeTrivialDataFrame(ULong64_t s
 {
    auto lm = std::make_unique<RDFDetail::RLoopManager>(std::make_unique<RTrivialDS>(size, skipEvenEntries),
                                                        RDFInternal::ColumnNames_t{});
+   return RInterface<RDFDetail::RLoopManager, RTrivialDS>(std::move(lm));
+}
+
+RInterface<RDFDetail::RLoopManager, RTrivialDS> MakeTrivialDataFrame()
+{
+   auto lm = std::make_unique<RDFDetail::RLoopManager>(std::make_unique<RTrivialDS>(), RDFInternal::ColumnNames_t{});
    return RInterface<RDFDetail::RLoopManager, RTrivialDS>(std::move(lm));
 }
 

@@ -38,14 +38,7 @@
 #include "TMVA/VariableTransformBase.h"
 #include "TMVA/Results.h"
 
-#include "TMath.h"
-#include "Riostream.h"
 #include "TMatrix.h"
-#include "TMatrixD.h"
-#include "TVectorD.h"
-
-#include <iomanip>
-#include <fstream>
 
 using namespace TMVA;
 

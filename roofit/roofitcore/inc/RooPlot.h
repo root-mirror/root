@@ -183,8 +183,26 @@ public:
 
   void Browse(TBrowser *b) ;
 
+  /// \copydoc AddDirectoryStatus()
   static Bool_t addDirectoryStatus() ;
+  /// \copydoc AddDirectory()
   static Bool_t setAddDirectoryStatus(Bool_t flag) ;
+
+  /// Configure whether new instances of RooPlot will add themselves to `gDirectory`.
+  /// Like TH1::AddDirectory().
+  static void AddDirectory(Bool_t add=kTRUE) {
+    setAddDirectoryStatus(add);
+  }
+  /// Query whether new instances of RooPlot will add themselves to `gDirectory`.
+  /// When a file has been opened before a RooPlot instance is created,
+  /// this instance will be associated to the file. Closing the file will e.g.
+  /// write the instance to the file, and then delete it.
+  /// Like TH1::AddDirectoryStatus().
+  static Bool_t AddDirectoryStatus() {
+    return addDirectoryStatus();
+  }
+
+  void SetDirectory(TDirectory *dir);
 
 protected:
 
@@ -220,8 +238,6 @@ protected:
   const RooPlotable* _normObj ;    //! Pointer to normalization object ;
   Double_t _normNumEvts;     // Number of events in histogram (for normalization)
   Double_t _normBinWidth;    // Histogram bin width (for normalization)
-
-  TIterator *_iterator;      //! non-persistent
 
   Double_t _defYmin ;        // Default minimum for Yaxis (as calculated from contents)
   Double_t _defYmax ;        // Default maximum for Yaxis (as calculated from contents)

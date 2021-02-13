@@ -26,7 +26,7 @@
 namespace ROOT {
 namespace Detail {
 namespace RDF {
-class RCustomColumnBase;
+class RDefineBase;
 class RFilterBase;
 class RRangeBase;
 } // namespace RDF
@@ -34,16 +34,22 @@ class RRangeBase;
 
 namespace Internal {
 namespace RDF {
+class RBookedDefines;
+
 namespace GraphDrawing {
 std::shared_ptr<GraphNode>
-CreateDefineNode(const std::string &columnName, const ROOT::Detail::RDF::RCustomColumnBase *columnPtr);
+CreateDefineNode(const std::string &columnName, const ROOT::Detail::RDF::RDefineBase *columnPtr);
 
 std::shared_ptr<GraphNode> CreateFilterNode(const ROOT::Detail::RDF::RFilterBase *filterPtr);
 
 std::shared_ptr<GraphNode> CreateRangeNode(const ROOT::Detail::RDF::RRangeBase *rangePtr);
 
-bool CheckIfDefaultOrDSColumn(const std::string &name,
-                              const std::shared_ptr<ROOT::Detail::RDF::RCustomColumnBase> &column);
+
+/// Add the Defines that have been added between this node and the previous to the graph.
+/// Return the new "upmost" node, i.e. the last of the Defines added if any, otherwise the node itself
+std::shared_ptr<GraphNode> AddDefinesToGraph(std::shared_ptr<GraphNode> node,
+                                             const RDFInternal::RBookedDefines &defines,
+                                             const std::vector<std::string> &prevNodeDefines);
 
 // clang-format off
 /**
@@ -58,15 +64,15 @@ bool CheckIfDefaultOrDSColumn(const std::string &name,
 // clang-format on
 class GraphCreatorHelper {
 private:
-   using ColumnsNodesMap_t = std::map<const ROOT::Detail::RDF::RCustomColumnBase *, std::weak_ptr<GraphNode>>;
+   using DefinesNodesMap_t = std::map<const ROOT::Detail::RDF::RDefineBase *, std::weak_ptr<GraphNode>>;
    using FiltersNodesMap_t = std::map<const ROOT::Detail::RDF::RFilterBase *, std::weak_ptr<GraphNode>>;
    using RangesNodesMap_t = std::map<const ROOT::Detail::RDF::RRangeBase *, std::weak_ptr<GraphNode>>;
 
    ////////////////////////////////////////////////////////////////////////////
    /// \brief Stores the columns defined and which node in the graph defined them.
-   static ColumnsNodesMap_t &GetStaticColumnsMap()
+   static DefinesNodesMap_t &GetStaticColumnsMap()
    {
-      static ColumnsNodesMap_t sMap;
+      static DefinesNodesMap_t sMap;
       return sMap;
    };
 
@@ -89,7 +95,7 @@ private:
    ////////////////////////////////////////////////////////////////////////////
    /// \brief Invoked by the RNodes to create a define graph node.
    friend std::shared_ptr<GraphNode>
-   CreateDefineNode(const std::string &columnName, const ROOT::Detail::RDF::RCustomColumnBase *columnPtr);
+   CreateDefineNode(const std::string &columnName, const ROOT::Detail::RDF::RDefineBase *columnPtr);
 
    ////////////////////////////////////////////////////////////////////////////
    /// \brief Invoked by the RNodes to create a Filter graph node.
@@ -155,7 +161,7 @@ public:
       // First all static data structures are cleaned, to avoid undefined behaviours if more than one Represent is
       // called
       GetStaticFiltersMap() = FiltersNodesMap_t();
-      GetStaticColumnsMap() = ColumnsNodesMap_t();
+      GetStaticColumnsMap() = DefinesNodesMap_t();
       GetStaticRangesMap() = RangesNodesMap_t();
       GraphNode::ClearCounter();
       // The Represent can now start on a clean environment

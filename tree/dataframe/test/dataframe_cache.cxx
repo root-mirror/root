@@ -336,3 +336,13 @@ TEST(Cache, Carrays)
 }
 
 #endif // R__B64
+
+// ROOT-10563
+TEST(Cache, Alias)
+{
+   ROOT::RDataFrame df(3);
+   auto df2 = df.Define("x", "rdfentry_");
+   auto df3 = df2.Alias("y", "x");
+   auto df4 = df3.Cache({"y"});
+   EXPECT_EQ(df4.Sum("y").GetValue(), 3u);
+}

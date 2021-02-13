@@ -44,39 +44,16 @@
 #include <iosfwd>
 
 
-
-
-//doxygen tag
-
 /**
-   @defgroup SMatrixGroup SMatrix
-   @ingroup  Math
+\defgroup SMatrixSVector Matrix and Vector classes
+\ingroup SMatrixGroup
 
-   \ref SMatrixPage  for high performance vector and matrix computations.
-   Classes representing Matrices and Vectors of arbitrary type and dimension and related functions.
-   For a detailed description and usage examples see:
-   <ul>
-    <li>\ref SMatrixPage home page
-    <li>\ref SVectorDoc
-    <li>\ref SMatrixDoc
-    <li>\ref MatVecFunctions
-   </ul>
+Classes representing Matrices and Vectors of arbitrary type and dimension.
+For a detailed description and usage examples see:
 
-
-*/
-
-/**
-   @defgroup SMatrixSVector Matrix and Vector classes
-
-   @ingroup SMatrixGroup
-
-   Classes representing Matrices and Vectors of arbitrary type and dimension.
-   For a detailed description and usage examples see:
-   <ul>
-    <li>\ref SVectorDoc
-    <li>\ref SMatrixDoc
-    <li>\ref MatVecFunctions
-   </ul>
+  - \ref SVectorDoc
+  - \ref SMatrixDoc
+  - \ref MatVecFunctions
 
 */
 

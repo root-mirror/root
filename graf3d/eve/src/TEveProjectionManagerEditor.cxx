@@ -13,7 +13,6 @@
 #include "TEveProjectionManager.h"
 #include "TEveGValuators.h"
 
-#include "TGNumberEntry.h"
 #include "TGComboBox.h"
 #include "TGLabel.h"
 

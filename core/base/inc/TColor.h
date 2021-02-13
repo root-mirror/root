@@ -13,8 +13,8 @@
 #define ROOT_TColor
 
 #include "TNamed.h"
-#include "TArrayI.h"
 
+class TArrayI;
 
 class TColor : public TNamed {
 protected:

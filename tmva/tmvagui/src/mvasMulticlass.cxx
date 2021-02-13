@@ -40,7 +40,7 @@ void TMVA::mvasMulticlass(TString dataset, TString fin , HistType htype , Bool_t
    // define Canvas layout here!
    // Int_t xPad = 1; // no of plots in x
    // Int_t yPad = 1; // no of plots in y
-   //   Int_t noPad = xPad * yPad ; 
+   //   Int_t noPad = xPad * yPad ;
    const Int_t width = 600;   // size of canvas
 
    // this defines how many canvases we need
@@ -76,7 +76,7 @@ void TMVA::mvasMulticlass(TString dataset, TString fin , HistType htype , Bool_t
          TString hname = "MVA_" + methodTitle;
          for(UInt_t icls = 0; icls < classnames.size(); ++icls){
             TObjArray hists;
-            
+
             std::vector<TString>::iterator classiter = classnames.begin();
             for(; classiter!=classnames.end(); ++classiter){
                TString name(hname+"_Test_"+ classnames.at(icls)
@@ -88,24 +88,24 @@ void TMVA::mvasMulticlass(TString dataset, TString fin , HistType htype , Bool_t
                }
                hists.Add(hist);
             }
-            
-            
+
+
             // chop off useless stuff
             ((TH1*)hists.First())->SetTitle( Form("TMVA response for classifier: %s", methodTitle.Data() ));
-            
+
             // create new canvas
             //cout << "Create canvas..." << endl;
-            TString ctitle = ((htype == kMVAType) ? 
-                              Form("TMVA response for class %s %s", classnames.at(icls).Data(),methodTitle.Data()) :                
+            TString ctitle = ((htype == kMVAType) ?
+                              Form("TMVA response for class %s %s", classnames.at(icls).Data(),methodTitle.Data()) :
                               Form("TMVA comparison for class %s %s", classnames.at(icls).Data(),methodTitle.Data())) ;
-            
-            c = new TCanvas( Form("canvas%d", countCanvas+1), ctitle, 
-                             countCanvas*50+200, countCanvas*20, width, (Int_t)width*0.78 ); 
-            
+
+            c = new TCanvas( Form("canvas%d", countCanvas+1), ctitle,
+                             countCanvas*50+200, countCanvas*20, width, (Int_t)width*0.78 );
+
             // set the histogram style
             //cout << "Set histogram style..." << endl;
             TMVAGlob::SetMultiClassStyle( &hists );
-            
+
             // normalise all histograms and find maximum
             Float_t histmax = -1;
             for(Int_t i=0; i<hists.GetEntriesFast(); ++i){
@@ -113,57 +113,59 @@ void TMVA::mvasMulticlass(TString dataset, TString fin , HistType htype , Bool_t
                if(((TH1*)hists[i])->GetMaximum() > histmax)
                   histmax = ((TH1*)hists[i])->GetMaximum();
             }
-            
+
             // frame limits (between 0 and 1 per definition)
             Float_t xmin = 0;
             Float_t xmax = 1;
             Float_t ymin = 0;
             Float_t maxMult = (htype == kCompareType) ? 1.3 : 1.2;
-            Float_t ymax = histmax*maxMult; 
+            Float_t ymax = histmax*maxMult;
             // build a frame
             Int_t nb = 500;
-            TString hFrameName(TString("frame") + methodTitle);
+            TString hFrameName(TString::Format("frame_class%d_",icls) + methodTitle);
             TObject *o = gROOT->FindObject(hFrameName);
             if(o) delete o;
-            TH2F* frame = new TH2F( hFrameName, ((TH1*)hists.First())->GetTitle(), 
-                                    nb, xmin, xmax, nb, ymin, ymax );
-            frame->GetXaxis()->SetTitle( methodTitle + " response for "+classnames.at(icls));
+            TH1F* frame = new TH1F( hFrameName, ((TH1*)hists.First())->GetTitle(),
+                                    nb, xmin, xmax);
+            frame->SetMinimum(ymin);
+            frame->SetMaximum(ymax);
+            frame->GetXaxis()->SetTitle(methodTitle + " response for " + classnames.at(icls));
             frame->GetYaxis()->SetTitle("(1/N) dN^{ }/^{ }dx");
             TMVAGlob::SetFrameStyle( frame );
-            
+
             // eventually: draw the frame
-            frame->Draw();  
-            
+            frame->Draw();
+
             c->GetPad(0)->SetLeftMargin( 0.105 );
             frame->GetYaxis()->SetTitleOffset( 1.2 );
-            
-            // Draw legend               
-            TLegend *legend= new TLegend( c->GetLeftMargin(), 1 - c->GetTopMargin() - 0.12, 
+
+            // Draw legend
+            TLegend *legend= new TLegend( c->GetLeftMargin(), 1 - c->GetTopMargin() - 0.12,
                                           c->GetLeftMargin() + (htype == kCompareType ? 0.40 : 0.3), 1 - c->GetTopMargin() );
             legend->SetFillStyle( 1 );
             classiter = classnames.begin();
-            
+
             for(Int_t i=0; i<hists.GetEntriesFast(); ++i, ++classiter){
                legend->AddEntry(((TH1*)hists[i]),*classiter,"F");
             }
-            
+
             legend->SetBorderSize(1);
             legend->SetMargin( 0.3 );
             legend->Draw("same");
-            
-            
+
+
             for(Int_t i=0; i<hists.GetEntriesFast(); ++i){
-               
+
                ((TH1*)hists[i])->Draw("histsame");
                TString ytit = TString("(1/N) ") + ((TH1*)hists[i])->GetYaxis()->GetTitle();
                ((TH1*)hists[i])->GetYaxis()->SetTitle( ytit ); // histograms are normalised
-               
+
             }
-            
-            
+
+
             if (htype == kCompareType) {
-               
-               TObjArray othists; 
+
+               TObjArray othists;
                // if overtraining check, load additional histograms
                classiter = classnames.begin();
                for(; classiter!=classnames.end(); ++classiter){
@@ -176,26 +178,26 @@ void TMVA::mvasMulticlass(TString dataset, TString fin , HistType htype , Bool_t
                   }
                   othists.Add(hist);
                }
-               
+
                TLegend *legend2= new TLegend( 1 - c->GetRightMargin() - 0.42, 1 - c->GetTopMargin() - 0.12,
                                               1 - c->GetRightMargin(), 1 - c->GetTopMargin() );
                legend2->SetFillStyle( 1 );
                legend2->SetBorderSize(1);
-               
+
                classiter = classnames.begin();
                for(Int_t i=0; i<othists.GetEntriesFast(); ++i, ++classiter){
                   legend2->AddEntry(((TH1*)othists[i]),*classiter+" (training sample)","P");
                }
                legend2->SetMargin( 0.1 );
                legend2->Draw("same");
-               
+
                // normalise all histograms and get maximum
                for(Int_t i=0; i<othists.GetEntriesFast(); ++i){
                   TMVAGlob::NormalizeHist((TH1*)othists[i] );
                   if(((TH1*)othists[i])->GetMaximum() > histmax)
                      histmax = ((TH1*)othists[i])->GetMaximum();
                }
-               
+
                TMVAGlob::SetMultiClassStyle( &othists );
                for(Int_t i=0; i<othists.GetEntriesFast(); ++i){
                   Int_t col = ((TH1*)hists[i])->GetLineColor();
@@ -205,19 +207,19 @@ void TMVA::mvasMulticlass(TString dataset, TString fin , HistType htype , Bool_t
                   ((TH1*)othists[i])->SetLineWidth( 1 );
                   ((TH1*)othists[i])->Draw("e1same");
                }
-               
+
                ymax = histmax*maxMult;
-               frame->GetYaxis()->SetLimits( 0, ymax );
-               
+               frame->SetMaximum( ymax );
+
                // for better visibility, plot thinner lines
                TMVAGlob::SetMultiClassStyle( &othists );
                for(Int_t i=0; i<hists.GetEntriesFast(); ++i){
                   ((TH1*)hists[i])->SetLineWidth( 1 );
                }
-               
-               
+
+
                // perform K-S test
-               
+
                cout << "--- Perform Kolmogorov-Smirnov tests" << endl;
                cout << "--- Goodness of consistency for class " << classnames.at(icls)<< endl;
                //TString probatext("Kolmogorov-Smirnov test: ");
@@ -226,41 +228,41 @@ void TMVA::mvasMulticlass(TString dataset, TString fin , HistType htype , Bool_t
                   cout <<  classnames.at(j) << ": " << kol  << endl;
                   //probatext.Append(classnames.at(j)+Form(" %.3f ",kol));
                }
-               
-               
-               
+
+
+
                //TText* tt = new TText( 0.12, 0.74, probatext );
                //tt->SetNDC(); tt->SetTextSize( 0.032 ); tt->AppendPad();
-               
+
             }
-            
-            
+
+
             // redraw axes
             frame->Draw("sameaxis");
-            
+
             // text for overflows
             //Int_t    nbin = sig->GetNbinsX();
             //Double_t dxu  = sig->GetBinWidth(0);
             //Double_t dxo  = sig->GetBinWidth(nbin+1);
-            //TString uoflow = Form( "U/O-flow (S,B): (%.1f, %.1f)%% / (%.1f, %.1f)%%", 
+            //TString uoflow = Form( "U/O-flow (S,B): (%.1f, %.1f)%% / (%.1f, %.1f)%%",
             //                       sig->GetBinContent(0)*dxu*100, bgd->GetBinContent(0)*dxu*100,
             //                      sig->GetBinContent(nbin+1)*dxo*100, bgd->GetBinContent(nbin+1)*dxo*100 );
             //TText* t = new TText( 0.975, 0.115, uoflow );
             //t->SetNDC();
             //t->SetTextSize( 0.030 );
             //t->SetTextAngle( 90 );
-            //t->AppendPad();    
-            
+            //t->AppendPad();
+
             // update canvas
             c->Update();
-            
+
             // save canvas to file
-            
+
             TMVAGlob::plot_logo(1.058);
             if (Save_Images) {
                if      (htype == kMVAType)     TMVAGlob::imgconv( c, Form("%s/plots/mva_%s_%s",dataset.Data(),classnames.at(icls).Data(), methodTitle.Data()) );
                else if      (htype == kCompareType)     TMVAGlob::imgconv( c, Form("%s/plots/overtrain_%s_%s",dataset.Data(),classnames.at(icls).Data(), methodTitle.Data()) );
-               
+
             }
             countCanvas++;
          }
@@ -268,4 +270,3 @@ void TMVA::mvasMulticlass(TString dataset, TString fin , HistType htype , Bool_t
       cout << "";
    }
 }
-

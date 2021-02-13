@@ -11,11 +11,11 @@
 #ifndef ROOT_RDFUTILS
 #define ROOT_RDFUTILS
 
-#include "ROOT/RDataSource.hxx" // ColumnName2ColumnTypeName
-#include "ROOT/TypeTraits.hxx"
+#include "ROOT/RSpan.hxx"
+#include "ROOT/RStringView.hxx"
 #include "ROOT/RVec.hxx"
-#include "ROOT/RSnapshotOptions.hxx"
-#include "TH1.h"
+#include "ROOT/TypeTraits.hxx"
+#include "Rtypes.h"
 
 #include <array>
 #include <deque>
@@ -29,15 +29,23 @@ class TTree;
 class TTreeReader;
 
 /// \cond HIDDEN_SYMBOLS
-
 namespace ROOT {
+namespace Experimental {
+class RLogChannel;
+}
+
+namespace RDF {
+class RDataSource;
+}
 
 namespace Detail {
 namespace RDF {
 using ColumnNames_t = std::vector<std::string>;
 
+ROOT::Experimental::RLogChannel &RDFLogChannel();
+
 // fwd decl for ColumnName2ColumnTypeName
-class RCustomColumnBase;
+class RDefineBase;
 
 // type used for tag dispatching
 struct RInferredType {
@@ -48,9 +56,59 @@ struct RInferredType {
 
 namespace Internal {
 namespace RDF {
+
 using namespace ROOT::TypeTraits;
 using namespace ROOT::Detail::RDF;
 using namespace ROOT::RDF;
+
+/// Check for container traits.
+///
+/// Note that for all uses in RDF we don't want to classify std::string as a container.
+/// Template specializations of IsDataContainer make it return `true` for std::span<T>, std::vector<bool> and
+/// RVec<bool>, which we do want to count as containers even though they do not satisfy all the traits tested by the
+/// generic IsDataContainer<T>.
+template <typename T>
+struct IsDataContainer {
+   using Test_t = typename std::decay<T>::type;
+
+   template <typename A>
+   static constexpr bool Test(A *pt, A const *cpt = nullptr, decltype(pt->begin()) * = nullptr,
+                              decltype(pt->end()) * = nullptr, decltype(cpt->begin()) * = nullptr,
+                              decltype(cpt->end()) * = nullptr, typename A::iterator *pi = nullptr,
+                              typename A::const_iterator *pci = nullptr)
+   {
+      using It_t = typename A::iterator;
+      using CIt_t = typename A::const_iterator;
+      using V_t = typename A::value_type;
+      return std::is_same<decltype(pt->begin()), It_t>::value && std::is_same<decltype(pt->end()), It_t>::value &&
+             std::is_same<decltype(cpt->begin()), CIt_t>::value && std::is_same<decltype(cpt->end()), CIt_t>::value &&
+             std::is_same<decltype(**pi), V_t &>::value && std::is_same<decltype(**pci), V_t const &>::value &&
+             !std::is_same<T, std::string>::value;
+   }
+
+   template <typename A>
+   static constexpr bool Test(...)
+   {
+      return false;
+   }
+
+   static constexpr bool value = Test<Test_t>(nullptr);
+};
+
+template<>
+struct IsDataContainer<std::vector<bool>> {
+   static constexpr bool value = true;
+};
+
+template<>
+struct IsDataContainer<ROOT::VecOps::RVec<bool>> {
+   static constexpr bool value = true;
+};
+
+template<typename T>
+struct IsDataContainer<std::span<T>> {
+   static constexpr bool value = true;
+};
 
 /// Detect whether a type is an instantiation of vector<T,A>
 template <typename>
@@ -63,8 +121,8 @@ const std::type_info &TypeName2TypeID(const std::string &name);
 
 std::string TypeID2TypeName(const std::type_info &id);
 
-std::string ColumnName2ColumnTypeName(const std::string &colName, unsigned int namespaceID, TTree *, RDataSource *,
-                                      bool isCustomColumn, bool vector2rvec = true, unsigned int customColID = 0);
+std::string ColumnName2ColumnTypeName(const std::string &colName, TTree *, RDataSource *, RDefineBase *,
+                                      bool vector2rvec = true);
 
 char TypeName2ROOTTypeName(const std::string &b);
 
@@ -107,7 +165,7 @@ struct IsRVec_t<ROOT::VecOps::RVec<T>> : public std::true_type {};
 
 // Check the value_type type of a type with a SFINAE to allow compilation in presence
 // fundamental types
-template <typename T, bool IsContainer = IsContainer<typename std::decay<T>::type>::value>
+template <typename T, bool IsDataContainer = IsDataContainer<typename std::decay<T>::type>::value || std::is_same<std::string, T>::value>
 struct ValueType {
    using value_type = typename T::value_type;
 };
@@ -138,6 +196,9 @@ void InterpreterDeclare(const std::string &code);
 /// The optional `context` parameter, if present, is mentioned in the error message.
 /// The pointer returned by the call to TInterpreter::Calc is returned in case of success.
 Long64_t InterpreterCalc(const std::string &code, const std::string &context = "");
+
+/// Whether custom column with name colName is an "internal" column such as rdfentry_ or rdfslot_
+bool IsInternalColumn(std::string_view colName);
 
 } // end NS RDF
 } // end NS Internal

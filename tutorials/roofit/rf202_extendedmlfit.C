@@ -1,12 +1,14 @@
 /// \file
 /// \ingroup tutorial_roofit
 /// \notebook -js
-/// Addition and convolution: setting up an extended maximum likelihood fit
+/// Setting up an extended maximum likelihood fit.
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -36,12 +38,12 @@ void rf202_extendedmlfit()
    RooGaussian sig1("sig1", "Signal component 1", x, mean, sigma1);
    RooGaussian sig2("sig2", "Signal component 2", x, mean, sigma2);
 
-   // Build Chebychev polynomial p.d.f.
+   // Build Chebychev polynomial pdf
    RooRealVar a0("a0", "a0", 0.5, 0., 1.);
    RooRealVar a1("a1", "a1", 0.2, 0., 1.);
    RooChebychev bkg("bkg", "Background", x, RooArgSet(a0, a1));
 
-   // Sum the signal components into a composite signal p.d.f.
+   // Sum the signal components into a composite signal pdf
    RooRealVar sig1frac("sig1frac", "fraction of component 1 in signal", 0.8, 0., 1.);
    RooAddPdf sig("sig", "Signal", RooArgList(sig1, sig2), sig1frac);
 
@@ -67,7 +69,7 @@ void rf202_extendedmlfit()
    // Fit model to data, extended ML term automatically included
    model.fitTo(*data);
 
-   // Plot data and PDF overlaid, use expected number of events for p.d.f projection normalization
+   // Plot data and PDF overlaid, use expected number of events for pdf projection normalization
    // rather than observed number of events (==data->numEntries())
    RooPlot *xframe = x.frame(Title("extended ML fit example"));
    data->plotOn(xframe);
@@ -80,7 +82,7 @@ void rf202_extendedmlfit()
    model.plotOn(xframe, Components(RooArgSet(bkg, sig2)), LineStyle(kDotted),
                 Normalization(1.0, RooAbsReal::RelativeExpected));
 
-   // Print structure of composite p.d.f.
+   // Print structure of composite pdf
    model.Print("t");
 
    //----------------
@@ -91,13 +93,13 @@ void rf202_extendedmlfit()
    // ---------------------------------------------------------------------
 
    // Associated nsig/nbkg as expected number of events with sig/bkg
-   RooExtendPdf esig("esig", "extended signal p.d.f", sig, nsig);
-   RooExtendPdf ebkg("ebkg", "extended background p.d.f", bkg, nbkg);
+   RooExtendPdf esig("esig", "extended signal pdf", sig, nsig);
+   RooExtendPdf ebkg("ebkg", "extended background pdf", bkg, nbkg);
 
    // S u m   e x t e n d e d   c o m p o n e n t s   w i t h o u t   c o e f s
    // -------------------------------------------------------------------------
 
-   // Construct sum of two extended p.d.f. (no coefficients required)
+   // Construct sum of two extended pdf (no coefficients required)
    RooAddPdf model2("model2", "(g1+g2)+a", RooArgList(ebkg, esig));
 
    // Draw the frame on the canvas

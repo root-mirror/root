@@ -45,7 +45,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 /// Default constructor
 
-RooProjectedPdf::RooProjectedPdf() : _curNormSet(0)
+RooProjectedPdf::RooProjectedPdf()
 {
 }
 
@@ -86,25 +86,13 @@ RooProjectedPdf::RooProjectedPdf() : _curNormSet(0)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Special version of getVal() overrides RooAbsReal::getValF() to save value of current normalization set
-
-Double_t RooProjectedPdf::getValV(const RooArgSet* set) const 
-{
-  _curNormSet = (RooArgSet*)set ;
-
-  return RooAbsPdf::getValV(set) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
 /// Evaluate projected p.d.f
 
 Double_t RooProjectedPdf::evaluate() const 
 {
   // Calculate current unnormalized value of object
   int code ;
-  const RooAbsReal* proj = getProjection(&intobs,_curNormSet,0,code) ;
+  const RooAbsReal* proj = getProjection(&intobs, _normSet, 0, code);
   
   return proj->getVal() ;
 }

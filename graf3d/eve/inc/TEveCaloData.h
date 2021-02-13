@@ -188,7 +188,7 @@ public:
    vCellId_t&      GetCellsSelected()    { return fCellsSelected; }
    vCellId_t&      GetCellsHighlighted() { return fCellsHighlighted; }
    void            PrintCellsSelected();
-   void  ProcessSelection(vCellId_t& sel_cells, TGLSelectRecord& rec);
+   void            ProcessSelection(vCellId_t& sel_cells, TGLSelectRecord& rec);
 
    virtual void    Rebin(TAxis *ax, TAxis *ay, vCellId_t &in, Bool_t et, RebinData_t &out) const = 0;
 

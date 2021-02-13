@@ -115,7 +115,7 @@ TriangleCollector::~TriangleCollector()
 //////////////////////////////////////////////////////////////////////////////////////
 /// add triangle
 
-void TriangleCollector::add_triangle(Int_t v0, Int_t v1, Int_t v2)
+void TriangleCollector::add_triangle(UInt_t v0, UInt_t v1, UInt_t v2)
 {
    fPolyDesc.emplace_back(3);
    fPolyDesc.emplace_back(v0);
@@ -127,7 +127,7 @@ void TriangleCollector::add_triangle(Int_t v0, Int_t v1, Int_t v2)
 //////////////////////////////////////////////////////////////////////////////////////
 /// process_vertex
 
-void ROOT::Experimental::EveGlu::TriangleCollector::process_vertex(Int_t vi)
+void ROOT::Experimental::EveGlu::TriangleCollector::process_vertex(UInt_t vi)
 {
    ++fNVertices;
 
@@ -175,11 +175,11 @@ void ROOT::Experimental::EveGlu::TriangleCollector::process_vertex(Int_t vi)
 /// ProcessData
 
 void ROOT::Experimental::EveGlu::TriangleCollector::ProcessData(const std::vector<Double_t>& verts,
-                                    const std::vector<Int_t>   & polys,
+                                    const std::vector<UInt_t>  & polys,
                                     const Int_t                  n_polys)
 {
    const Double_t *pnts = &verts[0];
-   const Int_t    *pols = &polys[0];
+   const UInt_t   *pols = &polys[0];
 
    for (Int_t i = 0, j = 0; i < n_polys; ++i)
    {

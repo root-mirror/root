@@ -13,26 +13,24 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-
-
-
-
-FunctionMinimum MnFumiliMinimize::operator()(unsigned int maxfcn, double toler) {
+FunctionMinimum MnFumiliMinimize::operator()(unsigned int maxfcn, double toler)
+{
    // minimize using Fumili
    // need to reimplement otherwise base class method is done
 
    assert(fState.IsValid());
    unsigned int npar = VariableParameters();
    //   assert(npar > 0);
-   if(maxfcn == 0) maxfcn = 200 + 100*npar + 5*npar*npar;
-   FunctionMinimum min = Minimizer().Minimize( Fcnbase(), fState, fStrategy, maxfcn, toler);
+   if (maxfcn == 0)
+      maxfcn = 200 + 100 * npar + 5 * npar * npar;
+   FunctionMinimum min = Minimizer().Minimize(Fcnbase(), fState, fStrategy, maxfcn, toler);
    fNumCall += min.NFcn();
    fState = min.UserState();
    return min;
 }
 
-   }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT

@@ -58,7 +58,7 @@ using std::string;
 
 ClassImp(TMVA::DecisionTreeNode);
 
-bool     TMVA::DecisionTreeNode::fgIsTraining = false;
+Bool_t   TMVA::DecisionTreeNode::fgIsTraining = false;
 UInt_t   TMVA::DecisionTreeNode::fgTmva_Version_Code = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -540,4 +540,21 @@ void TMVA::DecisionTreeNode::ReadContent( std::stringstream& /*s*/ )
 TMVA::MsgLogger& TMVA::DecisionTreeNode::Log() {
    TTHREAD_TLS_DECL_ARG(MsgLogger,logger,"DecisionTreeNode");    // static because there is a huge number of nodes...
    return logger;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void TMVA::DecisionTreeNode::SetIsTraining(Bool_t on) {
+   fgIsTraining = on;
+}
+////////////////////////////////////////////////////////////////////////////////
+void TMVA::DecisionTreeNode::SetTmvaVersionCode(UInt_t code) {
+   fgTmva_Version_Code = code;
+}
+////////////////////////////////////////////////////////////////////////////////
+Bool_t TMVA::DecisionTreeNode::IsTraining() {
+   return fgIsTraining;
+}
+////////////////////////////////////////////////////////////////////////////////
+UInt_t TMVA::DecisionTreeNode::GetTmvaVersionCode() {
+   return fgTmva_Version_Code;
 }

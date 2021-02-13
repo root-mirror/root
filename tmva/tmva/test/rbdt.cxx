@@ -5,7 +5,6 @@
 
 #include "ROOT/RVec.hxx"
 
-#include <iostream>
 #include <cmath>
 
 using namespace TMVA::Experimental;

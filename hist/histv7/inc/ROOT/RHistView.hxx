@@ -1,4 +1,4 @@
-/// \file ROOT/RHistView.h
+/// \file ROOT/RHistView.hxx
 /// \ingroup Hist ROOT7
 /// \author Axel Naumann <axel@cern.ch>
 /// \date 2015-08-06
@@ -60,13 +60,13 @@ public:
 
    bool IsBinOutOfRange(int idx) const noexcept
    {
-      // RODO: use fRange!
+      // TODO: use fRange!
       return idx < 0 || idx > fNBins;
    }
 
    void SetRange(int axis, double from, double to)
    {
-      RAxisView axisView = fHist.GetImpl()->GetAxis(axis);
+      const RAxisBase &axisView = fHist.GetImpl()->GetAxis(axis);
       fRange[axis] = axisView.FindBin(from);
       fRange[axis] = axisView.FindBin(to);
    }

@@ -93,6 +93,9 @@ namespace TMVA {
       // regression response
       virtual const std::vector<Float_t>& GetRegressionValues();
 
+      // multi class response
+      virtual const std::vector<Float_t> &GetMulticlassValues();
+
       virtual void MakeClass( const TString& = TString("") ) const {};
 
    private :

@@ -28,7 +28,6 @@ and the outer two pieces, if required are calculated using a 1/x transform
 #include "RooFit.h"
 
 #include "RooImproperIntegrator1D.h"
-#include "RooImproperIntegrator1D.h"
 #include "RooIntegrator1D.h"
 #include "RooInvTransform.h"
 #include "RooNumber.h"

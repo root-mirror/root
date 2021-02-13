@@ -12,6 +12,7 @@
 #ifndef ROOT_TEveVector
 #define ROOT_TEveVector
 
+#include "Rtypes.h"
 #include "TMath.h"
 #include <cstddef>
 

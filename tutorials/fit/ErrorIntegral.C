@@ -20,7 +20,7 @@
 
 #include "TF1.h"
 #include "TH1D.h"
-#include "TVirtualFitter.h"
+#include "TFitResult.h"
 #include "TMath.h"
 #include <assert.h>
 #include <iostream>
@@ -46,19 +46,20 @@ void ErrorIntegral() {
 
    h1->FillRandom("f",1000); // fill histogram sampling fitFunc
    fitFunc->SetParameter(0,3.);  // vary a little the parameters
-   h1->Fit(fitFunc);             // fit the histogram
+   auto fitResult = h1->Fit(fitFunc,"S");             // fit the histogram and get fit result pointer
 
    h1->Draw();
 
    /* calculate the integral*/
    double integral = fitFunc->Integral(0,1);
 
-   TVirtualFitter * fitter = TVirtualFitter::GetFitter();
-   assert(fitter != 0);
-   double * covMatrix = fitter->GetCovarianceMatrix();
+   auto covMatrix = fitResult->GetCovarianceMatrix();
+   std::cout << "Covariance matrix from the fit ";
+   covMatrix.Print();
 
-   /* using new function in TF1 (from 12/6/2007)*/
-   double sigma_integral = fitFunc->IntegralError(0,1);
+   // need to pass covariance matrix to fit result.
+   // Parameters values are are stored inside the function but we can also retrieve from TFitResult
+   double sigma_integral = fitFunc->IntegralError(0,1, fitResult->GetParams() , covMatrix.GetMatrixArray());
 
    std::cout << "Integral = " << integral << " +/- " << sigma_integral
              << std::endl;
@@ -71,8 +72,8 @@ void ErrorIntegral() {
    double c1c = (1-std::cos(p[0]) )/p[0];
 
    // estimated error with correlations
-   double sic = std::sqrt( c0c*c0c * covMatrix[0] + c1c*c1c * covMatrix[3]
-      + 2.* c0c*c1c * covMatrix[1]);
+   double sic = std::sqrt( c0c*c0c * covMatrix(0,0) + c1c*c1c * covMatrix(1,1)
+      + 2.* c0c*c1c * covMatrix(0,1));
 
    if ( std::fabs(sigma_integral-sic) > 1.E-6*sic )
       std::cout << " ERROR: test failed : different analytical  integral : "

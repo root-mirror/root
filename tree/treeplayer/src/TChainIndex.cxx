@@ -365,6 +365,19 @@ TTreeFormula *TChainIndex::GetMinorFormulaParent(const TTree *parent)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Return kTRUE if index can be applied to the TTree
+
+Bool_t TChainIndex::IsValidFor(const TTree *parent)
+{
+   auto *majorFormula = GetMajorFormulaParent(parent);
+   auto *minorFormula = GetMinorFormulaParent(parent);
+   if ((majorFormula == nullptr || majorFormula->GetNdim() == 0) ||
+       (minorFormula == nullptr || minorFormula->GetNdim() == 0))
+         return kFALSE;
+   return kTRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Updates the parent formulae.
 /// Called by TChain::LoadTree when the parent chain changes it's tree.
 

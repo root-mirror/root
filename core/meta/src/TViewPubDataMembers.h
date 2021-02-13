@@ -31,11 +31,11 @@ protected:
    TList   fClasses; // list of the all the (base) classes for which we list methods.
 
 private:
-   TViewPubDataMembers(const TViewPubDataMembers&);              // not implemented
-   TViewPubDataMembers& operator=(const TViewPubDataMembers&);   // not implemented
+   TViewPubDataMembers(const TViewPubDataMembers&) = delete;
+   TViewPubDataMembers& operator=(const TViewPubDataMembers&) = delete;
 
 public:
-   TViewPubDataMembers(TClass *cl = 0);
+   TViewPubDataMembers(TClass *cl = nullptr);
    virtual    ~TViewPubDataMembers();
 
    TObject   *FindObject(const char *name) const;

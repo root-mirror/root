@@ -17,6 +17,7 @@
 #include "TMVA/DNN/Architectures/Cpu.h"
 #include "TestRecurrentBackpropagation.h"
 #include "TROOT.h"
+#include "TMath.h"
 
 using namespace TMVA::DNN;
 using namespace TMVA::DNN::RNN;
@@ -24,41 +25,61 @@ using namespace TMVA::DNN::RNN;
 int main() {
 
    bool debug = false;
-   std::cout << "Testing RNN backward pass\n";
+   std::cout << "Testing RNN backward pass on CPU\n";
 
-   ROOT::EnableImplicitMT(1);
+   //ROOT::EnableImplicitMT(1);
 
    using Scalar_t = Double_t;
+   using Architecture_t = TCpu<Scalar_t>;
+
+   int seed = 12345;
+   gRandom->SetSeed(seed);
+   Architecture_t::SetRandomSeed(gRandom->Integer(TMath::Limits<UInt_t>::Max()));
 
    bool fail = false;
-   if (debug) {
-      fail |=   testRecurrentBackpropagation<TCpu<Scalar_t>>(2, 1, 1, 2, 1e-5, {true, false, false}, true);
+
+   // timesteps, batchsize, statesize, inputsize  { fixed input, with dense layer, with extra RNN, return full sequence, modify weights }
+
+   fail |= testRecurrentBackpropagation<Architecture_t>(3, 1, 5, 4, 1e-5, {true, true, false}, debug);
+   if (fail) {
+      Error("testRecurrentBackPropagationCpu", "Fixed test failed");
+      if (!debug) {
+         Info("testRecurrentBackPropagationCpu", "Rerun test in Debug mode");
+         testRecurrentBackpropagation<Architecture_t>(3, 1, 5, 4, 1e-5, {true, true, false}, true);
+      }
       return fail;
    }
 
-   // timesteps, batchsize, statesize, inputsize  { fixed input, with dense layer, with extra RNN }
+   fail |= testRecurrentBackpropagation<Architecture_t>(1, 2, 1, 2, 1e-5);
 
-   fail |= testRecurrentBackpropagation<TCpu<Scalar_t>>(1, 2, 1, 2, 1e-5);
+   fail |= testRecurrentBackpropagation<Architecture_t>(1, 2, 3, 2, 1e-5, {}, debug);
 
-   fail |= testRecurrentBackpropagation<TCpu<Scalar_t>>(1, 2, 3, 2, 1e-5);
+   fail |= testRecurrentBackpropagation<Architecture_t>(2, 3, 4, 5, 1e-5, {}, debug);
 
-   fail |= testRecurrentBackpropagation<TCpu<Scalar_t>>(2, 3, 4, 5, 1e-5);
+   // test returning the full sequence
+   fail |= testRecurrentBackpropagation<Architecture_t>(2, 3, 4, 5, 1e-5, {false, false, false, true}, debug);
 
-   fail |= testRecurrentBackpropagation<TCpu<Scalar_t>>(4, 2, 10, 5, 1e-5);
-//   testRecurrentBackpropagation<TCpu<Scalar_t>>(4, 2, 5, 4, 1e-5, true, false, true);
 
-   fail |= testRecurrentBackpropagation<TCpu<Scalar_t>>(5, 64, 10, 5, 1e-5);
+   fail |= testRecurrentBackpropagation<Architecture_t>(4, 2, 10, 5, 1e-5);
 
+   fail |= testRecurrentBackpropagation<Architecture_t>(5, 64, 10, 5, 1e-5);
 
    // using a fixed input
-   fail |= testRecurrentBackpropagation<TCpu<Scalar_t>>(3, 1, 10, 5, 1e-5, {true});
+   fail |= testRecurrentBackpropagation<Architecture_t>(3, 1, 10, 5, 1e-5, {true});
 
    // with a dense layer
-   fail |= testRecurrentBackpropagation<TCpu<Scalar_t>>(4, 32, 10, 20, 1e-5, {false, true});
+   fail |= testRecurrentBackpropagation<Architecture_t>(4, 32, 10, 20, 1e-5, {false, true});
 
-   // with an additional RNN layer
-   fail |= testRecurrentBackpropagation<TCpu<Scalar_t>>(4, 32, 10, 5, 1e-5, {false, true, true});
+   // test returning the full sequence and dense layer
+   fail |= testRecurrentBackpropagation<Architecture_t>(3, 8, 5, 4, 1e-5, {false, true, false, true}, debug);
 
+   // with an additional RNN layer and dense layer
+   fail |= testRecurrentBackpropagation<Architecture_t>(2, 2, 3, 2, 1e-5, {false, true, true, false}, debug);
+
+   if (fail)
+      Error("testRecurrentBackPropagationCpu", "Test failed !!!");
+   else
+      Info("testRecurrentPropagationCpu", "All tests passed !!!");
 
    return fail;
 }

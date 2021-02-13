@@ -30,8 +30,7 @@ the selectFastAlgorithm() method.
 #include "RooAbsReal.h"
 #include "RooRealVar.h"
 #include "RooMath.h"
-#include "BatchHelpers.h"
-#include "RooVDTHeaders.h"
+#include "RooBatchCompute.h"
 
 #include <cmath>
 #include <complex>
@@ -100,62 +99,8 @@ Double_t RooVoigtian::evaluate() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-namespace {
-//Author: Emmanouil Michalainas, CERN 11 September 2019
-
-template<class Tx, class Tmean, class Twidth, class Tsigma>
-void compute(	size_t batchSize, double * __restrict output,
-              Tx X, Tmean M, Twidth W, Tsigma S)
-{
-  constexpr double invSqrt2 = 0.707106781186547524400844362105;
-  for (size_t i=0; i<batchSize; i++) {
-    const double arg = (X[i]-M[i])*(X[i]-M[i]);
-    if (S[i]==0.0 && W[i]==0.0) {
-      output[i] = 1.0;
-    } else if (S[i]==0.0) {
-      output[i] = 1/(arg+0.25*W[i]*W[i]);
-    } else if (W[i]==0.0) {
-      output[i] = _rf_fast_exp(-0.5*arg/(S[i]*S[i]));
-    } else {
-      output[i] = invSqrt2/S[i];
-    }
-  }
-  
-  for (size_t i=0; i<batchSize; i++) {
-    if (S[i]!=0.0 && W[i]!=0.0) {
-      if (output[i] < 0) output[i] = -output[i];
-      const double factor = W[i]>0.0 ? 0.5 : -0.5;
-      std::complex<Double_t> z( output[i]*(X[i]-M[i]) , factor*output[i]*W[i] );
-      output[i] *= RooMath::faddeeva(z).real();
-    }
-  }
-}
-};
-
-RooSpan<double> RooVoigtian::evaluateBatch(std::size_t begin, std::size_t batchSize) const {
-  using namespace BatchHelpers;
-
-  EvaluateInfo info = getInfo( {&x, &mean, &width, &sigma}, begin, batchSize );
-  if (info.nBatches == 0) {
-    return {};
-  }
-  auto output = _batchData.makeWritableBatchUnInit(begin, batchSize);
-  auto xData = x.getValBatch(begin, info.size);
-
-  if (info.nBatches==1 && !xData.empty()) {
-    compute(info.size, output.data(), xData.data(),
-    BracketAdapter<double> (mean),
-    BracketAdapter<double> (width),
-    BracketAdapter<double> (sigma));
-  }
-  else {
-    compute(info.size, output.data(),
-    BracketAdapterWithMask (x,x.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (mean,mean.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (width,width.getValBatch(begin,info.size)),
-    BracketAdapterWithMask (sigma,sigma.getValBatch(begin,info.size)));
-  }
-  return output;
+/// Compute multiple values of Voigtian distribution.  
+RooSpan<double> RooVoigtian::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
+  return RooBatchCompute::dispatch->computeVoigtian(this, evalData, x->getValues(evalData, normSet), mean->getValues(evalData, normSet), width->getValues(evalData, normSet), sigma->getValues(evalData, normSet));
 }
 

@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "TAttMarker.h"
-#include "TObjArray.h"
 #include "TVirtualX.h"
 #include "TError.h"
 #include "TImage.h"
@@ -27,7 +26,6 @@
 #include "TGLPadPainter.h"
 #include "TGLIncludes.h"
 #include "TGLUtil.h"
-#include "TError.h"
 #include "TMath.h"
 
 namespace {

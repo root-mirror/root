@@ -189,7 +189,14 @@ HypoTestInverterResult::~HypoTestInverterResult()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
+/// Remove problematic points from this result.
+///
+/// This function can be used to clean up a result that has failed fits, spiking CLs
+/// or similar problems. It removes
+/// - Points where CLs is not falling monotonously. These may result from a lack of numerical precision.
+/// - Points where CLs spikes to more than 0.999.
+/// - Points with very low CLs. These are not needed to run the inverter, which speeds up the process.
+/// - Points where CLs < 0. These occur when fits fail.
 int HypoTestInverterResult::ExclusionCleanup()
 {
   const int nEntries  = ArraySize();
@@ -199,8 +206,6 @@ int HypoTestInverterResult::ExclusionCleanup()
   double nsig2(2.0);
   double p[5];
   double q[5];
-  std::vector<double> qv;
-  qv.resize(11,-1.0);
 
   p[0] = ROOT::Math::normal_cdf(-nsig2);
   p[1] = ROOT::Math::normal_cdf(-nsig1);
@@ -220,13 +225,10 @@ int HypoTestInverterResult::ExclusionCleanup()
   int nPointsRemoved(0);
 
   double CLsobsprev(1.0);
-  std::vector<double>::iterator itr = fXValues.begin();
 
-  for (; itr!=fXValues.end();) {
-
-    double x = (*itr);
-    int i = FindIndex(x);
-    //HypoTestResult* oneresult = GetResult(i);
+  for (auto itr = fXValues.begin(); itr != fXValues.end(); ++itr) {
+    const double x = *itr;
+    const int i = FindIndex(x);
 
     SamplingDistribution * s = GetExpectedPValueDist(i);
     if (!s) break;
@@ -263,45 +265,37 @@ int HypoTestInverterResult::ExclusionCleanup()
 
     delete s;
 
-    /// store useful quantities for reuse later ...
-    /// http://root.cern.ch/root/html532/src/RooStats__HypoTestInverterPlot.cxx.html#197
-    for (int j=0; j<5; ++j) { qv[j]=q[j]; }
-    qv[5]  = CLs(i) ; //
-    qv[6]  = CLsError(i) ; //
-    qv[7]  = CLb(i) ; //
-    qv[8]  = CLbError(i) ; //
-    qv[9]  = CLsplusb(i) ; //
-    qv[10] = CLsplusbError(i) ; //
-    double CLsobs = qv[5];
+    const double CLsobs = CLs(i);
 
     /////////////////////////////////////////////////////////////////////////////////////////
 
     bool removeThisPoint(false);
 
     // 1. CLs should drop, else skip this point
-    if (!removeThisPoint && resultIsAsymptotic && i>=1 && CLsobs>CLsobsprev) {
-      //StatToolsLogger << kERROR << "Asymptotic. CLs not dropping: " << CLsobs << ". Remove this point." << GEndl;
+    if (resultIsAsymptotic && i>=1 && CLsobs>CLsobsprev) {
       removeThisPoint = true;
-    } else { CLsobsprev = CLsobs; }
+    } else if (CLsobs >= 0.) {
+      CLsobsprev = CLsobs;
+    }
 
     // 2. CLs should not spike, else skip this point
-    if (!removeThisPoint && i>=1 && CLsobs>=0.9999) {
-      //StatToolsLogger << kERROR << "CLs spiking at 1.0: " << CLsobs << ". Remove this point." << GEndl;
-      removeThisPoint = true;
-    }
+    removeThisPoint |= i>=1 && CLsobs >= 0.9999;
+
     // 3. Not interested in CLs values that become too low.
-    if (!removeThisPoint && i>=1 && qv[4]<fCLsCleanupThreshold) { removeThisPoint = true; }
+    removeThisPoint |= i>=1 && q[4] < fCLsCleanupThreshold;
+
+    // 4. Negative CLs indicate failed fits
+    removeThisPoint |= CLsobs < 0.;
 
     // to remove or not to remove
     if (removeThisPoint) {
-      itr = fXValues.erase(itr); // returned itr has been updated.
+      itr = fXValues.erase(itr)--;
       fYObjects.RemoveAt(i);
       fExpPValues.RemoveAt(i);
       nPointsRemoved++;
       continue;
     } else { // keep
       CLsobsprev = CLsobs;
-      ++itr;
     }
   }
 
@@ -668,16 +662,11 @@ double HypoTestInverterResult::GetGraphX(const TGraph & graph, double y0, bool l
    if (!ret) {
       ooccoutE(this,Eval) << "HypoTestInverterResult - interpolation failed for interval [" << xmin << "," << xmax
                           << " ]  g(xmin,xmax) =" << graph.Eval(xmin) << "," << graph.Eval(xmax)
-                          << " target=" << y0 << " return inf" << std::endl;
+                          << " target=" << y0 << " return inf" << std::endl
+                          << "One may try to clean up invalid points using HypoTestInverterResult::ExclusionCleanup()." << std::endl;
          return TMath::Infinity();
    }
    double limit =  brf.Root();
-
-   // auto grfunc = [&](double * x, double *) {
-   //    return (fInterpolOption == kSpline) ? graph.Eval(*x, nullptr, "S") - y0 : graph.Eval(*x) - y0;
-   // };
-   // TF1 tgrfunc("tgrfunc",grfunc,xmin,xmax,0);
-   // double limit = tgrfunc.GetX(0,xmin,xmax);
 
 #ifdef DO_DEBUG
    if (lowSearch) std::cout << "lower limit search : ";

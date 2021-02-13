@@ -9,18 +9,18 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
 
-#include "Riostream.h"
 #include "TROOT.h"
+#include "TBuffer.h"
 #include "TVirtualPad.h"
 #include "TMarker.h"
 #include "TVirtualX.h"
 #include "TMath.h"
 #include "TPoint.h"
 #include "TText.h"
-#include "TClass.h"
-#include "TPoint.h"
+#include "snprintf.h"
 
 ClassImp(TMarker);
 
@@ -287,6 +287,7 @@ void TMarker::ls(Option_t *) const
 
 void TMarker::Paint(Option_t *)
 {
+   if (!gPad) return;
    if (TestBit(kMarkerNDC)) {
       Double_t u = gPad->GetX1() + fX*(gPad->GetX2()-gPad->GetX1());
       Double_t v = gPad->GetY1() + fY*(gPad->GetY2()-gPad->GetY1());
@@ -302,7 +303,7 @@ void TMarker::Paint(Option_t *)
 void TMarker::PaintMarker(Double_t x, Double_t y)
 {
    TAttMarker::Modify();  //Change line attributes only if necessary
-   gPad->PaintPolyMarker(-1,&x,&y,"");
+   if (gPad) gPad->PaintPolyMarker(-1,&x,&y,"");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -396,6 +397,7 @@ Rectangle_t TMarker::GetBBox()
 TPoint TMarker::GetBBoxCenter()
 {
    TPoint p;
+   if (!gPad) return (p); 
    p.SetX(gPad->XtoPixel(fX));
    p.SetY(gPad->YtoPixel(fY));
    return(p);
@@ -406,6 +408,7 @@ TPoint TMarker::GetBBoxCenter()
 
 void TMarker::SetBBoxCenter(const TPoint &p)
 {
+   if (!gPad) return;
    fX = gPad->PixeltoX(p.GetX());
    fY = gPad->PixeltoY(p.GetY() - gPad->VtoPixel(0));
 }
@@ -415,6 +418,7 @@ void TMarker::SetBBoxCenter(const TPoint &p)
 
 void TMarker::SetBBoxCenterX(const Int_t x)
 {
+   if (!gPad) return;
    fX = gPad->PixeltoX(x);
 }
 
@@ -423,6 +427,7 @@ void TMarker::SetBBoxCenterX(const Int_t x)
 
 void TMarker::SetBBoxCenterY(const Int_t y)
 {
+   if (!gPad) return;
    fY = gPad->PixeltoY(y - gPad->VtoPixel(0));
 }
 
@@ -432,6 +437,7 @@ void TMarker::SetBBoxCenterY(const Int_t y)
 
 void TMarker::SetBBoxX1(const Int_t x)
 {
+   if (!gPad) return;
    Double_t size = this->GetMarkerSize();
    fX = gPad->PixeltoX(x + (Int_t)size);
 }
@@ -442,6 +448,7 @@ void TMarker::SetBBoxX1(const Int_t x)
 
 void TMarker::SetBBoxX2(const Int_t x)
 {
+   if (!gPad) return;
    Double_t size = this->GetMarkerSize();
    fX = gPad->PixeltoX(x - (Int_t)size);
 }
@@ -451,6 +458,7 @@ void TMarker::SetBBoxX2(const Int_t x)
 
 void TMarker::SetBBoxY1(const Int_t y)
 {
+   if (!gPad) return;
    Double_t size = this->GetMarkerSize();
    fY = gPad->PixeltoY(y - (Int_t)size - gPad->VtoPixel(0));
 }
@@ -461,6 +469,7 @@ void TMarker::SetBBoxY1(const Int_t y)
 
 void TMarker::SetBBoxY2(const Int_t y)
 {
+   if (!gPad) return;
    Double_t size = this->GetMarkerSize();
    fY = gPad->PixeltoY(y + (Int_t)size - gPad->VtoPixel(0));
 }

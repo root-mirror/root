@@ -15,7 +15,11 @@ namespace ROOT {
 namespace Experimental {
 namespace Browsable {
 
-/** Representation of single item in the file browser */
+/** \class RSysFileItem
+\ingroup rbrowser
+\brief Representation of single item in the file browser
+*/
+
 class RSysFileItem : public RItem {
 public:
    // internal data, used for generate directory list
@@ -43,6 +47,13 @@ public:
    virtual ~RSysFileItem() = default;
 
    bool IsFolder() const override { return isdir; }
+
+   // return true for hidden files
+   bool IsHidden() const override {
+      auto &n = GetName();
+      if ((n.length() == 0) || (n[0] != '.')) return false;
+      return (n != ".") && (n != "..");
+   }
 
    bool Compare(const RItem *b, const std::string &method) const override
    {

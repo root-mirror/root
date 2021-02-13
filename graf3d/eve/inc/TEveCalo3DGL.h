@@ -14,14 +14,15 @@
 
 #include "TGLObject.h"
 #include "TEveCaloData.h"
+#include <vector>
 
 class TEveCalo3D;
 
 class TEveCalo3DGL : public TGLObject
 {
 private:
-   TEveCalo3DGL(const TEveCalo3DGL&);            // Not implemented
-   TEveCalo3DGL& operator=(const TEveCalo3DGL&); // Not implemented
+   TEveCalo3DGL(const TEveCalo3DGL&) = delete;
+   TEveCalo3DGL& operator=(const TEveCalo3DGL&) = delete;
 
    void    CrossProduct(const Float_t a[3], const Float_t b[3], const Float_t c[3], Float_t out[3]) const;
 

@@ -1,6 +1,5 @@
 #include "TMVA/paracoor.h"
 
-#include "TROOT.h"
 #include "TTree.h"
 #include "TLeaf.h"
 #include "TParallelCoord.h"

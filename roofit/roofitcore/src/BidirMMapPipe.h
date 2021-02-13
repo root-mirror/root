@@ -12,7 +12,6 @@
 
 #include <list>
 #include <vector>
-#include <cassert>
 #include <cstring>
 #include <unistd.h>
 

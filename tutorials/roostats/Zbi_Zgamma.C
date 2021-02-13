@@ -7,7 +7,7 @@
 /// \macro_output
 /// \macro_code
 ///
-/// \author Kyle Cranmer & Wouter Verkerke
+/// \authors Kyle Cranmer & Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooProdPdf.h"

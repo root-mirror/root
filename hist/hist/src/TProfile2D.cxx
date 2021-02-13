@@ -13,12 +13,10 @@
 #include "TBuffer.h"
 #include "TMath.h"
 #include "THLimitsFinder.h"
-#include "Riostream.h"
-#include "TVirtualPad.h"
 #include "TError.h"
 #include "TClass.h"
-
 #include "TProfileHelper.h"
+#include <iostream>
 
 Bool_t TProfile2D::fgApproximate = kFALSE;
 
@@ -27,7 +25,7 @@ ClassImp(TProfile2D);
 /** \class TProfile2D
     \ingroup Hist
  Profile2D histograms are used to display the mean
- value of Z and its RMS for each cell in X,Y.
+ value of Z and its error for each cell in X,Y.
  Profile2D histograms are in many cases an
  elegant replacement of three-dimensional histograms : the inter-relation of three
  measured quantities X, Y and Z can always be visualized by a three-dimensional
@@ -37,12 +35,30 @@ ClassImp(TProfile2D);
  much better precision than by a scatter-plot.
 
  The following formulae show the cumulated contents (capital letters) and the values
- displayed by the printing or plotting routines (small letters) of the elements for cell I, J.
-
-       H(I,J)  =  sum Z                  E(I,J)  =  sum Z
-       l(I,J)  =  sum l                  L(I,J)  =  sum l
-       h(I,J)  =  H(I,J)/L(I,J)          s(I,J)  =  sqrt(E(I,J)/L(I,J)- h(I,J)**2)
-       e(I,J)  =  s(I,J)/sqrt(L(I,J))
+ displayed by the printing or plotting routines (small letters) of the elements for cell i, j.
+ \f[
+  \begin{align}
+       H(i,j)  &=  \sum w \cdot Z  \\
+       E(i,j)  &=  \sum w \cdot Z^2 \\
+       W(i,j)  &=  \sum w \\
+       h(i,j)  &=  \frac{H(i,j)}{W(i,j)} \\
+       s(i,j)  &=  \sqrt{E(i,j)/W(i,j)- h(i,j)^2} \\
+       e(i,j)  &=  \frac{s(i,j)}{\sqrt{W(i,j)}}
+  \end{align}
+ \f]
+  The bin content is always the mean of the Z values, but errors change depending on options:
+ \f[
+    \begin{align}
+      \text{GetBinContent}(i,j) &= h(i,j) \\
+      \text{GetBinError}(i,j) &=
+        \begin{cases}
+          e(i,j)                 &\text{if option="" (default). Error of the mean of all z values.} \\
+          s(i,j)                 &\text{if option="s". Standard deviation of z values.} \\
+          \begin{cases} e(j) &\text{if } h(i,j) \ne 0 \\ 1/\sqrt{12 N} &\text{if } h(i,j)=0 \end{cases}       &\text{if option="i". This is useful for storing integers such as ADC counts.} \\
+          1/\sqrt{W(i,j)}           &\text{if option="g". Error of a weighted mean when combining measurements with variances of } w. \\
+        \end{cases}
+    \end{align}
+ \f]
 
  In the special case where s(I,J) is zero (eg, case of 1 entry only in one cell)
  the bin error e(I,J) is computed from the average of the s(I,J) for all cells
@@ -50,7 +66,7 @@ ClassImp(TProfile2D);
  This simple/crude approximation was suggested in order to keep the cell
  during a fit operation. But note that this approximation is not the default behaviour.
 
- Example of a profile2D histogram
+ ### Creating and drawing a 2D profile
  ~~~~{.cpp}
  {
     auto c1 = new TCanvas("c1","Profile histogram example",200,10,700,500);
@@ -626,9 +642,52 @@ Int_t TProfile2D::Fill(Double_t x, Double_t y, Double_t z)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Fill a Profile2D histogram with weights.
+
+Int_t TProfile2D::Fill(Double_t x, Double_t y, Double_t z, Double_t w)
+{
+   if (fBuffer)  return BufferFill(x, y, z, w);
+
+   Int_t bin, binx, biny;
+
+   if (fZmin != fZmax) {
+      if (z < fZmin || z > fZmax || TMath::IsNaN(z)) return -1;
+   }
+
+   Double_t u = w;
+   fEntries++;
+   binx = fXaxis.FindBin(x);
+   biny = fYaxis.FindBin(y);
+   if (binx < 0 || biny < 0) return -1;
+   bin = biny * (fXaxis.GetNbins() + 2) + binx;
+   AddBinContent(bin, u * z);
+   fSumw2.fArray[bin] += u * z * z;
+   if (!fBinSumw2.fN && u != 1.0 && !TestBit(TH1::kIsNotW))
+      Sumw2(); // must be called before accumulating the entries
+   if (fBinSumw2.fN) fBinSumw2.fArray[bin] += u * u;
+   fBinEntries.fArray[bin] += u;
+
+   if (binx == 0 || binx > fXaxis.GetNbins()) {
+      if (!GetStatOverflowsBehaviour()) return -1;
+   }
+   if (biny == 0 || biny > fYaxis.GetNbins()) {
+      if (!GetStatOverflowsBehaviour()) return -1;
+   }
+   fTsumw += u;
+   fTsumw2 += u * u;
+   fTsumwx += u * x;
+   fTsumwx2 += u * x * x;
+   fTsumwy += u * y;
+   fTsumwy2 += u * y * y;
+   fTsumwxy += u * x * y;
+   fTsumwz += u * z;
+   fTsumwz2 += u * z * z;
+   return bin;
+}
+////////////////////////////////////////////////////////////////////////////////
 /// Fill a Profile2D histogram (no weights).
 
-Int_t TProfile2D::Fill(Double_t x, const char *namey, Double_t z)
+Int_t TProfile2D::Fill(Double_t x, const char *namey, Double_t z, Double_t w)
 {
    Int_t bin,binx,biny;
 
@@ -636,36 +695,44 @@ Int_t TProfile2D::Fill(Double_t x, const char *namey, Double_t z)
       if (z <fZmin || z> fZmax || TMath::IsNaN(z)) return -1;
    }
 
+   Double_t u = w;
    fEntries++;
    binx =fXaxis.FindBin(x);
    biny =fYaxis.FindBin(namey);
    if (binx <0 || biny <0) return -1;
    bin  = biny*(fXaxis.GetNbins()+2) + binx;
-   AddBinContent(bin, z);
-   fSumw2.fArray[bin] += (Double_t)z*z;
-   fBinEntries.fArray[bin] += 1;
-   if (fBinSumw2.fN)  fBinSumw2.fArray[bin] += 1;
+   AddBinContent(bin, u * z);
+   fSumw2.fArray[bin] += u * z * z;
+   if (!fBinSumw2.fN && u != 1.0 && !TestBit(TH1::kIsNotW))
+      Sumw2(); // must be called before accumulating the entries
+   if (fBinSumw2.fN) fBinSumw2.fArray[bin] += u * u;
+   fBinEntries.fArray[bin] += u;
+
    if (binx == 0 || binx > fXaxis.GetNbins()) {
       if (!GetStatOverflowsBehaviour()) return -1;
    }
    if (biny == 0 || biny > fYaxis.GetNbins()) return -1;
-   Double_t y = fYaxis.GetBinCenter(biny);
-   ++fTsumw;
-   ++fTsumw2;
-   fTsumwx  += x;
-   fTsumwx2 += x*x;
-   fTsumwy  += y;
-   fTsumwy2 += y*y;
-   fTsumwxy += x*y;
-   fTsumwz  += z;
-   fTsumwz2 += z*z;
+
+   UInt_t labelBitMask = GetAxisLabelStatus();
+   Double_t y = (labelBitMask & TH1::kYaxis) ? 0 : fYaxis.GetBinCenter(biny);
+
+   fTsumw += u;
+   fTsumw2 += u * u;
+   fTsumwx += u * x;
+   fTsumwx2 += u * x * x;
+   fTsumwy += u * y;
+   fTsumwy2 += u * y * y;
+   fTsumwxy += u * x * y;
+   fTsumwz += u * z;
+   fTsumwz2 += u * z * z;
+
    return bin;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Fill a Profile2D histogram (no weights).
 
-Int_t TProfile2D::Fill(const char *namex, const char *namey, Double_t z)
+Int_t TProfile2D::Fill(const char *namex, const char *namey, Double_t z, Double_t w)
 {
    Int_t bin,binx,biny;
 
@@ -673,35 +740,44 @@ Int_t TProfile2D::Fill(const char *namex, const char *namey, Double_t z)
       if (z <fZmin || z> fZmax || TMath::IsNaN(z) ) return -1;
    }
 
+   Double_t u = w;
    fEntries++;
-   binx =fXaxis.FindBin(namex);
-   biny =fYaxis.FindBin(namey);
-   if (binx <0 || biny <0) return -1;
-   bin  = biny*(fXaxis.GetNbins()+2) + binx;
-   AddBinContent(bin, z);
-   fSumw2.fArray[bin] += (Double_t)z*z;
-   fBinEntries.fArray[bin] += 1;
-   if (fBinSumw2.fN)  fBinSumw2.fArray[bin] += 1;
+   binx = fXaxis.FindBin(namex);
+   biny = fYaxis.FindBin(namey);
+   if (binx < 0 || biny < 0)
+      return -1;
+   bin = biny * (fXaxis.GetNbins() + 2) + binx;
+   AddBinContent(bin, u * z);
+   fSumw2.fArray[bin] += u * z * z;
+   if (!fBinSumw2.fN && u != 1.0 && !TestBit(TH1::kIsNotW))
+      Sumw2(); // must be called before accumulating the entries
+   if (fBinSumw2.fN) fBinSumw2.fArray[bin] += u * u;
+   fBinEntries.fArray[bin] += u;
+
    if (binx == 0 || binx > fXaxis.GetNbins()) return -1;
    if (biny == 0 || biny > fYaxis.GetNbins()) return -1;
-   Double_t x = fYaxis.GetBinCenter(binx);
-   Double_t y = fYaxis.GetBinCenter(biny);
-   ++fTsumw;
-   ++fTsumw2;
-   fTsumwx  += x;
-   fTsumwx2 += x*x;
-   fTsumwy  += y;
-   fTsumwy2 += y*y;
-   fTsumwxy += x*y;
-   fTsumwz  += z;
-   fTsumwz2 += z*z;
+
+   UInt_t labelBitMask = GetAxisLabelStatus();
+   Double_t x = (labelBitMask & TH1::kXaxis) ? 0 : fXaxis.GetBinCenter(binx);
+   Double_t y = (labelBitMask & TH1::kYaxis) ? 0 : fYaxis.GetBinCenter(biny);
+
+   fTsumw += u;
+   fTsumw2 += u * u;
+   fTsumwx += u * x;
+   fTsumwx2 += u * x * x;
+   fTsumwy += u * y;
+   fTsumwy2 += u * y * y;
+   fTsumwxy += u * x * y;
+   fTsumwz += u * z;
+   fTsumwz2 += u * z * z;
+
    return bin;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Fill a Profile2D histogram (no weights).
 
-Int_t TProfile2D::Fill(const char *namex, Double_t y, Double_t z)
+Int_t TProfile2D::Fill(const char *namex, Double_t y, Double_t z, Double_t w)
 {
    Int_t bin,binx,biny;
 
@@ -709,73 +785,42 @@ Int_t TProfile2D::Fill(const char *namex, Double_t y, Double_t z)
       if (z <fZmin || z> fZmax || TMath::IsNaN(z)) return -1;
    }
 
+   Double_t u = w;
    fEntries++;
    binx =fXaxis.FindBin(namex);
    biny =fYaxis.FindBin(y);
    if (binx <0 || biny <0) return -1;
    bin  = biny*(fXaxis.GetNbins()+2) + binx;
-   AddBinContent(bin, z);
-   fSumw2.fArray[bin] += (Double_t)z*z;
-   fBinEntries.fArray[bin] += 1;
-   if (fBinSumw2.fN)  fBinSumw2.fArray[bin] += 1;
+
+   AddBinContent(bin, u * z);
+   fSumw2.fArray[bin] += u * z * z;
+   if (!fBinSumw2.fN && u != 1.0 && !TestBit(TH1::kIsNotW))
+      Sumw2(); // must be called before accumulating the entries
+   if (fBinSumw2.fN) fBinSumw2.fArray[bin] += u * u;
+   fBinEntries.fArray[bin] += u;
+
    if (binx == 0 || binx > fXaxis.GetNbins()) return -1;
    if (biny == 0 || biny > fYaxis.GetNbins()) {
       if (!GetStatOverflowsBehaviour()) return -1;
    }
-   Double_t x = fYaxis.GetBinCenter(binx);
-   ++fTsumw;
-   ++fTsumw2;
-   fTsumwx  += x;
-   fTsumwx2 += x*x;
-   fTsumwy  += y;
-   fTsumwy2 += y*y;
-   fTsumwxy += x*y;
-   fTsumwz  += z;
-   fTsumwz2 += z*z;
+
+   UInt_t labelBitMask = GetAxisLabelStatus();
+   Double_t x = (labelBitMask & TH1::kXaxis) ? 0 : fXaxis.GetBinCenter(binx);
+
+   fTsumw += u;
+   fTsumw2 += u * u;
+   fTsumwx += u * x;
+   fTsumwx2 += u * x * x;
+   fTsumwy += u * y;
+   fTsumwy2 += u * y * y;
+   fTsumwxy += u * x * y;
+   fTsumwz += u * z;
+   fTsumwz2 += u * z * z;
+
    return bin;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Fill a Profile2D histogram with weights.
 
-Int_t TProfile2D::Fill(Double_t x, Double_t y, Double_t z, Double_t w)
-{
-   if (fBuffer) return BufferFill(x,y,z,w);
-
-   Int_t bin,binx,biny;
-
-   if (fZmin != fZmax) {
-      if (z <fZmin || z> fZmax || TMath::IsNaN(z)) return -1;
-   }
-
-   Double_t u= w;
-   fEntries++;
-   binx =fXaxis.FindBin(x);
-   biny =fYaxis.FindBin(y);
-   if (binx <0 || biny <0) return -1;
-   bin  = biny*(fXaxis.GetNbins()+2) + binx;
-   AddBinContent(bin, u*z);
-   fSumw2.fArray[bin] += u*z*z;
-   if (!fBinSumw2.fN && u != 1.0 && !TestBit(TH1::kIsNotW))  Sumw2();  // must be called before accumulating the entries
-   if (fBinSumw2.fN)  fBinSumw2.fArray[bin] += u*u;
-   fBinEntries.fArray[bin] += u;
-   if (binx == 0 || binx > fXaxis.GetNbins()) {
-      if (!GetStatOverflowsBehaviour()) return -1;
-   }
-   if (biny == 0 || biny > fYaxis.GetNbins()) {
-      if (!GetStatOverflowsBehaviour()) return -1;
-   }
-   fTsumw   += u;
-   fTsumw2  += u*u;
-   fTsumwx  += u*x;
-   fTsumwx2 += u*x*x;
-   fTsumwy  += u*y;
-   fTsumwy2 += u*y*y;
-   fTsumwxy += u*x*y;
-   fTsumwz  += u*z;
-   fTsumwz2 += u*z*z;
-   return bin;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Return bin content of a Profile2D histogram.
@@ -871,8 +916,12 @@ void TProfile2D::GetStats(Double_t *stats) const
 {
    if (fBuffer) ((TProfile2D*)this)->BufferEmpty();
 
+   // check for labels axis . In that case corresponsing statistics do not make sense and it is set to zero
+   Bool_t labelXaxis =  ((const_cast<TAxis&>(fXaxis)).GetLabels() && fXaxis.CanExtend() );
+   Bool_t labelYaxis =  ((const_cast<TAxis&>(fYaxis)).GetLabels() && fYaxis.CanExtend() );
+
    // Loop on bins
-   if (fTsumw == 0 || fXaxis.TestBit(TAxis::kAxisRange) || fYaxis.TestBit(TAxis::kAxisRange)) {
+   if ( (fTsumw == 0 /* && fEntries > 0 */) || fXaxis.TestBit(TAxis::kAxisRange) || fYaxis.TestBit(TAxis::kAxisRange)) {
       Int_t bin, binx, biny;
       Double_t w, w2;
       Double_t x,y;
@@ -894,12 +943,12 @@ void TProfile2D::GetStats(Double_t *stats) const
          }
       }
       for (biny = firstBinY; biny <= lastBinY; biny++) {
-         y = fYaxis.GetBinCenter(biny);
+         y = (!labelYaxis) ? fYaxis.GetBinCenter(biny) : 0;
          for (binx = firstBinX; binx <= lastBinX; binx++) {
             bin = GetBin(binx,biny);
             w         = fBinEntries.fArray[bin];
             w2        = (fBinSumw2.fN ? fBinSumw2.fArray[bin] : w );
-            x         = fXaxis.GetBinCenter(binx);
+            x         = (!labelXaxis) ? fXaxis.GetBinCenter(binx) : 0;
             stats[0] += w;
             stats[1] += w2;
             stats[2] += w*x;
@@ -997,115 +1046,167 @@ void TProfile2D::LabelsOption(Option_t *option, Option_t *ax)
    if (opt.Contains("<")) sort = 2;
    if (sort < 0) return;
 
-   Int_t nx = fXaxis.GetNbins()+2;
-   Int_t ny = fYaxis.GetNbins()+2;
-   Int_t n = TMath::Min(axis->GetNbins(), labels->GetSize());
-   Int_t *a = new Int_t[n+2];
-   Int_t i,j,k,bin;
-   Double_t *sumw   = new Double_t[nx*ny];
-   Double_t *errors = new Double_t[nx*ny];
-   Double_t *ent    = new Double_t[nx*ny];
-   THashList *labold = new THashList(labels->GetSize(),1);
+   // support only cases where each bin has a labels (should be when axis is alphanumeric)
+   Int_t n = labels->GetSize();
+   if (n != axis->GetNbins()) {
+      // check if labels are all consecutive and starts from the first bin
+      // in that case the current code will work fine
+      Int_t firstLabelBin = axis->GetNbins() + 1;
+      Int_t lastLabelBin = -1;
+      for (Int_t i = 0; i < n; ++i) {
+         Int_t bin = labels->At(i)->GetUniqueID();
+         if (bin < firstLabelBin)
+            firstLabelBin = bin;
+         if (bin > lastLabelBin)
+            lastLabelBin = bin;
+      }
+      if (firstLabelBin != 1 || lastLabelBin - firstLabelBin + 1 != n) {
+         Error("LabelsOption",
+               "%s of TProfile2D %s contains bins without labels. Sorting will not work correctly - return",
+               axis->GetName(), GetName());
+         return;
+      }
+      // case where label bins are consecutive starting from first bin will work
+      Warning(
+         "LabelsOption",
+         "axis %s of TProfile2D %s has extra following bins without labels. Sorting will work only for first label bins",
+         axis->GetName(), GetName());
+   }
+
+   std::vector<Int_t> a(n);
+   Int_t i, j, k, ibin, bin;
+   std::vector<Double_t> sumw(fNcells);
+   std::vector<Double_t> errors(fNcells);
+   std::vector<Double_t> ent(fNcells);
+   std::vector<Double_t> binsw2;
+   if (fBinSumw2.fN)
+      binsw2.resize(fNcells);
+
+   // delete buffer if it is there since bins will be reordered.
+   if (fBuffer)
+      BufferEmpty(1);
+
+   // number of bins to loop
+   Int_t nx = (axis == GetXaxis()) ? n + 1 : fXaxis.GetNbins() + 2;
+   Int_t ny = (axis == GetYaxis()) ? n + 1 : fYaxis.GetNbins() + 2;
+
+   // make a labelold list but ordered with bins
+   // (re-ordered original label list)
+   std::vector<TObject *> labold(n);
+   for (i = 0; i < n; i++)
+      labold[i] = nullptr;
    TIter nextold(labels);
    TObject *obj;
-   while ((obj=nextold())) {
-      labold->Add(obj);
+   while ((obj = nextold())) {
+      bin = obj->GetUniqueID();
+      if (bin>=1 && bin<=n)
+        labold[bin-1] = obj;
    }
+   // order now labold according to bin content
+
    labels->Clear();
+
+   std::vector<Double_t> pcont;
+   std::vector<Double_t> econt;
    if (sort > 0) {
-      //---sort by values of bins
-      Double_t *pcont = new Double_t[n+2];
-      for (i=0;i<=n;i++) pcont[i] = 0;
-      for (i=1;i<nx;i++) {
-         for (j=1;j<ny;j++) {
-            bin = i+nx*j;
-            sumw[bin]   = fArray[bin];
-            errors[bin] = fSumw2.fArray[bin];
-            ent[bin]    = fBinEntries.fArray[bin];
-            if (axis == GetXaxis()) k = i;
-            else                    k = j;
-            if (fBinEntries.fArray[bin] != 0) pcont[k-1] += fArray[bin]/fBinEntries.fArray[bin];
+      pcont.resize(n);
+      econt.resize(n);
+   }
+
+   for (i = 0; i < nx; i++) {
+      for (j = 0; j < ny; j++) {
+         bin = GetBin(i, j);
+         sumw[bin] = fArray[bin];
+         errors[bin] = fSumw2.fArray[bin];
+         ent[bin] = fBinEntries.fArray[bin];
+         if (fBinSumw2.fN)
+            binsw2[bin] = fBinSumw2.fArray[bin];
+         if (axis == GetXaxis())
+            k = i - 1;
+         else
+            k = j - 1;
+         //---when sorting by values of bins
+         if (sort > 0 && fBinEntries.fArray[bin] != 0 && k > 0 && k < n) {
+            pcont[k] += fArray[bin];
+            econt[k] += fBinEntries.fArray[bin];
          }
       }
-      if (sort ==1) TMath::Sort(n,pcont,a,kTRUE);  //sort by decreasing values
-      else          TMath::Sort(n,pcont,a,kFALSE); //sort by increasing values
-      delete [] pcont;
-      for (i=0;i<n;i++) {
-         obj = labold->At(a[i]);
-         labels->Add(obj);
-         obj->SetUniqueID(i+1);
+   }
+   // compute average of slize for ordering
+   if (sort > 0) {
+      for (k = 0; k < n; ++k) {
+         a[k] = k;
+         if (econt[k] > 0)
+            pcont[k] /= econt[k];
       }
-      for (i=1;i<nx;i++) {
-         for (j=1;j<ny;j++) {
-            bin = i+nx*j;
-            if (axis == GetXaxis()) {
-               fArray[bin] = sumw[a[i-1]+1+nx*j];
-               fSumw2.fArray[bin] = errors[a[i-1]+1+nx*j];
-               fBinEntries.fArray[bin] = ent[a[i-1]+1+nx*j];
-            } else {
-               fArray[bin] = sumw[i+nx*(a[j-1]+1)];
-               fSumw2.fArray[bin] = errors[i+nx*(a[j-1]+1)];
-               fBinEntries.fArray[bin] = ent[i+nx*(a[j-1]+1)];
-            }
-         }
-      }
+      if (sort == 1)
+         TMath::Sort(n, pcont.data(), a.data(), kTRUE); // sort by decreasing values
+      else
+         TMath::Sort(n, pcont.data(), a.data(), kFALSE); // sort by increasing values
    } else {
       //---alphabetic sort
-      const UInt_t kUsed = 1<<18;
-      TObject *objk=0;
-      a[0] = 0;
-      a[n+1] = n+1;
-      for (i=1;i<=n;i++) {
-         const char *label = "zzzzzzzzzzzz";
-         for (j=1;j<=n;j++) {
-            obj = labold->At(j-1);
-            if (!obj) continue;
-            if (obj->TestBit(kUsed)) continue;
-            //use strcasecmp for case non-sensitive sort (may be an option)
-            if (strcmp(label,obj->GetName()) < 0) continue;
-            objk = obj;
-            a[i] = j;
-            label = obj->GetName();
-         }
-         if (objk) {
-            objk->SetUniqueID(i);
-            labels->Add(objk);
-            objk->SetBit(kUsed);
-         }
+      // sort labels using vector of strings and TMath::Sort
+      // I need to array because labels order in list is not necessary that of the bins
+      std::vector<std::string> vecLabels(n);
+      for (i = 0; i < n; i++) {
+         vecLabels[i] = labold[i]->GetName();
+         a[i] = i;
       }
-      for (i=1;i<=n;i++) {
-         obj = labels->At(i-1);
-         if (!obj) continue;
-         obj->ResetBit(kUsed);
-      }
-      for (i=0;i<nx;i++) {
-         for (j=0;j<ny;j++) {
-            bin = i+nx*j;
-            sumw[bin]   = fArray[bin];
-            errors[bin] = fSumw2.fArray[bin];
-            ent[bin]    = fBinEntries.fArray[bin];
+      // sort in ascending order for strings
+      TMath::Sort(n, vecLabels.data(), a.data(), kFALSE);
+   }
+
+   // set the new labels
+   for (i = 0; i < n; i++) {
+      obj = labold[a[i]];
+      labels->Add(obj);
+      // set the corresponding bin. NB bin starts from 1
+      obj->SetUniqueID(i + 1);
+      if (gDebug)
+         std::cout << "bin " << i + 1 << " setting new labels for axis " << labold.at(a[i])->GetName() << " from "
+                   << a[i] << std::endl;
+   }
+   // set the new content
+   for (i = 0; i < nx; i++) {
+      for (j = 0; j < ny; j++) {
+         bin = GetBin(i, j);
+         if (axis == GetXaxis()) {
+            if (i == 0) break; // skip underflow in x
+            ibin = GetBin(a[i - 1] + 1, j);
+         } else {
+            if (j == 0) continue;  // skip underflow in y
+            ibin = GetBin(i, a[j-1] + 1);
          }
-      }
-      for (i=0;i<nx;i++) {
-         for (j=0;j<ny;j++) {
-            bin = i+nx*j;
-            if (axis == GetXaxis()) {
-               fArray[bin] = sumw[a[i]+nx*j];
-               fSumw2.fArray[bin] = errors[a[i]+nx*j];
-               fBinEntries.fArray[bin] = ent[a[i]+nx*j];
-            } else {
-               fArray[bin] = sumw[i+nx*a[j]];
-               fSumw2.fArray[bin] = errors[i+nx*a[j]];
-               fBinEntries.fArray[bin] = ent[i+nx*a[j]];
-            }
-         }
+         fArray[bin] = sumw[ibin];
+         fSumw2.fArray[bin] = errors[ibin];
+         fBinEntries.fArray[bin] = ent[ibin];
+         if (fBinSumw2.fN)
+            fBinSumw2.fArray[bin] = binsw2[ibin];
       }
    }
-   delete labold;
-   if (a)      delete [] a;
-   if (sumw)   delete [] sumw;
-   if (errors) delete [] errors;
-   if (ent)    delete [] ent;
+   // need to set to zero the statistics if axis has been sorted
+   // see for example TH3::PutStats for definition of s vector
+   bool labelsAreSorted = kFALSE;
+   for (i = 0; i < n; ++i) {
+      if (a[i] != i) {
+         labelsAreSorted = kTRUE;
+         break;
+      }
+   }
+   if (labelsAreSorted) {
+      double s[TH1::kNstat];
+      GetStats(s);
+      if (axis == GetXaxis()) {
+         s[2] = 0; // fTsumwx
+         s[3] = 0; // fTsumwx2
+         s[6] = 0; // fTsumwxy
+      } else  {
+         s[4] = 0;  // fTsumwy
+         s[5] = 0;  // fTsumwy2
+         s[6] = 0;  // fTsumwxy
+      }
+      PutStats(s);
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

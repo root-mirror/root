@@ -53,9 +53,7 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "Riostream.h"
 #include "TQpResidual.h"
-#include "TMatrixD.h"
 
 ClassImp(TQpResidual);
 

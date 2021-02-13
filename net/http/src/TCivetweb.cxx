@@ -336,12 +336,16 @@ static int begin_request_handler(struct mg_connection *conn, void *)
       if( hFile != INVALID_HANDLE_VALUE) {
          auto dwRet = GetFinalPathNameByHandle( hFile, Path, BUFSIZE, VOLUME_NAME_DOS );
          // produced file name may include \\? symbols, which are indicating long file name
-         if(dwRet < BUFSIZE) 
+         if(dwRet < BUFSIZE)
             filename = Path;
          CloseHandle(hFile);
       }
 #endif
-      mg_send_file(conn, filename.Data());
+      const char *mime_type = THttpServer::GetMimeType(filename.Data());
+      if (mime_type)
+         mg_send_mime_file(conn, filename.Data(), mime_type);
+      else
+         mg_send_file(conn, filename.Data());
    } else {
 
       Bool_t dozip = kFALSE;
@@ -573,6 +577,9 @@ Bool_t TCivetweb::Create(const char *args)
       options[op++] = auth_file.Data();
       options[op++] = "authentication_domain";
       options[op++] = auth_domain.Data();
+   } else {
+      options[op++] = "enable_auth_domain_check";
+      options[op++] = "no";
    }
 
    if (log_file.Length() > 0) {

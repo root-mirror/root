@@ -18,7 +18,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TError.h"
-#include "TObjString.h"
 #include "TUrl.h"
 #include "TNetFile.h"
 #include "TNetFileStager.h"

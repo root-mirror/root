@@ -18,7 +18,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TError.h"
-#include "TObjString.h"
 #include "TUrl.h"
 #include "TXNetFileStager.h"
 #include "TXNetSystem.h"

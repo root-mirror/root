@@ -22,6 +22,7 @@ initialized when the program starts (see the ClassImp macro).
 #include "TClass.h"
 #include "TClassEdit.h"
 #include "TProtoClass.h"
+#include "TList.h"
 #include "TROOT.h"
 #include "TString.h"
 #include "TError.h"
@@ -34,9 +35,8 @@ initialized when the program starts (see the ClassImp macro).
 
 #include <map>
 #include <memory>
-#include "Riostream.h"
 #include <typeinfo>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 
 using namespace ROOT;
@@ -407,6 +407,9 @@ void TClassTable::Add(TProtoClass *proto)
    if (r->fName) {
       if (r->fProto) delete r->fProto;
       r->fProto = proto;
+      TClass *oldcl = (TClass*)gROOT->GetListOfClasses()->FindObject(cname);
+      if (oldcl && oldcl->GetState() == TClass::kHasTClassInit)
+         proto->FillTClass(oldcl);
       return;
    } else if (ROOT::Internal::gROOTLocal && gCling) {
       TClass *oldcl = (TClass*)gROOT->GetListOfClasses()->FindObject(cname);

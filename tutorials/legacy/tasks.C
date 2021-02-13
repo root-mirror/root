@@ -9,6 +9,9 @@
 ///  - setting a breakpoint in one or more tasks
 ///  - enabling/disabling one task, etc
 ///
+/// As of 2021, tbb is a fine replacement for ROOT's task system. It
+/// offers better interplay with non-ROOT multi-threading use cases.
+///
 /// \macro_code
 ///
 /// \author Rene Brun

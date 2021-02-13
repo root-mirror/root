@@ -20,10 +20,16 @@
 #include "RooArgList.h"
 #include "RooArgSet.h"
 #include "TFormula.h"
+#include "RooSpan.h"
 
 #include <memory>
 #include <vector>
 #include <string>
+
+namespace RooBatchCompute {
+  struct RunContext;
+}
+class RooAbsReal;
 
 class RooFormula : public TNamed, public RooPrintable {
 public:
@@ -50,9 +56,10 @@ public:
     return _origList.at(index);
   }
 
-  Bool_t ok() { return _tFormula != nullptr; }
+  Bool_t ok() const { return _tFormula != nullptr; }
   /// Evalute all parameters/observables, and then evaluate formula.
   Double_t eval(const RooArgSet* nset=0) const;
+  RooSpan<double> evaluateSpan(const RooAbsReal* dataOwner, RooBatchCompute::RunContext& inputData, const RooArgSet* nset = nullptr) const;
 
   /// DEBUG: Dump state information
   void dump() const;
@@ -80,7 +87,7 @@ private:
   std::string processFormula(std::string origFormula) const;
   RooArgList  usedVariables() const;
   std::string reconstructFormula(std::string internalRepr) const;
-  std::vector<bool> findCategoryServers(const RooAbsCollection& collection) const;
+  void installFormulaOrThrow(const std::string& formulaa);
 
   RooArgList _origList; //! Original list of dependents
   std::vector<bool> _isCategory; //! Whether an element of the _origList is a category.

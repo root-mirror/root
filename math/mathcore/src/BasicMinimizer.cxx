@@ -29,11 +29,10 @@
 #include <cassert>
 
 #include <iostream>
-#include <iomanip>
 #include <cmath>
 #include <algorithm>
 #include <functional>
-#include <ctype.h>   // need to use c version of tolower defined here
+#include <cctype>   // need to use c version of tolower defined here
 #include <limits>
 
 namespace ROOT {

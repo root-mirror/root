@@ -309,7 +309,6 @@ void RooStats::HistFactory::Sample::PrintXML( std::ofstream& xml ) {
 }
 
 
-
 // Some helper functions
 // (Not strictly necessary because
 //  methods are publicly accessable)

@@ -12,9 +12,8 @@
 #include "TROOT.h"
 #include "TVirtualGraphPainter.h"
 #include "TPluginManager.h"
-#include "TClass.h"
 
-TVirtualGraphPainter *TVirtualGraphPainter::fgPainter = 0;
+TVirtualGraphPainter *TVirtualGraphPainter::fgPainter = nullptr;
 
 ClassImp(TVirtualGraphPainter);
 

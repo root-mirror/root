@@ -1,0 +1,16 @@
+diff --git a/bindings/pyroot/cppyy/cppyy/python/cppyy/__init__.py b/bindings/pyroot/cppyy/cppyy/python/cppyy/__init__.py
+index 991fee8..b3b1b84 100644
+--- a/bindings/pyroot/cppyy/cppyy/python/cppyy/__init__.py
++++ b/bindings/pyroot/cppyy/cppyy/python/cppyy/__init__.py
+@@ -76,11 +76,6 @@ sys.modules['cppyy.gbl'] = gbl
+ sys.modules['cppyy.gbl.std'] = gbl.std
+ 
+ 
+-#- enable auto-loading -------------------------------------------------------
+-try:    gbl.gInterpreter.EnableAutoLoading()
+-except: pass
+-
+-
+ #- external typemap ----------------------------------------------------------
+ from . import _typemap
+ _typemap.initialize(_backend)

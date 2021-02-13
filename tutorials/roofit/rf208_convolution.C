@@ -3,14 +3,18 @@
 /// \notebook -js
 /// Addition and convolution: one-dimensional numeric convolution
 ///
+/// ```
 /// pdf = landau(t) (x) gauss(t)
+/// ```
 ///
 /// This tutorial requires FFT3 to be enabled.
 ///
 /// \macro_image
 /// \macro_output
 /// \macro_code
-/// \author 07/2008 - Wouter Verkerke
+///
+/// \date July 2008
+/// \author Wouter Verkerke
 
 #include "RooRealVar.h"
 #include "RooDataSet.h"

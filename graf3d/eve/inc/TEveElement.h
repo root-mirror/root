@@ -17,6 +17,8 @@
 
 #include "TNamed.h"
 #include "TRef.h"
+#include <list>
+#include <set>
 
 class TGListTree;
 class TGListTreeItem;
@@ -34,7 +36,7 @@ class TEveElement
 {
    friend class TEveManager;
 
-   TEveElement& operator=(const TEveElement&); // Not implemented
+   TEveElement& operator=(const TEveElement&) = delete;
 
 public:
    class TEveListTreeInfo

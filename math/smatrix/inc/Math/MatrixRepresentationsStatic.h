@@ -7,16 +7,15 @@
 // Include files
 
 /**
-    @defgroup MatRep SMatrix Storage Representation
-    @ingroup SMatrixGroup
+\defgroup MatRep SMatrix Storage Representation
+\ingroup SMatrixGroup
 
-    @author Juan Palacios
-    @date   2006-01-15
+Classes MatRepStd and MatRepSym for generic and symmetric matrix
+data storage and manipulation. Define data storage and access, plus
+operators =, +=, -=, ==.
 
-    Classes MatRepStd and MatRepSym for generic and symmetric matrix
-    data storage and manipulation. Define data storage and access, plus
-    operators =, +=, -=, ==.
-
+\author Juan Palacios
+\date   2006-01-15
  */
 
 #include "Math/StaticCheck.h"
@@ -30,23 +29,25 @@ namespace ROOT {
 
 namespace Math {
 
-   //________________________________________________________________________________
-   /**
-      MatRepStd
-      Standard Matrix representation for a general D1 x D2 matrix.
-      This class is itself a template on the contained type T, the number of rows and the number of columns.
-      Its data member is an array T[nrows*ncols] containing the matrix data.
-      The data are stored in the row-major C convention.
-      For example, for a matrix, M, of size 3x3, the data \f$ \left[a_0,a_1,a_2,.......,a_7,a_8 \right] \f$d are stored in the following order:
-      \f[
-      M = \left( \begin{array}{ccc}
-      a_0 & a_1 & a_2  \\
-      a_3 & a_4  & a_5  \\
-      a_6 & a_7  & a_8   \end{array} \right)
-      \f]
+/**
+\defgroup MatRepStd Standard Matrix representation
+\ingroup MatRep
 
-      @ingroup MatRep
-   */
+Standard Matrix representation for a general D1 x D2 matrix.
+This class is itself a template on the contained type T, the number of rows and the number of columns.
+Its data member is an array T[nrows*ncols] containing the matrix data.
+The data are stored in the row-major C convention.
+For example, for a matrix, M, of size 3x3, the data \f$ \left[a_0,a_1,a_2,.......,a_7,a_8 \right] \f$d
+are stored in the following order:
+
+\f[
+M = \left( \begin{array}{ccc}
+a_0 & a_1 & a_2  \\
+a_3 & a_4  & a_5  \\
+a_6 & a_7  & a_8   \end{array} \right)
+\f]
+
+*/
 
 
    template <class T, unsigned int D1, unsigned int D2=D1>

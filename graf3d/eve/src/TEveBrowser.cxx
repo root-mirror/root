@@ -22,36 +22,21 @@
 #include "TGFileBrowser.h"
 #include "TBrowser.h"
 
-#include <Riostream.h>
-
 #include "TClass.h"
 #include "TROOT.h"
-#include "TStyle.h"
 #include "TSystem.h"
-#include "TRint.h"
 #include "TVirtualX.h"
-#include "TEnv.h"
 
-#include "TApplication.h"
-#include "TFile.h"
 #include "TClassMenuItem.h"
 
 #include "TColor.h"
 
 #include "TGCanvas.h"
-#include "TGSplitter.h"
-#include "TGStatusBar.h"
 #include "TGMenu.h"
-#include "TGPicture.h"
-#include "TGToolBar.h"
-#include "TGLabel.h"
-#include "TGXYLayout.h"
-#include "TGNumberEntry.h"
-#include <KeySymbols.h>
-
-#include "TGLSAViewer.h"
-#include "TGLSAFrame.h"
+#include "TGSplitter.h"
 #include "TGTab.h"
+#include <KeySymbols.h>
+#include "TGLSAViewer.h"
 
 #include "TGeoVolume.h"
 #include "TGeoNode.h"

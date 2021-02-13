@@ -11,7 +11,8 @@
 
 #include "TOracleRow.h"
 #include "TOracleServer.h"
-#include <string.h>
+#include "snprintf.h"
+#include <cstring>
 #include <ctime>
 
 ClassImp(TOracleRow);

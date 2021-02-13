@@ -35,6 +35,7 @@ A specialized TSelector for TTree::Draw.
 #include "TStyle.h"
 #include "TClass.h"
 #include "TColor.h"
+#include "strlcpy.h"
 
 ClassImp(TSelectorDraw);
 
@@ -1659,6 +1660,7 @@ void TSelectorDraw::TakeEstimate()
                      // h2 will be deleted, the axis setting is delegated to only
                      // the TGraph.
                      h2 = 0;
+                     fObject = pm->GetHistogram();
                   }
                }
             }

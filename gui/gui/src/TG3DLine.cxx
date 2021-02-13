@@ -21,7 +21,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TG3DLine.h"
-#include "Riostream.h"
+#include "TVirtualX.h"
+
+#include <iostream>
 
 
 ClassImp(TGHorizontal3DLine);
@@ -39,15 +41,15 @@ TGHorizontal3DLine::TGHorizontal3DLine(const TGWindow *p, UInt_t w, UInt_t h,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// constructor
+/// draw border
 
-TGVertical3DLine::TGVertical3DLine(const TGWindow *p, UInt_t w, UInt_t h,
-                                   UInt_t options, Pixel_t back) :
-                  TGFrame(p, w, h, options, back)
+void TGHorizontal3DLine::DrawBorder()
 {
-   SetWindowName();
-   fEditDisabled = kEditDisableWidth;
+   gVirtualX->DrawLine(fId, GetShadowGC()(),  0, 0, fWidth-2, 0);
+   gVirtualX->DrawLine(fId, GetHilightGC()(), 0, 1, fWidth-1, 1);
+   gVirtualX->DrawLine(fId, GetHilightGC()(), fWidth-1, 0, fWidth-1, 1);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Save an vertical 3D line as a C++ statement(s) on output stream out.
@@ -71,6 +73,27 @@ void TGHorizontal3DLine::SavePrimitive(std::ostream &out, Option_t *option /*= "
    }
    if (option && strstr(option, "keep_names"))
       out << "   " << GetName() << "->SetName(\"" << GetName() << "\");" << std::endl;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// constructor
+
+TGVertical3DLine::TGVertical3DLine(const TGWindow *p, UInt_t w, UInt_t h,
+                                   UInt_t options, Pixel_t back) :
+                  TGFrame(p, w, h, options, back)
+{
+   SetWindowName();
+   fEditDisabled = kEditDisableWidth;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// draw border
+
+void TGVertical3DLine::DrawBorder()
+{
+   gVirtualX->DrawLine(fId, GetShadowGC()(),  0, 0, 0, fHeight-2);
+   gVirtualX->DrawLine(fId, GetHilightGC()(), 1, 0, 1, fHeight-1);
+   gVirtualX->DrawLine(fId, GetHilightGC()(), 0, fHeight-1, 1, fHeight-1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

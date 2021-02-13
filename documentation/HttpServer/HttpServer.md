@@ -154,22 +154,20 @@ One could specify a debug parameter to be able to adjust the FastCGI configurati
 
 All user access will be ruled by the main web server. Authorized account names could be used to configure access restriction in THttpServer.
 
+
 ### Configure fastcgi with Apache2
 
-First of all, one should compile and install [mod_fastcgi](http://www.fastcgi.com) module.
-Then *mod_fastcgi* should be specified in httpd.conf to load it when Apache server is started.
-Finally in host configuration file one should have following lines:
+Since Apache version 2.4 FastCGI is directly supported - there is no need to compile and install external modules any more.
+One only need to enable `mod_proxy` and `mod_proxy_fcgi` modules and add following line to apache configuration file:
 
-     <IfModule mod_fastcgi.c>
-        FastCgiExternalServer "/srv/www/htdocs/root.app" -host rootapp_host_name:9000
-     </IfModule>
+     ProxyPass "/root.app/" "fcgi://localhost:9000/" enablereuse=on
 
-Here is supposed that directory "/srv/www/htdocs" is root directory for web server.
-Than one should be able to open address:
+More information can be found in [FastCGI proxy docu](https://httpd.apache.org/docs/2.4/mod/mod_proxy_fcgi.html).
+After restarting apache server one should be able to open address:
 
      http://apache_host_name/root.app/
 
-There are many ways to configure user authentication in Apache. Example of digest for FastCGI server:
+There are many ways to configure user authentication in Apache. Example of digest auth for FastCGI server:
 
     <Location "/root.app/">
        AuthType Digest
@@ -179,7 +177,6 @@ There are many ways to configure user authentication in Apache. Example of diges
        AuthUserFile "/srv/auth/auth.txt"
        Require valid-user
     </Location>
-
 
 
 ### Configure fastcgi with lighttpd

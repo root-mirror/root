@@ -18,8 +18,7 @@
 
 namespace ROOT {
 
-   namespace Minuit2 {
-
+namespace Minuit2 {
 
 /**
 
@@ -30,7 +29,6 @@ namespace ROOT {
 
   \ingroup Math
 */
-
 
 //______________________________________________________________________________
 /**
@@ -47,11 +45,7 @@ Interface (abstract class) defining the function to be minimized, which has to b
 class FCNBase : public GenericFunction {
 
 public:
-
-
    virtual ~FCNBase() {}
-
-
 
    /**
 
@@ -65,7 +59,7 @@ public:
       as it searches for the Minimum or performs whatever analysis is requested by
       the user.
 
-      @param par function parameters as defined by the user.
+      @param v function parameters as defined by the user.
 
       @return the Value of the function.
 
@@ -75,8 +69,7 @@ public:
 
    */
 
-   virtual double operator()(const std::vector<double>& x) const = 0;
-
+   virtual double operator()(const std::vector<double> &v) const = 0;
 
    /**
 
@@ -90,8 +83,7 @@ public:
 
    */
 
-   virtual double ErrorDef() const {return Up();}
-
+   virtual double ErrorDef() const { return Up(); }
 
    /**
 
@@ -111,12 +103,11 @@ public:
        add interface to set dynamically a new error definition
        Re-implement this function if needed.
    */
-   virtual void SetErrorDef(double ) {};
-
+   virtual void SetErrorDef(double){};
 };
 
-  }  // namespace Minuit2
+} // namespace Minuit2
 
-}  // namespace ROOT
+} // namespace ROOT
 
-#endif  // ROOT_Minuit2_FCNBase
+#endif // ROOT_Minuit2_FCNBase

@@ -16,12 +16,14 @@
 #ifndef ROO_DATA_SET
 #define ROO_DATA_SET
 
-class TDirectory ;
-class RooAbsRealLValue ;
-class RooRealVar ;
-class RooDataHist ;
+class TDirectory;
+class RooAbsRealLValue;
+class RooRealVar;
+class RooDataHist;
+
 #include "RooAbsData.h"
 #include "RooDirItem.h"
+#include <list>
 
 
 #define USEMEMPOOLFORDATASET
@@ -56,9 +58,9 @@ public:
 
 
   // Constructor importing data from external ROOT Tree
-  RooDataSet(const char *name, const char *title, TTree *ntuple, const RooArgSet& vars, 
+  RooDataSet(const char *name, const char *title, TTree *tree, const RooArgSet& vars,
 	     const char *cuts=0, const char* wgtVarName=0); 
-  RooDataSet(const char *name, const char *title, TTree *t, const RooArgSet& vars, 
+  RooDataSet(const char *name, const char *title, TTree *tree, const RooArgSet& vars,
 	     const RooFormulaVar& cutVar, const char* wgtVarName=0) ;  
   
 
@@ -106,7 +108,9 @@ public:
   virtual const RooArgSet* get(Int_t index) const override;
   virtual const RooArgSet* get() const override;
 
-  virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t last) const override;
+  void getBatches(RooBatchCompute::RunContext& evalData,
+      std::size_t first = 0, std::size_t len = std::numeric_limits<std::size_t>::max()) const override;
+  virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const override;
 
   // Add one ore more rows of data
   virtual void add(const RooArgSet& row, Double_t weight=1.0, Double_t weightError=0) override;
@@ -150,9 +154,9 @@ protected:
   
   // Cache copy feature is not publicly accessible
   RooAbsData* reduceEng(const RooArgSet& varSubset, const RooFormulaVar* cutVar, const char* cutRange=0, 
-	                Int_t nStart=0, Int_t nStop=2000000000, Bool_t copyCache=kTRUE) override;
+	                std::size_t nStart=0, std::size_t nStop = std::numeric_limits<std::size_t>::max(), Bool_t copyCache=kTRUE) override;
   RooDataSet(const char *name, const char *title, RooDataSet *ntuple, 
-	     const RooArgSet& vars, const RooFormulaVar* cutVar, const char* cutRange, int nStart, int nStop, Bool_t copyCache, const char* wgtVarName=0);
+	     const RooArgSet& vars, const RooFormulaVar* cutVar, const char* cutRange, std::size_t nStart, std::size_t nStop, Bool_t copyCache, const char* wgtVarName=0);
   
   RooArgSet addWgtVar(const RooArgSet& origVars, const RooAbsArg* wgtVar) ; 
   

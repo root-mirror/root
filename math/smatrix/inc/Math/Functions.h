@@ -36,19 +36,20 @@
 #include "Math/Expression.h"
 
 /**
-   @defgroup TempFunction Generic Template Functions
-   @ingroup SMatrixGroup
+\defgroup TempFunction Generic Template Functions
+\ingroup SMatrixGroup
 
    These functions apply for any type T, such as a scalar, a vector or a matrix.
- */
-/**
-   @defgroup VectFunction Vector Template Functions
-   @ingroup SMatrixGroup
+*/
 
-   These functions apply to SVector types (and also to Vector expressions) and can
-   return a vector expression or
-   a scalar, like in the Dot product, or a matrix, like in the Tensor product
- */
+/**
+\defgroup VectFunction Vector Template Functions
+\ingroup SMatrixGroup
+
+These functions apply to SVector types (and also to Vector expressions) and can
+return a vector expression or
+a scalar, like in the Dot product, or a matrix, like in the Tensor product
+*/
 
 
 namespace ROOT {

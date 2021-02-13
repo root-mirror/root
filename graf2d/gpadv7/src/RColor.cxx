@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 1995-2017, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -8,75 +8,183 @@
 
 #include "ROOT/RColor.hxx"
 
+#include <unordered_map>
+
 using namespace ROOT::Experimental;
 
-constexpr RColor::RGB_t RColor::kRed;
-constexpr RColor::RGB_t RColor::kGreen;
-constexpr RColor::RGB_t RColor::kBlue;
-constexpr RColor::RGB_t RColor::kWhite;
+using namespace std::string_literals;
+
 constexpr RColor::RGB_t RColor::kBlack;
-constexpr double RColor::kTransparent;
-constexpr double RColor::kOpaque;
+constexpr RColor::RGB_t RColor::kGreen;
+constexpr RColor::RGB_t RColor::kLime;
+constexpr RColor::RGB_t RColor::kAqua;
+constexpr RColor::RGB_t RColor::kPurple;
+constexpr RColor::RGB_t RColor::kGrey;
+constexpr RColor::RGB_t RColor::kFuchsia;
+constexpr RColor::RGB_t RColor::kNavy;
+constexpr RColor::RGB_t RColor::kBlue;
+constexpr RColor::RGB_t RColor::kTeal;
+constexpr RColor::RGB_t RColor::kOlive;
+constexpr RColor::RGB_t RColor::kSilver;
+constexpr RColor::RGB_t RColor::kMaroon;
+constexpr RColor::RGB_t RColor::kRed;
+constexpr RColor::RGB_t RColor::kYellow;
+constexpr RColor::RGB_t RColor::kWhite;
+constexpr float RColor::kTransparent;
+constexpr float RColor::kSemiTransparent;
+constexpr float RColor::kOpaque;
+
+
+///////////////////////////////////////////////////////////////////////////
+/// Converts string name of color in RGB value - when possible
+
+bool RColor::ConvertToRGB(const std::string &name, std::vector<uint8_t> &rgba)
+{
+   if (name.empty()) {
+      rgba.clear();
+      return false;
+   }
+
+   if (name[0] == '#') {
+      if ((name.length() != 7) && (name.length() != 9)) return false;
+
+      rgba.resize((name.length() == 7) ? 3 : 4);
+
+      try {
+        rgba[0] = std::stoi(name.substr(1,2), nullptr, 16);
+        rgba[1] = std::stoi(name.substr(3,2), nullptr, 16);
+        rgba[2] = std::stoi(name.substr(5,2), nullptr, 16);
+        if (name.length() == 9)
+           rgba[3] = std::stoi(name.substr(7,2), nullptr, 16);
+      } catch(...) {
+         return false;
+      }
+
+      return true;
+   }
+
+   // see https://www.december.com/html/spec/colorsvghex.html
+
+   static std::unordered_map<std::string,RGB_t> known_colors = {
+      {"black", kWhite},
+      {"green", kGreen},
+      {"lime", kLime},
+      {"aqua", kAqua},
+      {"purple", kPurple},
+      {"grey", kGrey},
+      {"fuchsia", kFuchsia},
+      {"navy", kNavy},
+      {"blue", kBlue},
+      {"teal", kTeal},
+      {"olive", kOlive},
+      {"silver", kSilver},
+      {"maroon", kMaroon},
+      {"red", kRed},
+      {"yellow", kYellow},
+      {"white", kWhite}
+   };
+
+   rgba.resize(3);
+   rgba[0] = rgba[1] = rgba[2] = 0;
+
+   auto known = known_colors.find(name);
+   if (known != known_colors.end()) {
+      rgba[0] = known->second[0];
+      rgba[1] = known->second[1];
+      rgba[2] = known->second[2];
+      return true;
+   }
+
+   return true;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 /// Converts integer from 0 to 255 into hex format with two digits like 00
 
-std::string RColor::toHex(int v)
+std::string RColor::toHex(uint8_t v)
 {
    static const char *digits = "0123456789ABCDEF";
-   if (v < 0)
-      v = 0;
-   else if (v > 255)
-      v = 255;
-
    std::string res(2,'0');
    res[0] = digits[v >> 4];
    res[1] = digits[v & 0xf];
    return res;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////
-/// Decodes hex color value into RGB - each color component as integer from 0 to 255
-/// If color was not specified as hex, method returns false
+/// Set RGB values as hex
 
-bool RColor::GetRGB(int &r, int &g, int &b) const
+bool RColor::SetRGBHex(const std::string &hex)
 {
-   auto hex = GetHex();
-   if (hex.length() != 6)
-      return false;
+   if (hex.length() != 6) return false;
 
-   r = std::stoi(hex.substr(0,2), nullptr, 16);
-   g = std::stoi(hex.substr(2,2), nullptr, 16);
-   b = std::stoi(hex.substr(4,2), nullptr, 16);
+   try {
+      SetRGB( std::stoi(hex.substr(0,2), nullptr, 16),
+              std::stoi(hex.substr(2,2), nullptr, 16),
+              std::stoi(hex.substr(4,2), nullptr, 16));
+   } catch (...) {
+      return false;
+   }
    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////
-/// Decodes color component and returns integer from 0 to 255
-/// Values of indx 0: Red, 1: Green, 2: Blue
-/// If color was not specified as hex, method returns 0
+/// Set Alpha value as hex
 
-int RColor::GetColorComponent(int indx) const
+bool RColor::SetAlphaHex(const std::string &hex)
 {
-   auto hex = GetHex();
+   if (hex.length() != 6) return false;
 
-   return hex.length() == 6 ? std::stoi(hex.substr(indx * 2, 2), nullptr, 16) : 0;
+   SetAlpha(std::stoi(hex, nullptr, 16));
+   return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////
-/// Decodes hex color value into RGB - each color component as float from 0. to 1.
-/// If color was not specified as hex, method returns false
+/// Returns color as RGBA array, includes optionally alpha parameter 0..255
 
-bool RColor::GetRGBFloat(float &r, float &g, float &b) const
+std::vector<uint8_t> RColor::AsRGBA() const
 {
-   int ri, gi, bi;
-   if (!GetRGB(ri,gi,bi))
-      return false;
-   r = ri/255.;
-   g = gi/255.;
-   b = bi/255.;
-   return true;
+   if (fRGBA.size() > 0)
+      return fRGBA;
+
+   std::vector<uint8_t> rgba;
+
+   ConvertToRGB(fName, rgba);
+
+   return rgba;
 }
+
+///////////////////////////////////////////////////////////////////////////
+/// Returns color value in hex format like "66FF66" - without any prefix
+/// Alpha parameter can be optionally included
+
+std::string RColor::AsHex(bool with_alpha) const
+{
+   auto rgba = AsRGBA();
+   std::string res;
+   if (!rgba.empty()) {
+      res = toHex(rgba[0]) + toHex(rgba[1]) + toHex(rgba[2]);
+      if ((rgba.size() == 4) && with_alpha)
+         res += toHex((rgba.size() == 4) ? rgba[3] : 0xff);
+   }
+   return res;
+}
+
+///////////////////////////////////////////////////////////////////////////
+/// Returns color value as it will be used in SVG drawing
+/// It either include hex format #66FF66 or just plain SVG name
+
+std::string RColor::AsSVG() const
+{
+   if (!fName.empty())
+      return fName;
+
+   auto hex = AsHex();
+   if (!hex.empty()) hex = "#"s + hex;
+   return hex;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 /// Returns the Hue, Light, Saturation (HLS) definition of this RColor
@@ -84,14 +192,16 @@ bool RColor::GetRGBFloat(float &r, float &g, float &b) const
 
 bool RColor::GetHLS(float &hue, float &light, float &satur) const
 {
-   float red, green, blue;
-   if (!GetRGBFloat(red,green,blue))
+   auto arr = AsRGBA();
+   if (arr.size() < 3)
       return false;
+
+   float red = arr[0]/255., green = arr[1]/255., blue = arr[2]/255.;
 
    hue = light = satur = 0.;
 
    float rnorm, gnorm, bnorm, minval, maxval, msum, mdiff;
-   minval = maxval =0 ;
+   minval = maxval = 0 ;
 
    minval = red;
    if (green < minval) minval = green;
@@ -127,7 +237,7 @@ bool RColor::GetHLS(float &hue, float &light, float &satur) const
 ///////////////////////////////////////////////////////////////////////////
 /// Set the color value from the Hue, Light, Saturation (HLS).
 
-RColor &RColor::SetHLS(float hue, float light, float satur)
+void RColor::SetHLS(float hue, float light, float satur)
 {
    float rh, rl, rs, rm1, rm2;
    rh = rl = rs = 0;
@@ -139,7 +249,10 @@ RColor &RColor::SetHLS(float hue, float light, float satur)
    else           rm2 = rl + rs - rl*rs;
    rm1 = 2.0*rl - rm2;
 
-   if (!rs) { SetRGBFloat(rl, rl, rl); return *this; }
+   if (!rs) {
+      SetRGB((uint8_t) (rl*255.), (uint8_t) (rl*255.), (uint8_t) (rl*255.));
+      return;
+   }
 
    auto toRGB = [rm1, rm2] (float h) {
       if (h > 360) h = h - 360;
@@ -150,5 +263,5 @@ RColor &RColor::SetHLS(float hue, float light, float satur)
       return rm1;
    };
 
-   return SetRGBFloat(toRGB(rh+120), toRGB(rh), toRGB(rh-120));
+   SetRGB(toRGB(rh+120), toRGB(rh), toRGB(rh-120));
 }

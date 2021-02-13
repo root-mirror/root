@@ -7,6 +7,10 @@
 #include "RooDataSet.h"
 #include "RooStats/HistFactory/ParamHistFunc.h"
 
+#include <vector>
+#include <map>
+#include <string>
+
 namespace RooStats {
 namespace HistFactory {
   ///\ingroup HistFactory

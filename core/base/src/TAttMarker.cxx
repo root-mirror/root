@@ -9,7 +9,7 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
+#include <iostream>
 #include "Strlen.h"
 #include "TAttMarker.h"
 #include "TVirtualPad.h"

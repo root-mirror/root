@@ -47,15 +47,24 @@
 #include "TMVA/DNN/Architectures/Cpu.h"
 //#endif
 
+#if 0
 #ifdef R__HAS_TMVAGPU
 #include "TMVA/DNN/Architectures/Cuda.h"
+#ifdef R__HAS_CUDNN
 #include "TMVA/DNN/Architectures/TCudnn.h"
+#endif
+#endif
 #endif
 
 #include "TMVA/DNN/Functions.h"
 #include "TMVA/DNN/DeepNet.h"
 
 #include <vector>
+#include <map>
+
+#ifdef R__HAS_TMVAGPU
+//#define USE_GPU_INFERENCE
+#endif
 
 namespace TMVA {
 
@@ -81,16 +90,18 @@ class MethodDL : public MethodBase {
 private:
    // Key-Value vector type, contining the values for the training options
    using KeyValueVector_t = std::vector<std::map<TString, TString>>;
+
 // #ifdef R__HAS_TMVAGPU
+// #ifdef R__HAS_CUDNN
 //    using ArchitectureImpl_t = TMVA::DNN::TCudnn<Float_t>;
-//    //using ArchitectureImpl_t = TMVA::DNN::TCuda<Float_t>;
+// #else
+//   using ArchitectureImpl_t = TMVA::DNN::TCuda<Float_t>;
+// #endif
 // #else
 // do not use arch GPU for evaluation. It is too slow for batch size=1
    using ArchitectureImpl_t = TMVA::DNN::TCpu<Float_t>;
-// #else
-//    using ArchitectureImpl_t = TMVA::DNN::TReference<Float_t>;
 // #endif
-//#endif
+
    using DeepNetImpl_t = TMVA::DNN::TDeepNet<ArchitectureImpl_t>;
    using MatrixImpl_t =  typename ArchitectureImpl_t::Matrix_t;
    using TensorImpl_t =  typename ArchitectureImpl_t::Tensor_t;
@@ -138,14 +149,11 @@ private:
                           std::vector<DNN::TDeepNet<Architecture_t, Layer_t>> &nets, TString layerString,
                           TString delim);
 
-
+   enum ERecurrentLayerType { kLayerRNN = 0, kLayerLSTM = 1, kLayerGRU = 2 };
    template <typename Architecture_t, typename Layer_t>
-   void ParseRnnLayer(DNN::TDeepNet<Architecture_t, Layer_t> &deepNet,
-                      std::vector<DNN::TDeepNet<Architecture_t, Layer_t>> &nets, TString layerString, TString delim);
-
-   template <typename Architecture_t, typename Layer_t>
-   void ParseLstmLayer(DNN::TDeepNet<Architecture_t, Layer_t> &deepNet,
+   void ParseRecurrentLayer(ERecurrentLayerType type, DNN::TDeepNet<Architecture_t, Layer_t> &deepNet,
                        std::vector<DNN::TDeepNet<Architecture_t, Layer_t>> &nets, TString layerString, TString delim);
+
 
    /// train of deep neural network using the defined architecture
    template <typename Architecture_t>

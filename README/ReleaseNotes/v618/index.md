@@ -298,7 +298,7 @@ The Johnson SU PDF has been added to RooFit. It comes with an analytical integra
 which make it superior (faster and more accurate) than implementing it manually with an interpreted/compiled formula.
 
 ### HistFactory
-hist2workspace performance optimisations. For a large, ATLAS-style Higgs-->bb workspace with > 100 systematic uncertainties and more than 10 channels, the run time decreases by a factor 11 to 12.
+hist2workspace performance optimisations. For a large, ATLAS-style Higgs-->bb workspace with > 100 systematic uncertainties and more than 10 channels, the run time for converting histograms to a fit model decreases by a factor 11 to 12.
 
 ### Faster, STL-like Collections in RooFit
 RooFit's collections `RooArgSet` and `RooArgList` have been made more STL-like. The underlying implementation used to be the `RooLinkedList`, but now both collections work with `std::vector`. The collections have an STL-like interface concerning iterators such that iterations over the two collections that looked like

@@ -25,10 +25,10 @@ See TTree::AddFriend for more information.
 */
 
 #include "TFriendElement.h"
-#include "TBuffer.h"
 #include "TTree.h"
 #include "TFile.h"
 #include "TROOT.h"
+#include "TChain.h"
 
 ClassImp(TFriendElement);
 
@@ -167,6 +167,10 @@ TTree *TFriendElement::Connect()
 
 TTree *TFriendElement::DisConnect()
 {
+   // At this point, if the condition is not meant, fTree is usually already
+   // deleted (hence the need for a local bit describing fTree)
+   if (fTree)
+      fTree->RemoveExternalFriend(this);
    if (fOwnFile) delete fFile;
    fFile = 0;
    fTree = 0;
@@ -204,7 +208,15 @@ TFile *TFriendElement::GetFile()
 
 TTree *TFriendElement::GetTree()
 {
-   if (fTree) return fTree;
+   if (fTree) {
+      // In cases where the friend was added by the owning chain and the friend is
+      // a chain we recorded the address of the chain but we need to return the address
+      // of the underlying current TTree.
+      if (TestBit(kFromChain))
+         return fTree->GetTree();
+      else
+         return fTree;
+   }
 
    if (GetFile()) {
       fFile->GetObject(GetTreeName(),fTree);
@@ -213,6 +225,9 @@ TTree *TFriendElement::GetTree()
 
    // This could be a memory tree or chain
    fTree = dynamic_cast<TTree*>( gROOT->FindObject(GetTreeName()) );
+
+   if (fTree)
+      fTree->RegisterExternalFriend(this);
 
    return fTree;
 }

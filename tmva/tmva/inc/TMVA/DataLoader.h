@@ -28,9 +28,7 @@
 #ifndef ROOT_TMVA_DataLoader
 #define ROOT_TMVA_DataLoader
 
-#include <string>
 #include <vector>
-#include <map>
 #include "TCut.h"
 
 #include "TMVA/Configurable.h"

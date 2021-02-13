@@ -261,7 +261,7 @@ TEnum *TListOfEnums::GetObject(const char *name) const
 void TListOfEnums::UnmapObject(TObject *obj)
 {
    TEnum *e = dynamic_cast<TEnum *>(obj);
-   if (e) {
+   if (e && e->GetDeclId()) {
       fIds->Remove((Long64_t)e->GetDeclId());
    }
 }

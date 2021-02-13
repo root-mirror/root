@@ -41,8 +41,8 @@ private:
   RooRealProxy _ndof;
 
   Double_t evaluate() const;
-  RooSpan<double> evaluateBatch(std::size_t begin, std::size_t batchSize) const;
-  
+  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const;
+    
   ClassDef(RooChiSquarePdf,1) // Chi Square distribution (eg. the PDF )
 };
 

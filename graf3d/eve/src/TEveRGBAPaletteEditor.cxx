@@ -13,14 +13,12 @@
 #include "TEveRGBAPalette.h"
 #include "TEveGValuators.h"
 
-#include "TVirtualPad.h"
 #include "TColor.h"
 
 #include "TGLabel.h"
 #include "TGButton.h"
 #include "TGComboBox.h"
 #include "TGColorSelect.h"
-#include "TGSlider.h"
 #include "TGDoubleSlider.h"
 
 /** \class TEveRGBAPaletteSubEditor

@@ -284,17 +284,17 @@ Double_t RooMCIntegrator::vegas(Stage stage, UInt_t calls, UInt_t iterations, Do
       Double_t m(0),q(0);
       // loop over integrand evaluations within this grid box
       for(UInt_t k = 0; k < _calls_per_box; k++) {
-	// generate a random point in this box
-	Double_t bin_vol(0);
-	_grid.generatePoint(box, x, bin, bin_vol, _genType == QuasiRandom ? kTRUE : kFALSE);
-	// evaluate the integrand at the generated point
-	Double_t fval= jacbin*bin_vol*integrand(x);	
-	// update mean and variance calculations
-	Double_t d = fval - m;
-	m+= d / (k + 1.0);
-	q+= d * d * (k / (k + 1.0));
-	// accumulate the results of this evaluation (importance sampling only)
-	if (_mode != Stratified) _grid.accumulate(bin, fval*fval);
+        // generate a random point in this box
+        Double_t bin_vol(0);
+        _grid.generatePoint(box, x, bin, bin_vol, _genType == QuasiRandom ? kTRUE : kFALSE);
+        // evaluate the integrand at the generated point
+        Double_t fval= jacbin*bin_vol*integrand(x);
+        // update mean and variance calculations
+        Double_t d = fval - m;
+        m+= d / (k + 1.0);
+        q+= d * d * (k / (k + 1.0));
+        // accumulate the results of this evaluation (importance sampling only)
+        if (_mode != Stratified) _grid.accumulate(bin, fval*fval);
       }
       intgrl += m * _calls_per_box;
       Double_t f_sq_sum = q * _calls_per_box ;
@@ -304,12 +304,20 @@ Double_t RooMCIntegrator::vegas(Stage stage, UInt_t calls, UInt_t iterations, Do
       if (_mode == Stratified) _grid.accumulate(bin, f_sq_sum);
 
       // print occasional progress messages
-      if(_timer.RealTime() > 1) { // wait at least 1 sec since the last message
-	oocoutW((TObject*)0,Integration) << "RooMCIntegrator: still working..." << endl;
-	_timer.Start(kTRUE);
+      if(_timer.RealTime() > 30) {
+        std::size_t index = 0;
+        std::size_t sizeOfDim = 1;
+
+        for (unsigned int i=0; i < _grid.getDimension(); ++i) {
+          index += box[i] * sizeOfDim;
+          sizeOfDim *= _grid.getNBoxes();
+        }
+        oocoutP(this,Integration) << "RooMCIntegrator: still working ... iteration "
+            << it << '/' << iterations << "  box " << index << "/"<< std::pow(_grid.getNBoxes(), _grid.getDimension()) << endl;
+        _timer.Start(kTRUE);
       }
       else {
-	_timer.Start(kFALSE);
+        _timer.Start(kFALSE);
       }
 
     } while(_grid.nextBox(box));

@@ -22,7 +22,7 @@
 #include "TList.h"
 #include "RooCmdArg.h"
 #include "RooArgSet.h"
-
+#include <string>
 
 class RooCmdConfig : public TObject {
 public:
@@ -63,6 +63,15 @@ public:
                  const RooCmdArg& arg5=RooCmdArg::none(), const RooCmdArg& arg6=RooCmdArg::none(), 
                  const RooCmdArg& arg7=RooCmdArg::none(), const RooCmdArg& arg8=RooCmdArg::none()) ;
   Bool_t process(const RooLinkedList& argList) ;
+  /// Process several RooCmdArg using iterators.
+  template<typename It_t>
+  bool process(It_t begin, It_t end) {
+    bool result = false;
+    for (auto it = begin; it != end; ++it) {
+      result |= process(*it);
+    }
+    return result;
+  }
 
   Int_t getInt(const char* name, Int_t defaultValue=0) ;
   Double_t getDouble(const char* name, Double_t defaultValue=0) ;
@@ -96,6 +105,9 @@ public:
 				     const RooCmdArg& arg2=RooCmdArg(), const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
 				     const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(), const RooCmdArg& arg7=RooCmdArg(),
 				     const RooCmdArg& arg8=RooCmdArg(), const RooCmdArg& arg9=RooCmdArg()) ;
+
+  static double decodeDoubleOnTheFly(const char* callerID, const char* cmdArgName, int idx, double defVal,
+      std::initializer_list<std::reference_wrapper<const RooCmdArg>> args);
 
 protected:
 

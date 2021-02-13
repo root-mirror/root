@@ -1,6 +1,8 @@
 /// \file
 /// \ingroup tutorial_dataframe
 /// \notebook -draw
+/// An example of complex analysis with RDataFrame: reconstructing the Higgs boson.
+///
 /// This tutorial is a simplified but yet complex example of an analysis reconstructing
 /// the Higgs boson decaying to two Z bosons from events with four leptons. The data
 /// and simulated events are taken from CERN OpenData representing a subset of the data
@@ -21,6 +23,10 @@
 /// 3. Reconstruct the Higgs boson from the remaining Z boson candidates and calculate
 ///    its invariant mass.
 ///
+/// The tutorial has the fast mode enabled by default, which reads the data from already skimmed
+/// datasets with a total size of only 51MB. If the fast mode is disabled, the tutorial runs over
+/// the full dataset with a size of 12GB.
+///
 /// \macro_image
 /// \macro_code
 /// \macro_output
@@ -35,8 +41,11 @@
 #include "TH1D.h"
 #include "TLatex.h"
 #include "TLegend.h"
-#include "Math/Vector4Dfwd.h"
+#include <Math/Vector4Dfwd.h>
+#include <Math/GenVector/LorentzVector.h>
+#include <Math/GenVector/PtEtaPhiM4D.h>
 #include "TStyle.h"
+#include <string>
 
 using namespace ROOT::VecOps;
 using RNode = ROOT::RDF::RNode;
@@ -394,34 +403,33 @@ void plot(T sig, T bkg, T data, const std::string &x_label, const std::string &f
    c->SaveAs(filename.c_str());
 }
 
-void df103_NanoAODHiggsAnalysis()
+void df103_NanoAODHiggsAnalysis(const bool run_fast = true)
 {
    // Enable multi-threading
    ROOT::EnableImplicitMT();
 
+   // In fast mode, take samples from */cms_opendata_2012_nanoaod_skimmed/*, which has
+   // the preselections from the selection_* functions already applied.
+   std::string path = "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/";
+   if (run_fast) path = "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod_skimmed/";
+
    // Create dataframes for signal, background and data samples
 
    // Signal: Higgs -> 4 leptons
-   ROOT::RDataFrame df_sig_4l("Events",
-                              "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/SMHiggsToZZTo4L.root");
+   ROOT::RDataFrame df_sig_4l("Events", path + "SMHiggsToZZTo4L.root");
 
    // Background: ZZ -> 4 leptons
    // Note that additional background processes from the original paper with minor contribution were left out for this
    // tutorial.
-   ROOT::RDataFrame df_bkg_4mu("Events",
-                               "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/ZZTo4mu.root");
-   ROOT::RDataFrame df_bkg_4el("Events",
-                               "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/ZZTo4e.root");
-   ROOT::RDataFrame df_bkg_2el2mu("Events",
-                                  "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/ZZTo2e2mu.root");
+   ROOT::RDataFrame df_bkg_4mu("Events", path + "ZZTo4mu.root");
+   ROOT::RDataFrame df_bkg_4el("Events", path + "ZZTo4e.root");
+   ROOT::RDataFrame df_bkg_2el2mu("Events", path + "ZZTo2e2mu.root");
 
    // CMS data taken in 2012 (11.6 fb^-1 integrated luminosity)
    ROOT::RDataFrame df_data_doublemu(
-      "Events", {"root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/Run2012B_DoubleMuParked.root",
-                 "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/Run2012C_DoubleMuParked.root"});
+      "Events", {path + "Run2012B_DoubleMuParked.root", path + "Run2012C_DoubleMuParked.root"});
    ROOT::RDataFrame df_data_doubleel(
-      "Events", {"root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/Run2012B_DoubleElectron.root",
-                 "root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/Run2012C_DoubleElectron.root"});
+      "Events", {path + "Run2012B_DoubleElectron.root", path + "Run2012C_DoubleElectron.root"});
 
    // Reconstruct Higgs to 4 muons
    auto df_sig_4mu_reco = reco_higgs_to_4mu(df_sig_4l);
@@ -500,5 +508,5 @@ void df103_NanoAODHiggsAnalysis()
 
 int main()
 {
-   df103_NanoAODHiggsAnalysis();
+   df103_NanoAODHiggsAnalysis(/*fast=*/true);
 }

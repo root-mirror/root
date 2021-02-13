@@ -18,7 +18,6 @@ const UInt_t nThreads = 4U;
 
 Int_t mtbb001_fillHistos()
 {
-   ROOT::EnableThreadSafety();
    // We define our work item
    auto workItem = [](UInt_t workerID) {
       // One generator, file and ntuple per worker

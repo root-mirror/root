@@ -24,7 +24,8 @@
 #include "RooAbsData.h"
 #include "RooAbsPdf.h"
 #include "RooArgSet.h"
-#include "TList.h"
+
+#include <map>
 
 class RooAbsData;
 
@@ -96,8 +97,8 @@ namespace RooStats {
       /// set the confidence level for the interval (eg. 0.95 for a 95% Confidence Interval)
       virtual void SetConfidenceLevel(Double_t cl) {fSize = 1.-cl;}
 
-      /// get confidence belt
-      ConfidenceBelt* GetConfidenceBelt() {return fConfBelt;}
+      /// Get confidence belt. This requires that CreateConfBelt() has been called.
+      ConfidenceBelt* GetConfidenceBelt() {return fCreateBelt ? fConfBelt : nullptr;}
 
       /// adaptive sampling algorithm to speed up interval calculation
       void UseAdaptiveSampling(bool flag=true){fAdaptiveSampling=flag;}

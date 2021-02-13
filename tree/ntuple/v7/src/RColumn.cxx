@@ -34,6 +34,10 @@ ROOT::Experimental::Detail::RColumn::~RColumn()
       fPageSink->ReleasePage(fHeadPage);
    if (!fCurrentPage.IsNull())
       fPageSource->ReleasePage(fCurrentPage);
+   if (fHandleSink)
+      fPageSink->DropColumn(fHandleSink);
+   if (fHandleSource)
+      fPageSource->DropColumn(fHandleSource);
 }
 
 void ROOT::Experimental::Detail::RColumn::Connect(DescriptorId_t fieldId, RPageStorage *pageStorage)

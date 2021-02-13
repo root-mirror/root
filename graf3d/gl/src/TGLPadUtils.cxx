@@ -9,11 +9,9 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#include "Riostream.h"
 #include <stdexcept>
 #include <cassert>
 
-#include "TVirtualPad.h"
 #include "TVirtualX.h"
 #include "RStipples.h"
 #include "TColor.h"
@@ -106,9 +104,6 @@ PolygonStippleSet::PolygonStippleSet()
 
 UInt_t PolygonStippleSet::SwapBits(UInt_t b)
 {
-#ifdef WIN32
-   b = ~b & 0xff;
-#endif
    b &= k16Bits;
 
    const UInt_t low = fgBitSwap[b & kLow4] << 4;

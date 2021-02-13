@@ -13,11 +13,11 @@
 #pragma optimize("",off)
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <fstream>
 
-#include "Riostream.h"
 #include "TROOT.h"
 #include "TColor.h"
 #include "TVirtualPad.h"
@@ -25,9 +25,6 @@
 #include "TTeXDump.h"
 #include "TStyle.h"
 #include "TMath.h"
-#include "TObjString.h"
-#include "TObjArray.h"
-#include "TClass.h"
 
 ClassImp(TTeXDump);
 

@@ -9,7 +9,8 @@
 #include "TSchemaType.h"
 #include "TObjArray.h"
 #include "TObjString.h"
-#include "TNamed.h"
+#include "TROOT.h"
+
 #include <utility>
 #include <iostream>
 #include <vector>
@@ -17,8 +18,6 @@
 #include <string>
 #include <cstdlib>
 #include <sstream>
-#include "TROOT.h"
-#include "Riostream.h"
 
 ClassImp(TSchemaRule);
 

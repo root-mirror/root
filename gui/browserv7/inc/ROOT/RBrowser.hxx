@@ -1,13 +1,9 @@
-/// \file ROOT/RBrowser.hxx
-/// \ingroup rbrowser
-/// \author Bertrand Bellenot <bertrand.bellenot@cern.ch>
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \date 2019-02-28
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Authors: Bertrand Bellenot <bertrand.bellenot@cern.ch> Sergey Linev <S.Linev@gsi.de>
+// Date: 2019-02-28
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 /*************************************************************************
- * Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2021, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -22,18 +18,11 @@
 
 #include <vector>
 #include <memory>
-#include <stdint.h>
-
-class TString;
-class TCanvas;
-class TFile;
 
 namespace ROOT {
 namespace Experimental {
 
-class RCanvas;
-
-/** Web-based ROOT file browser */
+class RBrowserWidget;
 
 class RBrowser {
 
@@ -43,28 +32,29 @@ protected:
    unsigned fConnId{0}; ///<! default connection id
 
    bool fUseRCanvas{false};             ///<!  which canvas should be used
-   std::vector<std::unique_ptr<TCanvas>> fCanvases;  ///<! canvases created by browser, should be closed at the end
-   std::string fActiveCanvas;            ///<! name of active for RBrowser canvas, not a gPad!
-   std::vector<std::shared_ptr<ROOT::Experimental::RCanvas>> fRCanvases; ///<!  ROOT7 canvases
+   std::string fActiveWidgetName;        ///<! name of active widget
+   std::vector<std::shared_ptr<RBrowserWidget>> fWidgets; ///<!  all browser widgets
+   int fWidgetCnt{0};                                     ///<! counter for created widgets
 
    std::shared_ptr<RWebWindow> fWebWindow;   ///<! web window to browser
 
    RBrowserData  fBrowsable;                   ///<! central browsing element
 
-   TCanvas *AddCanvas();
-   TCanvas *GetActiveCanvas() const;
-   std::string GetCanvasUrl(TCanvas *canv);
-   void CloseCanvas(const std::string &name);
+   std::shared_ptr<RBrowserWidget> AddWidget(const std::string &kind);
+   std::shared_ptr<RBrowserWidget> FindWidget(const std::string &name) const;
+   std::shared_ptr<RBrowserWidget> GetActiveWidget() const { return FindWidget(fActiveWidgetName); }
 
-   std::shared_ptr<RCanvas> AddRCanvas();
-   std::shared_ptr<RCanvas> GetActiveRCanvas() const;
-   std::string GetRCanvasUrl(std::shared_ptr<RCanvas> &canv);
+   void CloseTab(const std::string &name);
 
    std::string ProcessBrowserRequest(const std::string &msg);
-   std::string ProcessDblClick(const std::string &path, const std::string &drawingOptions);
-   long ProcessRunCommand(const std::string &file_path);
-   void ProcessSaveFile(const std::string &file_path);
+   std::string ProcessDblClick(std::vector<std::string> &args);
+   std::string NewWidgetMsg(std::shared_ptr<RBrowserWidget> &widget);
+   long ProcessRunMacro(const std::string &file_path);
+   void ProcessSaveFile(const std::string &fname, const std::string &content);
    std::string GetCurrentWorkingDirectory();
+
+   std::vector<std::string> GetRootHistory();
+   std::vector<std::string> GetRootLogs();
 
    void SendInitMsg(unsigned connid);
    void ProcessMsg(unsigned connid, const std::string &arg);

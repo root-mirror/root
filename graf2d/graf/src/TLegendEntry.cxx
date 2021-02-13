@@ -14,7 +14,7 @@
 #include "TLegendEntry.h"
 #include "TVirtualPad.h"
 #include "TROOT.h"
-#include "Riostream.h"
+#include <iostream>
 
 ClassImp(TLegendEntry);
 
@@ -121,8 +121,11 @@ void TLegendEntry::SaveEntry(std::ostream &out, const char* name )
    }
    TString objname = "NULL";
    if ( fObject ) objname = fObject->GetName();
+   TString tL(fLabel);
+   tL.ReplaceAll("\\","\\\\");
+   tL.ReplaceAll("\"","\\\"");
    out << name << "->AddEntry("<<quote<<objname<<quote<<","<<quote<<
-      fLabel.Data()<<quote<<","<<quote<<fOption.Data()<<quote<<");"<<std::endl;
+      tL.Data()<<quote<<","<<quote<<fOption.Data()<<quote<<");"<<std::endl;
    SaveFillAttributes(out,"entry",0,0);
    SaveLineAttributes(out,"entry",0,0,0);
    SaveMarkerAttributes(out,"entry",0,0,0);

@@ -366,3 +366,184 @@ TEST(RDataFrameInterface, DefineAliasedColumn)
    auto r1 = r0.Alias("newVar", "myVar");
    EXPECT_ANY_THROW(r0.Define("newVar", [](int i){return i;}, {"myVar"})) << "No exception thrown when defining a column with a name which is already an alias.";
 }
+
+// ROOT-10619
+TEST(RDataFrameInterface, UnusedJittedNodes)
+{
+   ROOT::RDataFrame df(1);
+   df.Filter("true");
+   df.Define("x", "true");
+   df.Foreach([]{}); // crashes if ROOT-10619 not fixed
+}
+
+#define EXPECT_RUNTIME_ERROR_WITH_MSG(expr, msg) \
+   try { expr; } catch (const std::runtime_error &e) {\
+      EXPECT_STREQ(e.what(), msg);\
+      hasThrown = true;\
+   }\
+   EXPECT_TRUE(hasThrown);\
+   hasThrown = false;
+
+// ROOT-10458
+#ifdef _WIN32
+const std::string symbol = "`private: virtual void __thiscall RDataFrameInterface_TypeUnknownToInterpreter_Test::TestBody(void)'::`2'::SimpleType";
+#else
+const std::string symbol = "RDataFrameInterface_TypeUnknownToInterpreter_Test::TestBody()::SimpleType";
+#endif
+
+TEST(RDataFrameInterface, TypeUnknownToInterpreter)
+{
+   struct SimpleType {
+      double a;
+      double b;
+   };
+
+   auto make_s = [] { return SimpleType{0, 0}; };
+   auto df = ROOT::RDataFrame(1).Define("res", make_s);
+   bool hasThrown = false;
+   std::stringstream ss;
+   ss << "The type of custom column \"res\" (" << symbol << ") is not known to the interpreter, " <<
+         "but a just-in-time-compiled Snapshot call requires this column. Make sure to create " <<
+         "and load ROOT dictionaries for this column's class.";
+   EXPECT_RUNTIME_ERROR_WITH_MSG(
+      df.Snapshot("result", "RESULT2.root"),
+      ss.str().c_str());
+   ss.str("");
+   ss << "The type of custom column \"res\" (" << symbol << ") is not known to the interpreter, " <<
+      "but a just-in-time-compiled Define call requires this column. Make sure to create and " <<
+      "load ROOT dictionaries for this column's class.";
+   EXPECT_RUNTIME_ERROR_WITH_MSG(
+      df.Define("res2", "res"),
+      ss.str().c_str());
+   ss.str("");
+   ss << "The type of custom column \"res\" (" << symbol << ") is not known to the interpreter, " <<
+      "but a just-in-time-compiled Filter call requires this column. Make sure to create and " <<
+      "load ROOT dictionaries for this column's class.";
+   EXPECT_RUNTIME_ERROR_WITH_MSG(
+      df.Filter("res; return true;"),
+      ss.str().c_str());
+}
+
+// ROOT-10942
+TEST(RDataFrameInterface, ColumnWithSimpleStruct)
+{
+   gInterpreter->Declare("struct S { int a; int b; };");
+   S c;
+   c.a = 42;
+   c.b = 2;
+   TTree t("t", "t");
+   t.Branch("c", &c);
+   t.Fill();
+
+   EXPECT_EQ(t.GetLeaf("a"),t.GetLeaf("c.a"));
+   EXPECT_EQ(t.GetLeaf("b"),t.GetLeaf("c.b"));
+   EXPECT_NE(t.GetLeaf("c.a"),t.GetLeaf("c.b"));
+   EXPECT_NE(t.GetLeaf("c.b"),nullptr);
+
+   ROOT::RDataFrame df(t);
+   const std::vector<std::string> expected({ "c.a", "a", "c.b", "b", "c" });
+   EXPECT_EQ(df.GetColumnNames(), expected);
+   for (const std::string &col : {"c.a", "a"}) {
+      EXPECT_DOUBLE_EQ(df.Mean<int>(col).GetValue(), 42.); // compiled
+      EXPECT_DOUBLE_EQ(df.Mean(col).GetValue(), 42.); // jitted
+   }
+}
+
+// Issue #6435
+TEST(RDataFrameInterface, MinMaxSumMeanStdDevOfScalar)
+{
+   auto df = ROOT::RDataFrame(4).Range(1, 0).Define("x", [](ULong64_t e) { return int(e); }, {"rdfentry_"});
+   auto max = df.Max<int>("x");
+   auto jit_max = df.Max("x");
+   auto min = df.Min<int>("x");
+   auto jit_min = df.Min("x");
+   auto sum = df.Sum<int>("x");
+   auto jit_sum = df.Sum("x");
+   auto mean = df.Mean<int>("x");
+   auto jit_mean = df.Mean("x");
+   auto stddev = df.StdDev<int>("x");
+   auto jit_stddev = df.StdDev("x");
+
+   EXPECT_EQ(*max, 3);
+   EXPECT_DOUBLE_EQ(*jit_max, 3.f);
+   EXPECT_EQ(*min, 1);
+   EXPECT_DOUBLE_EQ(*jit_min, 1.f);
+   EXPECT_EQ(*sum, 6);
+   EXPECT_DOUBLE_EQ(*jit_sum, 6.f);
+   EXPECT_DOUBLE_EQ(*mean, 2);
+   EXPECT_DOUBLE_EQ(*jit_mean, 2);
+   EXPECT_DOUBLE_EQ(*stddev, 1.f);
+   EXPECT_DOUBLE_EQ(*jit_stddev, 1.f);
+}
+
+TEST(RDataFrameInterface, MinMaxSumMeanStdDevOfRVec)
+{
+   auto df = ROOT::RDataFrame(1).Define("x", [] { return ROOT::RVec<int>{1,2,3}; });
+   auto max = df.Max<ROOT::RVec<int>>("x");
+   auto jit_max = df.Max("x");
+   auto min = df.Min<ROOT::RVec<int>>("x");
+   auto jit_min = df.Min("x");
+   auto sum = df.Sum<ROOT::RVec<int>>("x");
+   auto jit_sum = df.Sum("x");
+   auto mean = df.Mean<ROOT::RVec<int>>("x");
+   auto jit_mean = df.Mean("x");
+   auto stddev = df.StdDev<ROOT::RVec<int>>("x");
+   auto jit_stddev = df.StdDev("x");
+
+   EXPECT_EQ(*max, 3);
+   EXPECT_DOUBLE_EQ(*jit_max, 3.f);
+   EXPECT_EQ(*min, 1);
+   EXPECT_DOUBLE_EQ(*jit_min, 1.f);
+   EXPECT_EQ(*sum, 6);
+   EXPECT_DOUBLE_EQ(*jit_sum, 6.f);
+   EXPECT_DOUBLE_EQ(*mean, 2);
+   EXPECT_DOUBLE_EQ(*jit_mean, 2);
+   EXPECT_DOUBLE_EQ(*stddev, 1.f);
+   EXPECT_DOUBLE_EQ(*jit_stddev, 1.f);
+}
+
+class Product {
+public:
+   Product() : _x(0), _y(0) {}
+   Product(double x, double y) : _x(x), _y(y) {}
+   ~Product() {}
+
+   double GetProduct() { return _x * _y; }
+
+private:
+   double _x, _y;
+};
+
+// ROOT-10273, using jitting when some non-jitted types are unknown to the intepreter
+TEST(RDataFrameInterface, JittingAndNonJittedTypes)
+{
+   auto df = ROOT::RDataFrame(10)
+                .Define("x", "1.")
+                .Define("y", "2.")
+                .Define("products", [](double x, double y) { return Product(x, y); }, {"x", "y"})
+                .Define("moreproducts", [](double x, double y) { return std::vector<Product>(10, Product(x, y)); },
+                        {"x", "y"});
+
+   df.Foreach([](Product &p) { EXPECT_EQ(p.GetProduct(), 2); }, {"products"});
+}
+
+
+// GitHub issue #7058
+TEST(RDataFrameInterface, GetColumnTypeOfAlias)
+{
+   // from a Define
+   {
+      auto df = ROOT::RDataFrame(1).Define("x", [] { return 0; }).Alias("y", "x");
+      EXPECT_EQ(df.GetColumnType("y"), "int");
+   }
+
+   // from a branch
+   {
+      TTree t("t", "t");
+      int x = 42;
+      t.Branch("x", &x);
+      t.Fill();
+      auto df = ROOT::RDataFrame(t).Alias("y", "x");
+      EXPECT_EQ(df.GetColumnType("y"), "Int_t");
+   }
+}

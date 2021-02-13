@@ -2,7 +2,7 @@
 // Author: Fons Rademakers   15/11/95
 
 /*************************************************************************
- * Copyright (C) 1995-2000, Rene Brun and Fons Rademakers.               *
+ * Copyright (C) 1995-2021, Rene Brun and Fons Rademakers.               *
  * All rights reserved.                                                  *
  *                                                                       *
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
@@ -29,20 +29,17 @@ class TGMainFrame;
 class TBrowserImp {
 
 protected:
-   TBrowser  *fBrowser;     //TBrowser associated with this implementation
-   Bool_t     fShowCycles;  //Show object cycle numbers in browser
+   TBrowser  *fBrowser{nullptr};     ///< TBrowser associated with this implementation
+   Bool_t     fShowCycles{kFALSE};   ///< Show object cycle numbers in browser
 
-   TBrowserImp(const TBrowserImp& br)
-     : fBrowser(br.fBrowser), fShowCycles(br.fShowCycles) { }
-   TBrowserImp& operator=(const TBrowserImp& br)
-     {if(this!=&br) {fBrowser=br.fBrowser; fShowCycles=br.fShowCycles;}
-     return *this;}
+   TBrowserImp(const TBrowserImp&) = delete;
+   TBrowserImp &operator=(const TBrowserImp& br) = delete;
 
 public:
-   TBrowserImp(TBrowser *b=nullptr) : fBrowser(b), fShowCycles(kFALSE) { }
+   TBrowserImp(TBrowser *b = nullptr);
    TBrowserImp(TBrowser *b, const char *title, UInt_t width, UInt_t height, Option_t *opt = "");
    TBrowserImp(TBrowser *b, const char *title, Int_t x, Int_t y, UInt_t width, UInt_t height, Option_t *opt = "");
-   virtual ~TBrowserImp() { }
+   virtual ~TBrowserImp() = default;
 
    virtual void      Add(TObject *, const char *, Int_t) { }
    virtual void      AddCheckBox(TObject *, Bool_t = kFALSE) { }
@@ -56,7 +53,7 @@ public:
    virtual void      RecursiveRemove(TObject *) { }
    virtual void      Refresh(Bool_t = kFALSE) { }
    virtual void      Show() { }
-   virtual void      SetDrawOption(Option_t *option="");
+   virtual void      SetDrawOption(Option_t * = "") { }
    virtual Option_t *GetDrawOption() const { return nullptr; }
 
    virtual Long_t    ExecPlugin(const char *, const char *, const char *, Int_t, Int_t) { return 0; }
@@ -64,17 +61,12 @@ public:
    virtual void      StartEmbedding(Int_t, Int_t) { }
    virtual void      StopEmbedding(const char *) { }
 
-   virtual TGMainFrame *GetMainFrame() const { return 0; }
+   virtual TGMainFrame *GetMainFrame() const { return nullptr; }
 
    virtual TBrowser *GetBrowser() const      { return fBrowser; }
    virtual void      SetBrowser(TBrowser *b) { fBrowser = b; }
 
    ClassDef(TBrowserImp,0)  //ABC describing browser implementation protocol
 };
-
-inline TBrowserImp::TBrowserImp(TBrowser *, const char *, UInt_t, UInt_t, Option_t *)
-   : fBrowser(0), fShowCycles(kFALSE) { }
-inline TBrowserImp::TBrowserImp(TBrowser *, const char *, Int_t, Int_t, UInt_t, UInt_t, Option_t *)
-   : fBrowser(0), fShowCycles(kFALSE) { }
 
 #endif

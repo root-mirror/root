@@ -266,7 +266,7 @@ public:
    /// alias for GetWS()
    RooWorkspace * GetWorkspace() const { return GetWS(); }
 
-   void GuessObsAndNuisance(const RooAbsData& data);
+   void GuessObsAndNuisance(const RooAbsData& data, bool printModelConfig = true);
 
    /// overload the print method
    virtual void Print(Option_t* option = "") const override;

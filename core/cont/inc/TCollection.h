@@ -30,7 +30,7 @@
 
 #include "TVirtualRWMutex.h"
 
-#include <assert.h>
+#include <cassert>
 
 class TClass;
 class TObjectTable;
@@ -57,7 +57,7 @@ R__EXTERN TVirtualMutex *gCollectionMutex;
 #ifdef R__CHECK_COLLECTION_MULTI_ACCESS
 #include <atomic>
 #include <thread>
-#include <unordered_set>
+#include <unordered_multiset>
 #endif
 
 class TCollection : public TObject {

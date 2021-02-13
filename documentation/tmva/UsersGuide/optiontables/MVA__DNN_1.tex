@@ -1,7 +1,8 @@
 \begin{optiontableAuto}
-Architecture & \mc{1}{c}{--} & STANDARD & STANDARD, CPU, GPU & Compute architecture backend to use for the training of the network \\
+Architecture & \mc{1}{c}{--} & CPU & CPU, GPU & Compute architecture backend to use for the training of the network \\
 ErrorStrategy & \mc{1}{c}{--} & CROSSENTROPY & CROSSENTROPY, SUMOFSQUARES & Loss functions used for the training \\
-Layout & \mc{1}{c}{--} & \mc{1}{c}{--} & See Section ~\ref{sec:dnn:layout} & Layout of the network \\
+Layout & \mc{1}{c}{--} & \mc{1}{c}{--} & See Section ~\ref{sec:dnn:layout} & Layout of the network\\
+InputLayout & \mc{1}{c}{--} & Number of input features & See Section ~\ref{sec:dnn:inputlayout} & Input shape for first layer. Needed for CNN and RNN \\
 TrainingStrategy & \mc{1}{c}{--} & \mc{1}{c}{--} & See Section ~\ref{sec:dnn:training} & Training Settings \\
 WeightInitialization & \mc{1}{c}{--} & XAVIER & XAVIER, XAVIERUNIFORM & Weight initialization method
 \end{optiontableAuto}

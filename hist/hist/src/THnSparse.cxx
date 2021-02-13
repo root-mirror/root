@@ -12,7 +12,6 @@
 #include "THnSparse.h"
 
 #include "TAxis.h"
-#include "TBuffer.h"
 #include "TClass.h"
 #include "TDataMember.h"
 #include "TDataType.h"

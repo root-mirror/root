@@ -50,6 +50,8 @@
 #include <limits>
 #include <iostream>
 #include <chrono>
+#include <vector>
+#include <string>
 
 using namespace TMVA::DNN;
 using TMVA::DNN::EOptimizer;

@@ -10,18 +10,12 @@
 #include "Minuit2/MinimumBuilder.h"
 #include "Minuit2/MnPrint.h"
 
-
 namespace ROOT {
 
-   namespace Minuit2 {
+namespace Minuit2 {
 
-      MinimumBuilder::MinimumBuilder() :
-         fPrintLevel(MnPrint::Level()),
-         fStorageLevel(1),
-         fTracer(0)
-      {}
+MinimumBuilder::MinimumBuilder() : fPrintLevel(MnPrint::GlobalLevel()), fStorageLevel(1), fTracer(0) {}
 
+} // namespace Minuit2
 
-   }  // namespace Minuit2
-
-}  // namespace ROOT
+} // namespace ROOT

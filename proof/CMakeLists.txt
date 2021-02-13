@@ -9,7 +9,7 @@ add_subdirectory(proofplayer) # special CMakeListst.txt
 if(NOT WIN32)
   add_subdirectory(proofbench) # special CMakeListst.txt
 endif()
-if(xrootd AND ssl)
+if(xproofd AND xrootd AND ssl)
   add_subdirectory(proofd)
   add_subdirectory(proofx)
 endif()

@@ -14,7 +14,7 @@
 
 #include "TObject.h"
 
-#include "TObjArray.h"
+class TObjArray;
 
 class TGeoPolygon : public TObject
 {
@@ -26,18 +26,21 @@ public:
    };
 protected :
 // data members
-   Int_t               fNvert;            // number of vertices (must be defined clockwise in XY plane)
-   Int_t               fNconvex;          // number of points of the outscribed convex polygon
-   Int_t              *fInd;              //[fNvert] list of vertex indices
-   Int_t              *fIndc;             //[fNconvex] indices of vertices of the outscribed convex polygon
-   Double_t           *fX;                //! pointer to list of current X coordinates of vertices
-   Double_t           *fY;                //! pointer to list of current Y coordinates of vertices
-   TObjArray          *fDaughters;        // list of concave daughters
+   Int_t               fNvert{0};                  // number of vertices (must be defined clockwise in XY plane)
+   Int_t               fNconvex{0};                // number of points of the outscribed convex polygon
+   Int_t              *fInd{nullptr};              //[fNvert] list of vertex indices
+   Int_t              *fIndc{nullptr};             //[fNconvex] indices of vertices of the outscribed convex polygon
+   Double_t           *fX{nullptr};                //! pointer to list of current X coordinates of vertices
+   Double_t           *fY{nullptr};                //! pointer to list of current Y coordinates of vertices
+   TObjArray          *fDaughters{nullptr};        // list of concave daughters
 private:
    void                ConvexCheck(); // force convexity checking
    Bool_t              IsSegConvex(Int_t i1, Int_t i2=-1) const;
    Bool_t              IsRightSided(const Double_t *point, Int_t ind1, Int_t ind2) const;
    void                OutscribedConvex();
+
+   TGeoPolygon(const TGeoPolygon&) = delete;
+   TGeoPolygon &operator=(const TGeoPolygon&) = delete;
 public:
    // constructors
    TGeoPolygon();

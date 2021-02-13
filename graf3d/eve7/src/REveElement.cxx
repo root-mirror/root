@@ -27,7 +27,6 @@
 #include "TROOT.h"
 #include "TColor.h"
 
-#include "json.hpp"
 #include <cassert>
 
 
@@ -135,6 +134,18 @@ void REveElement::assign_element_id_recurisvely()
    REX::gEve->AssignElementId(this);
    for (auto &c : fChildren)
       c->assign_element_id_recurisvely();
+}
+
+std::string REveElement::GetHighlightTooltip(const std::set<int>& iSet) const
+{
+   std::string res = fTitle;
+   if (res.empty())
+      res = fName;
+
+   if (!iSet.empty())
+      res = TString::Format("%s idx=%d", res.c_str(), *iSet.begin());
+
+   return res;
 }
 
 void REveElement::assign_scene_recursively(REveScene* s)

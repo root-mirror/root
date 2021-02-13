@@ -46,10 +46,10 @@ the names of the arguments are not hard coded.
 #include "Riostream.h"
 
 #include "RooGenericPdf.h"
-#include "RooGenericPdf.h"
 #include "RooStreamParser.h"
 #include "RooMsgService.h"
 #include "RooArgList.h"
+#include "RunContext.h"
 
 
 
@@ -127,6 +127,17 @@ Double_t RooGenericPdf::evaluate() const
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+/// Evaluate this formula for values found in inputData.
+RooSpan<double> RooGenericPdf::evaluateSpan(RooBatchCompute::RunContext& inputData, const RooArgSet* normSet) const {
+  if (normSet != nullptr && normSet != _normSet)
+    throw std::logic_error("Got conflicting normSets");
+
+  auto results = formula().evaluateSpan(this, inputData, _normSet);
+  inputData.spans[this] = results;
+
+  return results;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Change formula expression to given expression

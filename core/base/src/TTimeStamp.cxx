@@ -40,7 +40,7 @@ NOTE: the use of time_t (and its default implementation as a 32 int)
 #include "TTimeStamp.h"
 #include "TString.h"
 #include "TError.h"
-#include "Riostream.h"
+#include <iostream>
 #ifdef R__WIN32
 #include "Windows4Root.h"
 #else

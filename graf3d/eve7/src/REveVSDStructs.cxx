@@ -11,9 +11,6 @@
 
 #include <ROOT/REveVSDStructs.hxx>
 
-using namespace ROOT::Experimental;
-namespace REX = ROOT::Experimental;
-
 namespace ROOT {
 namespace Experimental {
 

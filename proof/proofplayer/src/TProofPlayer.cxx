@@ -58,7 +58,6 @@ the query by calling Terminate().
 #include "TStatus.h"
 #include "TEventList.h"
 #include "TProofLimitsFinder.h"
-#include "THashList.h"
 #include "TSortedList.h"
 #include "TTree.h"
 #include "TEntryList.h"

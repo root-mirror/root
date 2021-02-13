@@ -32,11 +32,10 @@
 #include "TGPicture.h"
 #include "TSystem.h"
 #include "TImage.h"
-#include "Riostream.h"
-#include "TMath.h"
-#include "TGFileDialog.h"
-#include "TGMsgBox.h"
 #include "TVirtualDragManager.h"
+#include "TVirtualX.h"
+
+#include <iostream>
 
 
 ClassImp(TGIcon);

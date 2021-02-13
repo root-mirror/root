@@ -1,8 +1,6 @@
 #include "TMemFile.h"
 
 #include "TError.h"
-#include "TMemFile.h"
-#include "TTree.h"
 #include <cstring>
 
 #include "gtest/gtest.h"

@@ -26,17 +26,12 @@ techniques to perform calculations that involve a RooRealVars
 error, such as calculating the pull value.
 **/
 
-#include "RooFit.h"
-#include "Riostream.h"
-
-#include "RooErrorVar.h"
 #include "RooErrorVar.h"
 #include "RooAbsBinning.h"
 #include "RooStreamParser.h"
 #include "RooRangeBinning.h"
 #include "RooMsgService.h"
-
-
+#include "RooUniformBinning.h"
 
 using namespace std;
 
@@ -167,6 +162,26 @@ std::list<std::string> RooErrorVar::getBinningNames() const
   return binningNames;
 }
 
+
+/// Remove lower bound from named binning, or default binning if name is null
+void RooErrorVar::removeMin(const char* name) {
+  getBinning(name).setMin(-RooNumber::infinity()) ;
+}
+
+
+/// Remove upper bound from named binning, or default binning if name is null
+void RooErrorVar::removeMax(const char* name) {
+  getBinning(name).setMax(RooNumber::infinity()) ;
+}
+
+
+/// Remove both upper and lower bounds from named binning, or
+/// default binning if name is null
+void RooErrorVar::removeRange(const char* name) {
+  getBinning(name).setRange(-RooNumber::infinity(),RooNumber::infinity()) ;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Store given binning with this variable under the given name
 
@@ -256,7 +271,10 @@ void RooErrorVar::setMax(const char* name, Double_t value)
   setShapeDirty() ;
 }
 
-
+/// Set default binning to nBins uniform bins
+void RooErrorVar::setBins(Int_t nBins) {
+  setBinning(RooUniformBinning(getMin(),getMax(),nBins)) ;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the upper and lower lower bound of the range with the given name to the given values

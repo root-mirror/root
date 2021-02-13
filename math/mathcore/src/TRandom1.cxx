@@ -471,10 +471,19 @@ void TRandom1::RndmArray(const Int_t size, Double_t *vect)
    }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-///set seeds
-
+/// Set the state of the generator providing an array of seeds
+/// The array of seeds can be of size 24 or less. In case of an array of n seeds with n < 24
+/// the n+1 element must be equal to zero.
+/// The other elements are the initialized using a Multiplicative
+/// Congruential generator using formula constants of L'Ecuyer
+/// as described in "A review of pseudorandom number generators"
+/// (Fred James) published in Computer Physics Communications 60 (1990)
+/// pages 329-344
+///
+///  \param[in] seeds  array of seeds (size from 1 to 24)
+///  \param[in] lux    Luxury level
+///
 void TRandom1::SetSeeds(const UInt_t *seeds, int lux)
 {
    const int ecuyer_a = 53668;
@@ -542,79 +551,49 @@ void TRandom1::SetSeeds(const UInt_t *seeds, int lux)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// The initialisation is carried out using a Multiplicative
+/// Set the state of the generator providing a single seed value and a
+/// luxury level.
+///  The initialisation of the other state values is carried out using a Multiplicative
 /// Congruential generator using formula constants of L'Ecuyer
 /// as described in "A review of pseudorandom number generators"
 /// (Fred James) published in Computer Physics Communications 60 (1990)
 /// pages 329-344
 ///
-/// modified for the case of seed = 0. In that case a random 64 bits seed based on
-/// TUUID (using TRandom3(0) ) is generated in order to have a unique seed
+/// Note: When the provided seed = 0, a random and unique seed is generated
 ///
-
+///  \param[in] seed   seed value (note special case if seed=0)
+///  \param[in] lux    Luxury level
+///
+///
 void TRandom1::SetSeed2(UInt_t seed, int lux)
 {
-   const int ecuyer_a = 53668;
-   const int ecuyer_b = 40014;
-   const int ecuyer_c = 12211;
-   const int ecuyer_d = 2147483563;
-
-   const int lux_levels[5] = {0,24,73,199,365};
-
-   UInt_t int_seed_table[24];
-
    // case of seed == 0
-   // use a random seed based on TRandom2(0) which is based on the UUID
+   // use a random seed based on TRandom3(0) which is based on the UUID
    if (seed == 0) {
       UInt_t randSeeds[25];
       TRandom3 r2(0);
       for (int j = 0; j < 24; ++j)
-       randSeeds[j]  =  static_cast<UInt_t> (4294967296.*r2.Rndm());
+         randSeeds[j] = static_cast<UInt_t>(4294967296. * r2.Rndm());
       randSeeds[24] = 0;
       SetSeeds(randSeeds, lux);
       return;
    }
 
-
-   Long64_t next_seed = seed;
-   Long64_t k_multiple;
-   int i;
-
-   // number of additional random numbers that need to be 'thrown away'
-   // every 24 numbers is set using fLuxury level variable.
-
-   fSeed = seed;
-   if( (lux > 4)||(lux < 0) ) {
-      if(lux >= 24) {
-         fNskip = lux - 24;
-      } else {
-         fNskip = lux_levels[3]; // corresponds to default fLuxury level
-      }
-   } else {
-      fLuxury = lux;
-      fNskip  = lux_levels[fLuxury];
-   }
-
-
-   for(i = 0;i != 24;i++) {
-      k_multiple = next_seed / ecuyer_a;
-      next_seed = ecuyer_b * (next_seed - k_multiple * ecuyer_a)
-      - k_multiple * ecuyer_c ;
-      if(next_seed < 0)next_seed += ecuyer_d;
-      int_seed_table[i] = next_seed % fIntModulus;
-   }
-
-   for(i = 0;i != 24;i++)
-      fFloatSeedTable[i] = int_seed_table[i] * fMantissaBit24;
-
-   fIlag = 23;
-   fJlag = 9;
-   fCarry = 0. ;
-
-   if( fFloatSeedTable[23] == 0. ) fCarry = fMantissaBit24;
-
-   fCount24 = 0;
+   // seed List requires a zero terminated array in case the size of the array is less that the
+   // state size (24)
+   UInt_t seedList[2] = {seed, 0};
+   SetSeeds(seedList, lux);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set the state of the generator providing a single seed value and using
+/// the luxury level defined when constructing the class
+///  The initialisation of the other state values is carried out using a Multiplicative
+/// Congruential generator.
+/// Note: When seed = 0, a random and unique seed is generated
+///
+/// \param[in] seed   seed value (note special case if seed=0)
+///
 
 void TRandom1::SetSeed(ULong_t seed)
 {

@@ -17,7 +17,6 @@
 #ifndef ROO_ABS_MC_STUDY_MODULE
 #define ROO_ABS_MC_STUDY_MODULE
 
-#include "TList.h"
 #include "RooArgSet.h"
 #include "RooMCStudy.h"
 class RooAbsPdf;

@@ -14,19 +14,10 @@
 
 #include "TSQLStatement.h"
 
-#if !defined(__CINT__)
 #include <occi.h>
+
 #ifdef CONST
 #undef CONST
-#endif
-#else
-namespace oracle { namespace occi {
-class Environment;
-class Connection;
-class Statement;
-class ResultSet;
-class MetaData;
-   }}
 #endif
 
 class TOracleStatement : public TSQLStatement {

@@ -53,7 +53,8 @@ for usage examples.
 
 
 #include "RooFit.h"
-#include "Riostream.h"
+#include "snprintf.h"
+#include <iostream>
 
 #include "RooMCStudy.h"
 #include "RooAbsMCStudyModule.h"

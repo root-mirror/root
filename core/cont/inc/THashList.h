@@ -37,8 +37,8 @@ protected:
    THashTable   *fTable;    //Hashtable used for quick lookup of objects
 
 private:
-   THashList(const THashList&);              // not implemented
-   THashList& operator=(const THashList&);   // not implemented
+   THashList(const THashList&) = delete;
+   THashList& operator=(const THashList&) = delete;
 
 public:
    THashList(Int_t capacity=TCollection::kInitHashTableCapacity, Int_t rehash=0);

@@ -41,14 +41,13 @@ Begin_Macro(source)
 End_Macro
 */
 
-#include "Riostream.h"
+#include <iostream>
 
 #include "TGeoCone.h"
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
 #include "TVirtualGeoPainter.h"
 #include "TGeoSphere.h"
-#include "TVirtualPad.h"
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 #include "TMath.h"

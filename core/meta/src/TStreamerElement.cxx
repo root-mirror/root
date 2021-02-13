@@ -18,6 +18,7 @@
 #include "TROOT.h"
 #include "TStreamerElement.h"
 #include "TVirtualStreamerInfo.h"
+#include "TBuffer.h"
 #include "TClass.h"
 #include "TClassEdit.h"
 #include "TClassStreamer.h"
@@ -26,15 +27,20 @@
 #include "TDataMember.h"
 #include "TDataType.h"
 #include "TRealData.h"
+#include "ThreadLocalStorage.h"
+#include "TList.h"
 #include "TRef.h"
 #include "TInterpreter.h"
 #include "TError.h"
+#include "TObjArray.h"
 #include "TVirtualMutex.h"
 #include "TVirtualCollectionProxy.h"
-#include <iostream>
+#include "strlcpy.h"
+#include "snprintf.h"
 
 #include <string>
-namespace std {} using namespace std;
+
+using namespace std;
 
 const Int_t kMaxLen = 1024;
 
@@ -626,7 +632,7 @@ TStreamerBase::TStreamerBase() :
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TStreamerBase::TStreamerBase(const char *name, const char *title, Int_t offset)
+TStreamerBase::TStreamerBase(const char *name, const char *title, Int_t offset, Bool_t isTransient)
    : TStreamerElement(name,title,offset,TVirtualStreamerInfo::kBase,"BASE"),
      // Abuse TStreamerElement data member that is not used by TStreamerBase
      fBaseCheckSum( *( (UInt_t*)&(fMaxIndex[1]) ) ),
@@ -650,7 +656,7 @@ TStreamerBase::TStreamerBase(const char *name, const char *title, Int_t offset)
       fBaseVersion = 0;
    }
    fNewBaseClass = 0;
-   Init();
+   Init(isTransient);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -685,16 +691,21 @@ Int_t TStreamerBase::GetSize() const
 
 void TStreamerBase::Init(TVirtualStreamerInfo *)
 {
+   Init(kFALSE);
+}
+
+void TStreamerBase::Init(Bool_t isTransient)
+{
    fBaseClass = TClass::GetClass(GetName());
    if (!fBaseClass) return;
 
-   InitStreaming();
+   InitStreaming(isTransient);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Setup the fStreamerFunc and fStreamerinfo
 
-void TStreamerBase::InitStreaming()
+void TStreamerBase::InitStreaming(Bool_t isTransient)
 {
    if (fNewBaseClass) {
       fStreamerFunc = fNewBaseClass->GetStreamerFunc();
@@ -708,9 +719,9 @@ void TStreamerBase::InitStreaming()
       fStreamerFunc = fBaseClass->GetStreamerFunc();
       fConvStreamerFunc = fBaseClass->GetConvStreamerFunc();
       if (fBaseVersion >= 0 || fBaseCheckSum == 0) {
-         fStreamerInfo = fBaseClass->GetStreamerInfo(fBaseVersion);
+         fStreamerInfo = fBaseClass->GetStreamerInfo(fBaseVersion, isTransient);
       } else {
-         fStreamerInfo = fBaseClass->FindStreamerInfo(fBaseCheckSum);
+         fStreamerInfo = fBaseClass->FindStreamerInfo(fBaseCheckSum, isTransient);
       }
    } else {
       fStreamerFunc = 0;
@@ -839,14 +850,14 @@ void TStreamerBase::Update(const TClass *oldClass, TClass *newClass)
 
    if (fBaseClass == oldClass) {
       fBaseClass = newClass;
-      InitStreaming();
+      InitStreaming(kFALSE);
    } else if (fBaseClass == nullptr) {
       if (fName == newClass->GetName()) {
          fBaseClass = newClass;
-         InitStreaming();
+         InitStreaming(kFALSE);
       } else if (TClassTable::GetDict(fName)) {
          fBaseClass = TClass::GetClass(fName);
-         InitStreaming();
+         InitStreaming(kFALSE);
       }
    }
 }
@@ -1986,10 +1997,20 @@ void TStreamerSTL::Streamer(TBuffer &R__b)
       return;
    } else {
       // To enable forward compatibility we actually save with the old value
-      Int_t tmp = fType;
-      fType = TVirtualStreamerInfo::kStreamer;
-      R__b.WriteClassBuffer(TStreamerSTL::Class(),this);
-      fType = tmp;
+      TStreamerSTL tmp;
+      // Hand coded copy constructor since the 'normal' one are intentionally
+      // deleted.
+      tmp.fName = fName;
+      tmp.fTitle = fTitle;
+      tmp.fType = TVirtualStreamerInfo::kStreamer;
+      tmp.fSize = fSize;
+      tmp.fArrayLength = fArrayLength;
+      for(int i = 0; i < 5; ++i)
+         tmp.fMaxIndex[i] = fMaxIndex[i];
+      tmp.fTypeName = fTypeName;
+      tmp.fSTLtype = fSTLtype;
+      tmp.fCtype = fCtype;
+      R__b.WriteClassBuffer(TStreamerSTL::Class(), &tmp);
    }
 }
 

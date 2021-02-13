@@ -22,8 +22,8 @@ namespace Experimental {
 
 class REveGeoShapeExtract : public TNamed
 {
-   REveGeoShapeExtract(const REveGeoShapeExtract&);            // Not implemented
-   REveGeoShapeExtract& operator=(const REveGeoShapeExtract&); // Not implemented
+   REveGeoShapeExtract(const REveGeoShapeExtract&) = delete;
+   REveGeoShapeExtract& operator=(const REveGeoShapeExtract&) = delete;
 
 protected:
    Double_t    fTrans[16];   // Transformation matrix, 4x4 column major.

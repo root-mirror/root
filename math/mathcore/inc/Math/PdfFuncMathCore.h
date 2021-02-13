@@ -524,7 +524,7 @@ namespace Math {
   inline double poisson_pdf(unsigned int n, double mu) {
     // Inlined to enable clad-auto-derivation for this function.
 
-    if (n > 0)
+    if (n > 0 && mu >= 0)
       return std::exp (n*std::log(mu) - ROOT::Math::lgamma(n+1) - mu);
 
     //  when  n = 0 and mu = 0,  1 is returned
@@ -532,7 +532,7 @@ namespace Math {
       return std::exp(-mu);
 
     // return a nan for mu < 0 since it does not make sense
-    return std::log(mu);
+    return std::numeric_limits<double>::quiet_NaN();
   }
 
 

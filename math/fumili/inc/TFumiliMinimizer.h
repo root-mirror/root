@@ -18,6 +18,8 @@
 #include "Math/FitMethodFunction.h"
 
 #include "Rtypes.h"
+#include <vector>
+#include <string>
 
 class TFumili;
 

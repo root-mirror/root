@@ -8,7 +8,6 @@
 # CMakeLists.txt file for building ROOT math/genetic package
 # @author Pere Mato, CERN
 ############################################################################
-
 ROOT_STANDARD_LIBRARY_PACKAGE(Genetic
   HEADERS
     Math/GeneticMinimizer.h

@@ -24,6 +24,7 @@
 
 #include <list>
 #include <iosfwd>
+#include <string>
 
 namespace cling {
    class Interpreter;

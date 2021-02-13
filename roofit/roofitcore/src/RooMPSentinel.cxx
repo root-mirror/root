@@ -29,7 +29,6 @@ when the main ROOT process is exiting.
 #include "RooFit.h"
 
 #include "RooMPSentinel.h"
-#include "RooMPSentinel.h"
 #include "RooRealMPFE.h"
 
 using namespace std;

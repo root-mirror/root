@@ -14,10 +14,10 @@
 #include "TMath.h"
 #include "TF1.h"
 #include "THLimitsFinder.h"
-#include "Riostream.h"
-#include "TVirtualPad.h"
+#include <iostream>
 #include "TError.h"
 #include "TClass.h"
+#include "TObjString.h"
 
 #include "TProfileHelper.h"
 
@@ -30,37 +30,47 @@ ClassImp(TProfile);
  Profile Histogram.
  Profile histograms are used to display the mean
  value of Y and its error for each bin in X. The displayed error is by default the
- standard error on the mean (i.e. the standard deviation divided by the sqrt(n) )
+ standard error on the mean (i.e. the standard deviation divided by the sqrt(n) ).
  Profile histograms are in many cases an
- elegant replacement of two-dimensional histograms : the inter-relation of two
+ elegant replacement of two-dimensional histograms. The inter-relation of two
  measured quantities X and Y can always be visualized by a two-dimensional
- histogram or scatter-plot; its representation on the line-printer is not particularly
- satisfactory, except for sparse data. If Y is an unknown (but single-valued)
+ histogram or scatter plot, but if Y is an unknown (but single-valued)
  approximate function of X, this function is displayed by a profile histogram with
- much better precision than by a scatter-plot.
+ much better precision than by a scatter plot.
 
  The following formulae show the cumulated contents (capital letters) and the values
- displayed by the printing or plotting routines (small letters) of the elements for bin J.
-
-                                                   2
-       H(J)  =  sum Y                  E(J)  =  sum Y
-       l(J)  =  sum l                  L(J)  =  sum l
-       h(J)  =  H(J)/L(J)                     mean of Y,
-       s(J)  =  sqrt(E(J)/L(J)- h(J)**2)      standard deviation of Y  (e.g. RMS)
-       e(J)  =  s(J)/sqrt(L(J))               standard error on the mean
-
- The displayed bin content for bin J of a TProfile is always h(J). The corresponding bin error is by default
- e(J). In case the option "s" is used (in the constructor or by calling TProfile::BuildOptions)
- the displayed error is  s(J)
-
- In the special case where s(J) is zero (eg, case of 1 entry only in one bin)
- the bin error e(J) is computed from the average of the s(J) for all bins if
- the static function TProfile::Approximate has been called.
+ displayed by the printing or plotting routines (small letters) of the elements for bin j.
+ \f[
+  \begin{align}
+       H(j)  &=  \sum w \cdot Y \\
+       E(j)  &=  \sum w \cdot Y^2 \\
+       W(j)  &=  \sum w \\
+       h(j)  &=  H(j) / W(j)              & &\text{mean of Y,} \\
+       s(j)  &=  \sqrt{E(j)/W(j)- h(j)^2} & &\text{standard deviation of Y} \\
+       e(j)  &=  s(j)/\sqrt{W(j)}         & &\text{standard error on the mean} \\
+  \end{align}
+ \f]
+ The bin content is always the mean of the Y values, but errors change depending on options:
+ \f[
+    \begin{align}
+      \text{GetBinContent}(j) &= h(j) \\
+      \text{GetBinError}(j) &=
+        \begin{cases}
+          e(j)                 &\text{if option="" (default). Error of the mean of all y values.} \\
+          s(j)                 &\text{if option="s". Standard deviation of all y values.} \\
+          \begin{cases} e(j) &\text{if } h(j) \ne 0 \\ 1/\sqrt{12 N} &\text{if } h(j)=0 \end{cases}       &\text{if option="i". This is useful for storing integers such as ADC counts.} \\
+          1/\sqrt{W(j)}           &\text{if option="g". Error of a weighted mean for combining measurements with variances of } w. \\
+        \end{cases}
+    \end{align}
+ \f]
+ In the special case where s(j) is zero (eg, case of 1 entry only in one bin)
+ the bin error e(j) is computed from the average of the s(j) for all bins if
+ the static function TProfile::Approximate() has been called.
  This simple/crude approximation was suggested in order to keep the bin
  during a fit operation. But note that this approximation is not the default behaviour.
-  See also TProfile::BuildOptions for other error options and more detailed explanations
+ See also TProfile::BuildOptions for more on error options.
 
-  Example of a profile histogram with its graphics output
+  ### Creating and drawing a profile histogram
 ~~~{.cpp}
 {
   auto c1 = new TCanvas("c1","Profile histogram example",200,10,700,500);
@@ -106,10 +116,10 @@ TProfile::~TProfile()
 /// has the same effect as calling the special TProfile constructor below
 /// where ymin and ymax are specified.
 ///
-/// H(J) is printed as the channel contents. The errors displayed are s(J) if CHOPT='S'
-/// (spread option), or e(J) if CHOPT=' ' (error on mean).
+/// H(j) is printed as the channel contents. The errors displayed are s(j) if `option`='S'
+/// (spread option), or e(j) if `CHOPT`='' (error on mean).
 ///
-/// See TProfile::BuildOptions for explanation of parameters
+/// See TProfile::BuildOptions() for explanation of parameters
 ///
 /// see also comments in the TH1 base class constructors
 
@@ -122,7 +132,7 @@ TProfile::TProfile(const char *name,const char *title,Int_t nbins,Double_t xlow,
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor for Profile histograms with variable bin size.
 ///
-/// See TProfile::BuildOptions for more explanations on errors
+/// See TProfile::BuildOptions() for more explanations on errors
 /// see also comments in the TH1 base class constructors
 
 TProfile::TProfile(const char *name,const char *title,Int_t nbins,const Float_t *xbins,Option_t *option)
@@ -194,7 +204,7 @@ TProfile::TProfile(const char *name,const char *title,Int_t nbins,Double_t xlow,
 ///           This approximation assumes that the Y values are integer (e.g. ADC counts)
 ///           and have an implicit uncertainty of y +/- 0.5. With the assumption that the probability that y
 ///           takes any value between y-0.5 and y+0.5 is uniform, its standard error is 1/SQRT(12)
-///         - 'g' Errors are 1./SQRT(W) where W is the sum of the weights for the bin J
+///         - 'g' Errors are 1./SQRT(W) where W is the sum of the weights for the bin j
 ///           W is obtained as from TProfile::GetBinEntries(ibin)
 ///           This errors corresponds to the standard deviation of weighted mean where each
 ///           measurement Y is uncorrelated and has an error sigma, which is expressed in the
@@ -567,7 +577,7 @@ Bool_t TProfile::Divide(const TH1 *h1, const TH1 *h2, Double_t c1, Double_t c2, 
 
    //THE ALGORITHM COMPUTING THE ERRORS IS WRONG. HELP REQUIRED
    printf("WARNING!!: The algorithm in TProfile::Divide computing the errors is not accurate\n");
-   printf(" Instead of Divide(TProfile *h1, TProfile *h2, do:\n");
+   printf(" Instead of Divide(TProfile *h1, TProfile *h2), do:\n");
    printf("   TH1D *p1 = h1->ProjectionX();\n");
    printf("   TH1D *p2 = h2->ProjectionX();\n");
    printf("   p1->Divide(p2);\n");
@@ -679,16 +689,17 @@ Int_t TProfile::Fill(const char *namex, Double_t y)
    if (bin == 0 || bin > fXaxis.GetNbins()) {
       if (!GetStatOverflowsBehaviour()) return -1;
    }
-   Double_t x = fXaxis.GetBinCenter(bin);
    fTsumw++;
    fTsumw2++;
-   fTsumwx  += x;
-   fTsumwx2 += x*x;
-   fTsumwy  += y;
-   fTsumwy2 += y*y;
+   fTsumwy += y;
+   fTsumwy2 += y * y;
+   if (!fXaxis.CanExtend() || !fXaxis.IsAlphanumeric()) {
+      Double_t x = fXaxis.GetBinCenter(bin);
+      fTsumwx += x;
+      fTsumwx2 += x * x;
+   }
    return bin;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Fill a Profile histogram with weights.
 
@@ -743,11 +754,13 @@ Int_t TProfile::Fill(const char *namex, Double_t y, Double_t w)
    if (bin == 0 || bin > fXaxis.GetNbins()) {
       if (!GetStatOverflowsBehaviour()) return -1;
    }
-   Double_t x = fXaxis.GetBinCenter(bin);
    fTsumw   += u;
    fTsumw2  += u*u;
-   fTsumwx  += u*x;
-   fTsumwx2 += u*x*x;
+   if (!fXaxis.CanExtend() || !fXaxis.IsAlphanumeric()) {
+      Double_t x = fXaxis.GetBinCenter(bin);
+      fTsumwx += u*x;
+      fTsumwx2 += u*x*x;
+   }
    fTsumwy  += u*y;
    fTsumwy2 += u*y*y;
    return bin;
@@ -907,7 +920,11 @@ void TProfile::GetStats(Double_t *stats) const
 
    // Loop on bins
    Int_t bin, binx;
-   if (fTsumw == 0 || fXaxis.TestBit(TAxis::kAxisRange)) {
+   // identify the case of labels with extension of axis range
+   // in this case the statistics in x does not make any sense
+   Bool_t labelHist =  ((const_cast<TAxis&>(fXaxis)).GetLabels() && fXaxis.CanExtend() );
+
+   if ( (fTsumw == 0 /* && fEntries > 0 */) || fXaxis.TestBit(TAxis::kAxisRange) ) {
       for (bin=0;bin<6;bin++) stats[bin] = 0;
       if (!fBinEntries.fArray) return;
       Int_t firstBinX = fXaxis.GetFirst();
@@ -920,7 +937,7 @@ void TProfile::GetStats(Double_t *stats) const
       for (binx = firstBinX; binx <= lastBinX; binx++) {
          Double_t w   = fBinEntries.fArray[binx];
          Double_t w2  = (fBinSumw2.fN ? fBinSumw2.fArray[binx] : w);
-         Double_t x   = fXaxis.GetBinCenter(binx);
+         Double_t x   = (!labelHist) ? fXaxis.GetBinCenter(binx) : 0;
          stats[0] += w;
          stats[1] += w2;
          stats[2] += w*x;
@@ -1016,88 +1033,141 @@ void TProfile::LabelsOption(Option_t *option, Option_t * /*ax */)
    if (opt.Contains("<")) sort = 2;
    if (sort < 0) return;
 
-   Int_t n = TMath::Min(fXaxis.GetNbins(), labels->GetSize());
-   Int_t *a = new Int_t[n+2];
-   Int_t i,j;
-   Double_t *cont   = new Double_t[n+2];
-   Double_t *sumw   = new Double_t[n+2];
-   Double_t *errors = new Double_t[n+2];
-   Double_t *ent    = new Double_t[n+2];
-   THashList *labold = new THashList(labels->GetSize(),1);
+   // support only cases when first n bins have labels
+   Int_t n = labels->GetSize();
+   TAxis *axis = &fXaxis;
+   if (n != axis->GetNbins()) {
+      // check if labels are all consecutive and starts from the first bin
+      // in that case the current code will work fine
+      Int_t firstLabelBin = axis->GetNbins() + 1;
+      Int_t lastLabelBin = -1;
+      for (Int_t i = 0; i < n; ++i) {
+         Int_t bin = labels->At(i)->GetUniqueID();
+         if (bin < firstLabelBin)
+            firstLabelBin = bin;
+         if (bin > lastLabelBin)
+            lastLabelBin = bin;
+      }
+      if (firstLabelBin != 1 || lastLabelBin - firstLabelBin + 1 != n) {
+         Error("LabelsOption",
+               "%s of TProfile %s contains bins without labels. Sorting will not work correctly - return",
+               axis->GetName(), GetName());
+         return;
+      }
+      // case where label bins are consecutive starting from first bin will work
+      Warning(
+         "LabelsOption",
+         "axis %s of TProfile %s has extra following bins without labels. Sorting will work only for first label bins",
+         axis->GetName(), GetName());
+   }
+   std::vector<Int_t> a(n);
+   Int_t i;
+   std::vector<Double_t> cont(n);
+   std::vector<Double_t> sumw(n);
+   std::vector<Double_t> errors(n);
+   std::vector<Double_t> ent(n);
+   std::vector<Double_t> binsw2;
+   if (fBinSumw2.fN) binsw2.resize(n);
+
+   // delete buffer if it is there since bins will be reordered.
+   if (fBuffer)
+      BufferEmpty(1);
+
+   // make a labelold list but ordered with bins
+   // (re-ordered original label list)
+   std::vector<TObject *> labold(n);
+   for (i = 0; i < n; i++)
+      labold[i] = nullptr;
    TIter nextold(labels);
    TObject *obj;
    while ((obj=nextold())) {
-      labold->Add(obj);
+      Int_t bin = obj->GetUniqueID();
+      R__ASSERT(bin <= n);
+      labold[bin - 1] = obj;
    }
+   // order now labold according to bin content
+
    labels->Clear();
    if (sort > 0) {
       //---sort by values of bins
       for (i=1;i<=n;i++) {
+         a[i-1] = i-1;
          sumw[i-1]   = fArray[i];
          errors[i-1] = fSumw2.fArray[i];
          ent[i-1]    = fBinEntries.fArray[i];
+         if (fBinSumw2.fN) binsw2[i - 1] = fBinSumw2.fArray[i];
          if (fBinEntries.fArray[i] == 0) cont[i-1] = 0;
          else cont[i-1] = fArray[i]/fBinEntries.fArray[i];
       }
-      if (sort ==1) TMath::Sort(n,cont,a,kTRUE);  //sort by decreasing values
-      else          TMath::Sort(n,cont,a,kFALSE); //sort by increasing values
+      if (sort ==1)
+         TMath::Sort(n,cont.data(),a.data(),kTRUE);  //sort by decreasing values
+      else
+         TMath::Sort(n,cont.data(),a.data(),kFALSE); //sort by increasing values
       for (i=1;i<=n;i++) {
          fArray[i] = sumw[a[i-1]];
          fSumw2.fArray[i] = errors[a[i-1]];
          fBinEntries.fArray[i] = ent[a[i-1]];
+         if (fBinSumw2.fN)
+            fBinSumw2.fArray[i] = binsw2[a[i-1]];
       }
-      for (i=1;i<=n;i++) {
-         obj = labold->At(a[i-1]);
+      for (i=0 ;i < n; i++) {
+         obj = labold[a[i]];
          labels->Add(obj);
-         obj->SetUniqueID(i);
+         obj->SetUniqueID(i+1);
       }
    } else {
+
       //---alphabetic sort
-      const UInt_t kUsed = 1<<18;
-      TObject *objk=0;
-      a[0] = 0;
-      a[n+1] = n+1;
-      for (i=1;i<=n;i++) {
-         const char *label = "zzzzzzzzzzzz";
-         for (j=1;j<=n;j++) {
-            obj = labold->At(j-1);
-            if (!obj) continue;
-            if (obj->TestBit(kUsed)) continue;
-            //use strcasecmp for case non-sensitive sort (may be an option)
-            if (strcmp(label,obj->GetName()) < 0) continue;
-            objk = obj;
-            a[i] = j;
-            label = obj->GetName();
-         }
-         if (objk) {
-            objk->SetUniqueID(i);
-            labels->Add(objk);
-            objk->SetBit(kUsed);
-         }
+      // sort labels using vector of strings and TMath::Sort
+      // I need to array because labels order in list is not necessary that of the bins
+      std::vector<std::string> vecLabels(n);
+      for (i = 0; i < n; i++) {
+         vecLabels[i] = labold[i]->GetName();
+         a[i] = i;
+         sumw[i] = fArray[i+1];
+         errors[i] = fSumw2.fArray[i+1];
+         ent[i] = fBinEntries.fArray[i+1];
+         if (fBinSumw2.fN)
+            binsw2[i] = fBinSumw2.fArray[i+1];
       }
-      for (i=1;i<=n;i++) {
-         obj = labels->At(i-1);
-         if (!obj) continue;
-         obj->ResetBit(kUsed);
+      // sort in ascending order for strings
+      TMath::Sort(n, vecLabels.data(), a.data(), kFALSE);
+      // set the new labels
+      for (i = 0; i < n; i++) {
+         TObject *labelObj = labold[a[i]];
+         labels->Add(labelObj);
+         // set the corresponding bin. NB bin starts from 1
+         labelObj->SetUniqueID(i + 1);
+         if (gDebug)
+            std::cout << "bin " << i + 1 << " setting new labels for axis " << labold.at(a[i])->GetName() << " from "
+                      << a[i] << std::endl;
       }
 
-      for (i=1;i<=n;i++) {
-         sumw[i]   = fArray[a[i]];
-         errors[i] = fSumw2.fArray[a[i]];
-         ent[i]    = fBinEntries.fArray[a[i]];
-      }
-      for (i=1;i<=n;i++) {
-         fArray[i] = sumw[i];
-         fSumw2.fArray[i] = errors[i];
-         fBinEntries.fArray[i] = ent[i];
+      for (i=0; i < n; i++) {
+         fArray[i+1] = sumw[a[i]];
+         fSumw2.fArray[i+1] = errors[a[i]];
+         fBinEntries.fArray[i+1] = ent[a[i]];
+         if (fBinSumw2.fN)
+            fBinSumw2.fArray[i+1] = binsw2[a[i]];
       }
    }
-   delete labold;
-   if (a)      delete [] a;
-   if (sumw)   delete [] sumw;
-   if (cont)   delete [] cont;
-   if (errors) delete [] errors;
-   if (ent)    delete [] ent;
+   // need to set to zero the statistics if axis has been sorted
+   // see for example TH3::PutStats for definition of s vector
+   bool labelsAreSorted = kFALSE;
+   for (i = 0; i < n; ++i) {
+      if (a[i] != i) {
+         labelsAreSorted = kTRUE;
+         break;
+      }
+   }
+   if (labelsAreSorted) {
+      double s[TH1::kNstat];
+      GetStats(s);
+      // if (iaxis == 1) {
+      s[2] = 0; // fTsumwx
+      s[3] = 0; // fTsumwx2
+      PutStats(s);
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

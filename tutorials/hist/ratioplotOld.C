@@ -30,6 +30,13 @@ void ratioplotOld( ) {
    h1->Draw();               // Draw h1
    h2->Draw("same");         // Draw h2 on top of h1
 
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,8,0)
+   // Avoid the first label (0) to be clipped.
+   TAxis *axis = h1->GetYaxis();
+   axis->ChangeLabel(1, -1, -1, -1, -1, -1, " ");
+   axis->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   axis->SetLabelSize(15);
+#else
    // Do not draw the Y axis label on the upper plot and redraw a small
    // axis instead, in order to avoid the first label (0) to be clipped.
    h1->GetYaxis()->SetLabelSize(0.);
@@ -37,6 +44,7 @@ void ratioplotOld( ) {
    axis->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    axis->SetLabelSize(15);
    axis->Draw();
+#endif
 
    // lower plot will be in pad
    c->cd();          // Go back to the main canvas before defining pad2

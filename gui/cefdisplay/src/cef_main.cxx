@@ -1,9 +1,6 @@
-/// \file cef_main.cxx
-/// \ingroup WebGui
-/// \author Sergey Linev <S.Linev@gsi.de>
-/// \date 2017-06-29
-/// \warning This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback
-/// is welcome!
+// Author: Sergey Linev <S.Linev@gsi.de>
+// Date: 2017-06-29
+// Warning: This is part of the ROOT 7 prototype! It will change without notice. It might trigger earthquakes. Feedback is welcome!
 
 // Copyright (c) 2013 The Chromium Embedded Framework Authors. All rights
 // reserved. Use of this source code is governed by a BSD-style license that
@@ -56,7 +53,7 @@ private:
 // Entry point function for all processes.
 int main(int argc, char *argv[])
 {
-   printf("Starting CEF_MAIN ARGC %d\n", argc);
+   // printf("Starting CEF_MAIN ARGC %d\n", argc);
    // for (int n = 1; n < argc; n++) printf("ARGV[%d] = %s\n", n, argv[n]);
 
 #if defined(OS_WIN)
