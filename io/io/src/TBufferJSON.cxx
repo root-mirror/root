@@ -105,6 +105,7 @@ class Container {
 
 #include "Compression.h"
 
+#include "ESTLType.h"
 #include "TArrayI.h"
 #include "TError.h"
 #include "TBase64.h"
@@ -1221,19 +1222,19 @@ void TBufferJSON::JsonStartElement(const TStreamerElement *elem, const TClass *b
       if (!base_class)
          elem_name = elem->GetName();
       break;
-   case TClassEdit::kVector: elem_name = "fVector"; break;
-   case TClassEdit::kList: elem_name = "fList"; break;
-   case TClassEdit::kForwardlist: elem_name = "fForwardlist"; break;
-   case TClassEdit::kDeque: elem_name = "fDeque"; break;
-   case TClassEdit::kMap: elem_name = "fMap"; break;
-   case TClassEdit::kMultiMap: elem_name = "fMultiMap"; break;
-   case TClassEdit::kSet: elem_name = "fSet"; break;
-   case TClassEdit::kMultiSet: elem_name = "fMultiSet"; break;
-   case TClassEdit::kUnorderedSet: elem_name = "fUnorderedSet"; break;
-   case TClassEdit::kUnorderedMultiSet: elem_name = "fUnorderedMultiSet"; break;
-   case TClassEdit::kUnorderedMap: elem_name = "fUnorderedMap"; break;
-   case TClassEdit::kUnorderedMultiMap: elem_name = "fUnorderedMultiMap"; break;
-   case TClassEdit::kBitSet: elem_name = "fBitSet"; break;
+   case ROOT::ESTLType::kSTLvector: elem_name = "fVector"; break;
+   case ROOT::ESTLType::kSTLlist: elem_name = "fList"; break;
+   case ROOT::ESTLType::kSTLforwardlist: elem_name = "fForwardlist"; break;
+   case ROOT::ESTLType::kSTLdeque: elem_name = "fDeque"; break;
+   case ROOT::ESTLType::kSTLmap: elem_name = "fMap"; break;
+   case ROOT::ESTLType::kSTLmultimap: elem_name = "fMultiMap"; break;
+   case ROOT::ESTLType::kSTLset: elem_name = "fSet"; break;
+   case ROOT::ESTLType::kSTLmultiset: elem_name = "fMultiSet"; break;
+   case ROOT::ESTLType::kSTLunorderedset: elem_name = "fUnorderedSet"; break;
+   case ROOT::ESTLType::kSTLunorderedmultiset: elem_name = "fUnorderedMultiSet"; break;
+   case ROOT::ESTLType::kSTLunorderedmap: elem_name = "fUnorderedMap"; break;
+   case ROOT::ESTLType::kSTLunorderedmultimap: elem_name = "fUnorderedMultiMap"; break;
+   case ROOT::ESTLType::kSTLbitset: elem_name = "fBitSet"; break;
    case json_TArray: elem_name = "fArray"; break;
    case json_TString:
    case json_stdstring: elem_name = "fString"; break;
@@ -1343,8 +1344,9 @@ void TBufferJSON::JsonWriteObject(const void *obj, const TClass *cl, Bool_t chec
    } else if ((special_kind <= 0) || (special_kind > json_TArray)) {
       // FIXME: later post processing should be active for all special classes, while they all keep output in the value
       JsonDisablePostprocessing();
-   } else if ((special_kind == TClassEdit::kMap) || (special_kind == TClassEdit::kMultiMap) ||
-              (special_kind == TClassEdit::kUnorderedMap) || (special_kind == TClassEdit::kUnorderedMultiMap)) {
+   } else if ((special_kind == ROOT::ESTLType::kSTLmap) || (special_kind == ROOT::ESTLType::kSTLmultimap) ||
+              (special_kind == ROOT::ESTLType::kSTLunorderedmap) ||
+              (special_kind == ROOT::ESTLType::kSTLunorderedmultimap)) {
 
       if ((fMapAsObject && (fStack.size()==1)) || (stack && stack->fElem && strstr(stack->fElem->GetTitle(), "JSON_object")))
          map_convert = 2; // mapped into normal object
@@ -1392,7 +1394,8 @@ void TBufferJSON::JsonWriteObject(const void *obj, const TClass *cl, Bool_t chec
 
    } else {
 
-      bool base64 = ((special_kind == TClassEdit::kVector) && stack && stack->fElem && strstr(stack->fElem->GetTitle(), "JSON_base64"));
+      bool base64 = ((special_kind == ROOT::ESTLType::kSTLvector) && stack && stack->fElem &&
+                     strstr(stack->fElem->GetTitle(), "JSON_base64"));
 
       // for array, string and STL collections different handling -
       // they not recognized at the end as objects in JSON
@@ -1832,8 +1835,8 @@ void *TBufferJSON::JsonReadObject(void *obj, const TClass *objClass, TClass **re
    }
 
    Int_t map_convert = 0;
-   if ((special_kind == TClassEdit::kMap) || (special_kind == TClassEdit::kMultiMap) ||
-       (special_kind == TClassEdit::kUnorderedMap) || (special_kind == TClassEdit::kUnorderedMultiMap)) {
+   if ((special_kind == ROOT::ESTLType::kSTLmap) || (special_kind == ROOT::ESTLType::kSTLmultimap) ||
+       (special_kind == ROOT::ESTLType::kSTLunorderedmap) || (special_kind == ROOT::ESTLType::kSTLunorderedmultimap)) {
       map_convert = json->is_object() ? 2 : 1; // check if map was written as array or as object
    }
 
