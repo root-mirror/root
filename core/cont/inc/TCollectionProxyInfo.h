@@ -752,10 +752,6 @@ namespace Detail {
       }
    };
 
-   // TODO this can/should go away when we move to new RVec
-   template <>
-   struct TCollectionProxyInfo::Type<ROOT::VecOps::RVec<bool>> : TCollectionProxyInfo::Type<std::vector<Bool_t>> {};
-
    template <typename Bitset_t> struct TCollectionProxyInfo::Type<Internal::TStdBitsetHelper<Bitset_t> > : public TCollectionProxyInfo::Address<const Bool_t &>
    {
       typedef Bitset_t                 Cont_t;
