@@ -9,11 +9,11 @@ include(ExternalProject)
 find_package(OpenSSL REQUIRED)
 
 set(XROOTD_VERSION "5.1.0")
-set(XROOTD_VERSIONNUM 500010000)
+set(XROOTD_VERSIONNUM 500010000 CACHE INTERNAL "" FORCE)
 set(XROOTD_SRC_URI https://github.com/xrootd/xrootd/archive/v${XROOTD_VERSION}.tar.gz)
 set(XROOTD_DESTDIR ${CMAKE_BINARY_DIR}/XROOTD-prefix)
 set(XROOTD_ROOTDIR ${XROOTD_DESTDIR})
-message(STATUS "Downloading and building XROOTD version ${xrootd_version}")
+message(STATUS "Downloading and building XROOTD version ${XROOTD_VERSION}")
 
   # Guess under which directory XRootD will install its libraires
   set(XROOTD_LIBDIR "lib")
