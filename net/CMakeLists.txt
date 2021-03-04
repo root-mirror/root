@@ -11,7 +11,7 @@ if(NOT WIN32 AND ssl)
   add_subdirectory(rpdutils)
 endif()
 
-if(netx)
+if(xrootd AND XROOTD_VERSIONNUM VERSION_LESS 500000000)
   add_subdirectory(netx)
 endif()
 
@@ -27,7 +27,7 @@ if(davix)
    add_subdirectory(davix)
 endif()
 
-if(netxng)
+if(xrootd AND XROOTD_VERSIONNUM VERSION_GREATER 300030005)
    add_subdirectory(netxng)
 endif()
 
