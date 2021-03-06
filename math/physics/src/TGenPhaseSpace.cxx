@@ -38,6 +38,7 @@ Double_t TGenPhaseSpace::PDK(Double_t a, Double_t b, Double_t c)
    return x;
 }
 
+namespace {
 ////////////////////////////////////////////////////////////////////////////////
 /// Special max function
 
@@ -49,6 +50,7 @@ Int_t DoubleMax(const void *a, const void *b)
    if (aa < bb) return -1;
    return 0;
 
+}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,6 +11,10 @@
 ROOT_STANDARD_LIBRARY_PACKAGE(Physics
   HEADERS
     TFeldmanCousins.h
+    TDecay.h
+    TGenDecay.h
+    TGenFoamDecay.h
+    TGenInterface.h
     TGenPhaseSpace.h
     TLorentzRotation.h
     TLorentzVector.h
@@ -22,6 +26,9 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Physics
     TVector3.h
   SOURCES
     src/TFeldmanCousins.cxx
+    src/TDecay.cxx
+    src/TGenDecay.cxx
+    src/TGenFoamDecay.cxx
     src/TGenPhaseSpace.cxx
     src/TLorentzRotation.cxx
     src/TLorentzVector.cxx
@@ -32,8 +39,11 @@ ROOT_STANDARD_LIBRARY_PACKAGE(Physics
     src/TVector2.cxx
     src/TVector3.cxx
   DEPENDENCIES
+    Foam
     Matrix
     MathCore
   DICTIONARY_OPTIONS
     -writeEmptyRootPCM
 )
+
+ROOT_ADD_TEST_SUBDIRECTORY(test)
