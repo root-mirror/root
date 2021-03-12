@@ -151,9 +151,11 @@ gsl_poly_complex_solve_quartic (double a, double b, double c, double d,
         disc = R2 - Q3;
 
 //       more numerical problems with this calculation of disc
-//       double CR2 = 729 * rcub * rcub;
-//       double CQ3 = 2916 * qcub * qcub * qcub;
-//       disc = (CR2 - CQ3) / 2125764.0;
+//LM - use this since it fixes case reported in issue #6900 when disc is approx 0
+//      (needs to add additional test cases where disc is ~ 0)
+        double CR2 = 729 * rcub * rcub;
+        double CQ3 = 2916 * qcub * qcub * qcub;
+        disc = (CR2 - CQ3) / 2125764.0;
 
 
         if (0 == R && 0 == Q)
@@ -162,7 +164,7 @@ gsl_poly_complex_solve_quartic (double a, double b, double c, double d,
             u[1] = -rc / 3;
             u[2] = -rc / 3;
           }
-        else if (R2 == Q3)
+        else if (disc == 0)
           {
             double sqrtQ = sqrt (Q);
             if (R > 0)
@@ -398,4 +400,3 @@ gsl_poly_complex_solve_quartic (double a, double b, double c, double d,
 
   return 4;
 }
-

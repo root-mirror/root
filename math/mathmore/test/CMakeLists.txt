@@ -55,3 +55,4 @@ foreach(file ${TestMathMoreSource})
 endforeach()
 
 ROOT_ADD_GTEST(stressMathMoreUnit testStress.cxx StatFunction.cxx LIBRARIES Core MathCore MathMore)
+ROOT_ADD_GTEST(testPolynomialRoots testPolynomialRoots LIBRARIES Core MathCore MathMore)

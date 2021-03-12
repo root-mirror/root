@@ -105,26 +105,29 @@ public:
 
 //   using ParamFunction::operator();
 
-
    /**
       Find the polynomial roots.
       For n <= 4, the roots are found analytically while for larger order an iterative numerical method is used
-      The numerical method used is from GSL (see <A HREF="http://www.gnu.org/software/gsl/manual/gsl-ref_6.html#SEC53" )
+      The numerical method used is from GSL (see <A HREF="https://www.gnu.org/software/gsl/doc/html/poly.html">documentation</A> )
+      For the case of n = 4 by default an analytical algorithm is used from an implementation by
+       Andrew W. Steiner and Andy Buckley which is a translation from the original Cenrlib routine
+       (< HREF="https://cds.cern.ch/record/2050876/files/c208.html">RRTEQ4</A> ).
+      Note that depending on the coefficients the result could be not very accurate if the discriminant of the resolvent cubic
+      equation is very small. In that case it might be more robust to use the numerical method, by calling directly FindNumRoots()
+
    */
    const std::vector<std::complex <double> > & FindRoots();
-
 
    /**
       Find the only the real polynomial roots.
       For n <= 4, the roots are found analytically while for larger order an iterative numerical method is used
-      The numerical method used is from GSL (see <A HREF="http://www.gnu.org/software/gsl/manual/gsl-ref_6.html#SEC53" )
+      The numerical method used is from GSL (see <A HREF="https://www.gnu.org/software/gsl/doc/html/poly.html">documentation</A> )
    */
    std::vector<double > FindRealRoots();
 
-
    /**
       Find the polynomial roots using always an iterative numerical methods
-      The numerical method used is from GSL (see <A HREF="http://www.gnu.org/software/gsl/manual/gsl-ref_6.html#SEC53" )
+      The numerical method used is from GSL (see <A HREF="https://www.gnu.org/software/gsl/doc/html/poly.html">documentation</A> )
    */
    const std::vector<std::complex <double> > & FindNumRoots();
 
@@ -138,7 +141,7 @@ public:
 
    /**
        Optimized method to evaluate at the same time the function value and derivative at a point x.
-       Implement the interface specified bby ROOT::Math::IGradientOneDim.
+       Implement the interface specified by ROOT::Math::IGradientOneDim.
        In the case of polynomial there is no advantage to compute both at the same time
    */
    void FdF (double x, double & f, double & df) const {
