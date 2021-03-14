@@ -149,6 +149,23 @@ protected:
       return bin;
    }
 
+   // alternate Fill semantics for RDF
+   // firstval argument is needed to disambiguate template overloads
+   template<typename... MoreTypes> 
+   Long64_t Fill(Double_t firstval, MoreTypes ... morevals) {
+      const std::array<double, 1 + sizeof...(morevals)> x =  {{ firstval, morevals... }};
+      if (x.size() == GetNdimensions()) {
+         // without weight
+         return Fill(x.data()); 
+      }
+      else if (x.size() == (GetNdimensions() + 1)) {
+         // with weight
+         return Fill(x.data(), x.back());
+      }
+      
+      return -1;
+   }
+
    virtual void FillBin(Long64_t bin, Double_t w) = 0;
 
    void SetBinEdges(Int_t idim, const Double_t* bins);
