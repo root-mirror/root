@@ -19,6 +19,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "THn.h"
 
 /**
 * \class ROOT::RDF::TH1DModel
@@ -210,6 +211,48 @@ std::shared_ptr<::TH3D> TH3DModel::GetHistogram() const
    return h;
 }
 TH3DModel::~TH3DModel()
+{
+}
+
+THnDModel::THnDModel(const ::THnD &h)
+   : fName(h.GetName()), fTitle(h.GetTitle()), fDim(h.GetNdimensions())
+{
+   fNbins.reserve(fDim);
+   fXmin.reserve(fDim);
+   fXmax.reserve(fDim);
+   for (int idim = 0; idim < fDim; ++idim) {
+      const TAxis *axis = h.GetAxis(idim);
+      fNbins.push_back(axis->GetNbins());
+      fXmin.push_back(axis->GetXmin());
+      fXmax.push_back(axis->GetXmax());
+   }
+}
+
+THnDModel::THnDModel(const char *name, const char *title, int dim, const int *nbins, const double *xmin, const double *xmax)
+   : fName(name), fTitle(title), fDim(dim)
+{
+   fNbins.reserve(fDim);
+   fXmin.reserve(fDim);
+   fXmax.reserve(fDim);
+   for (int idim = 0; idim < fDim; ++idim) {
+      fNbins.push_back(nbins[idim]);
+      fXmin.push_back(xmin[idim]);
+      fXmax.push_back(xmax[idim]);
+   }
+}
+
+THnDModel::THnDModel(const char *name, const char *title, int dim, const std::vector<int> &nbins,
+             const std::vector<double> &xmin, const std::vector<double> &xmax)
+ : fName(name), fTitle(title), fDim(dim), fNbins(nbins), fXmin(xmin), fXmax(xmax)
+{
+}
+
+std::shared_ptr<::THnD> THnDModel::GetHistogram() const
+{
+   std::shared_ptr<::THnD> h = std::make_shared<::THnD>(fName, fTitle, fDim, fNbins.data(), fXmin.data(), fXmax.data());
+   return h;
+}
+THnDModel::~THnDModel()
 {
 }
 

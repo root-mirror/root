@@ -29,6 +29,7 @@
 #include "TH1.h"        // For Histo actions
 #include "TH2.h"        // For Histo actions
 #include "TH3.h"        // For Histo actions
+#include "THn.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TStatistic.h"
@@ -1236,6 +1237,75 @@ public:
       return Histo3D<V1, V2, V3, W>(model, "", "", "", "");
    }
 
+   ////////////////////////////////////////////////////////////////////////////
+   /// \brief Fill and return an N-dimensional histogram (*lazy action*)
+   /// specified columns (these types are passed as template parameters to this method).
+   /// \tparam FirstColumn The first type of the column the values of which are used to fill the object. Inferred if not present
+   /// \tparam OtherColumns A list of the other types of the columns the values of which are used to fill the object.
+   /// \param[in] model The returned histogram will be constructed using this as a model.
+   /// \param[in] columnList A list containing the names of the columns that will be passed when calling `Fill`
+   ///  (N columns for unweighted filling, or N+1 columns for weighted filling)
+   /// \return the N-dimensional histogram wrapped in a `RResultPtr`.
+   ///
+   /// This action is *lazy*: upon invocation of this method the calculation is
+   /// booked but not executed. See RResultPtr documentation.
+   ///
+   /// ### Example usage:
+   /// ~~~{.cpp}
+   /// auto myFilledObj = myDf.HistoND<float, float, float, float>({"name","title", 4, 
+   ///                                                {40,40,40,40}, {20.,20.,20.,20.}, {60.,60.,60.,60.}},
+   //                                               {"col0", "col1", "col2", "col3"});
+   /// ~~~
+   ///
+   template <typename FirstColumn, typename... OtherColumns> // need FirstColumn to disambiguate overloads
+   RResultPtr<::THnD> HistoND(const THnDModel &model, const ColumnNames_t &columnList)
+   {
+      std::shared_ptr<::THnD> h(nullptr);
+      {
+         ROOT::Internal::RDF::RIgnoreErrorLevelRAII iel(kError);
+         h = model.GetHistogram();
+         
+         bool weighted = columnList.size() == (h->GetNdimensions() + 1);
+         if (weighted) {
+           h->Sumw2(); 
+         }
+      }
+      return CreateAction<RDFInternal::ActionTags::HistoND, FirstColumn, OtherColumns...>(columnList, h, h);
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   /// \brief Fill and return an N-dimensional histogram (*lazy action*)
+   /// specified columns (these types are passed as template parameters to this method).
+   /// \param[in] model The returned histogram will be constructed using this as a model.
+   /// \param[in] columnList A list containing the names of the columns that will be passed when calling `Fill`
+   ///  (N columns for unweighted filling, or N+1 columns for weighted filling)
+   /// \return the N-dimensional histogram wrapped in a `RResultPtr`.
+   ///
+   /// This action is *lazy*: upon invocation of this method the calculation is
+   /// booked but not executed. See RResultPtr documentation.
+   ///
+   /// ### Example usage:
+   /// ~~~{.cpp}
+   /// auto myFilledObj = myDf.HistoND<float, float, float, float>({"name","title", 4, 
+   ///                                                {40,40,40,40}, {20.,20.,20.,20.}, {60.,60.,60.,60.}},
+   //                                               {"col0", "col1", "col2", "col3"});
+   /// ~~~
+   ///
+   RResultPtr<::THnD> HistoND(const THnDModel &model, const ColumnNames_t &columnList)
+   {
+      std::shared_ptr<::THnD> h(nullptr);
+      {
+         ROOT::Internal::RDF::RIgnoreErrorLevelRAII iel(kError);
+         h = model.GetHistogram();
+         
+         bool weighted = columnList.size() == (h->GetNdimensions() + 1);
+         if (weighted) {
+           h->Sumw2(); 
+         }
+      }
+      return CreateAction<RDFInternal::ActionTags::HistoND, RDFDetail::RInferredType>(columnList, h, h, columnList.size());
+   }
+   
    ////////////////////////////////////////////////////////////////////////////
    /// \brief Fill and return a graph (*lazy action*)
    /// \tparam V1 The type of the column used to fill the x axis of the graph.
