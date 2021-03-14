@@ -49,16 +49,13 @@ public:
    fNdimPlusOne(), fSizes() {
       TNDArray::Init(ndim, nbins, addOverflow);
    }
-   ~TNDArray() {
-      delete[] fSizes;
-   }
+   ~TNDArray() {}
 
    virtual void Init(Int_t ndim, const Int_t* nbins, bool addOverflow = false) {
       // Calculate fSize based on ndim dimensions, nbins for each dimension,
       // possibly adding over- and underflow bin to each dimensions' nbins.
-      delete[] fSizes;
       fNdimPlusOne = ndim + 1;
-      fSizes = new Long64_t[ndim + 1];
+      fSizes.resize(ndim + 1);
       Int_t overBins = addOverflow ? 2 : 0;
       fSizes[ndim] = 1;
       for (Int_t i = 0; i < ndim; ++i) {
@@ -85,13 +82,9 @@ public:
    virtual void SetAsDouble(ULong64_t linidx, Double_t value) = 0;
    virtual void AddAt(ULong64_t linidx, Double_t value) = 0;
 
-private:
-   TNDArray(const TNDArray&); // intentionally not implemented
-   TNDArray& operator=(const TNDArray&); // intentionally not implemented
-
 protected:
    Int_t  fNdimPlusOne; // Number of dimensions plus one
-   Long64_t* fSizes; //[fNdimPlusOne] bin count
+   std::vector<Long64_t> fSizes; // bin count
    ClassDef(TNDArray, 1); //Base for n-dimensional array
 };
 
@@ -128,31 +121,25 @@ public:
    fNumData(), fData() {
       fNumData = fSizes[0];
    }
-   ~TNDArrayT() {
-      delete[] fData;
-   }
+   ~TNDArrayT() {}
 
    void Init(Int_t ndim, const Int_t* nbins, bool addOverflow = false) {
-      delete[] fData;
-      fData = 0;
+      fData.clear();
       TNDArray::Init(ndim, nbins, addOverflow);
       fNumData = fSizes[0];
    }
 
    void Reset(Option_t* /*option*/ = "") {
       // Reset the content
-
-      // Use placement-new with value initialization:
-      if (fData) {
-         new (fData) T[fNumData]();
-      }
+      fData.clear();
+      fData.resize(fNumData, T());
    }
 
 #ifndef __CINT__
    TNDArrayRef<T> operator[](Int_t idx) const {
       if (!fData) return TNDArrayRef<T>(0, 0);
       R__ASSERT(idx < fSizes[0] / fSizes[1] && "index out of range!");
-      return TNDArrayRef<T>(fData + idx * fSizes[1], fSizes + 2);
+      return TNDArrayRef<T>(fData.data() + idx * fSizes[1], fSizes.data() + 2);
    }
 #endif // __CINT__
 
@@ -163,30 +150,30 @@ public:
       return At(GetBin(idx));
    }
    T At(ULong64_t linidx) const {
-      if (!fData) return T();
+      if (fData.empty()) return T();
       return fData[linidx];
    }
    T& At(ULong64_t linidx) {
-      if (!fData) fData = new T[fNumData]();
+      if (fData.empty()) fData.resize(fNumData, T());
       return fData[linidx];
    }
 
    Double_t AtAsDouble(ULong64_t linidx) const {
-      if (!fData) return 0.;
+      if (fData.empty()) return 0.;
       return fData[linidx];
    }
    void SetAsDouble(ULong64_t linidx, Double_t value) {
-      if (!fData) fData = new T[fNumData]();
+      if (fData.empty()) fData.resize(fNumData, T());
       fData[linidx] = (T) value;
    }
    void AddAt(ULong64_t linidx, Double_t value) {
-      if (!fData) fData = new T[fNumData]();
+      if (fData.empty()) fData.resize(fNumData, T());
       fData[linidx] += (T) value;
    }
 
 protected:
    int fNumData; // number of bins, product of fSizes
-   T*  fData; //[fNumData] data
+   std::vector<T> fData;// data
    ClassDef(TNDArrayT, 1); // N-dimensional array
 };
 

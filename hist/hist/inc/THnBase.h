@@ -50,21 +50,17 @@ protected:
    Double_t   fTsumw2;       // total sum of weights squared; -1 if no errors are calculated
    TArrayD    fTsumwx;       // total sum of weight*X for each dimension
    TArrayD    fTsumwx2;      // total sum of weight*X*X for each dimension
-   Double_t  *fIntegral;     //! array with bin weight sums
+   std::vector<Double_t>  fIntegral;     //! array with bin weight sums
    enum {
       kNoInt,
       kValidInt,
       kInvalidInt
    } fIntegralStatus;        //! status of integral
 
-private:
-   THnBase(const THnBase&); // Not implemented
-   THnBase& operator=(const THnBase&); // Not implemented
-
  protected:
    THnBase():
       fNdimensions(0), fEntries(0),
-      fTsumw(0), fTsumw2(-1.), fIntegral(0), fIntegralStatus(kNoInt)
+      fTsumw(0), fTsumw2(-1.), fIntegral(), fIntegralStatus(kNoInt)
    {}
 
    THnBase(const char* name, const char* title, Int_t dim,

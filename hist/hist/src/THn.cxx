@@ -192,7 +192,6 @@ THn::THn(const char* name, const char* title,
 
 THn::~THn()
 {
-   delete [] fCoordBuf;
 }
 
 
@@ -226,7 +225,8 @@ void THn::Sumw2() {
 
 void THn::AllocCoordBuf() const
 {
-   fCoordBuf = new Int_t[fNdimensions]();
+   fCoordBuf.clear();
+   fCoordBuf.resize(fNdimensions, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +234,8 @@ void THn::AllocCoordBuf() const
 
 void THn::InitStorage(Int_t* nbins, Int_t /*chunkSize*/)
 {
-   fCoordBuf = new Int_t[fNdimensions]();
+   fCoordBuf.clear();
+   fCoordBuf.resize(fNdimensions, 0);
    GetArray().Init(fNdimensions, nbins, true /*addOverflow*/);
    fSumw2.Init(fNdimensions, nbins, true /*addOverflow*/);
 }
