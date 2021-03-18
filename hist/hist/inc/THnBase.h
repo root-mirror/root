@@ -50,21 +50,17 @@ protected:
    Double_t   fTsumw2;       // total sum of weights squared; -1 if no errors are calculated
    TArrayD    fTsumwx;       // total sum of weight*X for each dimension
    TArrayD    fTsumwx2;      // total sum of weight*X*X for each dimension
-   Double_t  *fIntegral;     //! array with bin weight sums
+   std::vector<Double_t>  fIntegral;     //! array with bin weight sums
    enum {
       kNoInt,
       kValidInt,
       kInvalidInt
    } fIntegralStatus;        //! status of integral
 
-private:
-   THnBase(const THnBase&); // Not implemented
-   THnBase& operator=(const THnBase&); // Not implemented
-
  protected:
    THnBase():
       fNdimensions(0), fEntries(0),
-      fTsumw(0), fTsumw2(-1.), fIntegral(0), fIntegralStatus(kNoInt)
+      fTsumw(0), fTsumw2(-1.), fIntegral(), fIntegralStatus(kNoInt)
    {}
 
    THnBase(const char* name, const char* title, Int_t dim,
@@ -151,6 +147,23 @@ private:
       Long64_t bin = GetBin(name, kTRUE /*alloc*/);
       FillBin(bin, w);
       return bin;
+   }
+
+   // alternate Fill semantics for RDF
+   // firstval argument is needed to disambiguate template overloads
+   template<typename... MoreTypes> 
+   Long64_t Fill(Double_t firstval, MoreTypes ... morevals) {
+      const std::array<double, 1 + sizeof...(morevals)> x =  {{ firstval, morevals... }};
+      if (x.size() == GetNdimensions()) {
+         // without weight
+         return Fill(x.data()); 
+      }
+      else if (x.size() == (GetNdimensions() + 1)) {
+         // with weight
+         return Fill(x.data(), x.back());
+      }
+      
+      return -1;
    }
 
    virtual void FillBin(Long64_t bin, Double_t w) = 0;

@@ -93,6 +93,7 @@ namespace ActionTags {
 struct Histo1D{};
 struct Histo2D{};
 struct Histo3D{};
+struct HistoND{};
 struct Graph{};
 struct Profile1D{};
 struct Profile2D{};
@@ -123,7 +124,7 @@ struct HistoUtils<T, false> {
    static bool HasAxisLimits(T &) { return true; }
 };
 
-// Generic filling (covers Histo2D, Histo3D, Profile1D and Profile2D actions, with and without weights)
+// Generic filling (covers Histo2D, Histo3D, HistoND, Profile1D and Profile2D actions, with and without weights)
 template <typename... ColTypes, typename ActionTag, typename ActionResultType, typename PrevNodeType>
 std::unique_ptr<RActionBase>
 BuildAction(const ColumnNames_t &bl, const std::shared_ptr<ActionResultType> &h, const unsigned int nSlots,
