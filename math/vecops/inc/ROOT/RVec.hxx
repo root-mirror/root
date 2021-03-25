@@ -436,17 +436,6 @@ public:
    /// Return a pointer to the vector's buffer, even if empty().
    const_pointer data() const { return const_pointer(begin()); }
 
-   reference operator[](size_type idx)
-   {
-      assert(idx < size());
-      return begin()[idx];
-   }
-   const_reference operator[](size_type idx) const
-   {
-      assert(idx < size());
-      return begin()[idx];
-   }
-
    reference front()
    {
       assert(!empty());
@@ -1291,7 +1280,22 @@ public:
       return *this;
    }
 
-   using SmallVectorTemplateCommon<T>::operator[];
+   using reference = typename SmallVectorTemplateCommon<T>::reference;
+   using const_reference = typename SmallVectorTemplateCommon<T>::const_reference;
+   using size_type = typename SmallVectorTemplateCommon<T>::size_type;
+   using SmallVectorTemplateCommon<T>::begin;
+   using SmallVectorTemplateCommon<T>::size;
+
+   reference operator[](size_type idx)
+   {
+      assert(idx < size());
+      return begin()[idx];
+   }
+   const_reference operator[](size_type idx) const
+   {
+      assert(idx < size());
+      return begin()[idx];
+   }
 
    template <typename V, typename = std::enable_if<std::is_convertible<V, bool>::value>>
    RVec operator[](const RVec<V> &conds) const
