@@ -166,10 +166,10 @@ void TwoSidedFrequentistUpperLimitWithBands(const char *infile = "", const char 
       filename = infile;
 
    // Try to open the file
-   TFile *file = TFile::Open(filename);
+   TFile *inputFile = TFile::Open(filename);
 
    // if input file was specified byt not found, quit
-   if (!file) {
+   if (!inputFile) {
       cout << "StandardRooStatsDemoMacro: Input file " << filename << " is not found" << endl;
       return;
    }
@@ -178,7 +178,7 @@ void TwoSidedFrequentistUpperLimitWithBands(const char *infile = "", const char 
    // Now get the data and workspace
 
    // get the workspace out of the file
-   RooWorkspace *w = (RooWorkspace *)file->Get(workspaceName);
+   RooWorkspace *w = (RooWorkspace *)inputFile->Get(workspaceName);
    if (!w) {
       cout << "workspace not found" << endl;
       return;

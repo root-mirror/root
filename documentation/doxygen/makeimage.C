@@ -1,5 +1,14 @@
 /// Generates the ImageName output of the macro MacroName
 
+#include <TPad.h>
+#include <TIterator.h>
+#include <TImage.h>
+#include <TCanvas.h>
+#include <TStyle.h>
+#include <TROOT.h>
+#include <TString.h>
+#include <TSystem.h>
+
 #include <stdio.h>
 
 void FindImageInPad(TPad *P)

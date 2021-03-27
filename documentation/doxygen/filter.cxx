@@ -75,6 +75,7 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <memory>
@@ -194,7 +195,7 @@ void FilterClass()
             if (m) {
                fclose(m);
                m = 0;
-               ExecuteCommand(StringFormat("root -l -b -q \"makeimage.C(\\\"%s\\\",\\\"%s\\\",\\\"%s\\\",true,false)\""
+               ExecuteCommand(StringFormat("root -l -b -q \"makeimage.C+O(\\\"%s\\\",\\\"%s\\\",\\\"%s\\\",true,false)\""
                                               , StringFormat("%s_%3.3d.C", gClassName.c_str(), gMacroID).c_str()
                                               , StringFormat("%s_%3.3d.%s", gClassName.c_str(), gImageID, gImageType.c_str()).c_str()
                                               , gOutDir.c_str()));
@@ -296,6 +297,12 @@ void FilterClass()
 
 void FilterTutorial()
 {
+	 // Use these to write out work that should be run in parallel after doxygen is done:
+	 // This executes python <work>
+	 std::ofstream worklist_py(  "tutorialWorklist_py", ios_base::app);
+	 // This executes root <work>
+	 std::ofstream worklist_root("tutorialWorklist_root", ios_base::app);
+
    // File for inline macros.
    FILE *m = 0;
 
@@ -341,7 +348,7 @@ void FilterTutorial()
             IN = gImageName;
             int i = IN.find(".C");
             IN.erase(i,IN.length());
-            ExecuteCommand(StringFormat("root -l -b -q \"makerootfile.C(\\\"%s\\\",\\\"%s\\\",\\\"%s\\\",false,false)\"",
+            ExecuteCommand(StringFormat("root -l -b -q \"makerootfile.C+O(\\\"%s\\\",\\\"%s\\\",\\\"%s\\\",false,false)\"",
                                          gFileName.c_str(), IN.c_str(), gOutDir.c_str()));
             ReplaceAll(gLineString, "macro_image", StringFormat("htmlinclude %s.html",IN.c_str()));
          } else {
@@ -357,10 +364,10 @@ void FilterTutorial()
                }
             } else {
                if (nobatch) {
-                  ExecuteCommand(StringFormat("root -l -q \"makeimage.C(\\\"%s\\\",\\\"%s\\\",\\\"%s\\\",false,false)\"",
+                  ExecuteCommand(StringFormat("root -l -q \"makeimage.C+O(\\\"%s\\\",\\\"%s\\\",\\\"%s\\\",false,false)\"",
                                                gFileName.c_str(), gImageName.c_str(), gOutDir.c_str()));
                } else {
-                  ExecuteCommand(StringFormat("root -l -b -q \"makeimage.C(\\\"%s\\\",\\\"%s\\\",\\\"%s\\\",false,false)\"",
+                  ExecuteCommand(StringFormat("root -l -b -q \"makeimage.C+O(\\\"%s\\\",\\\"%s\\\",\\\"%s\\\",false,false)\"",
                                                gFileName.c_str(), gImageName.c_str(), gOutDir.c_str()));
                }
             }
@@ -378,10 +385,10 @@ void FilterTutorial()
 
       // notebook found
       if (gLineString.find("\\notebook") != string::npos) {
-         ExecuteCommand(StringFormat("%s converttonotebook.py %s %s/notebooks/",
-                                          gPythonExec.c_str(),
-                                          gFileName.c_str(), gOutDir.c_str()));
-         if (gPython){
+        // Notebooks are generated in dedicated step:
+        worklist_py << "converttonotebook.py " << gFileName << " " << gOutDir << "/notebooks/" << std::endl;
+
+        if (gPython){
              gLineString = "## ";
          }
          else{
@@ -469,7 +476,7 @@ void ExecuteMacro()
    gMacroName = gLineString.substr(i1,i2-i1+1);
 
    // Build the ROOT command to be executed.
-   gLineString.insert(0, StringFormat("root -l -b -q \"makeimage.C(\\\""));
+   gLineString.insert(0, StringFormat("root -l -b -q \"makeimage.C+O(\\\""));
    size_t l = gLineString.length();
    gLineString.replace(l-1,1,StringFormat("\\\",\\\"%s\\\",\\\"%s\\\",true,false)\"", gImageName.c_str(), gOutDir.c_str()));
 
