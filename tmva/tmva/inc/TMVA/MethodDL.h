@@ -139,6 +139,14 @@ private:
    void ParseMaxPoolLayer(DNN::TDeepNet<Architecture_t, Layer_t> &deepNet,
                           std::vector<DNN::TDeepNet<Architecture_t, Layer_t>> &nets, TString layerString,
                           TString delim);
+   template <typename Architecture_t, typename Layer_t>
+   void ParseConv3DLayer(DNN::TDeepNet<Architecture_t, Layer_t> &deepNet,
+                       std::vector<DNN::TDeepNet<Architecture_t, Layer_t>> &nets, TString layerString, TString delim);
+
+   template <typename Architecture_t, typename Layer_t>
+   void ParseMaxPool3DLayer(DNN::TDeepNet<Architecture_t, Layer_t> &deepNet,
+                          std::vector<DNN::TDeepNet<Architecture_t, Layer_t>> &nets, TString layerString,
+                          TString delim);
 
    template <typename Architecture_t, typename Layer_t>
    void ParseReshapeLayer(DNN::TDeepNet<Architecture_t, Layer_t> &deepNet,

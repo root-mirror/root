@@ -20,11 +20,14 @@
 
 #include "TMVA/DNN/Functions.h"
 #include "TMVA/DNN/CNN/ContextHandles.h"
-//#include "TMVA/DNN/CNN/Descriptors.h"
+#include "TMVA/DNN/CNN_3D/ContextHandles.h"
 #include "TMVA/DNN/GeneralLayer.h"
 #include "TMVA/DNN/BatchNormLayer.h"
 #include "TMVA/DNN/CNN/ConvLayer.h"
 #include "TMVA/DNN/CNN/MaxPoolLayer.h"
+#include "TMVA/DNN/CNN_3D/Conv3DLayer.h"
+#include "TMVA/DNN/CNN_3D/MaxPool3DLayer.h"
+
 #include "TMVA/DNN/RNN/RNNLayer.h"
 
 #include "TMVA/DNN/Architectures/Cpu/CpuBuffer.h"
@@ -517,6 +520,10 @@ public:
    static void Im2col(Matrix_t &A, const Matrix_t &B, size_t imgHeight, size_t imgWidth, size_t fltHeight,
                       size_t fltWidth, size_t strideRows, size_t strideCols, size_t zeroPaddingHeight,
                       size_t zeroPaddingWidth);
+   //____________________________________________________________________________
+   static void Im2col3D(Matrix_t &A, const Matrix_t &B, size_t imgHeight, size_t imgWidth, size_t imgDepth,
+                      size_t fltHeight, size_t fltWidth, size_t fltDepth, size_t strideRows, size_t strideCols, size_t strideDepth,
+                      size_t zeroPaddingHeight, size_t zeroPaddingWidth, size_t zeroPaddingDepth);
 
    static void Im2colIndices(std::vector<int> &V, const Matrix_t &B, size_t nLocalViews, size_t imgHeight,
                              size_t imgWidth, size_t fltHeight, size_t fltWidth, size_t strideRows, size_t strideCols,
@@ -527,6 +534,9 @@ public:
     *  and stores them in the matrix \p A. */
    static void RotateWeights(Matrix_t &A, const Matrix_t &B, size_t filterDepth, size_t filterHeight,
                              size_t filterWidth, size_t numFilters);
+
+   static void RotateWeights3D(Matrix_t &A, const Matrix_t &B, size_t filterDepth,
+                                 size_t filterHeight, size_t filterWidth, size_t numFilters, size_t input4D);
 
    /** Add the biases in the Convolutional Layer.  */
    static void AddConvBiases(Matrix_t &output, const Matrix_t &biases);
@@ -542,6 +552,15 @@ public:
                                 const ConvDescriptors_t & /*descriptors*/, // Empty struct for cuda architecture
                                 ConvWorkspace_t & /*workspace*/);          // Empty struct for cuda architecture
    // void * cudnnWorkspace = nullptr);          // Remains nullptr for cuda architecture
+
+    static void Conv3DLayerForward(Tensor_t & output,
+                                    Tensor_t & inputActivationFunc,
+                                    const Tensor_t &input,
+                                    const Matrix_t &weights, const Matrix_t & biases,
+                                    const DNN::CNN_3D::TConv3DParams & params, EActivationFunction activFunc,
+                                    Tensor_t & /*  */,
+                                    const ConvDescriptors_t & /*descriptors*/,
+                                    ConvWorkspace_t & /*workspace*/);
 
    /** @name Backward Propagation in Convolutional Layer
     */
@@ -582,6 +601,34 @@ public:
     *  layer */
    static void CalculateConvBiasGradients(Matrix_t &biasGradients, const Tensor_t &df, size_t batchSize, size_t depth,
                                           size_t nLocalViews);
+
+
+   static void Conv3DLayerBackward(Tensor_t &activationGradientsBackward,
+                                     Matrix_t &weightGradients, Matrix_t &biasGradients,
+                                     Tensor_t &inputActivationFunc,
+                                     Tensor_t &activationGradients,
+                                     const Matrix_t &weights,
+                                     const Tensor_t &activationsBackward,
+                                     const Tensor_t & outputTensor,
+                                     EActivationFunction activFunc,
+                                     const ConvDescriptors_t & /*descriptors*/,
+                                     ConvWorkspace_t & /*workspace*/,
+                                     const DNN::CNN_3D::TConv3DParams & params);
+
+   static void CalculateConv3DActivationGradients(Tensor_t &activationGradientsBackward,
+                                                    const Tensor_t &df,
+                                                    const Matrix_t &weights,
+                                                    const DNN::CNN_3D::TConv3DParams & params);
+
+   static void CalculateConv3DWeightGradients(Matrix_t &weightGradients,
+                                                const Tensor_t &df,
+                                                const Tensor_t &activationsBackward,
+                                                const DNN::CNN_3D::TConv3DParams & params);
+
+
+   static void CalculateConv3DBiasGradients(Matrix_t &biasGradients, const Tensor_t &df,
+                                                const DNN::CNN_3D::TConv3DParams & params);
+
    ///@}
 
    //____________________________________________________________________________
@@ -599,6 +646,12 @@ public:
                           PoolingWorkspace_t & /*workspace*/, size_t imgHeight, size_t imgWidth, size_t fltHeight,
                           size_t fltWidth, size_t strideRows, size_t strideCols);
 
+   static void Downsample3D(Tensor_t &tA, Tensor_t &tB, const Tensor_t &tC,
+                              const PoolingDescriptors_t & /*descriptors*/,
+                              PoolingWorkspace_t & /*workspace*/,
+                              size_t imgHeight, size_t imgWidth, size_t imgDepth, size_t fltHeight, size_t fltWidth, size_t fltDepth, size_t strideRows,
+                              size_t strideCols, size_t strideDepth);
+
    ///@}
 
    /** @name Backward Propagation in Max Pooling Layer
@@ -613,6 +666,22 @@ public:
                                     PoolingWorkspace_t & /*workspace*/, size_t imgHeight, size_t imgWidth,
                                     size_t fltHeight, size_t fltWidth, size_t strideRows, size_t strideCols,
                                     size_t nLocalViews);
+
+
+   static void MaxPoolLayer3DBackward(Tensor_t &activationGradientsBackward,
+                                        const Tensor_t &activationGradients,
+                                        const Tensor_t &indexMatrix,
+                                        const Tensor_t & /*inputActivation*/,
+                                        const Tensor_t & /*outputTensor*/,
+                                        const PoolingDescriptors_t & /*descriptors*/,
+                                        PoolingWorkspace_t & /*workspace*/,
+                                        size_t /* imgHeight */,
+                                        size_t /* imgWidth */,
+                                        size_t /* fltHeight */,
+                                        size_t /* fltWidth */,
+                                        size_t /* strideRows */,
+                                        size_t /* strideCols */,
+                                        size_t nLocalViews);
 
                                      //// Recurrent Network Functions
 
@@ -904,8 +973,6 @@ void TCpu<AReal>::PrintTensor(const typename TCpu<AReal>::Tensor_t & A, const st
       std::cout << "\n";
    }
 }
-
-
 
 
 } // namespace DNN

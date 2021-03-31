@@ -26,9 +26,12 @@
 
 #include "TMVA/DNN/Functions.h"
 #include "TMVA/DNN/CNN/ContextHandles.h"
+#include "TMVA/DNN/CNN_3D/ContextHandles.h"
 //#include "TMVA/DNN/CNN/Descriptors.h"
 #include "TMVA/DNN/BatchNormLayer.h"
 #include "TMVA/DNN/CNN/ConvLayer.h"
+#include "TMVA/DNN/CNN_3D/Conv3DLayer.h"
+#include "TMVA/DNN/CNN_3D/MaxPool3DLayer.h"
 #include "TMVA/DNN/CNN/MaxPoolLayer.h"
 #include "TMVA/DNN/RNN/RNNLayer.h"
 #include "TMVA/DNN/RNN/LSTMLayer.h"
@@ -576,6 +579,11 @@ public:
                                 const DNN::CNN::TConvParams &params, EActivationFunction activFunc,
                                 Tensor_t & /* inputPrime */, const ConvDescriptors_t &descriptors,
                                 ConvWorkspace_t &workspace);
+
+   static void  Conv3DLayerForward(Tensor_t &/* output */, Tensor_t &/* inputActivationFunc */, const Tensor_t &/* input */, const Matrix_t &/* weights */,
+                      const Matrix_t &/* biases */, const DNN::CNN_3D::TConv3DParams &/* params */, EActivationFunction /* activFunc */,
+                      Tensor_t & /*  */, const ConvDescriptors_t & /*descriptors*/, ConvWorkspace_t & /*workspace*/) {}
+
    // const AFloat alpha = 1,
    // const AFloat beta  = 1);
 
@@ -600,6 +608,14 @@ public:
                                  size_t /*width*/, size_t /*filterDepth*/, size_t /*filterHeight*/,
                                  size_t /*filterWidth*/, size_t /*nLocalViews*/);
 
+   static void Conv3DLayerBackward(Tensor_t &/* activationGradientsBackward */, Matrix_t &/* weightGradients */,
+                                   Matrix_t &/* biasGradients */, Tensor_t &/* inputActivationFunc */,
+                                   Tensor_t &/* activationGradients */, const Matrix_t &/* weights */,
+                                   const Tensor_t &/* activationsBackward */, const Tensor_t &/* outputTensor */,
+                                   EActivationFunction /* activFunc */, const ConvDescriptors_t & /*descriptors*/,
+                                   ConvWorkspace_t & /*workspace*/, const DNN::CNN_3D::TConv3DParams &/* params */)
+                                    {}
+
    ///@}
 
    //____________________________________________________________________________
@@ -617,6 +633,11 @@ public:
                           PoolingWorkspace_t &workspace, size_t imgHeight, size_t imgWidth, size_t fltHeight,
                           size_t fltWidth, size_t strideRows, size_t strideCols);
 
+   static void Downsample3D(Tensor_t &/* tA */, Tensor_t &/* tB */, const Tensor_t &/* tC */,
+                            const PoolingDescriptors_t & /*descriptors*/, PoolingWorkspace_t & /*workspace*/,
+                            size_t /* imgHeight */, size_t /* imgWidth */, size_t /* imgDepth */, size_t /* fltHeight */, size_t /* fltWidth */,
+                            size_t/*  fltDepth */, size_t /* strideRows */, size_t /* strideCols */, size_t/*  strideDepth */) {}
+
    ///@}
 
    /** @name Backward Propagation in Max Pooling Layer
@@ -630,6 +651,13 @@ public:
                                     const Tensor_t &outputTensor, const PoolingDescriptors_t &descriptors,
                                     PoolingWorkspace_t &workspace, size_t imgHeight, size_t imgWidth, size_t fltHeight,
                                     size_t fltWidth, size_t strideRows, size_t strideCols, size_t nLocalViews);
+
+   static void MaxPoolLayer3DBackward(Tensor_t &/* activationGradientsBackward */, const Tensor_t &/* activationGradients */,
+                                      const Tensor_t &/* indexMatrix */, const Tensor_t & /*inputActivation*/,
+                                      const Tensor_t & /*outputTensor*/, const PoolingDescriptors_t & /*descriptors*/,
+                                      PoolingWorkspace_t & /*workspace*/, size_t /* imgHeight */, size_t /* imgWidth */,
+                                      size_t /* fltHeight */, size_t /* fltWidth */, size_t /* strideRows */,
+                                      size_t /* strideCols */, size_t /* nLocalViews */) {}
 
    ///@}
 

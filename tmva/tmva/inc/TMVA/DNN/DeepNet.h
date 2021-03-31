@@ -14,7 +14,8 @@
  *      Akshay Vashistha     <akshayvashistha1995@gmail.com> - CERN, Switzerland  *
  *      Vladimir Ilievski    <ilievski.vladimir@live.com>  - CERN, Switzerland    *
  *      Saurav Shekhar       <sauravshekhar01@gmail.com> - CERN, Switzerland      *
- *                                                                                *
+ *      Surya S Dwivedi      <surya2191997@gmail.com> - Univ of Texas Austin      *
+ *                                                                                * 
  * Copyright (c) 2005-2015:                                                       *
  *      CERN, Switzerland                                                         *
  *      U. of Victoria, Canada                                                    *
@@ -39,6 +40,8 @@
 
 #include "TMVA/DNN/CNN/ConvLayer.h"
 #include "TMVA/DNN/CNN/MaxPoolLayer.h"
+#include "TMVA/DNN/CNN_3D/Conv3DLayer.h"
+#include "TMVA/DNN/CNN_3D/MaxPool3DLayer.h"
 
 #include "TMVA/DNN/RNN/RNNLayer.h"
 #include "TMVA/DNN/RNN/LSTMLayer.h"
@@ -59,6 +62,7 @@ namespace TMVA {
 namespace DNN {
 
    using namespace CNN;
+   using namespace CNN_3D; 
    using namespace RNN;
 
    //using namespace DAE;
@@ -141,9 +145,23 @@ public:
    void AddMaxPoolLayer(CNN::TMaxPoolLayer<Architecture_t> *maxPoolLayer);
 
 
+
+    TConv3DLayer<Architecture_t> *AddConv3DLayer(size_t input4D, size_t output4D,
+                                                size_t FilterHeight, size_t FilterWidth, size_t FilterDepth, size_t strideX, size_t strideY, size_t strideZ, size_t PaddingHeight,
+                                                size_t PaddingWidth, size_t PaddingDepth, EActivationFunction f, Scalar_t DropoutProbability = 1.0);
+
+    void AddConv3DLayer(TConv3DLayer<Architecture_t> *convLayer); 
+
+
+    TMaxPool3DLayer<Architecture_t> *AddMaxPool3DLayer(size_t FilterHeight,
+                 size_t FilterWidth, size_t FilterDepth, size_t StrideX, size_t StrideY, size_t StrideZ, Scalar_t DropoutProbability = 1.0);
+
+    void AddMaxPool3DLayer(TMaxPool3DLayer<Architecture_t> *maxPoolLayer);
+
+
    /*! Function for adding Recurrent Layer in the Deep Neural Network,
     * with given parameters */
-   TBasicRNNLayer<Architecture_t> *AddBasicRNNLayer(size_t stateSize, size_t inputSize, size_t timeSteps,
+    TBasicRNNLayer<Architecture_t> *AddBasicRNNLayer(size_t stateSize, size_t inputSize, size_t timeSteps,
                                                     bool rememberState = false,bool returnSequence = false,
                                                     EActivationFunction f = EActivationFunction::kTanh);
 
@@ -518,6 +536,93 @@ void TDeepNet<Architecture_t, Layer_t>::AddMaxPoolLayer(TMaxPoolLayer<Architectu
 {
    fLayers.push_back(maxPoolLayer);
 }
+
+//______________________________________________________________________________
+template <typename Architecture_t, typename Layer_t>
+TConv3DLayer<Architecture_t> *TDeepNet<Architecture_t, Layer_t>::AddConv3DLayer(size_t input4D, size_t output4D,
+              size_t FilterHeight, size_t FilterWidth, size_t FilterDepth, size_t strideX, size_t strideY, size_t strideZ, size_t PaddingHeight,
+              size_t PaddingWidth, size_t PaddingDepth, EActivationFunction f, Scalar_t DropoutProbability)
+{
+   // Depth represents number of maps(or number of filters)
+   // All variables defining a convolutional layer
+   size_t BatchSize = this->GetBatchSize();
+   size_t InputDepth;
+   size_t InputHeight;
+   size_t InputWidth;
+   EInitialization Init = this->GetInitialization();
+   ERegularization Reg = this->GetRegularization();
+   Scalar_t WeightDecay = this->GetWeightDecay();
+
+   if (fLayers.size() == 0) {
+      InputDepth = this->GetInputDepth();
+      InputHeight = this->GetInputHeight();
+      InputWidth = this->GetInputWidth();
+   } else {
+      Layer_t *lastLayer = fLayers.back();
+      InputDepth = lastLayer->GetDepth();
+      InputHeight = lastLayer->GetHeight();
+      InputWidth = lastLayer->GetWidth();
+   }
+
+
+   // Create the conv layer
+   TConv3DLayer<Architecture_t> *convLayer = new TConv3DLayer<Architecture_t>(
+              BatchSize, InputDepth, InputHeight, InputWidth, Init, input4D, output4D,
+              FilterHeight, FilterWidth, FilterDepth, strideX, strideY, strideZ, PaddingHeight,
+              PaddingWidth, PaddingDepth, DropoutProbability, f, Reg,
+              WeightDecay);
+
+   fLayers.push_back(convLayer);
+   return convLayer;
+}
+
+//______________________________________________________________________________
+template <typename Architecture_t, typename Layer_t>
+void TDeepNet<Architecture_t, Layer_t>::AddConv3DLayer(TConv3DLayer<Architecture_t> *convLayer)
+{
+   fLayers.push_back(convLayer);
+}
+
+//______________________________________________________________________________
+template <typename Architecture_t, typename Layer_t>
+TMaxPool3DLayer<Architecture_t> *TDeepNet<Architecture_t, Layer_t>::AddMaxPool3DLayer(size_t FilterHeight,
+                 size_t FilterWidth, size_t FilterDepth, size_t StrideX, size_t StrideY, size_t StrideZ, Scalar_t DropoutProbability)
+{
+   size_t BatchSize = this->GetBatchSize();
+   size_t InputDepth;
+   size_t InputHeight;
+   size_t InputWidth;
+
+   if (fLayers.size() == 0) {
+      InputDepth = this->GetInputDepth();
+      InputHeight = this->GetInputHeight();
+      InputWidth = this->GetInputWidth();
+   } else {
+      Layer_t *lastLayer = fLayers.back();
+      InputDepth = lastLayer->GetDepth();
+      InputHeight = lastLayer->GetHeight();
+      InputWidth = lastLayer->GetWidth();
+   }
+
+   TMaxPool3DLayer<Architecture_t> *maxPoolLayer = new TMaxPool3DLayer<Architecture_t>(
+      BatchSize, InputDepth, InputHeight, InputWidth, FilterHeight, FilterWidth, FilterDepth,
+      StrideX, StrideY, StrideZ, DropoutProbability);
+
+   // But this creates a copy or what?
+   fLayers.push_back(maxPoolLayer);
+
+   return maxPoolLayer;
+}
+
+//______________________________________________________________________________
+template <typename Architecture_t, typename Layer_t>
+void TDeepNet<Architecture_t, Layer_t>::AddMaxPool3DLayer(TMaxPool3DLayer<Architecture_t> *maxPoolLayer)
+{
+   fLayers.push_back(maxPoolLayer);
+}
+
+
+
 
 //______________________________________________________________________________
 template <typename Architecture_t, typename Layer_t>

@@ -623,6 +623,14 @@ public:
                           size_t imgHeight, size_t imgWidth, size_t fltHeight,
                           size_t fltWidth, size_t strideRows, size_t strideCols);
 
+   static void Downsample3D(Tensor_t & /* tA */, Tensor_t & /* tB */, const Tensor_t & /* tC */,
+                            const PoolingDescriptors_t & /*descriptors*/, PoolingWorkspace_t & /*workspace*/,
+                            size_t /* imgHeight */, size_t /* imgWidth */, size_t /* imgDepth */,
+                            size_t /* fltHeight */, size_t /* fltWidth */, size_t /*  fltDepth */,
+                            size_t /* strideRows */, size_t /* strideCols */, size_t /*  strideDepth */)
+   {
+   }
+
       ///@}
 
    /** @name Backward Propagation in Max Pooling Layer

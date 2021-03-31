@@ -112,6 +112,9 @@ if ((BLAS_FOUND OR mathmore) AND imt AND tmva-cpu)
 
 include_directories(SYSTEM ${TBB_INCLUDE_DIRS})
 
+ROOT_EXECUTABLE(testCNN_3DCpu TestCNN_3DCpu.cxx LIBRARIES ${Libraries})
+ROOT_ADD_TEST(TMVA-DNN-CNN_3D-Cpu COMMAND testCNN_3DCpu)
+
 ROOT_EXECUTABLE(testIm2ColCpu TestIm2ColCpu.cxx LIBRARIES ${Libraries})
 ROOT_ADD_TEST(TMVA-DNN-CNN-Im2Col-CPU COMMAND testIm2ColCpu)
 
