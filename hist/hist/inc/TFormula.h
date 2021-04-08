@@ -190,10 +190,8 @@ public:
    Int_t          Compile(const char *expression="");
    virtual void   Copy(TObject &f1) const;
    virtual void   Clear(Option_t * option="");
-   Double_t       Eval(Double_t x) const;
-   Double_t       Eval(Double_t x, Double_t y) const;
-   Double_t       Eval(Double_t x, Double_t y , Double_t z) const;
-   Double_t       Eval(Double_t x, Double_t y , Double_t z , Double_t t ) const;
+   template <typename... Args>
+   Double_t       Eval(Args... args) const;
    Double_t       EvalPar(const Double_t *x, const Double_t *params=0) const;
 
    /// Generate gradient computation routine with respect to the parameters.
@@ -261,4 +259,19 @@ public:
 
    ClassDef(TFormula,13)
 };
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set first 1, 2, 3 or 4 variables (e.g. x, y, z and t)
+/// and evaluate formula.
+
+template <typename... Args>
+Double_t TFormula::Eval(Args... args) const 
+{
+   if (sizeof...(args) > 4) {
+      Error("Eval", "Eval() only support setting upto 4 variables");
+   }
+   double xxx[] = {static_cast<Double_t>(args)...};
+   return EvalPar(xxx, nullptr);
+};
+
 #endif
