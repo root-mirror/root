@@ -193,6 +193,22 @@ struct HasBeginAndEnd {
    static constexpr bool const value = Check<T>(0);
 };
 
+/// Checks whether all types in template parameter pack have
+/// static member value equal to true
+template <typename... Condition>
+struct And : std::true_type {};
+
+template <typename Condition, typename... RemainingConditions>
+struct And <Condition, RemainingConditions...> : std::conditional <Condition::value, 
+                                                          And <RemainingConditions...>,
+                                                          std::false_type>::type {};
+
+/// Checks whether all types in template parameter pack are arithmetic type,
+/// provides the static member constant value which is equal to true if 
+/// they are, otherwise value is equal to false.
+template <typename... Args>
+struct AllArithmetic : And<std::is_arithmetic<Args>...> {}; 
+
 } // ns TypeTraits
 } // ns ROOT
 #endif // ROOT_TTypeTraits
