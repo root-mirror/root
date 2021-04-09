@@ -15,11 +15,13 @@
 #include "TNamed.h"
 #include "TBits.h"
 #include "TInterpreter.h"
+#include "ROOT/TypeTraits.hxx"
 #include <cassert>
 #include <vector>
 #include <list>
 #include <map>
 #include <string>
+#include <type_traits>
 #include <atomic>
 #include <Math/Types.h>
 
@@ -247,18 +249,63 @@ public:
    void           SetParameter(Int_t param, Double_t value);
    void           SetParameters(const Double_t *params);
    //void           SetParameters(const pair<TString,Double_t> *params, const Int_t size);
-   void           SetParameters(Double_t p0,Double_t p1,Double_t p2=0,Double_t p3=0,Double_t p4=0,
-                                     Double_t p5=0,Double_t p6=0,Double_t p7=0,Double_t p8=0,
-                                     Double_t p9=0,Double_t p10=0); // *MENU*
+   template <typename... Args>
+   typename std::enable_if<ROOT::TypeTraits::AllArithmetic<Args...>::value, void>::type SetParameters(Args... args);
    void           SetParName(Int_t ipar, const char *name);
-   void           SetParNames(const char *name0="p0",const char *name1="p1",const char
-                             *name2="p2",const char *name3="p3",const char
-                             *name4="p4", const char *name5="p5",const char *name6="p6",const char *name7="p7",const char
-                             *name8="p8",const char *name9="p9",const char *name10="p10"); // *MENU*
+   template <typename... Args>
+   void           SetParNames(Args... args);
    void           SetVariable(const TString &name, Double_t value);
    void           SetVariables(const std::pair<TString,Double_t> *vars, const Int_t size);
    void SetVectorized(Bool_t vectorized);
 
    ClassDef(TFormula,13)
 };
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set a list of parameters.
+/// The order is by default the alphabetic order given to the parameters
+/// apart if the users has defined explicitly the parameter names
+
+template <typename... Args>
+typename std::enable_if<ROOT::TypeTraits::AllArithmetic<Args...>::value, void>::type
+TFormula::SetParameters(Args... args)
+{
+   Int_t sz = sizeof...(args);
+   if (fNpar < sz) {
+      Warning("SetParameters",
+              "More values are passed than actual number of parameters (%d)"
+              ", extra values will be ignored",
+              fNpar);
+   }
+   Double_t values[] = {static_cast<Double_t>(args)...};
+   for (Int_t i = 0; i < fNpar; ++i) {
+      if (i < sz)
+         SetParameter(i, values[i]);
+      else
+         SetParameter(i, 0.0);
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+template <typename... Args>
+void TFormula::SetParNames(Args... args)
+{
+   Int_t sz = sizeof...(args);
+   if (fNpar < sz) {
+      Warning("SetParNames",
+              "More names are passed than actual number of parameters (%d)"
+              ", extra names will be ignored",
+              fNpar);
+   }
+   const char *names[] = {args...};
+   for (Int_t i = 0; i < fNpar; ++i) {
+      if (i < sz)
+         SetParName(i, names[i]);
+      else {
+         const char *num = std::to_string(i).c_str();
+         std::string name = std::string(1, 'p') + num;
+         SetParName(i, name.c_str());
+      }
+   }
+}
 #endif

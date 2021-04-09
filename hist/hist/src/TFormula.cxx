@@ -2933,27 +2933,6 @@ void TFormula::SetParameters(const Double_t *params)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Set a list of parameters.
-/// The order is by default the alphabetic order given to the parameters
-/// apart if the users has defined explicitly the parameter names
-
-void TFormula::SetParameters(Double_t p0, Double_t p1, Double_t p2, Double_t p3, Double_t p4, Double_t p5, Double_t p6,
-                             Double_t p7, Double_t p8, Double_t p9, Double_t p10)
-{
-   if(fNpar >= 1) SetParameter(0,p0);
-   if(fNpar >= 2) SetParameter(1,p1);
-   if(fNpar >= 3) SetParameter(2,p2);
-   if(fNpar >= 4) SetParameter(3,p3);
-   if(fNpar >= 5) SetParameter(4,p4);
-   if(fNpar >= 6) SetParameter(5,p5);
-   if(fNpar >= 7) SetParameter(6,p6);
-   if(fNpar >= 8) SetParameter(7,p7);
-   if(fNpar >= 9) SetParameter(8,p8);
-   if(fNpar >= 10) SetParameter(9,p9);
-   if(fNpar >= 11) SetParameter(10,p10);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Set a parameter given a parameter index
 /// The parameter index is by default the alphabetic order given to the parameters
 /// apart if the users has defined explicitly the parameter names
@@ -2965,35 +2944,6 @@ void TFormula::SetParameter(Int_t param, Double_t value)
    fClingParameters[param] = value;
    // TString name = TString::Format("%d",param);
    // SetParameter(name,value);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void TFormula::SetParNames(const char *name0, const char *name1, const char *name2, const char *name3,
-                           const char *name4, const char *name5, const char *name6, const char *name7,
-                           const char *name8, const char *name9, const char *name10)
-{
-   if (fNpar >= 1)
-      SetParName(0, name0);
-   if (fNpar >= 2)
-      SetParName(1, name1);
-   if (fNpar >= 3)
-      SetParName(2, name2);
-   if (fNpar >= 4)
-      SetParName(3, name3);
-   if (fNpar >= 5)
-      SetParName(4, name4);
-   if (fNpar >= 6)
-      SetParName(5, name5);
-   if (fNpar >= 7)
-      SetParName(6, name6);
-   if (fNpar >= 8)
-      SetParName(7, name7);
-   if (fNpar >= 9)
-      SetParName(8, name8);
-   if (fNpar >= 10)
-      SetParName(9, name9);
-   if (fNpar >= 11)
-      SetParName(10, name10);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
