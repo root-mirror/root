@@ -44,3 +44,15 @@ class ROOTModule(unittest.TestCase):
         import ROOT
         self.assertEqual(ROOT.PyConfig.IgnoreCommandLineOptions, True)
         ROOT.PyConfig.IgnoreCommandLineOptions = False
+
+    def test_implicit_root_namespace(self):
+        """
+        Test importing implicitely from the ROOT namespace
+        """
+        import ROOT
+        ROOT.RVec
+        ROOT.ROOT.RVec
+        ROOT.VecOps.RVec
+        ROOT.ROOT.VecOps.RVec
+        ROOT.EnableImplicitMT()
+        ROOT.ROOT.EnableImplicitMT()
