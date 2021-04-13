@@ -117,173 +117,10 @@ auto MapFromTuple(Tuple_t &&t, std::index_sequence<Is...>)
 }
 }
 
+namespace Internal {
 namespace VecOps {
-
-// Note that we open here with @{ the Doxygen group vecops and it is
-// closed again at the end of the C++ namespace VecOps
-/**
-  * \defgroup vecops VecOps
-  * A "std::vector"-like collection of values implementing handy operation to analyse them
-  * @{
-*/
-
-// clang-format off
-/**
-\class ROOT::VecOps::RVec
-\brief A "std::vector"-like collection of values implementing handy operation to analyse them
-\tparam T The type of the contained objects
-
-A RVec is a container designed to make analysis of values' collections fast and easy.
-Its storage is contiguous in memory and its interface is designed such to resemble to the one
-of the stl vector. In addition the interface features methods and external functions to ease
-the manipulation and analysis of the data in the RVec.
-
-\htmlonly
-<a href="https://doi.org/10.5281/zenodo.1253756"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.1253756.svg" alt="DOI"></a>
-\endhtmlonly
-
-## Table of Contents
-- [Example](\ref example)
-- [Owning and adopting memory](\ref owningandadoptingmemory)
-- [Sorting and manipulation of indices](\ref sorting)
-- [Usage in combination with RDataFrame](\ref usagetdataframe)
-- [Reference for the RVec class](\ref RVecdoxyref)
-
-Also see the [reference for RVec helper functions](https://root.cern/doc/master/namespaceROOT_1_1VecOps.html).
-
-\anchor example
-## Example
-Suppose to have an event featuring a collection of muons with a certain pseudorapidity,
-momentum and charge, e.g.:
-~~~{.cpp}
-std::vector<short> mu_charge {1, 1, -1, -1, -1, 1, 1, -1};
-std::vector<float> mu_pt {56, 45, 32, 24, 12, 8, 7, 6.2};
-std::vector<float> mu_eta {3.1, -.2, -1.1, 1, 4.1, 1.6, 2.4, -.5};
-~~~
-Suppose you want to extract the transverse momenta of the muons satisfying certain
-criteria, for example consider only negatively charged muons with a pseudorapidity
-smaller or equal to 2 and with a transverse momentum greater than 10 GeV.
-Such a selection would require, among the other things, the management of an explicit
-loop, for example:
-~~~{.cpp}
-std::vector<float> goodMuons_pt;
-const auto size = mu_charge.size();
-for (size_t i=0; i < size; ++i) {
-   if (mu_pt[i] > 10 && abs(mu_eta[i]) <= 2. &&  mu_charge[i] == -1) {
-      goodMuons_pt.emplace_back(mu_pt[i]);
-   }
-}
-~~~
-These operations become straightforward with RVec - we just need to *write what
-we mean*:
-~~~{.cpp}
-auto goodMuons_pt = mu_pt[ (mu_pt > 10.f && abs(mu_eta) <= 2.f && mu_charge == -1) ]
-~~~
-Now the clean collection of transverse momenta can be used within the rest of the data analysis, for
-example to fill a histogram.
-
-\anchor owningandadoptingmemory
-## Owning and adopting memory
-RVec has contiguous memory associated to it. It can own it or simply adopt it. In the latter case,
-it can be constructed with the address of the memory associated to it and its length. For example:
-~~~{.cpp}
-std::vector<int> myStlVec {1,2,3};
-RVec<int> myRVec(myStlVec.data(), myStlVec.size());
-~~~
-In this case, the memory associated to myStlVec and myRVec is the same, myRVec simply "adopted it".
-If any method which implies a re-allocation is called, e.g. *emplace_back* or *resize*, the adopted
-memory is released and new one is allocated. The previous content is copied in the new memory and
-preserved.
-
-\anchor sorting
-## Sorting and manipulation of indices
-
-### Sorting
-RVec complies to the STL interfaces when it comes to iterations. As a result, standard algorithms
-can be used, for example sorting:
-~~~{.cpp}
-RVec<double> v{6., 4., 5.};
-std::sort(v.begin(), v.end());
-~~~
-
-For convinience, helpers are provided too:
-~~~{.cpp}
-auto sorted_v = Sort(v);
-auto reversed_v = Reverse(v);
-~~~
-
-### Manipulation of indices
-
-It is also possible to manipulated the RVecs acting on their indices. For example,
-the following syntax
-~~~{.cpp}
-RVec<double> v0 {9., 7., 8.};
-auto v1 = Take(v0, {1, 2, 0});
-~~~
-will yield a new RVec<double> the content of which is the first, second and zeroth element of
-v0, i.e. `{7., 8., 9.}`.
-
-The `Argsort` helper extracts the indices which order the content of a `RVec`. For example,
-this snippet accomplish in a more expressive way what we just achieved:
-~~~{.cpp}
-auto v1_indices = Argsort(v0); // The content of v1_indices is {1, 2, 0}.
-v1 = Take(v0, v1_indices);
-~~~
-
-The `Take` utility allows to extract portions of the `RVec`. The content to be *taken*
-can be specified with an `RVec` of indices or an integer. If the integer is negative,
-elements will be picked starting from the end of the container:
-~~~{.cpp}
-RVec<float> vf {1.f, 2.f, 3.f, 4.f};
-auto vf_1 = Take(vf, {1, 3}); // The content is {2.f, 4.f}
-auto vf_2 = Take(vf, 2); // The content is {1.f, 2.f}
-auto vf_3 = Take(vf, -3); // The content is {2.f, 3.f, 4.f}
-~~~
-
-\anchor usagetdataframe
-## Usage in combination with RDataFrame
-RDataFrame leverages internally RVecs. Suppose to have a dataset stored in a
-TTree which holds these columns (here we choose C arrays to represent the
-collections, they could be as well std::vector instances):
-~~~{.bash}
-  nPart            "nPart/I"            An integer representing the number of particles
-  px               "px[nPart]/D"        The C array of the particles' x component of the momentum
-  py               "py[nPart]/D"        The C array of the particles' y component of the momentum
-  E                "E[nPart]/D"         The C array of the particles' Energy
-~~~
-Suppose you'd like to plot in a histogram the transverse momenta of all particles
-for which the energy is greater than 200 MeV.
-The code required would just be:
-~~~{.cpp}
-RDataFrame d("mytree", "myfile.root");
-using doubles = RVec<double>;
-auto cutPt = [](doubles &pxs, doubles &pys, doubles &Es) {
-   auto all_pts = sqrt(pxs * pxs + pys * pys);
-   auto good_pts = all_pts[Es > 200.];
-   return good_pts;
-   };
-
-auto hpt = d.Define("pt", cutPt, {"px", "py", "E"})
-            .Histo1D("pt");
-hpt->Draw();
-~~~
-And if you'd like to express your selection as a string:
-~~~{.cpp}
-RDataFrame d("mytree", "myfile.root");
-auto hpt = d.Define("pt", "sqrt(pxs * pxs + pys * pys)[E>200]")
-            .Histo1D("pt");
-hpt->Draw();
-~~~
-\anchor RVecdoxyref
-
-**/
-
-// clang-format on
-
-//FIXME put things in the namespace they belong to
-
-/// Returns the next power of two (in 64-bits) that is strictly greater than A.
-/// Returns zero on overflow.
+/// Return the next power of two (in 64-bits) that is strictly greater than A.
+/// Return zero on overflow.
 inline uint64_t NextPowerOf2(uint64_t A)
 {
    A |= (A >> 1);
@@ -330,7 +167,7 @@ protected:
 
 public:
    size_t size() const { return fSize; }
-   size_t capacity() const { return Capacity; }
+   size_t capacity() const noexcept { return Capacity; }
 
    RVEC_NODISCARD bool empty() const { return !fSize; }
 
@@ -348,6 +185,11 @@ public:
       assert(N <= capacity());
       fSize = N;
    }
+
+   // LLVM SmallVector does not have a shrink_to_fit method
+   // it's technically ok to do nothing, but assuming no one uses this method for RVec anyway, I'd rather deprecate it
+   R__DEPRECATED(6, 28, "This method will be removed.")
+   constexpr void shrink_to_fit() { }
 };
 
 template <class T>
@@ -415,26 +257,30 @@ public:
    using Base::size;
 
    // forward iterator creation methods.
-   iterator begin() { return (iterator)this->BeginX; }
-   const_iterator begin() const { return (const_iterator)this->BeginX; }
-   iterator end() { return begin() + size(); }
-   const_iterator end() const { return begin() + size(); }
+   iterator begin() noexcept { return (iterator)this->BeginX; }
+   const_iterator begin() const noexcept { return (const_iterator)this->BeginX; }
+   const_iterator cbegin() const noexcept { return (const_iterator)this->BeginX; }
+   iterator end() noexcept { return begin() + size(); }
+   const_iterator end() const noexcept { return begin() + size(); }
+   const_iterator cend() const noexcept { return begin() + size(); }
 
    // reverse iterator creation methods.
-   reverse_iterator rbegin() { return reverse_iterator(end()); }
-   const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
-   reverse_iterator rend() { return reverse_iterator(begin()); }
-   const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+   reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
+   const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+   const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+   reverse_iterator rend() noexcept { return reverse_iterator(begin()); }
+   const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+   const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
    size_type size_in_bytes() const { return size() * sizeof(T); }
-   size_type max_size() const { return std::min(this->SizeTypeMax(), size_type(-1) / sizeof(T)); }
+   size_type max_size() const noexcept { return std::min(this->SizeTypeMax(), size_type(-1) / sizeof(T)); }
 
    size_t capacity_in_bytes() const { return capacity() * sizeof(T); }
 
    /// Return a pointer to the vector's buffer, even if empty().
-   pointer data() { return pointer(begin()); }
+   pointer data() noexcept { return pointer(begin()); }
    /// Return a pointer to the vector's buffer, even if empty().
-   const_pointer data() const { return const_pointer(begin()); }
+   const_pointer data() const noexcept { return const_pointer(begin()); }
 
    reference front()
    {
@@ -985,7 +831,15 @@ public:
    void insert(iterator I, std::initializer_list<T> IL) { insert(I, IL.begin(), IL.end()); }
 
    template <typename... ArgTypes>
-   reference emplace_back(ArgTypes &&... Args)
+   R__DEPRECATED(6, 28, "Please use RVec::insert instead.")
+   reference emplace(iterator I, ArgTypes &&...Args)
+   {
+      // these are not the exact semantics of emplace, of course, hence the deprecation.
+      return insert(I, T(std::forward<Args>...));
+   }
+
+   template <typename... ArgTypes>
+   reference emplace_back(ArgTypes &&...Args)
    {
       if (R__unlikely(this->size() >= this->capacity()))
          this->grow();
@@ -1193,6 +1047,170 @@ struct SmallVectorStorage {
 template <typename T>
 struct alignas(T) SmallVectorStorage<T, 0> {
 };
+} // namespace VecOps
+} // namespace Internal
+
+namespace VecOps {
+// Note that we open here with @{ the Doxygen group vecops and it is
+// closed again at the end of the C++ namespace VecOps
+/**
+  * \defgroup vecops VecOps
+  * A "std::vector"-like collection of values implementing handy operation to analyse them
+  * @{
+*/
+
+// clang-format off
+/**
+\class ROOT::VecOps::RVec
+\brief A "std::vector"-like collection of values implementing handy operation to analyse them
+\tparam T The type of the contained objects
+
+A RVec is a container designed to make analysis of values' collections fast and easy.
+Its storage is contiguous in memory and its interface is designed such to resemble to the one
+of the stl vector. In addition the interface features methods and external functions to ease
+the manipulation and analysis of the data in the RVec.
+
+\htmlonly
+<a href="https://doi.org/10.5281/zenodo.1253756"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.1253756.svg" alt="DOI"></a>
+\endhtmlonly
+
+## Table of Contents
+- [Example](\ref example)
+- [Owning and adopting memory](\ref owningandadoptingmemory)
+- [Sorting and manipulation of indices](\ref sorting)
+- [Usage in combination with RDataFrame](\ref usagetdataframe)
+- [Reference for the RVec class](\ref RVecdoxyref)
+
+Also see the [reference for RVec helper functions](https://root.cern/doc/master/namespaceROOT_1_1VecOps.html).
+
+\anchor example
+## Example
+Suppose to have an event featuring a collection of muons with a certain pseudorapidity,
+momentum and charge, e.g.:
+~~~{.cpp}
+std::vector<short> mu_charge {1, 1, -1, -1, -1, 1, 1, -1};
+std::vector<float> mu_pt {56, 45, 32, 24, 12, 8, 7, 6.2};
+std::vector<float> mu_eta {3.1, -.2, -1.1, 1, 4.1, 1.6, 2.4, -.5};
+~~~
+Suppose you want to extract the transverse momenta of the muons satisfying certain
+criteria, for example consider only negatively charged muons with a pseudorapidity
+smaller or equal to 2 and with a transverse momentum greater than 10 GeV.
+Such a selection would require, among the other things, the management of an explicit
+loop, for example:
+~~~{.cpp}
+std::vector<float> goodMuons_pt;
+const auto size = mu_charge.size();
+for (size_t i=0; i < size; ++i) {
+   if (mu_pt[i] > 10 && abs(mu_eta[i]) <= 2. &&  mu_charge[i] == -1) {
+      goodMuons_pt.emplace_back(mu_pt[i]);
+   }
+}
+~~~
+These operations become straightforward with RVec - we just need to *write what
+we mean*:
+~~~{.cpp}
+auto goodMuons_pt = mu_pt[ (mu_pt > 10.f && abs(mu_eta) <= 2.f && mu_charge == -1) ]
+~~~
+Now the clean collection of transverse momenta can be used within the rest of the data analysis, for
+example to fill a histogram.
+
+\anchor owningandadoptingmemory
+## Owning and adopting memory
+RVec has contiguous memory associated to it. It can own it or simply adopt it. In the latter case,
+it can be constructed with the address of the memory associated to it and its length. For example:
+~~~{.cpp}
+std::vector<int> myStlVec {1,2,3};
+RVec<int> myRVec(myStlVec.data(), myStlVec.size());
+~~~
+In this case, the memory associated to myStlVec and myRVec is the same, myRVec simply "adopted it".
+If any method which implies a re-allocation is called, e.g. *emplace_back* or *resize*, the adopted
+memory is released and new one is allocated. The previous content is copied in the new memory and
+preserved.
+
+\anchor sorting
+## Sorting and manipulation of indices
+
+### Sorting
+RVec complies to the STL interfaces when it comes to iterations. As a result, standard algorithms
+can be used, for example sorting:
+~~~{.cpp}
+RVec<double> v{6., 4., 5.};
+std::sort(v.begin(), v.end());
+~~~
+
+For convinience, helpers are provided too:
+~~~{.cpp}
+auto sorted_v = Sort(v);
+auto reversed_v = Reverse(v);
+~~~
+
+### Manipulation of indices
+
+It is also possible to manipulated the RVecs acting on their indices. For example,
+the following syntax
+~~~{.cpp}
+RVec<double> v0 {9., 7., 8.};
+auto v1 = Take(v0, {1, 2, 0});
+~~~
+will yield a new RVec<double> the content of which is the first, second and zeroth element of
+v0, i.e. `{7., 8., 9.}`.
+
+The `Argsort` helper extracts the indices which order the content of a `RVec`. For example,
+this snippet accomplish in a more expressive way what we just achieved:
+~~~{.cpp}
+auto v1_indices = Argsort(v0); // The content of v1_indices is {1, 2, 0}.
+v1 = Take(v0, v1_indices);
+~~~
+
+The `Take` utility allows to extract portions of the `RVec`. The content to be *taken*
+can be specified with an `RVec` of indices or an integer. If the integer is negative,
+elements will be picked starting from the end of the container:
+~~~{.cpp}
+RVec<float> vf {1.f, 2.f, 3.f, 4.f};
+auto vf_1 = Take(vf, {1, 3}); // The content is {2.f, 4.f}
+auto vf_2 = Take(vf, 2); // The content is {1.f, 2.f}
+auto vf_3 = Take(vf, -3); // The content is {2.f, 3.f, 4.f}
+~~~
+
+\anchor usagetdataframe
+## Usage in combination with RDataFrame
+RDataFrame leverages internally RVecs. Suppose to have a dataset stored in a
+TTree which holds these columns (here we choose C arrays to represent the
+collections, they could be as well std::vector instances):
+~~~{.bash}
+  nPart            "nPart/I"            An integer representing the number of particles
+  px               "px[nPart]/D"        The C array of the particles' x component of the momentum
+  py               "py[nPart]/D"        The C array of the particles' y component of the momentum
+  E                "E[nPart]/D"         The C array of the particles' Energy
+~~~
+Suppose you'd like to plot in a histogram the transverse momenta of all particles
+for which the energy is greater than 200 MeV.
+The code required would just be:
+~~~{.cpp}
+RDataFrame d("mytree", "myfile.root");
+using doubles = RVec<double>;
+auto cutPt = [](doubles &pxs, doubles &pys, doubles &Es) {
+   auto all_pts = sqrt(pxs * pxs + pys * pys);
+   auto good_pts = all_pts[Es > 200.];
+   return good_pts;
+   };
+
+auto hpt = d.Define("pt", cutPt, {"px", "py", "E"})
+            .Histo1D("pt");
+hpt->Draw();
+~~~
+And if you'd like to express your selection as a string:
+~~~{.cpp}
+RDataFrame d("mytree", "myfile.root");
+auto hpt = d.Define("pt", "sqrt(pxs * pxs + pys * pys)[E>200]")
+            .Histo1D("pt");
+hpt->Draw();
+~~~
+\anchor RVecdoxyref
+**/
+// clang-format on
+
+
 
 /// This is a 'vector' (really, a variable-sized array), optimized
 /// for the case when the array is small.  It contains some number of elements
@@ -1203,10 +1221,10 @@ struct alignas(T) SmallVectorStorage<T, 0> {
 /// Note that this does not attempt to be exception safe.
 ///
 template <typename T>
-class RVec : public SmallVectorImpl<T>, SmallVectorStorage<T, 8> {
+class RVec : public Internal::VecOps::SmallVectorImpl<T>, Internal::VecOps::SmallVectorStorage<T, 8> {
 public:
    static constexpr unsigned N = 8;
-   RVec() : SmallVectorImpl<T>(N) {}
+   RVec() : Internal::VecOps::SmallVectorImpl<T>(N) {}
 
    ~RVec()
    {
@@ -1216,51 +1234,54 @@ public:
       }
    }
 
-   explicit RVec(size_t Size, const T &Value = T()) : SmallVectorImpl<T>(N) { this->assign(Size, Value); }
+   explicit RVec(size_t Size, const T &Value = T()) : Internal::VecOps::SmallVectorImpl<T>(N)
+   {
+      this->assign(Size, Value);
+   }
 
    template <typename ItTy,
              typename = typename std::enable_if<std::is_convertible<
                 typename std::iterator_traits<ItTy>::iterator_category, std::input_iterator_tag>::value>::type>
-   RVec(ItTy S, ItTy E) : SmallVectorImpl<T>(N)
+   RVec(ItTy S, ItTy E) : Internal::VecOps::SmallVectorImpl<T>(N)
    {
       this->append(S, E);
    }
 
-   RVec(std::initializer_list<T> IL) : SmallVectorImpl<T>(N) { this->assign(IL); }
+   RVec(std::initializer_list<T> IL) : Internal::VecOps::SmallVectorImpl<T>(N) { this->assign(IL); }
 
-   RVec(const RVec &RHS) : SmallVectorImpl<T>(N)
+   RVec(const RVec &RHS) : Internal::VecOps::SmallVectorImpl<T>(N)
    {
       if (!RHS.empty())
-         SmallVectorImpl<T>::operator=(RHS);
+         Internal::VecOps::SmallVectorImpl<T>::operator=(RHS);
    }
 
    RVec &operator=(const RVec &RHS)
    {
-      SmallVectorImpl<T>::operator=(RHS);
+      Internal::VecOps::SmallVectorImpl<T>::operator=(RHS);
       return *this;
    }
 
-   RVec(RVec &&RHS) : SmallVectorImpl<T>(N)
+   RVec(RVec &&RHS) : Internal::VecOps::SmallVectorImpl<T>(N)
    {
       if (!RHS.empty())
-         SmallVectorImpl<T>::operator=(::std::move(RHS));
+         Internal::VecOps::SmallVectorImpl<T>::operator=(::std::move(RHS));
    }
 
-   RVec(SmallVectorImpl<T> &&RHS) : SmallVectorImpl<T>(N)
+   RVec(Internal::VecOps::SmallVectorImpl<T> &&RHS) : Internal::VecOps::SmallVectorImpl<T>(N)
    {
       if (!RHS.empty())
-         SmallVectorImpl<T>::operator=(::std::move(RHS));
+         Internal::VecOps::SmallVectorImpl<T>::operator=(::std::move(RHS));
    }
 
    RVec(const std::vector<T> &RHS) : RVec(RHS.begin(), RHS.end()) {}
 
    RVec &operator=(RVec &&RHS)
    {
-      SmallVectorImpl<T>::operator=(::std::move(RHS));
+      Internal::VecOps::SmallVectorImpl<T>::operator=(::std::move(RHS));
       return *this;
    }
 
-   RVec(typename RVec<T>::pointer p, typename RVec<T>::size_type n) : SmallVectorImpl<T>(N)
+   RVec(typename RVec<T>::pointer p, typename RVec<T>::size_type n) : Internal::VecOps::SmallVectorImpl<T>(N)
    {
       this->BeginX = p;
       this->fSize = n;
@@ -1268,9 +1289,9 @@ public:
       this->Owns = false;
    }
 
-   RVec &operator=(SmallVectorImpl<T> &&RHS)
+   RVec &operator=(Internal::VecOps::SmallVectorImpl<T> &&RHS)
    {
-      SmallVectorImpl<T>::operator=(::std::move(RHS));
+      Internal::VecOps::SmallVectorImpl<T>::operator=(::std::move(RHS));
       return *this;
    }
 
@@ -1280,11 +1301,11 @@ public:
       return *this;
    }
 
-   using reference = typename SmallVectorTemplateCommon<T>::reference;
-   using const_reference = typename SmallVectorTemplateCommon<T>::const_reference;
-   using size_type = typename SmallVectorTemplateCommon<T>::size_type;
-   using SmallVectorTemplateCommon<T>::begin;
-   using SmallVectorTemplateCommon<T>::size;
+   using reference = typename Internal::VecOps::SmallVectorTemplateCommon<T>::reference;
+   using const_reference = typename Internal::VecOps::SmallVectorTemplateCommon<T>::const_reference;
+   using size_type = typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type;
+   using Internal::VecOps::SmallVectorTemplateCommon<T>::begin;
+   using Internal::VecOps::SmallVectorTemplateCommon<T>::size;
 
    reference operator[](size_type idx)
    {
@@ -1322,35 +1343,34 @@ public:
 
    // from the original LLVM implementation:
    // FIXME find a less verbose way
-   typename SmallVectorTemplateCommon<T>::reference at(typename SmallVectorTemplateCommon<T>::size_type pos)
+   typename Internal::VecOps::SmallVectorTemplateCommon<T>::reference at(typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type pos)
    {
       if (pos >= this->fSize)
          throw std::out_of_range("RVec");
       return this->operator[](pos);
    }
-   typename SmallVectorTemplateCommon<T>::const_reference at(typename SmallVectorTemplateCommon<T>::size_type pos) const
+   typename Internal::VecOps::SmallVectorTemplateCommon<T>::const_reference at(typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type pos) const
    {
       if (pos >= this->fSize)
          throw std::out_of_range("RVec");
       return this->operator[](pos);
    }
    /// No exception thrown. The user specifies the desired value in case the RVec is shorter than `pos`.
-   typename SmallVectorTemplateCommon<T>::value_type
-   at(typename SmallVectorTemplateCommon<T>::size_type pos, typename SmallVectorTemplateCommon<T>::value_type fallback)
+   typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type
+   at(typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type pos, typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type fallback)
    {
       if (pos >= this->fSize)
          return fallback;
       return this->operator[](pos);
    }
    /// No exception thrown. The user specifies the desired value in case the RVec is shorter than `pos`.
-   typename SmallVectorTemplateCommon<T>::value_type
-   at(typename SmallVectorTemplateCommon<T>::size_type pos, typename SmallVectorTemplateCommon<T>::value_type fallback) const
+   typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type
+   at(typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type pos, typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type fallback) const
    {
       if (pos >= this->fSize)
          return fallback;
       return this->operator[](pos);
    }
-
 };
 
 template <typename T>
