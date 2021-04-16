@@ -18,8 +18,6 @@
 #endif
 
 #include "TError.h"
-#include "TPluginManager.h"
-#include "TROOT.h"
 
 #include <algorithm>
 #include <cctype> // for towlower
@@ -29,8 +27,11 @@
 #include <cstring>
 #include <stdexcept>
 #include <string>
+#include <functional>
+
 
 namespace {
+static std::unique_ptr<ROOT::Internal::RRawFile> gHelper = std::move(nullptr);
 const char *kTransportSeparator = "://";
 // Corresponds to ELineBreaks
 #ifdef _WIN32
@@ -69,6 +70,11 @@ ROOT::Internal::RRawFile::~RRawFile()
    delete[] fBufferSpace;
 }
 
+void ROOT::Internal::RRawFile::InitHelper(std::unique_ptr<ROOT::Internal::RRawFile> helper)
+{
+   gHelper = std::move(helper);
+}
+
 std::unique_ptr<ROOT::Internal::RRawFile>
 ROOT::Internal::RRawFile::Create(std::string_view url, ROptions options)
 {
@@ -81,14 +87,10 @@ ROOT::Internal::RRawFile::Create(std::string_view url, ROptions options)
 #endif
    }
    if (transport == "http" || transport == "https") {
-      if (TPluginHandler *h = gROOT->GetPluginManager()->FindHandler("ROOT::Internal::RRawFile")) {
-         if (h->LoadPlugin() == 0) {
-            return std::unique_ptr<RRawFile>(reinterpret_cast<RRawFile *>(h->ExecPlugin(2, &url, &options)));
-         }
-         throw std::runtime_error("Cannot load plugin handler for RRawFileDavix");
+      if(gHelper)
+         return std::move(gHelper);
+      throw std::runtime_error("HTTP/HTTPS is not supported in ROOT IOLite, please build in addition ROOT IO (RIO) library.");
       }
-      throw std::runtime_error("Cannot find plugin handler for RRawFileDavix");
-   }
    throw std::runtime_error("Unsupported transport protocol: " + transport);
 }
 

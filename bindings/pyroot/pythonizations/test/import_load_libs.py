@@ -13,6 +13,7 @@ class ImportLoadLibs(unittest.TestCase):
     known_libs = [
             # libCore and dependencies
             'libCore',
+            'libROOTFoundation',
             'libm',
             'liblz4',
             'libxxhash',
@@ -32,6 +33,7 @@ class ImportLoadLibs(unittest.TestCase):
             'libTree',
             'libThread',
             'libRIO',
+            'libROOTFoundationIOLite',
             'libNet',
             'libImt',
             'libMathCore',

@@ -15,7 +15,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RDAVIX
     TDavixFile.h
     TDavixSystem.h
   SOURCES
-    src/RRawFileDavix
+    src/RRawFileDavix.cxx
     src/TDavixFile.cxx
     src/TDavixSystem.cxx
   LIBRARIES

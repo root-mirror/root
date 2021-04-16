@@ -77,6 +77,7 @@ add_subdirectory(rint)
 add_subdirectory(textinput)
 add_subdirectory(thread)
 add_subdirectory(imt)
+add_subdirectory(foundationiolite)
 add_subdirectory(zip)
 add_subdirectory(lzma)
 add_subdirectory(lz4)
@@ -115,7 +116,6 @@ endif()
 set(objectlibs $<TARGET_OBJECTS:Base>
                $<TARGET_OBJECTS:Clib>
                $<TARGET_OBJECTS:Cont>
-               $<TARGET_OBJECTS:Foundation>
                $<TARGET_OBJECTS:Lzma>
                $<TARGET_OBJECTS:Lz4>
                $<TARGET_OBJECTS:Zstd>
@@ -156,7 +156,13 @@ endif()
 add_subdirectory(rootcling_stage1)
 
 #-------------------------------------------------------------------------------
-ROOT_LINKER_LIBRARY(Core $<TARGET_OBJECTS:BaseTROOT> ${objectlibs} BUILTINS LZMA)
+ROOT_LINKER_LIBRARY(Core $<TARGET_OBJECTS:BaseTROOT> ${objectlibs}
+  DEPENDENCIES
+    ROOTFoundation
+    ROOTFoundationIOLite
+  BUILTINS
+    LZMA
+  )
 
 if (libcxx AND NOT APPLE)
   # In case we use libcxx and glibc together there is a mismatch of the
@@ -167,9 +173,9 @@ if (libcxx AND NOT APPLE)
 endif()
 
 if(MSVC)
-  # Definitions of MATH Macros (required in MathCore) like M_PI are only  
-  # exposed on Windows after defining the _USE_MATH_DEFINES macro. By   
-  # specifying it as a property for Core, we ensure that the macros are 
+  # Definitions of MATH Macros (required in MathCore) like M_PI are only
+  # exposed on Windows after defining the _USE_MATH_DEFINES macro. By
+  # specifying it as a property for Core, we ensure that the macros are
   # properly exposed when using Modules on Windows.
   target_compile_definitions(Core PRIVATE _USE_MATH_DEFINES)
 endif()
@@ -235,6 +241,7 @@ ROOT_GENERATE_DICTIONARY(G__Core
   ${Clib_dict_headers}
   ${Cont_dict_headers}
   ${Foundation_dict_headers}
+  ${Foundationiolite_dict_headers}
   ${Macosx_dict_headers}
   ${Unix_dict_headers}
   ${Winnt_dict_headers}

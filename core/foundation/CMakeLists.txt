@@ -1,4 +1,4 @@
-# Copyright (C) 1995-2019, Rene Brun and Fons Rademakers.
+# Copyright (C) 1995-2020, Rene Brun and Fons Rademakers.
 # All rights reserved.
 #
 # For the licensing terms see $ROOTSYS/LICENSE.
@@ -8,6 +8,7 @@
 # CMakeLists.txt file for building ROOT core/foundation package
 ############################################################################
 
+# Used for generation of Core dictionary
 set(Foundation_dict_headers
   ESTLType.h
   RStringView.h
@@ -24,7 +25,8 @@ set(Foundation_dict_headers
   PARENT_SCOPE
 )
 
-set(FOUNDATION_SOURCES
+# Used for generation of rootcling_stage1 and Foundation_Stage1
+set(ROOTFOUNDATION_SOURCES
   src/FoundationUtils.cxx
   src/RConversionRuleParser.cxx
   src/RLogger.cxx
@@ -37,21 +39,22 @@ set(FOUNDATION_HEADER_DIRS inc/)
 if(root7)
   list(APPEND Foundation_dict_headers
     ROOT/RError.hxx)
-  list(APPEND FOUNDATION_SOURCES
+  list(APPEND ROOTFOUNDATION_SOURCES
     v7/src/RError.cxx)
   list(APPEND FOUNDATION_HEADER_DIRS v7/inc/)
   set(FOUNDATION_V7_INC ${CMAKE_SOURCE_DIR}/core/foundation/v7/inc)
   ROOT_ADD_TEST_SUBDIRECTORY(v7/test)
 endif()
 
-ROOT_OBJECT_LIBRARY(Foundation ${FOUNDATION_SOURCES})
-target_include_directories(Foundation PRIVATE
+ROOT_LINKER_LIBRARY(ROOTFoundation ${ROOTFOUNDATION_SOURCES})
+
+target_include_directories(ROOTFoundation PRIVATE
    ${FOUNDATION_V7_INC}
    ${CMAKE_SOURCE_DIR}/core/foundation/res
    ${CMAKE_BINARY_DIR}/ginclude
 )
 
-ROOT_OBJECT_LIBRARY(Foundation_Stage1 ${FOUNDATION_SOURCES}) # used by rootcling_stage1
+ROOT_OBJECT_LIBRARY(Foundation_Stage1 ${ROOTFOUNDATION_SOURCES}) # used by rootcling_stage1
 target_include_directories(Foundation_Stage1 PRIVATE
    ${FOUNDATION_V7_INC}
    ${CMAKE_SOURCE_DIR}/core/foundation/res
@@ -59,7 +62,7 @@ target_include_directories(Foundation_Stage1 PRIVATE
 )
 
 if(MSVC)
-   target_include_directories(Foundation PRIVATE ${CMAKE_SOURCE_DIR}/core/winnt/inc)
+   target_include_directories(ROOTFoundation PRIVATE ${CMAKE_SOURCE_DIR}/core/winnt/inc)
    target_include_directories(Foundation_Stage1 PRIVATE ${CMAKE_SOURCE_DIR}/core/winnt/inc)
 endif()
 
