@@ -53,6 +53,8 @@ using ENTupleContainerFormat = ROOT::Experimental::ENTupleContainerFormat;
 using ENTupleStructure = ROOT::Experimental::ENTupleStructure;
 using NTupleSize_t = ROOT::Experimental::NTupleSize_t;
 using RColumnModel = ROOT::Experimental::RColumnModel;
+using RClusterDescriptor = ROOT::Experimental::RClusterDescriptor;
+using RClusterIndex = ROOT::Experimental::RClusterIndex;
 using RDanglingFieldDescriptor = ROOT::Experimental::RDanglingFieldDescriptor;
 using RException = ROOT::Experimental::RException;
 template <class T>
@@ -107,6 +109,48 @@ public:
    FileRaii& operator=(const FileRaii&) = delete;
    ~FileRaii() { std::remove(fPath.c_str()); }
    std::string GetPath() const { return fPath; }
+};
+
+/// A page sink that discards all data. Every page sink converts a model to a descriptor and the null sink is
+/// useful to extract just the converted descriptor.
+class RPageSinkNull : public RPageSink {
+protected:
+   void CreateImpl(const RNTupleModel & /*model*/) final {}
+   RClusterDescriptor::RLocator CommitPageImpl(ColumnHandle_t /* columnHandle */, const RPage & /* page */) final
+   {
+      return RClusterDescriptor::RLocator();
+   }
+   RClusterDescriptor::RLocator CommitSealedPageImpl(DescriptorId_t /* columnId */,
+                                                     const RPageStorage::RSealedPage & /* sealedPage */) final
+   {
+      return RClusterDescriptor::RLocator();
+   }
+   RClusterDescriptor::RLocator CommitClusterImpl(NTupleSize_t /* nEntries */) final
+   {
+      return RClusterDescriptor::RLocator();
+   }
+   void CommitDatasetImpl() final {}
+
+public:
+   RPageSinkNull() : RPageSink("null", RNTupleWriteOptions()) {}
+   ~RPageSinkNull() = default;
+
+   RPage ReservePage(ColumnHandle_t columnHandle, std::size_t nElements = 0) final
+   {
+      if (nElements == 0)
+         nElements = 1;
+      auto elementSize = columnHandle.fColumn->GetElement()->GetSize();
+      auto newPage = RPageAllocatorHeap::NewPage(columnHandle.fId, elementSize, nElements);
+      newPage.TryGrow(nElements);
+      return newPage;
+   }
+   void ReleasePage(RPage &page) final {
+      if (page.IsNull())
+         return;
+      RPageAllocatorHeap::DeletePage(page);
+   }
+
+   const RNTupleDescriptor &GetDescriptor() const { return fDescriptorBuilder.GetDescriptor(); }
 };
 
 #endif

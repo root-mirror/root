@@ -538,6 +538,17 @@ bool ROOT::Experimental::RColumnDescriptor::operator==(const RColumnDescriptor &
           fIndex == other.fIndex;
 }
 
+ROOT::Experimental::RColumnDescriptor
+ROOT::Experimental::RColumnDescriptor::Clone() const {
+   RColumnDescriptor clone;
+   clone.fColumnId = fColumnId;
+   clone.fVersion  = fVersion;
+   clone.fModel    = fModel;
+   clone.fFieldId  = fFieldId;
+   clone.fIndex    = fIndex;
+   return clone;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

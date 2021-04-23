@@ -106,6 +106,21 @@ public:
    /// Whether the concrete implementation is a sink or a source
    virtual EPageStorageType GetType() = 0;
 
+   /// A sealed page contains the bytes of a page as written to storage (packed & compressed).  It is not supposed to
+   /// be populated to memory but only used to transfer pages between different storage media.  In particular, it is
+   /// used to copy pages during fast merging.
+   struct RSealedPage {
+      std::unique_ptr<unsigned char[]> fBuffer = nullptr;
+      std::uint32_t fSize = 0;
+      std::uint32_t fNElements = 0;
+
+      RSealedPage() = default;
+      RSealedPage(const RSealedPage &other) = delete;
+      RSealedPage& operator =(const RSealedPage &other) = delete;
+      RSealedPage(RSealedPage &&other) = default;
+      RSealedPage& operator =(RSealedPage &&other) = default;
+   };
+
    struct RColumnHandle {
       DescriptorId_t fId = kInvalidDescriptorId;
       const RColumn *fColumn = nullptr;
@@ -168,6 +183,8 @@ protected:
 
    virtual void CreateImpl(const RNTupleModel &model) = 0;
    virtual RClusterDescriptor::RLocator CommitPageImpl(ColumnHandle_t columnHandle, const RPage &page) = 0;
+   virtual RClusterDescriptor::RLocator CommitSealedPageImpl(DescriptorId_t columnId,
+                                                             const RPageStorage::RSealedPage &sealedPage) = 0;
    virtual RClusterDescriptor::RLocator CommitClusterImpl(NTupleSize_t nEntries) = 0;
    virtual void CommitDatasetImpl() = 0;
 
@@ -201,6 +218,8 @@ public:
    void Create(RNTupleModel &model);
    /// Write a page to the storage. The column must have been added before.
    void CommitPage(ColumnHandle_t columnHandle, const RPage &page);
+   /// Write a preprocessed page to storage. The column must have been added before.
+   void CommitSealedPage(DescriptorId_t columnId, const RPageStorage::RSealedPage &sealedPage);
    /// Finalize the current cluster and create a new one for the following data.
    void CommitCluster(NTupleSize_t nEntries);
    /// Finalize the current cluster and the entrire data set.
@@ -276,6 +295,10 @@ public:
    virtual RPage PopulatePage(ColumnHandle_t columnHandle, NTupleSize_t globalIndex) = 0;
    /// Another version of PopulatePage that allows to specify cluster-relative indexes
    virtual RPage PopulatePage(ColumnHandle_t columnHandle, const RClusterIndex &clusterIndex) = 0;
+
+   /// Read the packed and compressed bytes of a page into a memory buffer. The sealed page can be used
+   /// subsequently in a call to RPageSink::CommitSealedPage
+   virtual RPageStorage::RSealedPage ReadSealedPage(DescriptorId_t columnId, const RClusterIndex &clusterIndex) = 0;
 
    /// Populates all the pages of the given cluster id and columns; it is possible that some columns do not
    /// contain any pages.  The pages source may load more columns than the minimal necessary set from `columns`.

@@ -76,6 +76,8 @@ private:
 protected:
    void CreateImpl(const RNTupleModel &model) final;
    RClusterDescriptor::RLocator CommitPageImpl(ColumnHandle_t columnHandle, const RPage &page) final;
+   RClusterDescriptor::RLocator CommitSealedPageImpl(DescriptorId_t columnId,
+                                                     const RPageStorage::RSealedPage &sealedPage) final;
    RClusterDescriptor::RLocator CommitClusterImpl(NTupleSize_t nEntries) final;
    void CommitDatasetImpl() final;
 
@@ -184,6 +186,8 @@ public:
    RPage PopulatePage(ColumnHandle_t columnHandle, NTupleSize_t globalIndex) final;
    RPage PopulatePage(ColumnHandle_t columnHandle, const RClusterIndex &clusterIndex) final;
    void ReleasePage(RPage &page) final;
+
+   RPageStorage::RSealedPage ReadSealedPage(DescriptorId_t columnId, const RClusterIndex &clusterIndex) final;
 
    std::unique_ptr<RCluster> LoadCluster(DescriptorId_t clusterId, const ColumnSet_t &columns) final;
 

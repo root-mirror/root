@@ -144,6 +144,9 @@ public:
    bool operator ==(const RNTupleVersion &other) const {
       return fVersionUse == other.fVersionUse && fVersionMin == other.fVersionMin && fFlags == other.fFlags;
    }
+   bool operator !=(const RNTupleVersion &other) const {
+      return !(*this == other);
+   }
 
    std::uint32_t GetVersionUse() const { return fVersionUse; }
    std::uint32_t GetVersionMin() const { return fVersionMin; }

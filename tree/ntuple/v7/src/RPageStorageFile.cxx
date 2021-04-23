@@ -122,6 +122,25 @@ ROOT::Experimental::Detail::RPageSinkFile::CommitPageImpl(ColumnHandle_t columnH
 
 
 ROOT::Experimental::RClusterDescriptor::RLocator
+ROOT::Experimental::Detail::RPageSinkFile::CommitSealedPageImpl(
+   DescriptorId_t columnId, const RPageStorage::RSealedPage &sealedPage)
+{
+   const auto bitsOnStorage = RColumnElementBase::GetBitsOnStorage(
+      fDescriptorBuilder.GetDescriptor().GetColumnDescriptor(columnId).GetModel().GetType());
+
+   const auto bytesPacked = (bitsOnStorage * sealedPage.fNElements + 7) / 8;
+   const auto offsetData = fWriter->WriteBlob(sealedPage.fBuffer.get(), sealedPage.fSize, bytesPacked);
+   fClusterMinOffset = std::min(offsetData, fClusterMinOffset);
+   fClusterMaxOffset = std::max(offsetData + sealedPage.fSize, fClusterMaxOffset);
+
+   RClusterDescriptor::RLocator result;
+   result.fPosition = offsetData;
+   result.fBytesOnStorage = sealedPage.fSize;
+   return result;
+}
+
+
+ROOT::Experimental::RClusterDescriptor::RLocator
 ROOT::Experimental::Detail::RPageSinkFile::CommitClusterImpl(ROOT::Experimental::NTupleSize_t /* nEntries */)
 {
    RClusterDescriptor::RLocator result;
@@ -316,6 +335,42 @@ ROOT::Experimental::RNTupleDescriptor ROOT::Experimental::Detail::RPageSourceFil
    return descBuilder.MoveDescriptor();
 }
 
+
+ROOT::Experimental::Detail::RPageStorage::RSealedPage
+ROOT::Experimental::Detail::RPageSourceFile::ReadSealedPage(
+   DescriptorId_t columnId, const RClusterIndex &clusterIndex)
+{
+   const auto clusterId = clusterIndex.GetClusterId();
+   const auto index = clusterIndex.GetIndex();
+
+   const auto &clusterDescriptor = fDescriptor.GetClusterDescriptor(clusterId);
+   const auto &pageRange = clusterDescriptor.GetPageRange(columnId);
+
+   // TODO(jblomer): binary search
+   RClusterDescriptor::RPageRange::RPageInfo pageInfo;
+   std::uint32_t firstInPage = 0;
+   NTupleSize_t pageNo = 0;
+   for (const auto &pi : pageRange.fPageInfos) {
+      if (firstInPage + pi.fNElements > index) {
+         pageInfo = pi;
+         break;
+      }
+      firstInPage += pi.fNElements;
+      ++pageNo;
+   }
+   R__ASSERT(firstInPage <= index);
+   R__ASSERT((firstInPage + pageInfo.fNElements) > index);
+
+   const auto bytesOnStorage = pageInfo.fLocator.fBytesOnStorage;
+   auto pageBuffer = std::make_unique<unsigned char[]>(bytesOnStorage);
+   fReader.ReadBuffer(pageBuffer.get(), bytesOnStorage, pageInfo.fLocator.fPosition);
+
+   RPageStorage::RSealedPage sealedPage;
+   sealedPage.fBuffer = std::move(pageBuffer);
+   sealedPage.fSize = bytesOnStorage;
+   sealedPage.fNElements = pageInfo.fNElements;
+   return sealedPage;
+}
 
 ROOT::Experimental::Detail::RPage ROOT::Experimental::Detail::RPageSourceFile::PopulatePageFromCluster(
    ColumnHandle_t columnHandle, const RClusterDescriptor &clusterDescriptor, ClusterSize_t::ValueType idxInCluster)

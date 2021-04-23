@@ -201,14 +201,25 @@ void ROOT::Experimental::Detail::RPageSink::Create(RNTupleModel &model)
 
 void ROOT::Experimental::Detail::RPageSink::CommitPage(ColumnHandle_t columnHandle, const RPage &page)
 {
-   auto locator = CommitPageImpl(columnHandle, page);
+   fOpenColumnRanges.at(columnHandle.fId).fNElements += page.GetNElements();
 
-   auto columnId = columnHandle.fId;
-   fOpenColumnRanges[columnId].fNElements += page.GetNElements();
    RClusterDescriptor::RPageRange::RPageInfo pageInfo;
    pageInfo.fNElements = page.GetNElements();
-   pageInfo.fLocator = locator;
-   fOpenPageRanges[columnId].fPageInfos.emplace_back(pageInfo);
+   pageInfo.fLocator = CommitPageImpl(columnHandle, page);
+   fOpenPageRanges.at(columnHandle.fId).fPageInfos.emplace_back(pageInfo);
+}
+
+
+void ROOT::Experimental::Detail::RPageSink::CommitSealedPage(
+   ROOT::Experimental::DescriptorId_t columnId,
+   const ROOT::Experimental::Detail::RPageStorage::RSealedPage &sealedPage)
+{
+   fOpenColumnRanges.at(columnId).fNElements += sealedPage.fNElements;
+
+   RClusterDescriptor::RPageRange::RPageInfo pageInfo;
+   pageInfo.fNElements = sealedPage.fNElements;
+   pageInfo.fLocator = CommitSealedPageImpl(columnId, sealedPage);
+   fOpenPageRanges.at(columnId).fPageInfos.emplace_back(pageInfo);
 }
 
 
