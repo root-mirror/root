@@ -172,7 +172,9 @@ private:
    std::unique_ptr<Detail::RPageSink> fSink;
    /// Needs to be destructed before fSink
    std::unique_ptr<RNTupleModel> fModel;
-   NTupleSize_t fClusterSizeEntries;
+public:
+   NTupleSize_t fClusterSizeEntries;  // public so that I can configure it (differently for each data sample)
+private:
    NTupleSize_t fLastCommitted;
    NTupleSize_t fNEntries;
 

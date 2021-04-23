@@ -145,7 +145,9 @@ class RNTupleView {
 
 private:
    /// fFieldId has fParent always set to null; views access nested fields without looking at the parent
-   FieldT fField;
+public:
+   FieldT fField;   // necessary for extracting field data in bulk
+private:
    /// Used as a Read() destination for fields that are not mappable
    Detail::RFieldValue fValue;
 

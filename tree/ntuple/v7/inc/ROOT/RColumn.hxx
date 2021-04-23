@@ -57,7 +57,9 @@ private:
    /// The number of elements written resp. available in the column
    NTupleSize_t fNElements;
    /// The currently mapped page for reading
-   RPage fCurrentPage;
+public:
+   RPage fCurrentPage;   // necessary for extracting field data in bulk
+private:
    /// The column id is used to find matching pages with content when reading
    ColumnId_t fColumnIdSource;
    /// Used to pack and unpack pages on writing/reading

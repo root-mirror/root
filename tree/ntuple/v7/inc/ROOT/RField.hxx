@@ -95,7 +95,9 @@ protected:
    /// Points into fColumns.  All fields that have columns have a distinct main column. For simple fields
    /// (float, int, ...), the principal column corresponds to the field type. For collection fields expect std::array,
    /// the main column is the offset field.  Class fields have no column of their own.
-   RColumn* fPrincipalColumn;
+public:
+   RColumn* fPrincipalColumn;   // necessary for extracting field data in bulk
+protected:
    /// The columns are connected either to a sink or to a source (not to both); they are owned by the field.
    std::vector<std::unique_ptr<RColumn>> fColumns;
 

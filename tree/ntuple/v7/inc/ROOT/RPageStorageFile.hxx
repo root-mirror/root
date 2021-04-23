@@ -53,7 +53,8 @@ The written file can be either in ROOT format or in RNTuple bare format.
 // clang-format on
 class RPageSinkFile : public RPageSink {
 public:
-   static constexpr std::size_t kDefaultElementsPerPage = 10000;
+   // static constexpr std::size_t kDefaultElementsPerPage = 64*1024*1024 / 4;  // larger than cluster (same as in TTree test)
+   static constexpr std::size_t kDefaultElementsPerPage = 2097152;  // safe to compress
 
 private:
    RNTupleMetrics fMetrics;
