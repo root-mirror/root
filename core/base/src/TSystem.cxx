@@ -3324,6 +3324,7 @@ int TSystem::CompileMacro(const char *filename, Option_t *opt,
       linkDepLibraries = linkLibs & 0x1;
       if (!linkDepLibraries) {
          static int onetime = (Warning("ACLiC", "Unsetting `ACLiC.LinkLibs & 1` is deprecated!"),1);
+         (void) onetime;
       }
    }
 
