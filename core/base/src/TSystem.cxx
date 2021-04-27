@@ -3373,7 +3373,11 @@ int TSystem::CompileMacro(const char *filename, Option_t *opt,
          if (!keep) k->SetBit(kMustCleanup);
          fCompiled->Add(k);
 
-         gInterpreter->GetSharedLibDeps(library);
+         if (!linkDepLibraries) {
+            // if linkDepLibraries the library might not know its dependencies
+            // and "just load the library" might fail.
+            gInterpreter->GetSharedLibDeps(library);
+         }
 
          return LoadLibrary(library);
       }
