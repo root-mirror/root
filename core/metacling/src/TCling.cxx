@@ -7206,7 +7206,7 @@ static std::string GetSharedLibImmediateDepsSlow(std::string lib,
                continue;
 
             Result += cand + ' ';
-            gSystem->Load(cand);
+            gSystem->Load(cand.c_str());
          }
       }
    }
