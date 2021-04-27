@@ -3323,7 +3323,7 @@ int TSystem::CompileMacro(const char *filename, Option_t *opt,
       produceRootmap = linkLibs & 0x2;
       linkDepLibraries = linkLibs & 0x1;
       if (!linkDepLibraries) {
-         Warning("ACLiC", "Unsetting `ACLiC.LinkLibs & 1` is deprecated!");
+         static int onetime = (Warning("ACLiC", "Unsetting `ACLiC.LinkLibs & 1` is deprecated!"),1);
       }
    }
 
