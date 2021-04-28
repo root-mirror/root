@@ -6,6 +6,8 @@ TEST(RNTuple, TypeName) {
                 ROOT::Experimental::RField<std::vector<std::string>>::TypeName().c_str());
    EXPECT_STREQ("CustomStruct",
                 ROOT::Experimental::RField<CustomStruct>::TypeName().c_str());
+   EXPECT_STREQ("std::pair<std::pair<float,CustomStruct>,std::int32_t>", (ROOT::Experimental::RField<
+                 std::pair<std::pair<float,CustomStruct>,int>>::TypeName().c_str()));
 }
 
 
@@ -15,6 +17,50 @@ TEST(RNTuple, CreateField)
    EXPECT_STREQ("std::vector<std::uint32_t>", field->GetType().c_str());
    auto value = field->GenerateValue();
    field->DestroyValue(value);
+}
+
+TEST(RNTuple, StdPair)
+{
+   auto field = RField<std::pair<int64_t, float>>("pairField");
+   EXPECT_STREQ("std::pair<std::int64_t,float>", field.GetType().c_str());
+   auto otherField = RFieldBase::Create("test", "std::pair<int64_t, float>").Unwrap();
+   EXPECT_STREQ(field.GetType().c_str(), otherField->GetType().c_str());
+   // sizeof check fails, RPairField does not take into account 4 trailing padding bytes
+   EXPECT_EQ((sizeof(std::pair<int64_t, float>)), field.GetValueSize());
+   EXPECT_EQ((sizeof(std::pair<int64_t, float>)), otherField->GetValueSize());
+   EXPECT_EQ((alignof(std::pair<int64_t, float>)), field.GetAlignment());
+   EXPECT_EQ((alignof(std::pair<int64_t, float>)), otherField->GetAlignment());
+
+   auto pairPairField = RField<std::pair<std::pair<int64_t, float>,
+      std::vector<std::pair<CustomStruct, double>>>>("pairPairField");
+   EXPECT_STREQ(
+      "std::pair<std::pair<std::int64_t,float>,std::vector<std::pair<CustomStruct,double>>>",
+      pairPairField.GetType().c_str());
+
+   FileRaii fileGuard("test_ntuple_rfield_stdpair.root");
+   {
+      auto model = RNTupleModel::Create();
+      auto pair_field = model->MakeField<std::pair<double, std::string>>(
+         {"myPair", "a very cool field"}
+      );
+      auto ntuple = RNTupleWriter::Recreate(std::move(model), "pair_ntuple", fileGuard.GetPath());
+      for (int i = 0; i < 100; i++) {
+         *pair_field = {static_cast<double>(i), std::to_string(i)};
+         ntuple->Fill();
+         if (i % 10 == 0) {
+            ntuple->CommitCluster();
+         }
+      }
+   }
+
+   auto ntuple = RNTupleReader::Open("pair_ntuple", fileGuard.GetPath());
+   EXPECT_EQ(100, ntuple->GetNEntries());
+
+   auto viewPair = ntuple->GetView<std::pair<double, std::string>>("myPair");
+   for (auto i : ntuple->GetEntryRange()) {
+      EXPECT_EQ(static_cast<double>(i), viewPair(i).first);
+      EXPECT_EQ(std::to_string(i), viewPair(i).second);
+   }
 }
 
 TEST(RNTuple, Int64_t)
@@ -55,18 +101,6 @@ TEST(RNTuple, UInt16_t)
 
 TEST(RNTuple, UnsupportedStdTypes)
 {
-   try {
-      auto field = RFieldBase::Create("pair_field", "std::pair<int, float>").Unwrap();
-      FAIL() << "should not be able to make a std::pair field";
-   } catch (const RException& err) {
-      EXPECT_THAT(err.what(), testing::HasSubstr("std::pair<int, float> is not supported"));
-   }
-   try {
-      auto field = RField<std::pair<int, float>>("pair_field");
-      FAIL() << "should not be able to make a std::pair field";
-   } catch (const RException& err) {
-      EXPECT_THAT(err.what(), testing::HasSubstr("pair<int,float> is not supported"));
-   }
    try {
       auto field = RField<std::weak_ptr<int>>("weak_ptr");
       FAIL() << "should not be able to make a std::weak_ptr field";
