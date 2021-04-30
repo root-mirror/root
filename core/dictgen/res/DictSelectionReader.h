@@ -260,25 +260,16 @@ private:
       std::unordered_set<std::string> fUnsplittableMembers {};
    };
 
-   inline bool
-   InSelectionNamespace(const clang::RecordDecl &,
-                        const std::string &str =
-                           ""); ///< Check if in the ROOT::Meta::Selection namespace
-   inline bool FirstPass(const clang::RecordDecl &); ///< First pass on the AST
-   inline bool SecondPass(const clang::RecordDecl &); ///< Second pass on the AST, using the information of the first one
-   inline void
-   ManageFields(const clang::RecordDecl &,
-                const std::string &,
-                ClassSelectionRule &,
-                bool); ///< Take care of the class fields
-   inline void
-   ManageBaseClasses(const clang::CXXRecordDecl &, const std::string &, bool &); ///< Take care of the class bases
+   bool InSelectionNamespace(const clang::RecordDecl &,
+                             const std::string &str = ""); ///< Check if in the ROOT::Meta::Selection namespace
+   bool FirstPass(const clang::RecordDecl &); ///< First pass on the AST
+   bool SecondPass(const clang::RecordDecl &); ///< Second pass on the AST, using the information of the first one
+   void ManageFields(const clang::RecordDecl &, const std::string &,
+                     ClassSelectionRule &, bool); ///< Take care of the class fields
+   void ManageBaseClasses(const clang::CXXRecordDecl &, const std::string &, bool &); ///< Take care of the class bases
    template <class T>
-   inline unsigned int ExtractTemplateArgValue(
-      const T &,
-      const std::string &); ///< Extract the value of the template parameter
-   inline const clang::TemplateArgumentList *GetTmplArgList(
-      const clang::CXXRecordDecl &); ///< Get the template arguments list if any
+   unsigned int ExtractTemplateArgValue(const T &, const std::string &); ///< Extract the value of the template parameter
+   const clang::TemplateArgumentList *GetTmplArgList(const clang::CXXRecordDecl &); ///< Get the template arguments list if any
 
    std::string PatternifyName(const std::string &className); ///< Transform instance name in pattern for selection
    void GetPointeeType(std::string &typeName); ///< Get name of the pointee type
