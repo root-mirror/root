@@ -1288,7 +1288,7 @@ public:
       return *this;
    }
 
-   RVec(typename RVec<T>::pointer p, typename RVec<T>::size_type n) : Internal::VecOps::SmallVectorImpl<T>(N)
+   RVec(T* p, size_t n) : Internal::VecOps::SmallVectorImpl<T>(N)
    {
       this->BeginX = p;
       this->fSize = n;
@@ -1920,7 +1920,7 @@ template <typename T>
 auto Any(const RVec<T> &v) -> decltype(v[0] == true)
 {
    for (auto &&e : v)
-      if (e == true)
+      if (static_cast<bool>(e) == true)
          return true;
    return false;
 }
@@ -1939,7 +1939,7 @@ template <typename T>
 auto All(const RVec<T> &v) -> decltype(v[0] == false)
 {
    for (auto &&e : v)
-      if (e == false)
+      if (static_cast<bool>(e) == false)
          return false;
    return true;
 }
