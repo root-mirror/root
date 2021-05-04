@@ -189,7 +189,7 @@ public:
    // LLVM SmallVector does not have a shrink_to_fit method
    // it's technically ok to do nothing, but assuming no one uses this method for RVec anyway, I'd rather deprecate it
    R__DEPRECATED(6, 28, "This method will be removed.")
-   constexpr void shrink_to_fit() { }
+   void shrink_to_fit() { }
 };
 
 template <class T>
@@ -417,6 +417,8 @@ void SmallVectorTemplateBase<T, TriviallyCopyable>::grow(size_t MinSize)
 /// skipping destruction.
 template <typename T>
 class SmallVectorTemplateBase<T, true> : public SmallVectorTemplateCommon<T> {
+   using SuperClass = SmallVectorTemplateCommon<T>;
+
 protected:
    SmallVectorTemplateBase(size_t Size) : SmallVectorTemplateCommon<T>(Size) {}
 
@@ -465,6 +467,11 @@ protected:
    }
 
 public:
+   using iterator = typename SuperClass::iterator;
+   using const_iterator = typename SuperClass::const_iterator;
+   using reference = typename SuperClass::reference;
+   using size_type = typename SuperClass::size_type;
+
    void push_back(const T &Elt)
    {
       if (R__unlikely(this->size() >= this->capacity()))
