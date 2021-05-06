@@ -384,11 +384,26 @@ bool DictSelectionReader::SecondPass(const clang::RecordDecl &recordDecl)
 
 bool DictSelectionReader::VisitRecordDecl(clang::RecordDecl *recordDecl)
 {
+   if (auto CXXRD = llvm::dyn_cast<clang::CXXRecordDecl>(recordDecl)) {
+      if (CXXRD->getDescribedClassTemplate()) {
+         // this is a member of a template; ignore: dictionaries can only
+         // select instances / specializations.
+         return true;
+      }
+   }
+   if (auto CXXRD = llvm::dyn_cast<clang::CXXRecordDecl>(recordDecl->getDeclContext())) {
+      if (CXXRD->getDescribedClassTemplate()) {
+         // this is a member of a template; ignore: dictionaries can only
+         // select instances / specializations.
+         return true;
+      }
+   }
    if (fIsFirstPass)
       return FirstPass(*recordDecl);
    else
       return SecondPass(*recordDecl);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

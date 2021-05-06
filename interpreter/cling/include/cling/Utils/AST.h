@@ -16,6 +16,7 @@
 
 namespace clang {
   class ASTContext;
+  class ClassTemplateSpecializationDecl;
   class Expr;
   class Decl;
   class DeclContext;
@@ -300,7 +301,8 @@ namespace utils {
     /// returned.
     ///\param[in] Ctx - the ASTContext to be used.
     clang::QualType GetFullyQualifiedType(clang::QualType QT,
-                                          const clang::ASTContext& Ctx);
+                                          const clang::ASTContext& Ctx,
+                  const clang::ClassTemplateSpecializationDecl* Spec = nullptr);
 
     ///\brief Get the fully qualified name for a type. This includes full
     /// qualification of all template parameters etc.
@@ -309,7 +311,8 @@ namespace utils {
     /// returned.
     ///\param[in] Ctx - the ASTContext to be used.
     std::string GetFullyQualifiedName(clang::QualType QT,
-                                      const clang::ASTContext &Ctx);
+                                      const clang::ASTContext &Ctx,
+                  const clang::ClassTemplateSpecializationDecl* Spec = nullptr);
 
     ///\brief Create a NestedNameSpecifier for Namesp and its enclosing
     /// scopes.
@@ -331,7 +334,8 @@ namespace utils {
     /// qualified names.
     clang::NestedNameSpecifier*
     CreateNestedNameSpecifier(const clang::ASTContext& Ctx,
-                              const clang::TagDecl *TD, bool FullyQualify);
+                              const clang::TagDecl *TD, bool FullyQualify,
+                  const clang::ClassTemplateSpecializationDecl* Spec = nullptr);
 
     ///\brief Create a NestedNameSpecifier for TypedefDecl and its enclosing
     /// scopes.
@@ -344,7 +348,8 @@ namespace utils {
     clang::NestedNameSpecifier*
     CreateNestedNameSpecifier(const clang::ASTContext& Ctx,
                               const clang::TypedefNameDecl *TD,
-                              bool FullyQualify);
+                              bool FullyQualify,
+                  const clang::ClassTemplateSpecializationDecl* Spec = nullptr);
 
   } // end namespace TypeName
 } // end namespace utils
