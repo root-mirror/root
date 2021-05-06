@@ -18,6 +18,7 @@
 // of "all" template instances in the LinkDef file.
 R__LOAD_LIBRARY(ROOTNTuple)
 
+#include <ROOT/RDirectory.hxx>
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RNTupleModel.hxx>
 
@@ -36,6 +37,7 @@ R__LOAD_LIBRARY(ROOTNTuple)
 using RNTupleModel = ROOT::Experimental::RNTupleModel;
 using RNTupleReader = ROOT::Experimental::RNTupleReader;
 using RNTupleWriter = ROOT::Experimental::RNTupleWriter;
+using RDirectory = ROOT::Experimental::RDirectory;
 
 // Where to store the ntuple of this example
 constexpr char const* kNTupleFileName = "ntpl002_vector.root";
@@ -66,7 +68,7 @@ void Write()
    TH1F hpx("hpx", "This is the px distribution", 100, -4, 4);
    hpx.SetFillColor(48);
 
-   auto c1 = new TCanvas("c1", "Dynamic Filling Example", 200, 10, 700, 500);
+   auto c1 = RDirectory::Heap().Create<TCanvas>("c1", "c1", "Dynamic Filling Example", 200, 10, 700, 500);
 
    gRandom->SetSeed();
    for (int i = 0; i < kNEvents; i++) {
@@ -131,7 +133,7 @@ void Read()
    ntuple->Show(41);
    // In a future version of RNTuple, there will be support for ntuple->Scan()
 
-   TCanvas *c2 = new TCanvas("c2", "Dynamic Filling Example", 200, 10, 700, 500);
+   auto c2 = RDirectory::Heap().Create<TCanvas>("c2", "c2", "Dynamic Filling Example", 200, 10, 700, 500);
    TH1F h("h", "This is the px distribution", 100, -4, 4);
    h.SetFillColor(48);
 

@@ -23,6 +23,7 @@
 // of "all" template instances in the LinkDef file.
 R__LOAD_LIBRARY(ROOTNTuple)
 
+#include <ROOT/RDirectory.hxx>
 #include <ROOT/RField.hxx>
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RNTupleModel.hxx>
@@ -43,6 +44,7 @@ using RNTupleModel = ROOT::Experimental::RNTupleModel;
 using RFieldBase = ROOT::Experimental::Detail::RFieldBase;
 using RNTupleReader = ROOT::Experimental::RNTupleReader;
 using RNTupleWriter = ROOT::Experimental::RNTupleWriter;
+using RDirectory = ROOT::Experimental::RDirectory;
 
 constexpr char const* kTreeFileName = "http://root.cern.ch/files/LHCb/lhcb_B2HHH_MagnetUp.root";
 constexpr char const* kNTupleFileName = "ntpl003_lhcbOpenData.root";
@@ -107,7 +109,7 @@ void ntpl003_lhcbOpenData()
    // The view wraps a read-only double value and accesses directly the ntuple's data buffers
    auto viewFlightDistance = ntuple->GetView<double>("B_FlightDistance");
 
-   auto c = new TCanvas("c", "B Flight Distance", 200, 10, 700, 500);
+   auto c = RDirectory::Heap().Create<TCanvas>("c", "c", "B Flight Distance", 200, 10, 700, 500);
    TH1F h("h", "B Flight Distance", 200, 0, 140);
    h.SetFillColor(48);
 

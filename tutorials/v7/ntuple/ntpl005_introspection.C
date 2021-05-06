@@ -19,6 +19,7 @@
 // of "all" template instances in the LinkDef file.
 R__LOAD_LIBRARY(ROOTNTuple)
 
+#include <ROOT/RDirectory.hxx>
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RNTupleModel.hxx>
 #include <ROOT/RNTupleOptions.hxx>
@@ -38,6 +39,7 @@ using RNTupleModel = ROOT::Experimental::RNTupleModel;
 using RNTupleReader = ROOT::Experimental::RNTupleReader;
 using RNTupleWriter = ROOT::Experimental::RNTupleWriter;
 using RNTupleWriteOptions = ROOT::Experimental::RNTupleWriteOptions;
+using RDirectory = ROOT::Experimental::RDirectory;
 
 constexpr char const* kNTupleFileName = "ntpl005_introspection.root";
 
@@ -98,7 +100,7 @@ void ntpl005_introspection() {
    ntuple->EnableMetrics();
 
    // Plot the y components of vector3
-   TCanvas *c1 = new TCanvas("c1","RNTuple Demo", 10, 10, 600, 800);
+   auto c1 = RDirectory::Heap().Create<TCanvas>("c1", "c1", "RNTuple Demo", 10, 10, 600, 800);
    c1->Divide(1,2);
    c1->cd(1);
    TH1F h1("x", "x component of Vector3", 100, -3, 3);

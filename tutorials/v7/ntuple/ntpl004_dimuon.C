@@ -23,6 +23,7 @@
 R__LOAD_LIBRARY(ROOTNTuple)
 
 #include <ROOT/RDataFrame.hxx>
+#include <ROOT/RDirectory.hxx>
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RNTupleDS.hxx>
 #include <ROOT/RVec.hxx>
@@ -43,6 +44,7 @@ R__LOAD_LIBRARY(ROOTNTuple)
 // Import classes from experimental namespace for the time being
 using RNTupleReader = ROOT::Experimental::RNTupleReader;
 using RNTupleDS = ROOT::Experimental::RNTupleDS;
+using RDirectory = ROOT::Experimental::RDirectory;
 
 constexpr char const* kNTupleFileName = "http://root.cern.ch/files/tutorials/ntpl004_dimuon_v0.root";
 
@@ -88,7 +90,7 @@ void ntpl004_dimuon() {
 
    // Produce plot
    gStyle->SetOptStat(0); gStyle->SetTextFont(42);
-   auto c = new TCanvas("c", "", 800, 700);
+   auto c = RDirectory::Heap().Create<TCanvas>("c", "c", "", 800, 700);
    c->SetLogx(); c->SetLogy();
 
    h->SetTitle("");
