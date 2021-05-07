@@ -610,7 +610,9 @@ const char *TClingMethodInfo::GetPrototype()
    if (const clang::TypeDecl *td = llvm::dyn_cast<clang::TypeDecl>(GetDecl()->getDeclContext())) {
       std::string name;
       clang::QualType qualType(td->getTypeForDecl(),0);
-      ROOT::TMetaUtils::GetFullyQualifiedTypeName(name,qualType,*fInterp);
+      const clang::ClassTemplateSpecializationDecl *spec
+         = llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(td);
+      ROOT::TMetaUtils::GetFullyQualifiedTypeName(name, qualType, *fInterp, spec);
       buf += name;
       buf += "::";
    } else if (const clang::NamedDecl *nd = llvm::dyn_cast<clang::NamedDecl>(FD->getDeclContext())) {
@@ -655,7 +657,10 @@ const char *TClingMethodInfo::TypeName() const
       // FIXME: Cint does not check!
       return 0;
    }
-   return Type()->Name();
+
+   const clang::ClassTemplateSpecializationDecl *spec
+      = llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(GetDecl()->getDeclContext());
+   return Type()->Name(spec);
 }
 
 const char *TClingMethodInfo::Title()

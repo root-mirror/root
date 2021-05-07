@@ -33,6 +33,7 @@ but the type metadata comes from the Clang C++ compiler, not CINT.
 
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/DeclCXX.h"
+#include "clang/AST/DeclTemplate.h"
 #include "clang/AST/Type.h"
 #include "clang/AST/PrettyPrinter.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -99,7 +100,7 @@ void TClingTypeInfo::Init(const char *name)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const char *TClingTypeInfo::Name() const
+const char *TClingTypeInfo::Name(const clang::ClassTemplateSpecializationDecl *spec) const
 {
    if (!IsValid()) {
       return "";
@@ -109,7 +110,7 @@ const char *TClingTypeInfo::Name() const
    buf.clear();
 
    R__LOCKGUARD(gInterpreterMutex);
-   ROOT::TMetaUtils::GetFullyQualifiedTypeName(buf,fQualType,*fInterp);
+   ROOT::TMetaUtils::GetFullyQualifiedTypeName(buf,fQualType,*fInterp, spec);
    return buf.c_str();  // NOLINT
 }
 

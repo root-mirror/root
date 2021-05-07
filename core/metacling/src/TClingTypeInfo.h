@@ -30,6 +30,10 @@
 
 #include "clang/AST/Type.h"
 
+namespace clang {
+   class ClassTemplateSpecializationDecl;
+}
+
 namespace cling {
 class Interpreter;
 }
@@ -63,7 +67,8 @@ public:
    void                 Init(const char *name); // Set type by name.
    void                 Init(clang::QualType ty) { fQualType = ty; }
    bool                 IsValid() const override { return !fQualType.isNull(); }
-   const char          *Name() const override; // Get name of type.
+   const char          *Name() const override { return Name(nullptr); }
+   const char          *Name(const clang::ClassTemplateSpecializationDecl *spec) const; // Get name of type.
    long                 Property() const; // Get properties of type.
    int                  RefType() const; // Get CINT reftype of type.
    int                  Size() const; // Get size in bytes of type.
