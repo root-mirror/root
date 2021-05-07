@@ -5,9 +5,12 @@
 #include "TList.h"
 #include "TListOfFunctions.h"
 #include "TMethod.h"
+#include "TMethodArg.h"
 #include "TROOT.h"
 
 #include "gtest/gtest.h"
+
+#include <unordered_map>
 
 TEST(TClingMethodInfo, Prototype)
 {
@@ -550,4 +553,143 @@ namespace BUG6578 {
       for (auto &&iCtorExpected: ctorsExpected)
          std::cerr << "   " << iCtorExpected.first << '\n';
    }
+}
+
+// https://github.com/root-project/root/issues/7955
+TEST(TClingMethodInfo, NonDependentMemberTypes)
+{
+  gInterpreter->Declare(R"CODE(
+struct AScope {
+  using TheType = int;
+};
+
+
+template <class T>
+struct Template1 {
+  using type1 = int;
+  using type2 = AScope;
+  void f0(type1);
+  void f1(type1*);
+  void g0(type2);
+  void g1(type2*);
+  void g2(type2::TheType);
+  void g3(type2::TheType*);
+};
+
+Template1<float> xf1;
+
+struct X1 {
+  void f1(Template1<double>::type1) {}
+  void f2(Template1<double>::type2) {}
+  void g1(Template1<int>::type1) {}
+  void g2(Template1<int>::type2) {}
+};
+
+struct Y1: Template1<char> {
+  void yf1(type1);
+  void yf2(type2);
+  void yf3(type2::TheType);
+};
+
+template <class T> using TAlias1 = Template1<T>;
+struct Z1 {
+  void f1(TAlias1<double>::type1) {}
+  void f2(TAlias1<double>::type2) {}
+  void g1(TAlias1<int>::type1) {}
+  void g2(TAlias1<int>::type2) {}
+};
+
+template <class T>
+struct Template2 {
+  struct Inner {
+     using type = AScope;
+  };
+  void f(typename Inner::type);
+};
+
+Template2<float> xf2;
+
+struct Y2 {
+  void g(Template2<double>::Inner::type) {}
+  void h(Template2<int>::Inner::type) {}
+};
+
+struct Z2: Template2<char> {
+  void one(Inner::type);
+};
+)CODE");
+
+
+   auto checkClass = [](const char *className, std::unordered_map<std::string, std::string> funcPar0) {
+      TClass *cl = TClass::GetClass(className);
+      ASSERT_NE(cl, nullptr);
+      TListOfFunctions *methods = (TListOfFunctions *)cl->GetListOfMethods();
+      for (TMethod *method : TRangeDynCast<TMethod>(methods)) {
+         auto args = method->GetListOfMethodArgs();
+         if (args->GetSize() != 1)
+            continue;
+         auto arg0 = (TMethodArg*) args->At(0);
+         auto iExpected = funcPar0.find(std::string(method->GetName()));
+         if (iExpected == funcPar0.end())
+            continue;
+         EXPECT_EQ(iExpected->second, arg0->GetFullTypeName())
+            << " in function " << className << "::" << method->GetName();
+         funcPar0.erase(iExpected);
+      }
+      EXPECT_EQ(funcPar0.size(), 0);
+   };
+   checkClass("Template1<float>", {
+      {"f0", "Template1<float>::type1"},
+      {"f1", "Template1<float>::type1*"},
+      {"g0", "Template1<float>::type2"},
+      {"g1", "Template1<float>::type2*"},
+      {"g2", "AScope::TheType"},
+      {"g3", "AScope::TheType*"}});
+
+   // This one was giving "Template1<float>::type1" before:
+   checkClass("Template1<short>", {
+      {"f0", "Template1<short>::type1"},
+      {"f1", "Template1<short>::type1*"},
+      {"g0", "Template1<short>::type2"},
+      {"g1", "Template1<short>::type2*"},
+      {"g2", "AScope::TheType"},
+      {"g3", "AScope::TheType*"}});
+
+   checkClass("TAlias1<long>", {
+      {"f0", "Template1<long>::type1"},
+      {"f1", "Template1<long>::type1*"},
+      {"g0", "Template1<long>::type2"},
+      {"g1", "Template1<long>::type2*"},
+      {"g2", "AScope::TheType"},
+      {"g3", "AScope::TheType*"}});
+
+   checkClass("X1", {
+      {"f1", "Template1<double>::type1"},
+      {"f2", "Template1<double>::type2"},
+      {"g1", "Template1<int>::type1"},
+      {"g2", "Template1<int>::type2"}});
+
+   checkClass("Y1", {
+      {"yf1", "Template1<char>::type1"},
+      {"yf2", "Template1<char>::type2"},
+      {"yf3", "AScope::TheType"}});
+   
+   checkClass("Z1", {
+      {"f1", "Template1<double>::type1"},
+      {"f2", "Template1<double>::type2"},
+      {"g1", "Template1<int>::type1"},
+      {"g2", "Template1<int>::type2"}});
+   
+   checkClass("Template2<float>", {
+      {"f", "Template2<float>::Inner::type"}});
+
+   checkClass("Template2<short>", {
+      {"f", "Template2<short>::Inner::type"}});
+
+   checkClass("Y2", {
+      {"g", "Template2<double>::Inner::type"},
+      {"h", "Template2<int>::Inner::type"}});
+
+   checkClass("Z2", {
+      {"one", "Template2<char>::Inner::type"}});
 }
