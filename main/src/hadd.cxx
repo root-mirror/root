@@ -143,6 +143,8 @@ int main( int argc, char **argv )
    Int_t maxopenedfiles = 0;
    Int_t verbosity = 99;
    TString cacheSize;
+   std::vector<std::string> AddObjectNamesList;
+   Bool_t exclusionlist = kFALSE;
    SysInfo_t s;
    gSystem->GetSysInfo(&s);
    auto nProcesses = s.fCpus;
@@ -170,7 +172,10 @@ int main( int argc, char **argv )
          debug = kTRUE;
          verbosity = kTRUE;
          ++ffirst;
-      } else if (strcmp(argv[a], "-d") == 0) {
+      } else if ( strcmp(argv[a],"-e") == 0 ) {
+         exclusionlist = kTRUE;
+         ++ffirst;
+      }  else if (strcmp(argv[a], "-d") == 0) {
          if (a + 1 != argc && argv[a + 1][0] != '-') {
             if (gSystem->AccessPathName(argv[a + 1])) {
                std::cerr << "Error: could not access the directory specified: " << argv[a + 1]
@@ -315,6 +320,18 @@ int main( int argc, char **argv )
             }
          }
          ++ffirst;
+      } else if (!strcmp(argv[a], "-l")) {
+         if (a+1 >= argc) {
+            std::cerr << "Error: no AddObjectNamesList items were specified after -l; ignoring\n";
+         } else {
+            std::stringstream ss;
+            ss.str(argv[++a]);
+            ++ffirst;
+            std::string item;
+            while (std::getline(ss, item, ','))
+              AddObjectNamesList.push_back(item);
+         }
+         ++ffirst;
       } else if ( argv[a][0] == '-' ) {
          bool farg = false;
          if (force && argv[a][1] == 'f') {
@@ -377,6 +394,8 @@ int main( int argc, char **argv )
    TFileMerger fileMerger(kFALSE, kFALSE);
    fileMerger.SetMsgPrefix("hadd");
    fileMerger.SetPrintLevel(verbosity - 1);
+   for(const auto& objn : AddObjectNamesList)
+     fileMerger.AddObjectNames(objn.data());
    if (maxopenedfiles > 0) {
       fileMerger.SetMaxOpenedFiles(maxopenedfiles);
    }
@@ -469,8 +488,12 @@ int main( int argc, char **argv )
       Bool_t status;
       if (append)
          status = merger.PartialMerge(TFileMerger::kIncremental | TFileMerger::kAll);
-      else
-         status = merger.Merge();
+      else {
+         Int_t merge_type = TFileMerger::kAll | TFileMerger::kRegular;
+         if (!AddObjectNamesList.empty())
+            exclusionlist ? merge_type |= TFileMerger::kSkipListed : merge_type |= TFileMerger::kOnlyListed;
+         status = merger.PartialMerge(merge_type);
+      }
       return status;
    };
 

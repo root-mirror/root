@@ -23,6 +23,8 @@ The prefix can be optionally followed by B whose casing is ignored, eg. 1k, 1K, 
 	parser.add_argument("-dbg", help="Parallelize the execution in multiple processes in debug mode (Does not delete partial files stored inside working directory)")
 	parser.add_argument("-d", help="Carry out the partial multiprocess execution in the specified directory")
 	parser.add_argument("-n", help="Open at most 'maxopenedfiles' at once (use 0 to request to use the system maximum)")
+        parser.add_argument("-l", help="Comma-separated list of objects include (or exclude) from the merge.")
+        parser.add_argument("-e", help="Use objects passed to -l as an exclusion list.")
 	parser.add_argument("-cachesize", help="Resize the prefetching cache use to speed up I/O operations(use 0 to disable)")
 	parser.add_argument("-experimental-io-features", help="Used with an argument provided, enables the corresponding experimental feature for output trees")
 	parser.add_argument("-f", help="Gives the ability to specify the compression level of the target file(by default 4) ")
