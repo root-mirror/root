@@ -709,11 +709,6 @@ void ROOT::Fit::FitOptionsMake(EFitObjectType type, const char *option, Foption_
             opt.ReplaceAll("WIDTH","");
       }
 
-      // if (opt.Contains("MULTIPROC")) {
-      //    fitOption.ExecPolicy = ROOT::Fit::kMultiprocess;
-      //    opt.ReplaceAll("MULTIPROC","");
-      // }
-
       if (opt.Contains("SERIAL")) {
          fitOption.ExecPolicy = ROOT::EExecutionPolicy::kSequential;
          opt.ReplaceAll("SERIAL","");

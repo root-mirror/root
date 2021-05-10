@@ -16,10 +16,7 @@
 #include "Math/IParamFunctionfwd.h"
 #include "Math/IParamFunction.h"
 
-#ifdef R__USE_IMT
-#include "ROOT/TThreadExecutor.hxx"
-#endif
-#include "ROOT/TSequentialExecutor.hxx"
+#include "ROOT/TExecutor.hxx"
 
 #include "Fit/BinData.h"
 #include "Fit/UnBinData.h"
@@ -449,29 +446,16 @@ namespace FitUtil {
             return std::accumulate(objs.begin(), objs.end(), T{});
          };
 
-#ifndef R__USE_IMT
-         (void)nChunks;
-
-         // If IMT is disabled, force the execution policy to the serial case
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            Warning("FitUtil::EvaluateChi2", "Multithread execution policy requires IMT, which is disabled. Changing "
-                                             "to ::ROOT::EExecutionPolicy::kSequential.");
-            executionPolicy = ::ROOT::EExecutionPolicy::kSequential;
-         }
-#endif
-
          T res{};
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
-            ROOT::TSequentialExecutor pool;
-            res = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, data.Size()/vecSize), redFunction);
-#ifdef R__USE_IMT
-         } else if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            ROOT::TThreadExecutor pool;
+         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread ||
+             executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
+            ROOT::Internal::TExecutor executor(executionPolicy);
             auto chunks = nChunks != 0 ? nChunks : setAutomaticChunking(data.Size() / vecSize);
-            res = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, data.Size() / vecSize), redFunction, chunks);
-#endif
+            res = executor.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, data.Size() / vecSize), redFunction, chunks);
          } else {
-            Error("FitUtil::EvaluateChi2", "Execution policy unknown. Avalaible choices:\n ::ROOT::EExecutionPolicy::kSequential (default)\n ::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
+            Error("FitUtil::EvaluateChi2", "Execution policy not supported for the Fit. Avalaible choices:\n "
+                                           "::ROOT::EExecutionPolicy::kSequential (default)\n "
+                                           "::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
          }
 
          // Last SIMD vector of elements (if padding needed)
@@ -621,32 +605,20 @@ namespace FitUtil {
             });
          };
 
-#ifndef R__USE_IMT
-         (void)nChunks;
-
-         // If IMT is disabled, force the execution policy to the serial case
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            Warning("FitUtil::EvaluateLogL", "Multithread execution policy requires IMT, which is disabled. Changing "
-                                             "to ::ROOT::EExecutionPolicy::kSequential.");
-            executionPolicy = ::ROOT::EExecutionPolicy::kSequential;
-         }
-#endif
-
          T logl_v{};
          T sumW_v{};
          T sumW2_v{};
          ROOT::Fit::FitUtil::LikelihoodAux<T> resArray;
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
-            ROOT::TSequentialExecutor pool;
-            resArray = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, data.Size() / vecSize), redFunction);
-#ifdef R__USE_IMT
-         } else if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            ROOT::TThreadExecutor pool;
-            auto chunks = nChunks != 0 ? nChunks : setAutomaticChunking( numVectors);
-            resArray = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, data.Size() / vecSize), redFunction, chunks);
-#endif
+
+         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread ||
+             executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
+            ROOT::Internal::TExecutor executor(executionPolicy);
+            auto chunks = nChunks != 0 ? nChunks : setAutomaticChunking(data.Size() / vecSize);
+            resArray = executor.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, data.Size() / vecSize), redFunction, chunks);
          } else {
-            Error("FitUtil::EvaluateLogL", "Execution policy unknown. Avalaible choices:\n ::ROOT::EExecutionPolicy::kSequential (default)\n ::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
+            Error("FitUtil::EvaluateLogL", "Execution policy not supported for the Fit. Avalaible choices:\n "
+                                           "::ROOT::EExecutionPolicy::kSequential (default)\n "
+                                           "::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
          }
 
          logl_v = resArray.logvalue;
@@ -824,35 +796,19 @@ namespace FitUtil {
             return nloglike;
          };
 
-#ifdef R__USE_IMT
          auto redFunction = [](const std::vector<T> &objs) { return std::accumulate(objs.begin(), objs.end(), T{}); };
-#else
-         (void)nChunks;
-
-         // If IMT is disabled, force the execution policy to the serial case
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            Warning("FitUtil::Evaluate<T>::EvalPoissonLogL",
-                    "Multithread execution policy requires IMT, which is disabled. Changing "
-                    "to ::ROOT::EExecutionPolicy::kSequential.");
-            executionPolicy = ::ROOT::EExecutionPolicy::kSequential;
-         }
-#endif
 
          T res{};
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
-            for (unsigned int i = 0; i < (data.Size() / vecSize); i++) {
-               res += mapFunction(i);
-            }
-#ifdef R__USE_IMT
-         } else if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            ROOT::TThreadExecutor pool;
+         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread ||
+             executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
+            ROOT::Internal::TExecutor executor(executionPolicy);
             auto chunks = nChunks != 0 ? nChunks : setAutomaticChunking(data.Size() / vecSize);
-            res = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, data.Size() / vecSize), redFunction, chunks);
-#endif
+            res = executor.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, data.Size() / vecSize), redFunction, chunks);
          } else {
-            Error(
-               "FitUtil::Evaluate<T>::EvalPoissonLogL",
-               "Execution policy unknown. Avalaible choices:\n ::ROOT::EExecutionPolicy::kSequential (default)\n ::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
+            Error("FitUtil::Evaluate<T>::EvalPoissonLogL",
+                  "Execution policy not supported for the Fit. Avalaible choices:\n "
+                  "::ROOT::EExecutionPolicy::kSequential (default)\n "
+                  "::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
          }
 
          // Last padded SIMD vector of elements
@@ -998,34 +954,15 @@ namespace FitUtil {
          std::vector<T> gVec(npar);
          std::vector<double> g(npar);
 
-#ifndef R__USE_IMT
-         // to fix compiler warning
-         (void)nChunks;
-
-         // If IMT is disabled, force the execution policy to the serial case
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            Warning("FitUtil::EvaluateChi2Gradient",
-                    "Multithread execution policy requires IMT, which is disabled. Changing "
-                    "to ::ROOT::EExecutionPolicy::kSequential.");
-            executionPolicy = ::ROOT::EExecutionPolicy::kSequential;
-         }
-#endif
-
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
-            ROOT::TSequentialExecutor pool;
-            gVec = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction);
-         }
-#ifdef R__USE_IMT
-         else if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            ROOT::TThreadExecutor pool;
+         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread ||
+             executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
+            ROOT::Internal::TExecutor executor(executionPolicy);
             auto chunks = nChunks != 0 ? nChunks : setAutomaticChunking(numVectors);
-            gVec = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction, chunks);
-         }
-#endif
-         else {
-            Error(
-               "FitUtil::EvaluateChi2Gradient",
-               "Execution policy unknown. Avalaible choices:\n 0: Serial (default)\n 1: MultiThread (requires IMT)\n");
+            gVec = executor.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction, chunks);
+         } else {
+            Error("FitUtil::EvaluateChi2Gradient", "Execution policy not supported for the Fit. Avalaible choices:\n "
+                                                   "::ROOT::EExecutionPolicy::kSequential (default)\n "
+                                                   "::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
          }
 
          // Compute the contribution from the remaining points
@@ -1181,36 +1118,17 @@ namespace FitUtil {
 
          std::vector<T> gVec(npar);
 
-#ifndef R__USE_IMT
-         // to fix compiler warning
-         (void)nChunks;
-
-         // If IMT is disabled, force the execution policy to the serial case
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            Warning("FitUtil::EvaluatePoissonLogLGradient",
-                    "Multithread execution policy requires IMT, which is disabled. Changing "
-                    "to ::ROOT::EExecutionPolicy::kSequential.");
-            executionPolicy = ::ROOT::EExecutionPolicy::kSequential;
-         }
-#endif
-
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
-            ROOT::TSequentialExecutor pool;
-            gVec = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction);
-         }
-#ifdef R__USE_IMT
-         else if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            ROOT::TThreadExecutor pool;
+         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread ||
+             executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
+            ROOT::Internal::TExecutor executor(executionPolicy);
             auto chunks = nChunks != 0 ? nChunks : setAutomaticChunking(numVectors);
-            gVec = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction, chunks);
+            gVec = executor.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction, chunks);
+         } else {
+            Error("FitUtil::EvaluatePoissonLogLGradient",
+                  "Execution policy not supported for the Fit. Avalaible choices:\n "
+                  "::ROOT::EExecutionPolicy::kSequential (default)\n "
+                  "::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
          }
-#endif
-         else {
-            Error("FitUtil::EvaluatePoissonLogLGradient", "Execution policy unknown. Avalaible choices:\n "
-                                                          "::ROOT::EExecutionPolicy::kSequential (default)\n "
-                                                          "::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
-         }
-
 
          // Compute the contribution from the remaining points
          unsigned int remainingPoints = initialNPoints % vecSize;
@@ -1331,32 +1249,13 @@ namespace FitUtil {
          std::vector<T> gVec(npar);
          std::vector<double> g(npar);
 
-#ifndef R__USE_IMT
-         // to fix compiler warning
-         (void)nChunks;
-
-         // If IMT is disabled, force the execution policy to the serial case
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            Warning("FitUtil::EvaluateLogLGradient",
-                    "Multithread execution policy requires IMT, which is disabled. Changing "
-                    "to ::ROOT::EExecutionPolicy::kSequential.");
-            executionPolicy = ::ROOT::EExecutionPolicy::kSequential;
-         }
-#endif
-
-         if (executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
-            ROOT::TSequentialExecutor pool;
-            gVec = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction);
-         }
-#ifdef R__USE_IMT
-         else if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread) {
-            ROOT::TThreadExecutor pool;
+         if (executionPolicy == ::ROOT::EExecutionPolicy::kMultiThread ||
+             executionPolicy == ::ROOT::EExecutionPolicy::kSequential) {
+            ROOT::Internal::TExecutor executor(executionPolicy);
             auto chunks = nChunks != 0 ? nChunks : setAutomaticChunking(numVectors);
-            gVec = pool.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction, chunks);
-         }
-#endif
-         else {
-            Error("FitUtil::EvaluateLogLGradient", "Execution policy unknown. Avalaible choices:\n "
+            gVec = executor.MapReduce(mapFunction, ROOT::TSeq<unsigned>(0, numVectors), redFunction, chunks);
+         } else {
+            Error("FitUtil::EvaluateLogLGradient", "Execution policy not supported for the Fit. Avalaible choices:\n "
                                                    "::ROOT::EExecutionPolicy::kSequential (default)\n "
                                                    "::ROOT::EExecutionPolicy::kMultiThread (requires IMT)\n");
          }

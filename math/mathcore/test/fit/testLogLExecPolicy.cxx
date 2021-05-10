@@ -184,20 +184,6 @@ public:
       return ret;
    }
 
-   bool testMPFit()
-   {
-      std::cout << "\n///////////////////////////////MP TEST////////////////////////////\n\n";
-      wfSeq->SetParameters(p);
-      fitter.SetFunction(*wfSeq, false);
-      fitter.Config().ParamsSettings() = paramSettings; 
-      start = std::chrono::system_clock::now();
-      bool ret = fitter.Fit(*dataSB, 0, ROOT::EExecutionPolicy::kMultiProcess);
-      end =  std::chrono::system_clock::now();
-      duration = end - start;
-      std::cout << "Time for the multiprocess test:" << duration.count() << std::endl;
-      return ret;
-   }
-
 #ifdef R__HAS_VECCORE
    bool testFitVec()
    {
@@ -227,19 +213,6 @@ public:
       return ret;
    }
 
-   bool testMPFitVec()
-   {
-      std::cout << "\n///////////////////////////////MP+VEC TEST////////////////////////////\n\n";
-      wfVec->SetParameters(p);
-      fitter.SetFunction(*wfVec);
-      fitter.Config().ParamsSettings() = paramSettings; 
-      start = std::chrono::system_clock::now();
-      bool ret = fitter.Fit(*dataSB, 0, ROOT::EExecutionPolicy::kMultiProcess);
-      end =  std::chrono::system_clock::now();
-      duration = end - start;
-      std::cout << "Time for the multiprocess+vectorized test:" << duration.count() << std::endl;
-      return ret;
-   }
 #endif
    const ROOT::Fit::Fitter &GetFitter()
    {
