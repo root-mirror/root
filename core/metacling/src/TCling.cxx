@@ -9084,10 +9084,7 @@ const char* TCling::MethodInfo_TypeName(MethodInfo_t* minfo) const
 std::string TCling::MethodInfo_TypeNormalizedName(MethodInfo_t* minfo) const
 {
    TClingMethodInfo* info = (TClingMethodInfo*) minfo;
-   if (info && info->IsValid())
-      return info->Type()->NormalizedName(*fNormalizedCtxt);
-   else
-      return "";
+   return info->NormalizedName(*fNormalizedCtxt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

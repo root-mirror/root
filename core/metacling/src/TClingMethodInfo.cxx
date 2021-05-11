@@ -663,6 +663,12 @@ const char *TClingMethodInfo::TypeName() const
    return Type()->Name(spec);
 }
 
+std::string TClingMethodInfo::NormalizedName(ROOT::TMetaUtils::TNormalizedCtxt &ctx) const
+{
+   return Type()->NormalizedName(ctx);
+}
+
+
 const char *TClingMethodInfo::Title()
 {
    if (!IsValid()) {
