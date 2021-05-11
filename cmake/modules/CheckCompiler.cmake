@@ -167,9 +167,6 @@ if(NOT CMAKE_CXX_STANDARD MATCHES "11|14|17")
   message(FATAL_ERROR "Unsupported C++ standard: ${CMAKE_CXX_STANDARD}")
 endif()
 
-# needed by roottest, to be removed once roottest is fixed
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX${CMAKE_CXX_STANDARD}_STANDARD_COMPILE_OPTION}")
-
 #---Check for libcxx option------------------------------------------------------------
 if(libcxx)
   CHECK_CXX_COMPILER_FLAG("-stdlib=libc++" HAS_LIBCXX11)
@@ -238,12 +235,3 @@ check_cxx_source_compiles(
 #endif
 int main() {}
 " GLIBCXX_USE_CXX11_ABI)
-
-#---Print the final compiler flags--------------------------------------------------------------------
-string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
-message(STATUS "ROOT Platform: ${ROOT_PLATFORM}")
-message(STATUS "ROOT Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "ROOT Processor: ${CMAKE_SYSTEM_PROCESSOR}")
-message(STATUS "ROOT Architecture: ${ROOT_ARCHITECTURE}")
-message(STATUS "Build Type: '${CMAKE_BUILD_TYPE}' (flags = '${CMAKE_CXX_FLAGS_${BUILD_TYPE}}')")
-message(STATUS "Compiler Flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE}}")
