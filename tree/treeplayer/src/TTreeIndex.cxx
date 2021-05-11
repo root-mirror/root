@@ -177,8 +177,19 @@ TTreeIndex::TTreeIndex(const TTree *T, const char *majorname, const char *minorn
          fMajorFormula->UpdateFormulaLeaves();
          fMinorFormula->UpdateFormulaLeaves();
       }
-      tmp_major[i] = (Long64_t) fMajorFormula->EvalInstance<LongDouble_t>();
-      tmp_minor[i] = (Long64_t) fMinorFormula->EvalInstance<LongDouble_t>();
+      auto GetAndRangeCheck = [this](bool isMajor, Long64_t entry) {
+         LongDouble_t ldRet = (isMajor ? fMajorFormula : fMinorFormula)->EvalInstance<LongDouble_t>();
+         Long64_t ret = (Long64_t) ldRet;
+         Long64_t retCloserToZero = (Long64_t) (ret > 0 ? (ldRet - 1) : (ldRet + 1));
+         if (retCloserToZero == ret) {
+            Warning("TTreeIndex",
+               "In tree entry %lld, %s value %s=%lld possibly out of range for internal `long double`",
+               entry, isMajor ? "major" : "minor", isMajor ? fMajorName.Data() : fMinorName.Data(), ret);
+         }
+         return ret;
+      };
+      tmp_major[i] = GetAndRangeCheck(true, i);
+      tmp_minor[i] = GetAndRangeCheck(false, i);
    }
    fIndex = new Long64_t[fN];
    for(i = 0; i < fN; i++) { fIndex[i] = i; }
