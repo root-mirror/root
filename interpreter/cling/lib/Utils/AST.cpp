@@ -1542,40 +1542,40 @@ namespace utils {
 
     assert(decl);
 
-    const NamedDecl* outer
-      = llvm::dyn_cast_or_null<NamedDecl>(decl->getDeclContext());
-    const NamespaceDecl* outer_ns
-      = llvm::dyn_cast_or_null<NamespaceDecl>(decl->getDeclContext());
-    if (outer && !(outer_ns && outer_ns->isAnonymousNamespace())) {
-
-      if (const CXXRecordDecl *cxxdecl = llvm::dyn_cast<CXXRecordDecl>(outer)) {
-        if (ClassTemplateDecl *clTempl = cxxdecl->getDescribedClassTemplate()) {
-          // We are in the case of a type(def) that was declared in a
-          // class template but is *not* type dependent.  In clang, it gets
-          // attached to the class template declaration rather than any
-          // specific class template instantiation.   This result in 'odd'
-          // fully qualified typename:
-          //    vector<_Tp,_Alloc>::size_type
-          // Make the situation 'useable' by using the provided specialization
-          // as the declaring context.
-          assert(Spec && "Cannot determine type's scope");
-          assert(clTempl->getCanonicalDecl()
-                 == Spec->getSpecializedTemplate()->getCanonicalDecl()
-                 && "incompatible context");
-          (void)clTempl;
-          outer  = llvm::dyn_cast<NamedDecl>(Spec);
-          assert(!outer_ns && "outer is CXXRecord, yet outer_ns");
-        }
-      }
-
-      if (outer_ns) {
+    if (auto outer_ns = llvm::dyn_cast<NamespaceDecl>(decl->getDeclContext())) {
+      if (!outer_ns->isAnonymousNamespace())
         return TypeName::CreateNestedNameSpecifier(Ctx,outer_ns);
-      } else if (const TagDecl* TD = llvm::dyn_cast<TagDecl>(outer)) {
-        return TypeName::CreateNestedNameSpecifier(Ctx, TD, FullyQualified,
-                                                   nullptr /*Spec*/);
+      return nullptr;
+    }
+
+    auto outer = llvm::dyn_cast<NamedDecl>(decl->getDeclContext());
+    if (!outer)
+      return nullptr;
+
+    if (auto cxxdecl = llvm::dyn_cast<CXXRecordDecl>(outer)) {
+      if (ClassTemplateDecl *clTempl = cxxdecl->getDescribedClassTemplate()) {
+        // We are in the case of a type(def) that was declared in a
+        // class template but is *not* type dependent.  In clang, it gets
+        // attached to the class template declaration rather than any
+        // specific class template instantiation.   This result in 'odd'
+        // fully qualified typename:
+        //    vector<_Tp,_Alloc>::size_type
+        // Make the situation 'useable' by using the provided specialization
+        // as the declaring context.
+        assert(Spec && "Cannot determine type's scope");
+        assert(clTempl->getCanonicalDecl()
+                == Spec->getSpecializedTemplate()->getCanonicalDecl()
+                && "incompatible context");
+        (void)clTempl;
+        outer  = llvm::dyn_cast<NamedDecl>(Spec);
       }
     }
-    return 0;
+
+    if (const TagDecl* TD = llvm::dyn_cast<TagDecl>(outer)) {
+      return TypeName::CreateNestedNameSpecifier(Ctx, TD, FullyQualified,
+                                                  nullptr /*Spec*/);
+    }
+    return nullptr;
   }
 
   static NestedNameSpecifier*
