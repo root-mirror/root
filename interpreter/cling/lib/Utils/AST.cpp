@@ -1554,6 +1554,17 @@ namespace utils {
 
     if (auto cxxdecl = llvm::dyn_cast<CXXRecordDecl>(outer)) {
       if (ClassTemplateDecl *clTempl = cxxdecl->getDescribedClassTemplate()) {
+        assert(Spec && "Cannot determine type's scope");
+        while (Spec && clTempl->getCanonicalDecl() !=
+               Spec->getSpecializedTemplate()->getCanonicalDecl()) {
+          // This might be due to
+          //   Spec: A<X>::B<Y>
+          //   decl: A<X>::type
+          // Check Spec's scopes to see if any is a match.
+          Spec = llvm::dyn_cast<ClassTemplateSpecializationDecl>(
+            Spec->getDeclContext());
+        }
+
         // We are in the case of a type(def) that was declared in a
         // class template but is *not* type dependent.  In clang, it gets
         // attached to the class template declaration rather than any
@@ -1562,12 +1573,10 @@ namespace utils {
         //    vector<_Tp,_Alloc>::size_type
         // Make the situation 'useable' by using the provided specialization
         // as the declaring context.
-        assert(Spec && "Cannot determine type's scope");
         assert(clTempl->getCanonicalDecl()
                 == Spec->getSpecializedTemplate()->getCanonicalDecl()
                 && "incompatible context");
-        (void)clTempl;
-        outer  = llvm::dyn_cast<NamedDecl>(Spec);
+        outer = Spec;
       }
     }
 
