@@ -155,6 +155,9 @@ MnUserParameterState::MnUserParameterState(const MinimumState &st, double up, co
       }
    }
 
+   // Add(...) sets fValid to true even if it was false, need to restore its state
+   fValid = st.IsValid();
+
    // need to be set afterwards because becore the ::Add method set fCovarianceValid to false
    fCovarianceValid = st.Error().IsValid();
 
