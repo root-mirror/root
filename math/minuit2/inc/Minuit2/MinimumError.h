@@ -64,14 +64,17 @@ public:
    }
 
    double Dcovar() const { return fPtr->fDCovar; }
+   Status GetStatus() const { return fPtr->fStatus; }
+
+   bool IsValid() const { return GetStatus() == MnValid; }
    bool IsAccurate() const { return IsValid() && Dcovar() < 0.1; }
-   bool IsValid() const { return fPtr->fStatus == MnValid; }
-   bool IsPosDef() const { return fPtr->fStatus != MnNotPosDef; }
-   bool IsMadePosDef() const { return fPtr->fStatus == MnMadePosDef; }
-   bool HesseFailed() const { return fPtr->fStatus == MnHesseFailed; }
-   bool InvertFailed() const { return fPtr->fStatus == MnInvertFailed; }
-   bool HasReachedCallLimit() const { return fPtr->Status == MnReachedCallLimit; }
-   bool IsAvailable() const { return fPtr->fStatus != MnUnset; }
+
+   bool IsPosDef() const { return GetStatus() != MnNotPosDef; }
+   bool IsMadePosDef() const { return GetStatus() == MnMadePosDef; }
+   bool HesseFailed() const { return GetStatus() == MnHesseFailed; }
+   bool InvertFailed() const { return GetStatus() == MnInvertFailed; }
+   bool HasReachedCallLimit() const { return GetStatus() == MnReachedCallLimit; }
+   bool IsAvailable() const { return GetStatus() != MnUnset; }
 
 private:
    struct Data {
