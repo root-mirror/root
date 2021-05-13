@@ -66,6 +66,7 @@ public:
       fPtr->fUserState = MnUserParameterState(State(), Up(), Seed().Trafo());
       fPtr->fAboveMaxEdm = status == MnAboveMaxEdm;
       fPtr->fReachedCallLimit = status == MnReachedCallLimit;
+      assert(fPtr->fUserState.IsValid() == IsValid());
    }
 
    const MinimumSeed &Seed() const { return fPtr->fSeed; }
