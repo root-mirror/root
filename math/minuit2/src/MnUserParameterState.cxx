@@ -112,7 +112,7 @@ MnUserParameterState::MnUserParameterState(const MnUserParameters &par, const Mn
 //
 //
 MnUserParameterState::MnUserParameterState(const MinimumState &st, double up, const MnUserTransformation &trafo)
-   : fValid(st.IsValid()), fCovarianceValid(false), fGCCValid(false), fCovStatus(-1), fFVal(st.Fval()), fEDM(st.Edm()),
+   : fValid(false), fCovarianceValid(false), fGCCValid(false), fCovStatus(-1), fFVal(st.Fval()), fEDM(st.Edm()),
      fNFcn(st.NFcn()), fParameters(MnUserParameters()), fCovariance(MnUserCovariance()),
      fGlobalCC(MnGlobalCorrelationCoeff()), fIntParameters(std::vector<double>()), fIntCovariance(MnUserCovariance())
 {
@@ -154,9 +154,6 @@ MnUserParameterState::MnUserParameterState(const MinimumState &st, double up, co
          Add((*ipar).GetName(), st.Vec()(i), err);
       }
    }
-
-   // Add(...) sets fValid to true even if it was false, need to restore its state
-   fValid = st.IsValid();
 
    // need to be set afterwards because becore the ::Add method set fCovarianceValid to false
    fCovarianceValid = st.Error().IsValid();

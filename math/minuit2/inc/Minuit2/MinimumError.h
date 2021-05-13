@@ -30,7 +30,7 @@ class MinimumError {
 public:
    enum Status {
       MnUnset,
-      MnValid,
+      MnGood,
       MnNotPosDef,
       MnMadePosDef,
       MnHesseFailed,
@@ -41,7 +41,7 @@ public:
 public:
    MinimumError(unsigned int n) : fPtr{new Data{{n}, 1.0, MnUnset}} {}
 
-   MinimumError(const MnAlgebraicSymMatrix &mat, double dcov) : fPtr{new Data{mat, dcov, MnValid}} {}
+   MinimumError(const MnAlgebraicSymMatrix &mat, double dcov) : fPtr{new Data{mat, dcov, MnGood}} {}
 
    MinimumError(const MnAlgebraicSymMatrix &mat, Status status) : fPtr{new Data{mat, 1.0, status}} {}
 
@@ -66,10 +66,10 @@ public:
    double Dcovar() const { return fPtr->fDCovar; }
    Status GetStatus() const { return fPtr->fStatus; }
 
-   bool IsValid() const { return GetStatus() == MnValid; }
+   bool IsValid() const { return GetStatus() == MnGood || GetStatus() == MnMadePosDef; }
    bool IsAccurate() const { return IsValid() && Dcovar() < 0.1; }
 
-   bool IsPosDef() const { return GetStatus() != MnNotPosDef; }
+   bool IsPosDef() const { return GetStatus() == MnGood; }
    bool IsMadePosDef() const { return GetStatus() == MnMadePosDef; }
    bool HesseFailed() const { return GetStatus() == MnHesseFailed; }
    bool InvertFailed() const { return GetStatus() == MnInvertFailed; }

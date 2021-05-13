@@ -182,22 +182,19 @@ FunctionMinimum VariableMetricBuilder::Minimum(const MnFcn &fcn, const GradientC
 
    // Add latest state (Hessian calculation)
    const MinimumState &latest = result.back();
-   if (latest.Error().IsAvailable()) {
-      if (latest.Error().HasReachedCallLimit()) {
-         // communicate to user that call limit was reached in MnHesse
-         min.Add(latest, FunctionMinimum::MnReachedCallLimit);
-      } else {
-         // check edm (add a factor of 10 in tolerance )
-         if (edm > 10 * edmval) {
-            min.Add(latest, FunctionMinimum::MnAboveMaxEdm);
-            print.Warn("No convergence; Edm", edm, "is above tolerance", 10 * edmval);
-         } else {
-            // check if minimum had edm above max before
-            if (min.IsAboveMaxEdm())
-               print.Info("Edm has been re-computed after Hesse; Edm", edm, "is now within tolerance");
-            min.Add(latest);
-         }
-      }
+
+   // check edm (add a factor of 10 in tolerance )
+   if (edm > 10 * edmval) {
+      min.Add(latest, FunctionMinimum::MnAboveMaxEdm);
+      print.Warn("No convergence; Edm", edm, "is above tolerance", 10 * edmval);
+   } else if (latest.Error().HasReachedCallLimit()) {
+      // communicate to user that call limit was reached in MnHesse
+      min.Add(latest, FunctionMinimum::MnReachedCallLimit);
+   } else if (latest.Error().IsAvailable()) {
+      // check if minimum had edm above max before
+      if (min.IsAboveMaxEdm())
+         print.Info("Edm has been re-computed after Hesse; Edm", edm, "is now within tolerance");
+      min.Add(latest);
    }
 
    print.Debug("Minimum found", min);
