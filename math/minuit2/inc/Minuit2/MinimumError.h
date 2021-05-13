@@ -29,25 +29,21 @@ class MinimumError {
 
 public:
    enum Status {
+      MnUnset,
+      MnValid,
       MnNotPosDef,
       MnMadePosDef,
       MnHesseFailed,
       MnInvertFailed,
+      MnReachedCallLimit,
    };
 
 public:
-   MinimumError(unsigned int n) : fPtr{new Data{{n}, 1.0, false, false, false, false, false, false}} {}
+   MinimumError(unsigned int n) : fPtr{new Data{{n}, 1.0, MnUnset}} {}
 
-   MinimumError(const MnAlgebraicSymMatrix &mat, double dcov)
-      : fPtr{new Data{mat, dcov, true, true, false, false, false, true}}
-   {
-   }
+   MinimumError(const MnAlgebraicSymMatrix &mat, double dcov) : fPtr{new Data{mat, dcov, MnValid}} {}
 
-   MinimumError(const MnAlgebraicSymMatrix &mat, Status status)
-      : fPtr{new Data{mat, 1.0, status == MnMadePosDef, false, status == MnMadePosDef, status == MnHesseFailed,
-                      status == MnInvertFailed, true}}
-   {
-   }
+   MinimumError(const MnAlgebraicSymMatrix &mat, Status status) : fPtr{new Data{mat, 1.0, status}} {}
 
    MnAlgebraicSymMatrix Matrix() const { return 2. * fPtr->fMatrix; }
 
@@ -68,24 +64,20 @@ public:
    }
 
    double Dcovar() const { return fPtr->fDCovar; }
-   bool IsAccurate() const { return Dcovar() < 0.1; }
-   bool IsValid() const { return fPtr->fValid; }
-   bool IsPosDef() const { return fPtr->fPosDef; }
-   bool IsMadePosDef() const { return fPtr->fMadePosDef; }
-   bool HesseFailed() const { return fPtr->fHesseFailed; }
-   bool InvertFailed() const { return fPtr->fInvertFailed; }
-   bool IsAvailable() const { return fPtr->fAvailable; }
+   bool IsAccurate() const { return IsValid() && Dcovar() < 0.1; }
+   bool IsValid() const { return fPtr->fStatus == MnValid; }
+   bool IsPosDef() const { return fPtr->fStatus != MnNotPosDef; }
+   bool IsMadePosDef() const { return fPtr->fStatus == MnMadePosDef; }
+   bool HesseFailed() const { return fPtr->fStatus == MnHesseFailed; }
+   bool InvertFailed() const { return fPtr->fStatus == MnInvertFailed; }
+   bool HasReachedCallLimit() const { return fPtr->Status == MnReachedCallLimit; }
+   bool IsAvailable() const { return fPtr->fStatus != MnUnset; }
 
 private:
    struct Data {
       MnAlgebraicSymMatrix fMatrix;
       double fDCovar;
-      bool fValid;
-      bool fPosDef;
-      bool fMadePosDef;
-      bool fHesseFailed;
-      bool fInvertFailed;
-      bool fAvailable;
+      Status fStatus;
    };
 
    std::shared_ptr<Data> fPtr;
