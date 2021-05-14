@@ -30,9 +30,9 @@ class MinimumError {
 public:
    enum Status {
       MnUnset,
-      MnGood,
-      MnNotPosDef,
+      MnPosDef,
       MnMadePosDef,
+      MnNotPosDef,
       MnHesseFailed,
       MnInvertFailed,
       MnReachedCallLimit,
@@ -41,7 +41,7 @@ public:
 public:
    MinimumError(unsigned int n) : fPtr{new Data{{n}, 1.0, MnUnset}} {}
 
-   MinimumError(const MnAlgebraicSymMatrix &mat, double dcov) : fPtr{new Data{mat, dcov, MnGood}} {}
+   MinimumError(const MnAlgebraicSymMatrix &mat, double dcov) : fPtr{new Data{mat, dcov, MnPosDef}} {}
 
    MinimumError(const MnAlgebraicSymMatrix &mat, Status status) : fPtr{new Data{mat, 1.0, status}} {}
 
@@ -66,10 +66,10 @@ public:
    double Dcovar() const { return fPtr->fDCovar; }
    Status GetStatus() const { return fPtr->fStatus; }
 
-   bool IsValid() const { return GetStatus() == MnGood || GetStatus() == MnMadePosDef; }
+   bool IsValid() const { return IsAvailable() && (IsPosDef() || IsMadePosDef()); }
    bool IsAccurate() const { return IsValid() && Dcovar() < 0.1; }
 
-   bool IsPosDef() const { return GetStatus() == MnGood; }
+   bool IsPosDef() const { return GetStatus() == MnPosDef; }
    bool IsMadePosDef() const { return GetStatus() == MnMadePosDef; }
    bool HesseFailed() const { return GetStatus() == MnHesseFailed; }
    bool InvertFailed() const { return GetStatus() == MnInvertFailed; }
