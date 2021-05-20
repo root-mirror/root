@@ -42,6 +42,7 @@ have to appear in any specific place in the list.
 **/
 
 #include "RooProdPdf.h"
+#include "RooBatchCompute.h"
 #include "RooRealProxy.h"
 #include "RooProdGenContext.h"
 #include "RooGenProdProj.h"
@@ -58,9 +59,8 @@ have to appear in any specific place in the list.
 #include "RooCustomizer.h"
 #include "RooRealIntegral.h"
 #include "RooTrace.h"
-#include "RooBatchCompute.h"
 #include "RooHelpers.h"
-#include "RunContext.h"
+#include "rbc.h"
 #include "strtok.h"
 
 #include <cstring>
@@ -504,55 +504,16 @@ Double_t RooProdPdf::calculate(const RooProdPdf::CacheElem& cache, Bool_t /*verb
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-/// Evaluate product of PDFs using input data in `evalData`.
-RooSpan<double> RooProdPdf::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
-  int code;
-  auto cache = static_cast<CacheElem*>(_cacheMgr.getObj(normSet, nullptr, &code));
-
-  // If cache doesn't have our configuration, recalculate here
-  if (!cache) {
-    code = getPartIntList(normSet, nullptr);
-    cache = static_cast<CacheElem*>(_cacheMgr.getObj(normSet, nullptr, &code));
-  }
-
-  if (cache->_isRearranged) {
-    auto numerator = cache->_rearrangedNum->getValues(evalData, normSet);
-    auto denominator = cache->_rearrangedDen->getValues(evalData, normSet);
-    auto outputs = evalData.makeBatch(this, numerator.size());
-
-    for (std::size_t i=0; i < outputs.size(); ++i) {
-      outputs[i] = numerator[i] / denominator[i];
-    }
-
-    return outputs;
-  } else {
-    assert(cache->_normList.size() == cache->_partList.size());
-    RooSpan<double> outputs;
-    for (std::size_t i = 0; i < cache->_partList.size(); ++i) {
-      const auto& partInt = static_cast<const RooAbsReal&>(cache->_partList[i]);
-      const auto partNorm = cache->_normList[i].get();
-
-      const auto partialInt = partInt.getValues(evalData, partNorm->getSize() > 0 ? partNorm : nullptr);
-
-      if (outputs.empty()) {
-        outputs = evalData.makeBatch(this,  partialInt.size());
-        std::fill(outputs.begin(), outputs.end(), 1.);
-      } else if (outputs.size() == 1 && partialInt.size() > 1) {
-        const double val = outputs[0];
-        outputs = evalData.makeBatch(this, partialInt.size());
-        std::fill(outputs.begin(), outputs.end(), val);
-      }
-      assert(outputs.size() == partialInt.size());
-
-      for (std::size_t j=0; j < outputs.size(); ++j) {
-        outputs[j] *= partialInt[j];
-      }
-    }
-
-    return outputs;
-  }
+/// Evaluate product of PDFs in batch mode.
+void RooProdPdf::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const
+{
+  rbc::VarVector pdfs;
+  for (const RooAbsArg* i:_pdfList)
+    pdfs.push_back( static_cast<const RooAbsPdf*>(i) );
+  pdfs.push_back(&*_norm);
+  rbc::ArgVector special{ static_cast<double>(_pdfList.size()) };    
+  rbc::dispatch->compute(rbc::ProdPdf, output, nEvents, dataMap, pdfs, special);
 }
 
 namespace {

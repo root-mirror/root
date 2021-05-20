@@ -607,8 +607,19 @@ __global__ void computeNegativeLogarithms(Batches batches)
   //~  }
 //~  }
 
-//~  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+__global__ void computeProdPdf(Batches batches)
+{
+  const int nPdfs = batches.extraArg(0);
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+    batches.output[i] = 1/batches[nPdfs][i]; // normalization
+  for (int pdf=0; pdf<nPdfs; pdf++)
+    for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+      batches.output[i] *= batches[pdf][i];
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //~  void run(size_t batchSize, double * __restrict output, Tx X, Tmean M, Twidth W, Tsigma S) const
   //~  {
     //~  const double invSqrt2 = 0.707106781186547524400844362105;
@@ -637,7 +648,8 @@ __global__ void computeNegativeLogarithms(Batches batches)
 
 std::vector<void(*)(Batches)> getFunctions()
 {
-  return {computeAddPdf, computeArgusBG, computeBernstein, computeExponential, computeGaussian, computeNegativeLogarithms};
+  return {computeAddPdf, computeArgusBG, computeBernstein, computeExponential, computeGaussian,
+          computeNegativeLogarithms, computeProdPdf};
 }
 } // End namespace RF_ARCH
 

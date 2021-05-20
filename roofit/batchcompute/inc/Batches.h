@@ -4,6 +4,7 @@
 #define ROOFIT_BATCHCOMPUTE_BATCHES_H
 
 #include "RooSpan.h"
+#include "rbc.h"
 
 #include <stdint.h>
 #include <vector>
@@ -14,15 +15,8 @@
   #define __global__
   #define __host__
 #endif // #ifndef __CUDACC__
-class RooAbsReal;
 
 namespace RooBatchCompute {
-
-typedef std::unordered_map<const RooAbsReal*,RooSpan<const double>> DataMap;
-typedef std::vector<const RooAbsReal*> VarVector;
-typedef std::vector<double> ArgVector;
-typedef double* __restrict RestrictArr;
-typedef const double* __restrict InputArr;
 
 constexpr uint8_t maxParams=8;
 constexpr uint8_t maxExtraArgs=16;

@@ -29,7 +29,7 @@ class RooListProxy;
 namespace rbc = RooBatchCompute;
 namespace RooBatchCompute {
 
-enum Computer{AddPdf, ArgusBG, Bernstein, Exponential, Gaussian, NegativeLogarithms};
+enum Computer{AddPdf, ArgusBG, Bernstein, Exponential, Gaussian, NegativeLogarithms, ProdPdf};
 
 struct RunContext;
 /**

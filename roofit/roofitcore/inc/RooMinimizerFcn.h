@@ -18,7 +18,6 @@
 
 #include "RooAbsReal.h"
 #include "RooArgList.h"
-#include "RooFitDriver.h"
 
 #include "Math/IFunction.h"
 #include "Fit/ParameterSettings.h"
@@ -28,6 +27,7 @@
 #include <vector>
 
 class RooMinimizer;
+class RooFitDriver;
 template<typename T> class TMatrixTSym;
 using TMatrixDSym = TMatrixTSym<double>;
 

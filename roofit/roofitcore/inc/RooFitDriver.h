@@ -1,13 +1,14 @@
 #ifndef ROO_FIT_DRIVER_H
 #define ROO_FIT_DRIVER_H
 
-#include "RooBatchCompute.h"
+#include "rbc.h"
 
 #include <queue>
 #include <unordered_map>
 
 class RooAbsData;
 class RooAbsReal;
+class RooArgSet;
 class RooNLLVarNew;
 
 class RooFitDriver {

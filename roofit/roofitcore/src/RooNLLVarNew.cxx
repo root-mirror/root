@@ -17,6 +17,16 @@ RooNLLVarNew::RooNLLVarNew(const RooNLLVarNew &other, const char *name)
 {
 }
 
+void RooNLLVarNew::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const 
+{
+  rbc::dispatch->compute(rbc::NegativeLogarithms, output, nEvents, dataMap, {&*_pdf});
+}
+
+double RooNLLVarNew::reduce(const double* input, size_t nEvents) const
+{
+  return RooBatchCompute::dispatch->sumReduce(input, nEvents);
+}
+
 double RooNLLVarNew::getValV(const RooArgSet *) const
 {
    throw std::runtime_error("RooNLLVarNew::getValV was called directly which should not happen!");

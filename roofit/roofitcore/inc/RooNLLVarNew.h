@@ -24,14 +24,8 @@ public:
   }
 
   inline RooAbsPdf* getPdf() const { return &*_pdf; }
-  inline void computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const override
-  {
-    rbc::dispatch->compute(rbc::NegativeLogarithms, output, nEvents, dataMap, {&*_pdf});
-  }
-  inline double reduce(const double* input, size_t nEvents) const
-  {
-    return RooBatchCompute::dispatch->sumReduce(input, nEvents);
-  }
+  void computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const override;
+  double reduce(const double* input, size_t nEvents) const;
 
 protected:
   RooTemplateProxy<RooAbsPdf> _pdf;
