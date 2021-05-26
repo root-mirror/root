@@ -34,7 +34,7 @@ class RooCategory ;
 class RooCompositeDataStore : public RooAbsDataStore {
 public:
 
-  RooCompositeDataStore() ; 
+  RooCompositeDataStore() ;
 
   // Ctors from DataStore
   RooCompositeDataStore(const char* name, const char* title, const RooArgSet& vars, RooCategory& indexCat, std::map<std::string,RooAbsDataStore*> inputData) ;
@@ -60,12 +60,12 @@ public:
   virtual Double_t weight() const ;
   virtual Double_t weight(Int_t index) const ;
   virtual Double_t weightError(RooAbsData::ErrorType etype=RooAbsData::Poisson) const ;
-  virtual void weightError(Double_t& lo, Double_t& hi, RooAbsData::ErrorType etype=RooAbsData::Poisson) const ; 
+  virtual void weightError(Double_t& lo, Double_t& hi, RooAbsData::ErrorType etype=RooAbsData::Poisson) const ;
   virtual Bool_t isWeighted() const ;
 
   // Change observable name
   virtual Bool_t changeObservableName(const char* from, const char* to) ;
-  
+
   // Add one or more columns
   virtual RooAbsArg* addColumn(RooAbsArg& var, Bool_t adjustRange=kTRUE) ;
   virtual RooArgSet* addColumns(const RooArgList& varList) ;
@@ -75,7 +75,7 @@ public:
 
   RooCategory* index() { return _indexCat ; }
 
-  // Add rows 
+  // Add rows
   virtual void append(RooAbsDataStore& other) ;
 
   // General & bookkeeping methods
@@ -84,9 +84,9 @@ public:
   virtual void reset() ;
 
   // Buffer redirection routines used in inside RooAbsOptTestStatistics
-  virtual void attachBuffers(const RooArgSet& extObs) ; 
+  virtual void attachBuffers(const RooArgSet& extObs) ;
   virtual void resetBuffers() ;
-   
+
   // Constant term  optimizer interface
   virtual void cacheArgs(const RooAbsArg* owner, RooArgSet& varSet, const RooArgSet* nset=0, Bool_t skipZeroWeights=kFALSE) ;
   virtual const RooAbsArg* cacheOwner() { return 0 ; }
@@ -95,12 +95,12 @@ public:
 
   virtual void recalculateCache(const RooArgSet* /*proj*/, Int_t /*firstEvent*/, Int_t /*lastEvent*/, Int_t /*stepSize*/, Bool_t /*skipZeroWeights*/) ;
   virtual Bool_t hasFilledCache() const ;
-  
+
   void loadValues(const RooAbsDataStore *tds, const RooFormulaVar* select=0, const char* rangeName=0,
       std::size_t nStart=0, std::size_t nStop = std::numeric_limits<std::size_t>::max());
 
   virtual void forceCacheUpdate() ;
-  
+
   virtual RooBatchCompute::RunContext getBatches(std::size_t first, std::size_t len) const {
     //TODO
     std::cerr << "This functionality is not yet implemented for composite data stores." << std::endl;
@@ -120,7 +120,7 @@ public:
   mutable RooAbsDataStore* _curStore ; //! Datastore associated with current event
   mutable Int_t _curIndex ; //! Index associated with current event
   mutable std::unique_ptr<std::vector<double>> _weightBuffer; //! Buffer for weights in case a batch of values is requested.
-  Bool_t _ownComps ; //! 
+  Bool_t _ownComps ; //!
 
   ClassDef(RooCompositeDataStore,1) // Composite Data Storage class
 };

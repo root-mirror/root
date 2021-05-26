@@ -42,7 +42,7 @@ public:
   void writeToStream(std::ostream& os, Bool_t compact) const ;
 
   /// Returns false, as the value of the constant doesn't depend on other objects.
-  virtual Bool_t isDerived() const { 
+  virtual Bool_t isDerived() const {
     return false;
   }
 

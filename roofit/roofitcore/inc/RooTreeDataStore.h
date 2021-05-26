@@ -32,8 +32,8 @@ class RooArgSet ;
 class RooTreeDataStore : public RooAbsDataStore {
 public:
 
-  RooTreeDataStore() ; 
-  RooTreeDataStore(TTree* t, const RooArgSet& vars, const char* wgtVarName=0) ; 
+  RooTreeDataStore() ;
+  RooTreeDataStore(TTree* t, const RooArgSet& vars, const char* wgtVarName=0) ;
 
   // Empty ctor
   RooTreeDataStore(const char* name, const char* title, const RooArgSet& vars, const char* wgtVarName=0) ;
@@ -41,16 +41,16 @@ public:
   virtual RooAbsDataStore* clone(const RooArgSet& vars, const char* newname=0) const { return new RooTreeDataStore(*this,vars,newname) ; }
 
   // Ctors from TTree
-  RooTreeDataStore(const char* name, const char* title, const RooArgSet& vars, TTree& t, const RooFormulaVar& select, const char* wgtVarName=0) ; 
-  RooTreeDataStore(const char* name, const char* title, const RooArgSet& vars, TTree& t, const char* selExpr=0, const char* wgtVarName=0) ; 
+  RooTreeDataStore(const char* name, const char* title, const RooArgSet& vars, TTree& t, const RooFormulaVar& select, const char* wgtVarName=0) ;
+  RooTreeDataStore(const char* name, const char* title, const RooArgSet& vars, TTree& t, const char* selExpr=0, const char* wgtVarName=0) ;
 
   // Ctors from DataStore
   RooTreeDataStore(const char* name, const char* title, const RooArgSet& vars, const RooAbsDataStore& tds, const RooFormulaVar& select, const char* wgtVarName=0) ;
   RooTreeDataStore(const char* name, const char* title, const RooArgSet& vars, const RooAbsDataStore& tds, const char* selExpr=0, const char* wgtVarName=0) ;
 
-  RooTreeDataStore(const char *name, const char *title, RooAbsDataStore& tds, 
-		   const RooArgSet& vars, const RooFormulaVar* cutVar, const char* cutRange,
-		   Int_t nStart, Int_t nStop, Bool_t /*copyCache*/, const char* wgtVarName=0) ;
+  RooTreeDataStore(const char *name, const char *title, RooAbsDataStore& tds,
+         const RooArgSet& vars, const RooFormulaVar* cutVar, const char* cutRange,
+         Int_t nStart, Int_t nStop, Bool_t /*copyCache*/, const char* wgtVarName=0) ;
 
   RooTreeDataStore(const RooTreeDataStore& other, const char* newname=0) ;
   RooTreeDataStore(const RooTreeDataStore& other, const RooArgSet& vars, const char* newname=0) ;
@@ -65,7 +65,7 @@ public:
   virtual const RooArgSet* get(Int_t index) const ;
   virtual Double_t weight() const ;
   virtual Double_t weightError(RooAbsData::ErrorType etype=RooAbsData::Poisson) const ;
-  virtual void weightError(Double_t& lo, Double_t& hi, RooAbsData::ErrorType etype=RooAbsData::Poisson) const ; 
+  virtual void weightError(Double_t& lo, Double_t& hi, RooAbsData::ErrorType etype=RooAbsData::Poisson) const ;
   virtual Double_t weight(Int_t index) const ;
   virtual Bool_t isWeighted() const { return (_wgtVar!=0||_extWgtArray!=0) ; }
 
@@ -80,7 +80,7 @@ public:
 
   // Change observable name
   virtual Bool_t changeObservableName(const char* from, const char* to) ;
-  
+
   // Add one or more columns
   virtual RooAbsArg* addColumn(RooAbsArg& var, Bool_t adjustRange=kTRUE) ;
   virtual RooArgSet* addColumns(const RooArgList& varList) ;
@@ -88,7 +88,7 @@ public:
   // Merge column-wise
   RooAbsDataStore* merge(const RooArgSet& allvars, std::list<RooAbsDataStore*> dstoreList) ;
 
-  // Add rows 
+  // Add rows
   virtual void append(RooAbsDataStore& other) ;
 
   // General & bookkeeping methods
@@ -98,13 +98,13 @@ public:
   virtual void reset() ;
 
   // Buffer redirection routines used in inside RooAbsOptTestStatistics
-  virtual void attachBuffers(const RooArgSet& extObs) ; 
-  virtual void resetBuffers() ;  
+  virtual void attachBuffers(const RooArgSet& extObs) ;
+  virtual void resetBuffers() ;
   void restoreAlternateBuffers() ;
-  
+
   // Tree access
   TTree& tree() { return *_tree ; }
-  virtual const TTree* tree() const { return _tree ; }  
+  virtual const TTree* tree() const { return _tree ; }
 
   // Forwarded from TTree
   Stat_t GetEntries() const;
@@ -112,7 +112,7 @@ public:
   Int_t Fill();
   Int_t GetEntry(Int_t entry = 0, Int_t getall = 0);
 
-  void	Draw(Option_t* option = "") ;
+  void   Draw(Option_t* option = "") ;
 
   // Constant term  optimizer interface
   virtual void cacheArgs(const RooAbsArg* owner, RooArgSet& varSet, const RooArgSet* nset=0, Bool_t skipZeroWeights=kFALSE) ;
@@ -128,12 +128,12 @@ public:
 
   void setExternalWeightArray(const Double_t* arrayWgt, const Double_t* arrayWgtErrLo,
       const Double_t* arrayWgtErrHi, const Double_t* arraySumW2) {
-    _extWgtArray = arrayWgt ; 
+    _extWgtArray = arrayWgt ;
     _extWgtErrLoArray = arrayWgtErrLo ;
     _extWgtErrHiArray = arrayWgtErrHi ;
     _extSumW2Array = arraySumW2 ;
   }
-  
+
   const RooArgSet& row() { return _varsww ; }
 
  private:
@@ -152,9 +152,9 @@ public:
 
   std::string makeTreeName() const;
 
-  static Int_t _defTreeBufSize ;  
+  static Int_t _defTreeBufSize ;
 
-  void createTree(const char* name, const char* title) ; 
+  void createTree(const char* name, const char* title) ;
   TTree *_tree ;           // TTree holding the data points
   TTree *_cacheTree ;      //! TTree holding the cached function values
   const RooAbsArg* _cacheOwner ; //! Object owning cache contents

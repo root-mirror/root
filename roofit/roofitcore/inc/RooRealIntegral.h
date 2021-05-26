@@ -37,7 +37,7 @@ public:
   // Constructors, assignment etc
   RooRealIntegral() ;
   RooRealIntegral(const char *name, const char *title, const RooAbsReal& function, const RooArgSet& depList,
-		  const RooArgSet* funcNormSet=0, const RooNumIntConfig* config=0, const char* rangeName=0) ;
+        const RooArgSet* funcNormSet=0, const RooNumIntConfig* config=0, const char* rangeName=0) ;
   RooRealIntegral(const RooRealIntegral& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooRealIntegral(*this,newname); }
   virtual ~RooRealIntegral();
@@ -57,13 +57,13 @@ public:
   const char* intRange() { return _rangeName ? _rangeName->GetName() : 0 ; }
   const RooAbsReal& integrand() const { return _function.arg() ; }
 
-  void setCacheNumeric(Bool_t flag) { 
-    // If true, value of this interal is cached if it is (partially numeric)
+  void setCacheNumeric(Bool_t flag) {
+    // If true, value of this integral is cached if it is (partially numeric)
     _cacheNum = flag ;
   }
 
-  Bool_t getCacheNumeric() { 
-    // If true, value of this interal is cached if it is (partially numeric)
+  Bool_t getCacheNumeric() {
+    // If true, value of this integral is cached if it is (partially numeric)
     return _cacheNum ;
   }
 
@@ -76,11 +76,11 @@ public:
     return _function.arg().plotSamplingHint(obs,xlo,xhi) ;
   }
 
-  virtual RooAbsReal* createIntegral(const RooArgSet& iset, const RooArgSet* nset=0, const RooNumIntConfig* cfg=0, const char* rangeName=0) const ;  
+  virtual RooAbsReal* createIntegral(const RooArgSet& iset, const RooArgSet* nset=0, const RooNumIntConfig* cfg=0, const char* rangeName=0) const ;
 
   void setAllowComponentSelection(Bool_t allow);
   Bool_t getAllowComponentSelection() const;
-  
+
 protected:
 
   mutable Bool_t _valid;
@@ -104,8 +104,8 @@ protected:
   Bool_t servesExclusively(const RooAbsArg* server,const RooArgSet& exclLVBranches, const RooArgSet& allBranches) const ;
 
 
-  virtual Bool_t redirectServersHook(const RooAbsCollection& newServerList, 
-				     Bool_t mustReplaceAll, Bool_t nameChange, Bool_t isRecursive) ;
+  virtual Bool_t redirectServersHook(const RooAbsCollection& newServerList,
+                 Bool_t mustReplaceAll, Bool_t nameChange, Bool_t isRecursive) ;
 
   // Function pointer and integrands list
   mutable RooSetProxy _sumList ; // Set of discrete observable over which is summed numerically
@@ -119,12 +119,12 @@ protected:
   RooArgSet*      _funcNormSet ;     // Optional normalization set passed to function
 
   mutable RooArgSet       _saveInt ; //! do not persist
-  mutable RooArgSet       _saveSum ; //! do not persist 
+  mutable RooArgSet       _saveSum ; //! do not persist
 
   RooNumIntConfig* _iconfig ;
 
-  mutable RooListProxy _sumCat ; //! do not persist  
-  
+  mutable RooListProxy _sumCat ; //! do not persist
+
   Int_t _mode ;
   IntOperMode _intOperMode ;   // integration operation mode
 
@@ -132,8 +132,8 @@ protected:
   mutable RooAbsIntegrator* _numIntEngine ;  //! do not persist
   mutable RooAbsFunc *_numIntegrand;         //! do not persist
 
-  TNamed* _rangeName ; 
-  
+  TNamed* _rangeName ;
+
   mutable RooArgSet* _params ; //! cache for set of parameters
 
   Bool_t _cacheNum ;           // Cache integral if numeric

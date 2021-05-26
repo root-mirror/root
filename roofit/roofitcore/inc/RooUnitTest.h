@@ -36,11 +36,11 @@ class RooUnitTest : public TNamed {
 public:
   RooUnitTest(const char* name, TFile* refFile, Bool_t writeRef, Int_t verbose) ;
   ~RooUnitTest() ;
-  
+
   void setDebug(Bool_t flag) { _debug = flag ; }
   void setSilentMode() ;
   void clearSilentMode() ;
-  void regPlot(RooPlot* frame, const char* refName) ;  
+  void regPlot(RooPlot* frame, const char* refName) ;
   void regResult(RooFitResult* r, const char* refName) ;
   void regValue(Double_t value, const char* refName) ;
   void regTable(RooTable* t, const char* refName) ;
@@ -52,7 +52,7 @@ public:
   Bool_t areTHidentical(TH1* htest, TH1* href) ;
 
   virtual Bool_t isTestAvailable() { return kTRUE ; }
-  virtual Bool_t testCode() = 0 ;  
+  virtual Bool_t testCode() = 0 ;
 
   virtual Double_t htol() { return 5e-4 ; } // histogram test tolerance (KS dist != prob)
 #ifdef R__FAST_MATH

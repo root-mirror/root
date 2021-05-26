@@ -24,17 +24,17 @@ class RooArgSet;
 
 class RooConvIntegrandBinding : public RooAbsFunc {
 public:
-  RooConvIntegrandBinding(const RooAbsReal& func, const RooAbsReal& model, 
-	             RooAbsReal& x, RooAbsReal& xprime, 
+  RooConvIntegrandBinding(const RooAbsReal& func, const RooAbsReal& model,
+                RooAbsReal& x, RooAbsReal& xprime,
                      const RooArgSet* nset=0, Bool_t clipInvalid=kFALSE);
   virtual ~RooConvIntegrandBinding();
 
   virtual Double_t operator()(const Double_t xvector[]) const;
   virtual Double_t getMinLimit(UInt_t dimension) const;
   virtual Double_t getMaxLimit(UInt_t dimension) const;
-  inline void setNormalizationSet(const RooArgSet* nset) { 
+  inline void setNormalizationSet(const RooArgSet* nset) {
     // Use the supplied nset as normalization set for calls to func and model
-    _nset = nset ; 
+    _nset = nset ;
   }
 
 protected:

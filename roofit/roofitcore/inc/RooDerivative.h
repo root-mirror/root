@@ -42,7 +42,7 @@ public:
   Double_t eps() const { return _eps ; }
   void setEps(Double_t e) { _eps = e ; }
 
-  Bool_t redirectServersHook(const RooAbsCollection& /*newServerList*/, Bool_t /*mustReplaceAll*/, Bool_t /*nameChange*/, Bool_t /*isRecursive*/) ;  
+  Bool_t redirectServersHook(const RooAbsCollection& /*newServerList*/, Bool_t /*mustReplaceAll*/, Bool_t /*nameChange*/, Bool_t /*isRecursive*/) ;
 
 protected:
 
@@ -52,7 +52,7 @@ protected:
   RooRealProxy _func ;                   // Input function
   RooRealProxy _x     ;                  // Observable
   mutable RooFunctor*  _ftor ;                   //! Functor binding of RooAbsReal
-  mutable ROOT::Math::RichardsonDerivator *_rd ; //! Derivator     
+  mutable ROOT::Math::RichardsonDerivator *_rd ; //! Derivator
 
   Double_t evaluate() const;
 

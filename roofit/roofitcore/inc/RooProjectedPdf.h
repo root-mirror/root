@@ -16,7 +16,7 @@
 #include "RooRealProxy.h"
 #include "RooAbsReal.h"
 #include "RooObjCacheManager.h"
-#include "RooSetProxy.h" 
+#include "RooSetProxy.h"
 
 class RooProjectedPdf : public RooAbsPdf {
 public:
@@ -39,7 +39,7 @@ public:
   virtual Bool_t selfNormalized() const { return kTRUE ; }
 
   // Handle projection of projection explicitly
-  virtual RooAbsPdf* createProjection(const RooArgSet& iset) ;  
+  virtual RooAbsPdf* createProjection(const RooArgSet& iset) ;
 
   void printMetaArgs(std::ostream& os) const ;
 
@@ -56,7 +56,7 @@ protected:
     // Payload
     RooAbsReal* _projection ;
     // Cache management functions
-    virtual RooArgList containedArgs(Action) ; 
+    virtual RooArgList containedArgs(Action) ;
     virtual void printCompactTreeHook(std::ostream&, const char *, Int_t, Int_t) ;
   } ;
   mutable RooObjCacheManager _cacheMgr ; //! The cache manager
@@ -70,5 +70,5 @@ private:
 
   ClassDef(RooProjectedPdf,1) // Operator p.d.f calculating projection of another p.d.f
 };
- 
+
 #endif

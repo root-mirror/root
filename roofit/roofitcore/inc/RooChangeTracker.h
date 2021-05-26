@@ -40,10 +40,10 @@ public:
 
 protected:
 
-  RooListProxy     _realSet ;        // List of reals to track 
+  RooListProxy     _realSet ;        // List of reals to track
   RooListProxy     _catSet ;         // List of categories to check
   std::vector<Double_t> _realRef ;   // Reference values for reals
-  std::vector<Int_t>    _catRef ;    // Reference valyes for categories
+  std::vector<Int_t>    _catRef ;    // Reference values for categories
   Bool_t       _checkVal ;           // Check contents as well if true
 
   Bool_t        _init ; //!

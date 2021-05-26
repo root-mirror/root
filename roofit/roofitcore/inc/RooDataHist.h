@@ -38,7 +38,7 @@ class RooDataHist : public RooAbsData, public RooDirItem {
 public:
 
   // Constructors, factory methods etc.
-  RooDataHist() ; 
+  RooDataHist() ;
   RooDataHist(const char *name, const char *title, const RooArgSet& vars, const char* binningName=0) ;
   RooDataHist(const char *name, const char *title, const RooArgSet& vars, const RooAbsData& data, Double_t initWgt=1.0) ;
   RooDataHist(const char *name, const char *title, const RooArgList& vars, const TH1* hist, Double_t initWgt=1.0) ;
@@ -57,7 +57,7 @@ public:
 
   /// Return empty clone of this RooDataHist.
   RooAbsData* emptyClone(const char* newName=0, const char* newTitle=0, const RooArgSet*vars=0, const char* /*wgtVarName*/=0) const override {
-    return new RooDataHist(newName?newName:GetName(),newTitle?newTitle:GetTitle(),vars?*vars:*get()) ; 
+    return new RooDataHist(newName?newName:GetName(),newTitle?newTitle:GetTitle(),vars?*vars:*get()) ;
   }
 
   /// Add `wgt` to the bin content enclosed by the coordinates passed in `row`.
@@ -102,7 +102,7 @@ public:
   double weightSquared(std::size_t i) const { return get_sumw2(i); }
   /// Return bin volume of i-th bin. \see getIndex()
   double binVolume(std::size_t i) const { return _binv[i]; }
-  double binVolume(const RooArgSet& bin) const; 
+  double binVolume(const RooArgSet& bin) const;
   /// Return true if bin `i` is considered valid within the current range definitions of all observables. \see getIndex()
   bool valid(std::size_t i) const { return i <= static_cast<std::size_t>(_arrSize) && (_maskedWeights.empty() || _maskedWeights[i] != 0.);}
 
@@ -221,11 +221,11 @@ protected:
   Int_t calcTreeIndex() const { return static_cast<Int_t>(calcTreeIndex(_vars, true)); }
 
   void setAllWeights(Double_t value) ;
- 
+
   void initialize(const char* binningName=0,Bool_t fillTree=kTRUE) ;
-  RooDataHist(const char* name, const char* title, RooDataHist* h, const RooArgSet& varSubset, 
+  RooDataHist(const char* name, const char* title, RooDataHist* h, const RooArgSet& varSubset,
         const RooFormulaVar* cutVar, const char* cutRange, Int_t nStart, Int_t nStop, Bool_t copyCache) ;
-  RooAbsData* reduceEng(const RooArgSet& varSubset, const RooFormulaVar* cutVar, const char* cutRange=0, 
+  RooAbsData* reduceEng(const RooArgSet& varSubset, const RooFormulaVar* cutVar, const char* cutRange=0,
                   std::size_t nStart=0, std::size_t nStop=std::numeric_limits<std::size_t>::max(), Bool_t copyCache=kTRUE) override;
   double interpolateDim(int iDim, double xval, size_t centralIdx, int intOrder, bool correctForBinSize, bool cdfBoundaries) ;
   const std::vector<double>& calculatePartialBinVolume(const RooArgSet& dimSet) const ;
@@ -261,7 +261,7 @@ protected:
   double*         _binv {nullptr}; //[_arrSize] Bin volume array
 
   mutable std::vector<double> _maskedWeights; //! Copy of _wgtVec, but masked events have a weight of zero.
- 
+
   mutable std::size_t _curIndex{std::numeric_limits<std::size_t>::max()}; // Current index
 
   mutable std::unordered_map<int,std::vector<double>> _pbinvCache ; //! Cache for arrays of partial bin volumes

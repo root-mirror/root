@@ -50,7 +50,7 @@ public:
   RooPlot(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
   RooPlot(const RooAbsRealLValue &var1, const RooAbsRealLValue &var2);
   RooPlot(const RooAbsRealLValue &var1, const RooAbsRealLValue &var2,
-	  Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
+     Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
   virtual ~RooPlot();
 
   static RooPlot* frame(const RooAbsRealLValue &var, Double_t xmin, Double_t xmax, Int_t nBins);
@@ -76,37 +76,37 @@ public:
   void SetAxisRange(Double_t xmin, Double_t xmax, Option_t* axis = "X") ;
   void SetBarOffset(Float_t offset = 0.25) ;
   void SetBarWidth(Float_t width = 0.5) ;
-  void SetContour(Int_t nlevels, const Double_t* levels = 0) ; 
-  void SetContourLevel(Int_t level, Double_t value) ; 
-  void SetDrawOption(Option_t* option = "") ; 
-  void SetFillAttributes() ; 
-  void SetFillColor(Color_t fcolor) ; 
-  void SetFillStyle(Style_t fstyle) ; 
-  void SetLabelColor(Color_t color = 1, Option_t* axis = "X") ; 
-  void SetLabelFont(Style_t font = 62, Option_t* axis = "X") ; 
-  void SetLabelOffset(Float_t offset = 0.005, Option_t* axis = "X") ; 
-  void SetLabelSize(Float_t size = 0.02, Option_t* axis = "X") ; 
-  void SetLineAttributes() ; 
-  void SetLineColor(Color_t lcolor) ; 
-  void SetLineStyle(Style_t lstyle) ; 
-  void SetLineWidth(Width_t lwidth) ; 
-  void SetMarkerAttributes() ; 
-  void SetMarkerColor(Color_t tcolor = 1) ; 
-  void SetMarkerSize(Size_t msize = 1) ; 
-  void SetMarkerStyle(Style_t mstyle = 1) ; 
+  void SetContour(Int_t nlevels, const Double_t* levels = 0) ;
+  void SetContourLevel(Int_t level, Double_t value) ;
+  void SetDrawOption(Option_t* option = "") ;
+  void SetFillAttributes() ;
+  void SetFillColor(Color_t fcolor) ;
+  void SetFillStyle(Style_t fstyle) ;
+  void SetLabelColor(Color_t color = 1, Option_t* axis = "X") ;
+  void SetLabelFont(Style_t font = 62, Option_t* axis = "X") ;
+  void SetLabelOffset(Float_t offset = 0.005, Option_t* axis = "X") ;
+  void SetLabelSize(Float_t size = 0.02, Option_t* axis = "X") ;
+  void SetLineAttributes() ;
+  void SetLineColor(Color_t lcolor) ;
+  void SetLineStyle(Style_t lstyle) ;
+  void SetLineWidth(Width_t lwidth) ;
+  void SetMarkerAttributes() ;
+  void SetMarkerColor(Color_t tcolor = 1) ;
+  void SetMarkerSize(Size_t msize = 1) ;
+  void SetMarkerStyle(Style_t mstyle = 1) ;
   void SetName(const char *name) ;
   void SetTitle(const char *name) ;
   void SetNameTitle(const char *name, const char* title) ;
-  void SetNdivisions(Int_t n = 510, Option_t* axis = "X") ; 
-  void SetOption(Option_t* option = " ") ; 
-  void SetStats(Bool_t stats = kTRUE) ; 
-  void SetTickLength(Float_t length = 0.02, Option_t* axis = "X") ; 
-  void SetTitleFont(Style_t font = 62, Option_t* axis = "X") ; 
-  void SetTitleOffset(Float_t offset = 1, Option_t* axis = "X") ; 
-  void SetTitleSize(Float_t size = 0.02, Option_t* axis = "X") ; 
-  void SetXTitle(const char* title) ; 
-  void SetYTitle(const char* title) ; 
-  void SetZTitle(const char* title) ; 
+  void SetNdivisions(Int_t n = 510, Option_t* axis = "X") ;
+  void SetOption(Option_t* option = " ") ;
+  void SetStats(Bool_t stats = kTRUE) ;
+  void SetTickLength(Float_t length = 0.02, Option_t* axis = "X") ;
+  void SetTitleFont(Style_t font = 62, Option_t* axis = "X") ;
+  void SetTitleOffset(Float_t offset = 1, Option_t* axis = "X") ;
+  void SetTitleSize(Float_t size = 0.02, Option_t* axis = "X") ;
+  void SetXTitle(const char* title) ;
+  void SetYTitle(const char* title) ;
+  void SetZTitle(const char* title) ;
 
   // container management
   const char* nameOf(Int_t idx) const ;
@@ -167,18 +167,18 @@ public:
   Bool_t setDrawOptions(const char *name, TString options);
 
   Bool_t getInvisible(const char* name) const ;
-  void setInvisible(const char* name, Bool_t flag=kTRUE) ; 
- 
+  void setInvisible(const char* name, Bool_t flag=kTRUE) ;
+
   virtual void SetMaximum(Double_t maximum = -1111) ;
   virtual void SetMinimum(Double_t minimum = -1111) ;
 
   ///Shortcut for RooPlot::chiSquare(const char* pdfname, const char* histname, int nFitParam=0)
-  Double_t chiSquare(int nFitParam=0) const { return chiSquare(0,0,nFitParam) ; } 
+  Double_t chiSquare(int nFitParam=0) const { return chiSquare(0,0,nFitParam) ; }
   Double_t chiSquare(const char* pdfname, const char* histname, int nFitParam=0) const ;
 
   RooHist* residHist(const char* histname=0, const char* pdfname=0,bool normalize=false, bool useAverage=true) const ;
   ///Uses residHist() and sets normalize=true
-  RooHist* pullHist(const char* histname=0, const char* pdfname=0, bool useAverage=true) const 
+  RooHist* pullHist(const char* histname=0, const char* pdfname=0, bool useAverage=true) const
     { return residHist(histname,pdfname,true,useAverage); }
 
   void Browse(TBrowser *b) ;
@@ -221,7 +221,7 @@ protected:
 
 
   void initialize();
-  TString histName() const ; 
+  TString histName() const ;
   TString caller(const char *method) const;
   void updateYAxis(Double_t ymin, Double_t ymax, const char *label= "");
   void updateFitRangeNorm(const TH1* hist);

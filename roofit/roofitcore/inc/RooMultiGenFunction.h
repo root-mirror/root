@@ -47,7 +47,7 @@ protected:
   double DoEval(const double*) const ;
 
   RooFunctor _ftor ;
-  
+
   ClassDef(RooMultiGenFunction,0) // Export RooAbsReal as functor
 };
 

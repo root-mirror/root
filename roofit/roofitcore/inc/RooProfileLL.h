@@ -19,7 +19,7 @@
 #include <string>
 
 class RooMinimizer ;
-class RooMinuit ; 
+class RooMinuit ;
 
 #define MINIMIZER RooMinimizer
 
@@ -41,7 +41,7 @@ public:
   const RooArgSet& bestFitObs() const ;
 
   virtual RooAbsReal* createProfile(const RooArgSet& paramsOfInterest) ;
-  
+
   virtual Bool_t redirectServersHook(const RooAbsCollection& /*newServerList*/, Bool_t /*mustReplaceAll*/, Bool_t /*nameChange*/, Bool_t /*isRecursive*/) ;
 
   void clearAbsMin() { _absMinValid = kFALSE ; }
@@ -59,7 +59,7 @@ protected:
   RooSetProxy _par ;     // Marginialized parameters of likelihood
   Bool_t _startFromMin ; // Always start minimization for global minimum?
 
-  TIterator* _piter ; //! Iterator over profile likelihood parameters to be minimized 
+  TIterator* _piter ; //! Iterator over profile likelihood parameters to be minimized
   TIterator* _oiter ; //! Iterator of profile likelihood output parameter(s)
 
   mutable MINIMIZER* _minimizer ; //! Internal minuit instance
@@ -77,5 +77,5 @@ private:
 
   ClassDef(RooProfileLL,0) // Real-valued function representing profile likelihood of external (likelihood) function
 };
- 
+
 #endif

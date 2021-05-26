@@ -19,7 +19,7 @@
 #include "RooAbsPdf.h"
 #include "RooCategoryProxy.h"
 #include "RooRealProxy.h"
-#include "TString.h" 
+#include "TString.h"
 
 class RooArgList ;
 
@@ -27,7 +27,7 @@ class RooArgList ;
 class RooEfficiency : public RooAbsPdf {
 public:
   // Constructors, assignment etc
-  inline RooEfficiency() { 
+  inline RooEfficiency() {
     // Default constructor
   }
   RooEfficiency(const char *name, const char *title, const RooAbsReal& effFunc, const RooAbsCategory& cat, const char* sigCatName);
@@ -42,7 +42,7 @@ protected:
 
   // Function evaluation
   virtual Double_t evaluate() const ;
-  RooCategoryProxy _cat ; // Accept/reject categort
+  RooCategoryProxy _cat ; // Accept/reject category
   RooRealProxy _effFunc ; // Efficiency modeling function
   TString _sigCatName ;   // Name of accept state of accept/reject category
 

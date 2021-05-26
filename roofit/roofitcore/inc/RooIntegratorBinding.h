@@ -21,7 +21,7 @@
 
 class RooIntegratorBinding : public RooAbsFunc {
 public:
-  RooIntegratorBinding(RooAbsIntegrator& integrator) : 
+  RooIntegratorBinding(RooAbsIntegrator& integrator) :
     RooAbsFunc(integrator.integrand()->getDimension()-1), _integrator(&integrator) {} ;
   virtual ~RooIntegratorBinding() {} ;
 
@@ -31,7 +31,7 @@ public:
 
 protected:
   RooAbsIntegrator* _integrator ;  // Numeric integrator
- 
+
 
   ClassDef(RooIntegratorBinding,0) // Function binding representing output of numeric integrator
 };

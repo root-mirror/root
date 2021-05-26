@@ -27,14 +27,14 @@ public:
 
   // Constructors, assignment etc
   RooChi2Var(const char *name, const char* title, RooAbsReal& func, RooDataHist& data,
-	     const RooCmdArg& arg1                  , const RooCmdArg& arg2=RooCmdArg::none(),const RooCmdArg& arg3=RooCmdArg::none(),
-	     const RooCmdArg& arg4=RooCmdArg::none(), const RooCmdArg& arg5=RooCmdArg::none(),const RooCmdArg& arg6=RooCmdArg::none(),
-	     const RooCmdArg& arg7=RooCmdArg::none(), const RooCmdArg& arg8=RooCmdArg::none(),const RooCmdArg& arg9=RooCmdArg::none()) ;
+        const RooCmdArg& arg1                  , const RooCmdArg& arg2=RooCmdArg::none(),const RooCmdArg& arg3=RooCmdArg::none(),
+        const RooCmdArg& arg4=RooCmdArg::none(), const RooCmdArg& arg5=RooCmdArg::none(),const RooCmdArg& arg6=RooCmdArg::none(),
+        const RooCmdArg& arg7=RooCmdArg::none(), const RooCmdArg& arg8=RooCmdArg::none(),const RooCmdArg& arg9=RooCmdArg::none()) ;
 
   RooChi2Var(const char *name, const char* title, RooAbsPdf& pdf, RooDataHist& data,
-	     const RooCmdArg& arg1                  , const RooCmdArg& arg2=RooCmdArg::none(),const RooCmdArg& arg3=RooCmdArg::none(),
-	     const RooCmdArg& arg4=RooCmdArg::none(), const RooCmdArg& arg5=RooCmdArg::none(),const RooCmdArg& arg6=RooCmdArg::none(),
-	     const RooCmdArg& arg7=RooCmdArg::none(), const RooCmdArg& arg8=RooCmdArg::none(),const RooCmdArg& arg9=RooCmdArg::none()) ;
+        const RooCmdArg& arg1                  , const RooCmdArg& arg2=RooCmdArg::none(),const RooCmdArg& arg3=RooCmdArg::none(),
+        const RooCmdArg& arg4=RooCmdArg::none(), const RooCmdArg& arg5=RooCmdArg::none(),const RooCmdArg& arg6=RooCmdArg::none(),
+        const RooCmdArg& arg7=RooCmdArg::none(), const RooCmdArg& arg8=RooCmdArg::none(),const RooCmdArg& arg9=RooCmdArg::none()) ;
 
   enum FuncMode { Function, Pdf, ExtendedPdf } ;
 
@@ -55,23 +55,23 @@ public:
     // Virtual constructor
     return new RooChi2Var(name,title,(RooAbsPdf&)pdf,(RooDataHist&)dhist,projDeps,_funcMode,cfg,_etype) ;
   }
-  
+
   virtual ~RooChi2Var();
 
-  virtual Double_t defaultErrorLevel() const { 
+  virtual Double_t defaultErrorLevel() const {
     // The default error level for MINUIT error analysis for a chi^2 is 1.0
-    return 1.0 ; 
+    return 1.0 ;
   }
 
 protected:
 
   static RooArgSet _emptySet ;        // Supports named argument constructor
- 
+
   RooDataHist::ErrorType _etype ;     // Error type store in associated RooDataHist
   FuncMode _funcMode ;                // Function, P.d.f. or extended p.d.f?
 
   virtual Double_t evaluatePartition(std::size_t firstEvent, std::size_t lastEvent, std::size_t stepSize) const ;
-  
+
   ClassDef(RooChi2Var,1) // Chi^2 function of p.d.f w.r.t a binned dataset
 };
 

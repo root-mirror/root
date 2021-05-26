@@ -31,8 +31,8 @@ public:
 
   RooNumConvolution() ;
 
-  RooNumConvolution(const char *name, const char *title, 
-	         RooRealVar& convVar, RooAbsReal& pdf, RooAbsReal& resmodel, const RooNumConvolution* proto=0) ;
+  RooNumConvolution(const char *name, const char *title,
+            RooRealVar& convVar, RooAbsReal& pdf, RooAbsReal& resmodel, const RooNumConvolution* proto=0) ;
 
   RooNumConvolution(const RooNumConvolution& other, const char* name=0) ;
 
@@ -78,7 +78,7 @@ protected:
   mutable RooArgSet    _ownedClonedModelSet ; // Owning set of cloned model components
 
   mutable RooAbsReal*  _cloneVar ;        // Pointer to cloned convolution variable
-  mutable RooAbsReal*  _clonePdf ;        // Pointer to cloned PDF 
+  mutable RooAbsReal*  _clonePdf ;        // Pointer to cloned PDF
   mutable RooAbsReal*  _cloneModel ;      // Pointer to cloned model
 
   friend class RooConvGenContext ;

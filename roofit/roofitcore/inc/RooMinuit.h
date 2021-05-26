@@ -62,21 +62,21 @@ public:
   Int_t improve() ;
 
   RooFitResult* save(const char* name=0, const char* title=0) ;
-  RooPlot* contour(RooRealVar& var1, RooRealVar& var2, 
-		   Double_t n1=1, Double_t n2=2, Double_t n3=0,
-		   Double_t n4=0, Double_t n5=0, Double_t n6=0) ;
+  RooPlot* contour(RooRealVar& var1, RooRealVar& var2,
+         Double_t n1=1, Double_t n2=2, Double_t n3=0,
+         Double_t n4=0, Double_t n5=0, Double_t n6=0) ;
 
-  Int_t setPrintLevel(Int_t newLevel) ; 
+  Int_t setPrintLevel(Int_t newLevel) ;
   void setNoWarn() ;
   Int_t setWarnLevel(Int_t newLevel) ;
   void setPrintEvalErrors(Int_t numEvalErrors) { _printEvalErrors = numEvalErrors ; }
   void setVerbose(Bool_t flag=kTRUE) { _verbose = flag ; }
   void setProfile(Bool_t flag=kTRUE) { _profile = flag ; }
   void setMaxEvalMultiplier(Int_t n) { _maxEvalMult = n ; }
-  Bool_t setLogFile(const char* logfile=0) ;  
+  Bool_t setLogFile(const char* logfile=0) ;
 
   static void cleanup() ;
-  
+
   Int_t evalCounter() const { return _evalCounter ; }
   void zeroEvalCount() { _evalCounter = 0 ; }
 
@@ -90,7 +90,7 @@ protected:
   void profileStart() ;
   void profileStop() ;
 
-  Bool_t synchronize(Bool_t verbose) ;  
+  Bool_t synchronize(Bool_t verbose) ;
   void backProp() ;
 
   inline Int_t getNPar() const { return _nPar ; }
@@ -98,7 +98,7 @@ protected:
   inline Double_t& maxFCN() { return _maxFCN ; }
 
   Double_t getPdfParamVal(Int_t index) ;
-  Double_t getPdfParamErr(Int_t index) ;	
+  Double_t getPdfParamErr(Int_t index) ;
   virtual Bool_t setPdfParamVal(Int_t index, Double_t value, Bool_t verbose=kFALSE) ;
   void setPdfParamErr(Int_t index, Double_t value) ;
   void setPdfParamErr(Int_t index, Double_t loVal, Double_t hiVal) ;
@@ -129,7 +129,7 @@ private:
   RooArgList* _initConstParamList ;
   RooAbsReal* _func ;
 
-  Double_t    _maxFCN ;  
+  Double_t    _maxFCN ;
   std::ofstream*   _logfile ;
   Bool_t      _verbose ;
   TStopwatch  _timer ;
@@ -137,12 +137,12 @@ private:
 
   TMatrixDSym* _extV ;
 
-  static TVirtualFitter *_theFitter ; 
+  static TVirtualFitter *_theFitter ;
 
   std::vector<std::pair<std::string,int> > _statusHistory ;
 
   RooMinuit(const RooMinuit&) ;
-	
+
   ClassDef(RooMinuit,0) // RooFit minimizer based on MINUIT
 } ;
 

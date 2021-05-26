@@ -44,7 +44,7 @@ public:
 protected:
 
   TUUID _uuid ; // Unique object ID
-  Int_t _refCount ; //! Use count 
+  Int_t _refCount ; //! Use count
   Int_t _inSharedList ; //! Is in shared list
 
   ClassDef(RooSharedProperties,1) // Abstract interface for shared property implementations

@@ -46,12 +46,12 @@ public:
 protected:
 
   friend class RooNumIntFactory ;
-  static void registerIntegrator(RooNumIntFactory& fact) ;	
+  static void registerIntegrator(RooNumIntFactory& fact) ;
 
   void initialize(const RooAbsFunc* function=0) ;
 
   enum LimitsCase { Invalid, ClosedBothEnds, OpenBothEnds, OpenBelowSpansZero, OpenBelow,
-		    OpenAboveSpansZero, OpenAbove };
+          OpenAboveSpansZero, OpenAbove };
   LimitsCase limitsCase() const;
   LimitsCase _case; // Configuration of limits
   mutable Double_t _xmin, _xmax;  // Value of limits
@@ -61,7 +61,7 @@ protected:
   RooInvTransform *_function;   // Binding with inverse of function
   RooNumIntConfig  _config ;  // Configuration object
   mutable RooIntegrator1D *_integrator1,*_integrator2,*_integrator3; // Piece integrators
-  
+
   ClassDef(RooImproperIntegrator1D,0) // 1-dimensional improper integration engine
 };
 

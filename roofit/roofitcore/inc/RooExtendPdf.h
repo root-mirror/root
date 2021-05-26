@@ -24,7 +24,7 @@ public:
 
   RooExtendPdf() ;
   RooExtendPdf(const char *name, const char *title, RooAbsPdf& pdf,
-	       RooAbsReal& norm, const char* rangeName=0) ;
+          RooAbsReal& norm, const char* rangeName=0) ;
   RooExtendPdf(const RooExtendPdf& other, const char* name=0) ;
   virtual TObject* clone(const char* newname) const { return new RooExtendPdf(*this,newname) ; }
   virtual ~RooExtendPdf() ;
@@ -40,7 +40,7 @@ public:
     // Forward calculation of analytical integrals to input p.d.f
     return _pdf->analyticalIntegralWN(code, normSet, rangeName) ;
   }
-  
+
   virtual Bool_t selfNormalized() const { return kTRUE ; }
   virtual ExtendMode extendMode() const { return CanBeExtended ; }
   virtual Double_t expectedEvents(const RooArgSet* nset) const ;

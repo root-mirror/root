@@ -27,7 +27,7 @@ class RooSetPair : public TObject {
 public:
 
   // Initial element ctor
-  RooSetPair(const RooArgSet* set1=0, const RooArgSet* set2=0) : 
+  RooSetPair(const RooArgSet* set1=0, const RooArgSet* set2=0) :
     _set1(const_cast<RooArgSet*>(set1)), _set2(const_cast<RooArgSet*>(set2)) {
   }
 
@@ -38,11 +38,11 @@ public:
   RooArgSet* _set2 ;
 
   virtual ULong_t Hash() const {
-    return TString::Hash((void*)&_set1,2*sizeof(void*)) ;  
+    return TString::Hash((void*)&_set1,2*sizeof(void*)) ;
   }
 
 protected:
-  
+
 
   // Forbidden
   RooSetPair(const RooSetPair&) ;

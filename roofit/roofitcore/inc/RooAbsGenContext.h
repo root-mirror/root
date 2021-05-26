@@ -26,23 +26,23 @@ class RooDataSet;
 class RooAbsGenContext : public TNamed, public RooPrintable {
 public:
   RooAbsGenContext(const RooAbsPdf &model, const RooArgSet &vars, const RooDataSet *prototype= 0, const RooArgSet* auxProto=0,
-		   Bool_t _verbose= kFALSE) ;
+         Bool_t _verbose= kFALSE) ;
   virtual ~RooAbsGenContext();
-  
+
   virtual RooDataSet *generate(Double_t nEvents= 0, Bool_t skipInit=kFALSE, Bool_t extendedMode=kFALSE);
 
-  Bool_t isValid() const { 
+  Bool_t isValid() const {
     // If true generator context is in a valid state
-    return _isValid; 
+    return _isValid;
   }
 
-  inline void setVerbose(Bool_t verbose= kTRUE) { 
+  inline void setVerbose(Bool_t verbose= kTRUE) {
     // Set/clear verbose messaging
-    _verbose= verbose; 
+    _verbose= verbose;
   }
-  inline Bool_t isVerbose() const { 
+  inline Bool_t isVerbose() const {
     // If true verbose messaging is active
-    return _verbose; 
+    return _verbose;
   }
 
   virtual void setProtoDataOrder(Int_t* lut) ;

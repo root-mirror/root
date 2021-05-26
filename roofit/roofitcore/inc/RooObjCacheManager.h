@@ -36,7 +36,7 @@ public:
   RooObjCacheManager(RooAbsArg* owner=0, Int_t maxSize=2, Bool_t clearCacheOnServerRedirect=kTRUE, Bool_t allowOptimize=kFALSE) ;
   RooObjCacheManager(const RooObjCacheManager& other, RooAbsArg* owner=0) ;
   virtual ~RooObjCacheManager() ;
-  
+
   virtual Bool_t redirectServersHook(const RooAbsCollection& /*newServerList*/, Bool_t /*mustReplaceAll*/, Bool_t /*nameChange*/, Bool_t /*isRecursive*/) ;
   virtual void operModeHook() ;
   virtual void optimizeCacheMode(const RooArgSet& /*obs*/, RooArgSet& /*optSet*/, RooLinkedList& /*processedNodes*/) ;
@@ -51,20 +51,20 @@ public:
   static Bool_t clearObsList() { return _clearObsList ; }
 
   void setClearOnRedirect(Bool_t flag) { _clearOnRedirect = flag ; }
- 
+
 protected:
 
   Bool_t _clearOnRedirect ;
-  Bool_t _allowOptimize ; 
-  Bool_t _optCacheModeSeen  ;              //! 
+  Bool_t _allowOptimize ;
+  Bool_t _optCacheModeSeen  ;              //!
 
-  RooArgSet* _optCacheObservables ;        //! current optCacheObservables 
+  RooArgSet* _optCacheObservables ;        //! current optCacheObservables
 
   static Bool_t _clearObsList ; // Clear obslist on sterilize?
-  
+
   ClassDef(RooObjCacheManager,3) // Cache manager for generic caches that contain RooAbsArg objects
 } ;
 
 
 
-#endif 
+#endif

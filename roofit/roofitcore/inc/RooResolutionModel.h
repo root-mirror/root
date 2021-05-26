@@ -72,7 +72,7 @@ protected:
 
   Int_t _basisCode ;         // Identifier code for selected basis function
   RooFormulaVar* _basis ;    // Basis function convolved with this resolution model
-  Bool_t _ownBasis ;         // Flag indicating ownership of _basis 
+  Bool_t _ownBasis ;         // Flag indicating ownership of _basis
 
   ClassDef(RooResolutionModel, 2) // Abstract Resolution Model
 };

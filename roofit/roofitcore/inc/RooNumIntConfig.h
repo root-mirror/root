@@ -49,12 +49,12 @@ public:
   // Set/get absolute and relative precision convergence criteria
   Double_t epsAbs() const { return _epsAbs ; }
   Double_t epsRel() const { return _epsRel ; }
-  void setEpsAbs(Double_t newEpsAbs) ; 
+  void setEpsAbs(Double_t newEpsAbs) ;
   void setEpsRel(Double_t newEpsRel) ;
 
-  // Set/get switch that activates printing of number of required 
+  // Set/get switch that activates printing of number of required
   // function evaluations for each numeric integration
-  Bool_t printEvalCounter() const { return _printEvalCounter ; } 
+  Bool_t printEvalCounter() const { return _printEvalCounter ; }
   void setPrintEvalCounter(Bool_t newVal) { _printEvalCounter = newVal ; }
 
   static RooNumIntConfig& defaultConfig() ;
@@ -65,7 +65,7 @@ public:
 
   void printMultiline(std::ostream &os, Int_t content, Bool_t verbose, TString indent= "") const;
 
-  virtual StyleOption defaultPrintStyle(Option_t* opt) const ; 
+  virtual StyleOption defaultPrintStyle(Option_t* opt) const ;
   inline virtual void Print(Option_t *options= 0) const {
     printStream(defaultPrintStream(),defaultPrintContents(options),defaultPrintStyle(options));
   }
@@ -83,7 +83,7 @@ protected:
   RooCategory _methodNDOpen ; // Selects integration method for open ended ND integrals
   RooLinkedList _configSets ; // List of configuration sets for individual integration methods
 
-  ClassDef(RooNumIntConfig,1) // Numeric Integrator configuration 
+  ClassDef(RooNumIntConfig,1) // Numeric Integrator configuration
 };
 
 #endif

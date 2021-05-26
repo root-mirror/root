@@ -30,22 +30,22 @@ public:
   virtual RooAbsGenContext* genContext(const RooArgSet &vars, const RooDataSet *prototype,
                                        const RooArgSet* auxProto, Bool_t verbose) const;
 
-  virtual Bool_t forceAnalyticalInt(const RooAbsArg& /*dep*/) const { 
+  virtual Bool_t forceAnalyticalInt(const RooAbsArg& /*dep*/) const {
     // Return kTRUE to force RooRealIntegral to offer all observables for internal integration
-    return kTRUE ; 
+    return kTRUE ;
   }
   Int_t getAnalyticalIntegralWN(RooArgSet& allVars, RooArgSet& numVars, const RooArgSet* normSet, const char* rangeName=0) const ;
   Double_t analyticalIntegralWN(Int_t code, const RooArgSet* normSet, const char* rangeName=0) const ;
-  
+
 protected:
-  
-  const RooAbsPdf* pdf() const { 
+
+  const RooAbsPdf* pdf() const {
     // Return pointer to pdf in product
-    return (RooAbsPdf*) _pdf.absArg() ; 
+    return (RooAbsPdf*) _pdf.absArg() ;
   }
-  const RooAbsReal* eff() const { 
+  const RooAbsReal* eff() const {
     // Return pointer to efficiency function in product
-    return (RooAbsReal*) _eff.absArg() ; 
+    return (RooAbsReal*) _eff.absArg() ;
   }
 
   // Function evaluation
@@ -53,12 +53,12 @@ protected:
 
   class CacheElem : public RooAbsCacheElement {
   public:
-    CacheElem() : _clone(0), _int(0) {} 
+    CacheElem() : _clone(0), _int(0) {}
     virtual ~CacheElem() { delete _int ; delete _clone ; }
     // Payload
     RooArgSet   _intObs ;
     RooEffProd* _clone ;
-    RooAbsReal* _int ;    
+    RooAbsReal* _int ;
     // Cache management functions
     virtual RooArgList containedArgs(Action) ;
   } ;

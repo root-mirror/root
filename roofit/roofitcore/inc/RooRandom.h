@@ -35,7 +35,7 @@ public:
 
   static RooQuasiRandomGenerator *quasiGenerator();
   static Bool_t quasi(UInt_t dimension, Double_t vector[],
-		      RooQuasiRandomGenerator *generator= quasiGenerator());
+            RooQuasiRandomGenerator *generator= quasiGenerator());
 
 private:
   RooRandom();

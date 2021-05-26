@@ -37,46 +37,46 @@ public:
   virtual ~RooHistFunc() ;
 
   /// Return RooDataHist that is represented.
-  RooDataHist& dataHist()  { 
-    return *_dataHist ; 
+  RooDataHist& dataHist()  {
+    return *_dataHist ;
   }
 
   /// Return RooDataHist that is represented.
-  const RooDataHist& dataHist() const { 
-    return *_dataHist ; 
+  const RooDataHist& dataHist() const {
+    return *_dataHist ;
   }
-  
-  /// Set histogram interpolation order.
-  void setInterpolationOrder(Int_t order) { 
 
-    _intOrder = order ; 
+  /// Set histogram interpolation order.
+  void setInterpolationOrder(Int_t order) {
+
+    _intOrder = order ;
   }
 
   /// Return histogram interpolation order.
   Int_t getInterpolationOrder() const {
 
-    return _intOrder ; 
+    return _intOrder ;
   }
 
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ;
 
   /// Set use of special boundary conditions for c.d.f.s
-  void setCdfBoundaries(Bool_t flag) { 
-    _cdfBoundaries = flag ; 
+  void setCdfBoundaries(Bool_t flag) {
+    _cdfBoundaries = flag ;
   }
 
   /// If true, special boundary conditions for c.d.f.s are used
-  Bool_t getCdfBoundaries() const { 
+  Bool_t getCdfBoundaries() const {
 
-    return _cdfBoundaries ; 
+    return _cdfBoundaries ;
   }
 
   virtual Int_t getMaxVal(const RooArgSet& vars) const;
   virtual Double_t maxVal(Int_t code) const;
 
   virtual std::list<Double_t>* binBoundaries(RooAbsRealLValue& /*obs*/, Double_t /*xlo*/, Double_t /*xhi*/) const ;
-  virtual std::list<Double_t>* plotSamplingHint(RooAbsRealLValue& obs, Double_t xlo, Double_t xhi) const ; 
+  virtual std::list<Double_t>* plotSamplingHint(RooAbsRealLValue& obs, Double_t xlo, Double_t xhi) const ;
   virtual Bool_t isBinnedDistribution(const RooArgSet&) const { return _intOrder==0 ; }
   RooArgSet const& getHistObsList() const { return _histObsList; }
 

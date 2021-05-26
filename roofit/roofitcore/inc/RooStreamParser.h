@@ -45,7 +45,7 @@ public:
   void zapToEnd(Bool_t inclContLines=kFALSE) ;
 
   Bool_t isPunctChar(char c) const ;
-  
+
 protected:
 
   std::istream* _is ;
@@ -54,7 +54,7 @@ protected:
   TString _prefix ;
   TString _punct ;
 
-  
+
   ClassDef(RooStreamParser,0) // Utility class that parses std::iostream data into tokens
 };
 

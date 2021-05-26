@@ -36,20 +36,20 @@ public:
   virtual bool operator!=(const TIterator &aIter) const ;
   virtual TObject *operator*() const ;
 protected:
-  
+
   friend class RooDataHist ;
   RooDataHistSliceIter(RooDataHist& hist, RooAbsArg& sliceArg) ;
 
   RooDataHist* _hist ;
-  RooAbsArg* _sliceArg ;  
+  RooAbsArg* _sliceArg ;
   Int_t      _baseIndex ;
   Int_t      _stepSize ;
   Int_t      _nStep ;
   Int_t      _curStep ;
-  
-  TIterator& operator=(const TIterator&) { 
-    // Prohibit iterator assignment 
-    return *this ; 
+
+  TIterator& operator=(const TIterator&) {
+    // Prohibit iterator assignment
+    return *this ;
   }
 
   ClassDef(RooDataHistSliceIter,0) // Iterator over a one-dimensional slice of a RooDataHist

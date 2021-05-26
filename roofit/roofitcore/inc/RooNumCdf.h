@@ -30,5 +30,5 @@ private:
   ClassDef(RooNumCdf,1) // Numeric calculator for CDF for a given PDF
 
 };
- 
+
 #endif

@@ -31,15 +31,15 @@ public:
   RooCmdConfig(const RooCmdConfig& other) ;
   ~RooCmdConfig();
 
-  void setVerbose(Bool_t flag) { 
+  void setVerbose(Bool_t flag) {
     // If flag is true verbose messaging is activated
-    _verbose = flag ; 
+    _verbose = flag ;
   }
 
-  void allowUndefined(Bool_t flag=kTRUE) { 
+  void allowUndefined(Bool_t flag=kTRUE) {
     // If flag is true the processing of unrecognized RooCmdArgs
     // is not considered an error
-    _allowUndefined = flag ; 
+    _allowUndefined = flag ;
   }
   void defineDependency(const char* refArgName, const char* neededArgName) ;
   void defineMutex(const char* argName1, const char* argName2) ;
@@ -47,9 +47,9 @@ public:
   void defineMutex(const char* argName1, const char* argName2, const char* argName3, const char* argName4) ;
   void defineMutex(const char* argName1, const char* argName2, const char* argName3, const char* argName4, const char* argName5) ;
   void defineRequiredArgs(const char* argName1, const char* argName2=0,
-			  const char* argName3=0, const char* argName4=0,
-			  const char* argName5=0, const char* argName6=0,
-			  const char* argName7=0, const char* argName8=0) ;
+           const char* argName3=0, const char* argName4=0,
+           const char* argName5=0, const char* argName6=0,
+           const char* argName7=0, const char* argName8=0) ;
 
   Bool_t defineInt(const char* name, const char* argName, Int_t intNum, Int_t defValue=0) ;
   Bool_t defineDouble(const char* name, const char* argName, Int_t doubleNum, Double_t defValue=0.) ;
@@ -58,9 +58,9 @@ public:
   Bool_t defineSet(const char* name, const char* argName, Int_t setNum, const RooArgSet* set=0) ;
 
   Bool_t process(const RooCmdArg& arg) ;
-  Bool_t process(const RooCmdArg& arg1, const RooCmdArg& arg2, 
-                 const RooCmdArg& arg3=RooCmdArg::none(), const RooCmdArg& arg4=RooCmdArg::none(), 
-                 const RooCmdArg& arg5=RooCmdArg::none(), const RooCmdArg& arg6=RooCmdArg::none(), 
+  Bool_t process(const RooCmdArg& arg1, const RooCmdArg& arg2,
+                 const RooCmdArg& arg3=RooCmdArg::none(), const RooCmdArg& arg4=RooCmdArg::none(),
+                 const RooCmdArg& arg5=RooCmdArg::none(), const RooCmdArg& arg6=RooCmdArg::none(),
                  const RooCmdArg& arg7=RooCmdArg::none(), const RooCmdArg& arg8=RooCmdArg::none()) ;
   Bool_t process(const RooLinkedList& argList) ;
   /// Process several RooCmdArg using iterators.
@@ -91,20 +91,20 @@ public:
   void print() ;
 
 
-  static Int_t decodeIntOnTheFly(const char* callerID, const char* cmdArgName, Int_t intIdx, Int_t defVal, const RooCmdArg& arg1, 
-				 const RooCmdArg& arg2=RooCmdArg(), const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
-				 const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(), const RooCmdArg& arg7=RooCmdArg(),
-				 const RooCmdArg& arg8=RooCmdArg(), const RooCmdArg& arg9=RooCmdArg()) ;
+  static Int_t decodeIntOnTheFly(const char* callerID, const char* cmdArgName, Int_t intIdx, Int_t defVal, const RooCmdArg& arg1,
+             const RooCmdArg& arg2=RooCmdArg(), const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
+             const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(), const RooCmdArg& arg7=RooCmdArg(),
+             const RooCmdArg& arg8=RooCmdArg(), const RooCmdArg& arg9=RooCmdArg()) ;
 
   static std::string decodeStringOnTheFly(const char* callerID, const char* cmdArgName, Int_t intIdx, const char* defVal, const RooCmdArg& arg1,
-					 const RooCmdArg& arg2=RooCmdArg(), const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
-					 const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(), const RooCmdArg& arg7=RooCmdArg(),
-					 const RooCmdArg& arg8=RooCmdArg(), const RooCmdArg& arg9=RooCmdArg()) ;
+                const RooCmdArg& arg2=RooCmdArg(), const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
+                const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(), const RooCmdArg& arg7=RooCmdArg(),
+                const RooCmdArg& arg8=RooCmdArg(), const RooCmdArg& arg9=RooCmdArg()) ;
 
-  static TObject* decodeObjOnTheFly(const char* callerID, const char* cmdArgName, Int_t objIdx, TObject* defVal, const RooCmdArg& arg1, 
-				     const RooCmdArg& arg2=RooCmdArg(), const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
-				     const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(), const RooCmdArg& arg7=RooCmdArg(),
-				     const RooCmdArg& arg8=RooCmdArg(), const RooCmdArg& arg9=RooCmdArg()) ;
+  static TObject* decodeObjOnTheFly(const char* callerID, const char* cmdArgName, Int_t objIdx, TObject* defVal, const RooCmdArg& arg1,
+                 const RooCmdArg& arg2=RooCmdArg(), const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
+                 const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(), const RooCmdArg& arg7=RooCmdArg(),
+                 const RooCmdArg& arg8=RooCmdArg(), const RooCmdArg& arg9=RooCmdArg()) ;
 
   static double decodeDoubleOnTheFly(const char* callerID, const char* cmdArgName, int idx, double defVal,
       std::initializer_list<std::reference_wrapper<const RooCmdArg>> args);
@@ -112,7 +112,7 @@ public:
 protected:
 
   TString _name ;
-  
+
   Bool_t _verbose ;
   Bool_t _error ;
   Bool_t _allowUndefined ;
@@ -125,9 +125,9 @@ protected:
 
   TList _rList ; // Required cmd list
   TList _fList ; // Forbidden cmd list
-  TList _mList ; // Mutex cmd list 
+  TList _mList ; // Mutex cmd list
   TList _yList ; // Dependency cmd list
-  TList _pList ; // Processed cmd list 
+  TList _pList ; // Processed cmd list
 
   TIterator* _iIter ; // Iterator over integer list
   TIterator* _dIter ; // Iterator over double list

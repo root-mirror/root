@@ -28,7 +28,7 @@ public:
   static RooNameReg& instance() ;
   virtual ~RooNameReg();
   const TNamed* constPtr(const char* stringPtr) ;
-  const char* constStr(const TNamed* namePtr) ; 
+  const char* constStr(const TNamed* namePtr) ;
   static const TNamed* ptr(const char* stringPtr) ;
   static const char* str(const TNamed* ptr) ;
   static const TNamed* known(const char* stringPtr) ;

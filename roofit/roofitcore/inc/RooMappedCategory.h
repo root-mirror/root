@@ -36,7 +36,7 @@ public:
   virtual ~RooMappedCategory();
 
   // Mapping function
-  Bool_t map(const char* inKeyRegExp, const char* outKeyName, Int_t outKeyNum=NoCatIdx) ; 
+  Bool_t map(const char* inKeyRegExp, const char* outKeyName, Int_t outKeyNum=NoCatIdx) ;
 
   // Printing interface (human readable)
   void printMultiline(std::ostream& os, Int_t content, Bool_t verbose=kFALSE, TString indent="") const ;
@@ -58,10 +58,10 @@ public:
     Entry& operator=(const Entry& other);
     RooAbsCategory::value_type outCat() const { return _catIdx; }
     const TRegexp* regexp() const;
-    
+
   protected:
-  
-    TString mangle(const char* exp) const ;  
+
+    TString mangle(const char* exp) const ;
 
     TString _expr ;
     mutable TRegexp* _regexp{nullptr}; //!
@@ -71,7 +71,7 @@ public:
   };
 
 protected:
-    
+
   value_type _defCat{NoCatIdx}; // Default (unmapped) output type
   RooCategoryProxy _inputCat ;  // Input category
   std::map<std::string,RooMappedCategory::Entry> _mapArray ;  // List of mapping rules

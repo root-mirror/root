@@ -128,7 +128,6 @@ map<const RooAbsArg*,pair<string,list<RooAbsReal::EvalError> > > RooAbsReal::_ev
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// coverity[UNINIT_CTOR]
 /// Default constructor
 
 RooAbsReal::RooAbsReal() : _specIntegratorConfig(0), _selectComp(kTRUE), _lastNSet(0)
@@ -298,7 +297,7 @@ Double_t RooAbsReal::getValV(const RooArgSet* nset) const
 ///
 /// This is a faster, multi-value version of getVal(). It calls evaluateSpan() to trigger computations, and
 /// finalises those (e.g. error checking or automatic normalisation) before returning a span with the results.
-/// This span will also be stored in `evalData`, so subsquent calls of getValues() will return immediately.
+/// This span will also be stored in `evalData`, so subsequent calls of getValues() will return immediately.
 ///
 /// If `evalData` is empty, a single value will be returned, which is the result of evaluating the current value
 /// of each object that's serving values to us. If `evalData` contains a batch of values for one or more of the
@@ -624,7 +623,7 @@ RooAbsReal* RooAbsReal::createIntObj(const RooArgSet& iset2, const RooArgSet* ns
   const RooArgSet* nset = nset2 ;
 
 
-  // Initialize local variables perparing for recursive loop
+  // Initialize local variables preparing for recursive loop
   Bool_t error = kFALSE ;
   const RooAbsReal* integrand = this ;
   RooAbsReal* integral = 0 ;
@@ -732,7 +731,7 @@ RooAbsReal* RooAbsReal::createIntObj(const RooArgSet& iset2, const RooArgSet* ns
 ////////////////////////////////////////////////////////////////////////////////
 /// Utility function for createIntObj() that aids in the construct of recursive integrals
 /// over functions with multiple observables with parameterized ranges. This function
-/// finds in a given set allObs over which integration is requested the largeset subset
+/// finds in a given set allObs over which integration is requested the largest subset
 /// of observables that can be integrated simultaneously. This subset consists of
 /// observables with fixed ranges and observables with parameterized ranges whose
 /// parameterization does not depend on any observable that is also integrated.
@@ -1531,7 +1530,7 @@ TH1* RooAbsReal::createHistogram(const char *name, const RooAbsRealLValue& xvar,
 /// Helper function for plotting of composite p.d.fs. Given
 /// a set of selected components that should be plotted,
 /// find all nodes that (in)directly depend on these selected
-/// nodes. Mark all directly and indirecty selected nodes
+/// nodes. Mark all directly and indirectly selected nodes
 /// as 'selected' using the selectComp() method
 
 void RooAbsReal::plotOnCompSelect(RooArgSet* selNodes) const
@@ -1649,7 +1648,7 @@ void RooAbsReal::plotOnCompSelect(RooArgSet* selNodes) const
 ///
 /// <tr><td> `Asymmetry(const RooCategory& c)` <td> Show the asymmetry of the PDF in given two-state category [F(+)-F(-)] / [F(+)+F(-)] rather than
 ///                                    the PDF projection. Category must have two states with indices -1 and +1 or three states with
-///                                    indeces -1,0 and +1.
+///                                    indices -1,0 and +1.
 ///
 /// <tr><td> `ShiftToZero(Bool_t flag)`        <td> Shift entire curve such that lowest visible point is at exactly zero. Mostly useful when plotting \f$ -\log(L) \f$ or \f$ \chi^2 \f$ distributions
 ///
@@ -1659,7 +1658,7 @@ void RooAbsReal::plotOnCompSelect(RooArgSet* selNodes) const
 /// <tr><td> `Components(const RooArgSet& compSet)` <td> As above, but pass a RooArgSet of the components themselves.
 ///
 /// <tr><th><th> Plotting control
-/// <tr><td> `DrawOption(const char* opt)`     <td> Select ROOT draw option for resulting TGraph object. Currently supported options are "F" (fill), "L" (line), and "P" (points). 
+/// <tr><td> `DrawOption(const char* opt)`     <td> Select ROOT draw option for resulting TGraph object. Currently supported options are "F" (fill), "L" (line), and "P" (points).
 ///           \note Option "P" will cause RooFit to plot (and treat) this pdf as if it were data! This is intended for plotting "corrected data"-type pdfs such as "data-minus-background" or unfolded datasets.
 ///
 /// <tr><td> `LineStyle(Int_t style)`          <td> Select line style by ROOT line style code, default is solid
@@ -1756,7 +1755,7 @@ RooPlot* RooAbsReal::plotOn(RooPlot* frame, RooLinkedList& argList) const
   pc.defineString("curveNameSuffix","CurveNameSuffix",0,"") ;
   pc.defineString("sliceCatState","SliceCat",0,"",kTRUE) ;
   pc.defineDouble("scaleFactor","Normalization",0,1.0) ;
-  pc.defineInt("scaleType","Normalization",0,Relative) ; 
+  pc.defineInt("scaleType","Normalization",0,Relative) ;
   pc.defineObject("sliceSet","SliceVars",0) ;
   pc.defineObject("sliceCatList","SliceCat",0,0,kTRUE) ;
   pc.defineObject("projSet","Project",0) ;
@@ -1846,7 +1845,7 @@ RooPlot* RooAbsReal::plotOn(RooPlot* frame, RooLinkedList& argList) const
   const RooLinkedList& sliceCatList = pc.getObjectList("sliceCatList") ;
   if (sliceCatState) {
 
-    // Make the master slice set if it doesnt exist
+    // Make the master slice set if it doesn't exist
     if (!sliceSet) {
       sliceSet = new RooArgSet ;
     }
@@ -1974,6 +1973,7 @@ RooPlot* RooAbsReal::plotOn(RooPlot* frame, RooLinkedList& argList) const
 
 
 
+////////////////////////////////////////////////////////////////////////////////
 /// Plotting engine function for internal use
 ///
 /// Plot ourselves on given frame. If frame contains a histogram, all dimensions of the plotted
@@ -1989,8 +1989,7 @@ RooPlot* RooAbsReal::plotOn(RooPlot* frame, RooLinkedList& argList) const
 /// The default projection behaviour can be overriden by supplying an optional set of dependents
 /// to project. For most cases, plotSliceOn() and plotProjOn() provide a more intuitive interface
 /// to modify the default projection behaviour.
-//_____________________________________________________________________________
-// coverity[PASS_BY_VALUE]
+
 RooPlot* RooAbsReal::plotOn(RooPlot *frame, PlotOpt o) const
 {
 
@@ -2307,7 +2306,7 @@ RooPlot* RooAbsReal::plotOn(RooPlot *frame, PlotOpt o) const
       // Append any suffixes imported from RooAbsPdf::plotOn
       curveName.Append(o.curveNameSuffix) ;
     }
-    
+
     TString opt(o.drawOptions);
     if(opt.Contains("P")){
       RooAbsReal::setEvalErrorLoggingMode(RooAbsReal::CollectErrors) ;
@@ -2391,25 +2390,23 @@ RooPlot* RooAbsReal::plotSliceOn(RooPlot *frame, const RooArgSet& sliceSet, Opti
 
 
 
+////////////////////////////////////////////////////////////////////////////////
+/// Plotting engine for asymmetries. Implements the functionality if plotOn(frame,Asymmetry(...)))
+///
+/// Plot asymmetry of ourselves, defined as
+///
+///   asym = f(asymCat=-1) - f(asymCat=+1) / ( f(asymCat=-1) + f(asymCat=+1) )
+///
+/// on frame. If frame contains a histogram, all dimensions of the plotted
+/// asymmetry function that occur in the previously plotted dataset are projected via partial integration.
+/// Otherwise no projections are performed,
+///
+/// The asymmetry function can be multiplied with an optional scale factor. The default projection
+/// behaviour can be overriden by supplying an optional set of dependents to project.
 
-//_____________________________________________________________________________
-// coverity[PASS_BY_VALUE]
 RooPlot* RooAbsReal::plotAsymOn(RooPlot *frame, const RooAbsCategoryLValue& asymCat, PlotOpt o) const
 
 {
-  // Plotting engine for asymmetries. Implements the functionality if plotOn(frame,Asymmetry(...)))
-  //
-  // Plot asymmetry of ourselves, defined as
-  //
-  //   asym = f(asymCat=-1) - f(asymCat=+1) / ( f(asymCat=-1) + f(asymCat=+1) )
-  //
-  // on frame. If frame contains a histogram, all dimensions of the plotted
-  // asymmetry function that occur in the previously plotted dataset are projected via partial integration.
-  // Otherwise no projections are performed,
-  //
-  // The asymmetry function can be multiplied with an optional scale factor. The default projection
-  // behaviour can be overriden by supplying an optional set of dependents to project.
-
   // Sanity checks
   if (plotSanityChecks(frame)) return frame ;
 
@@ -2469,7 +2466,7 @@ RooPlot* RooAbsReal::plotAsymOn(RooPlot *frame, const RooAbsCategoryLValue& asym
   }
 
 
-  // Take out data-projected dependens from projectedVars
+  // Take out data-projected dependent from projectedVars
   RooArgSet* projDataNeededVars = 0 ;
   if (o.projData) {
     projDataNeededVars = (RooArgSet*) projectedVars.selectCommon(projDataVars) ;
@@ -2775,14 +2772,6 @@ Double_t RooAbsReal::getPropagatedError(const RooFitResult &fr, const RooArgSet 
 }
 
 
-
-
-
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Plot function or PDF on frame with support for visualization of the uncertainty encoded in the given fit result fr.
 /// \param[in] frame RooPlot to plot on
@@ -2811,7 +2800,7 @@ Double_t RooAbsReal::getPropagatedError(const RooFitResult &fr, const RooArgSet 
 /// Alternatively, a more robust error is calculated using a sampling method. In this method a number of curves
 /// is calculated with variations of the parameter values, as drawn from a multi-variate Gaussian p.d.f. that is constructed
 /// from the fit results covariance matrix. The error(x) is determined by calculating a central interval that capture N% of the variations
-/// for each valye of x, where N% is controlled by Z (i.e. Z=1 gives N=68%). The number of sampling curves is chosen to be such
+/// for each value of x, where N% is controlled by Z (i.e. Z=1 gives N=68%). The number of sampling curves is chosen to be such
 /// that at least 30 curves are expected to be outside the N% interval, and is minimally 100 (e.g. Z=1->Ncurve=100, Z=2->Ncurve=659, Z=3->Ncurve=11111)
 /// Intervals from the sampling method can be asymmetric, and may perform better in the presence of strong correlations, but may take (much)
 /// longer to calculate.
@@ -2897,7 +2886,7 @@ RooPlot* RooAbsReal::plotOnWithErrorBand(RooPlot* frame,const RooFitResult& fr, 
 
     // *** Linear Method ***
     //
-    // Make a one-sigma up- and down fluctation for each parameter and visualize
+    // Make a one-sigma up- and down fluctuation for each parameter and visualize
     // a from a linearized calculation as follows
     //
     //   error(x) = F(a) C_aa' F(a')
@@ -4117,7 +4106,7 @@ RooAbsReal* RooAbsReal::createIntRI(const RooArgSet& iset, const RooArgSet& nset
   RooRealVar* rrv ;
   while((rrv=(RooRealVar*)iter->Next())) {
 
-    // Make clone x_prime of each c.d.f observable x represening running integral
+    // Make clone x_prime of each c.d.f observable x representing running integral
     RooRealVar* cloneArg = (RooRealVar*) rrv->clone(Form("%s_prime",rrv->GetName())) ;
     cloneList.add(*cloneArg) ;
     cust.replaceArg(*rrv,*cloneArg) ;

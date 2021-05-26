@@ -123,8 +123,8 @@ public:
   RooAbsCategoryLValue& asCATLV(const char*) ;
   RooAbsCategory& asCATFUNC(const char*) ;
 
-  RooArgSet asSET(const char*) ; 
-  RooArgList asLIST(const char*) ; 
+  RooArgSet asSET(const char*) ;
+  RooArgList asLIST(const char*) ;
 
   RooAbsData& asDATA(const char*) ;
   RooDataHist& asDHIST(const char*) ;
@@ -135,7 +135,7 @@ public:
   const char* asSTRING(const char*) ;
   Int_t asINT(const char*) ;
   Double_t asDOUBLE(const char*) ;
-  
+
   class IFace {
   public:
     virtual ~IFace() {} ;
@@ -145,7 +145,7 @@ public:
   class SpecialsIFace : public IFace {
   public:
     virtual ~SpecialsIFace() {} ;
-    std::string create(RooFactoryWSTool& ft, const char* typeName, const char* instanceName, std::vector<std::string> args) ;    
+    std::string create(RooFactoryWSTool& ft, const char* typeName, const char* instanceName, std::vector<std::string> args) ;
   } ;
 
   static void registerSpecial(const char* typeName, RooFactoryWSTool::IFace* iface) ;
@@ -161,12 +161,12 @@ protected:
 
   std::string varTag(std::string& func, std::vector<std::string>& args) ;
 
-  std::stack<std::string> _autoNamePrefix ; 
+  std::stack<std::string> _autoNamePrefix ;
   std::map<std::string,std::string> _typeAliases ;
 
   static void checkIndex(UInt_t index) ;
 
-  
+
   std::string processCompositeExpression(const char* arg) ;
   std::string processSingleExpression(const char* arg) ;
   std::string processListExpression(const char* arg) ;
@@ -181,7 +181,7 @@ protected:
   // CINT constructor interface back end
   static RooFactoryWSTool* of() ;
   static RooFactoryWSTool* _of ;
-  std::vector<std::string> _args ;    
+  std::vector<std::string> _args ;
 
   // Hooks for other tools
   static std::map<std::string,IFace*>& hooks() ;
@@ -198,7 +198,7 @@ protected:
 
   RooFactoryWSTool(const RooFactoryWSTool&) ;
 
-  ClassDef(RooFactoryWSTool,0) // RooFit class code and instance factory 
+  ClassDef(RooFactoryWSTool,0) // RooFit class code and instance factory
 
 } ;
 

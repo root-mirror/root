@@ -232,13 +232,13 @@ public:
   void leafNodeServerList(RooAbsCollection* list, const RooAbsArg* arg=0, Bool_t recurseNonDerived=kFALSE) const ;
   void branchNodeServerList(RooAbsCollection* list, const RooAbsArg* arg=0, Bool_t recurseNonDerived=kFALSE) const ;
   void treeNodeServerList(RooAbsCollection* list, const RooAbsArg* arg=0,
-			  Bool_t doBranch=kTRUE, Bool_t doLeaf=kTRUE,
-			  Bool_t valueOnly=kFALSE, Bool_t recurseNonDerived=kFALSE) const ;
+           Bool_t doBranch=kTRUE, Bool_t doLeaf=kTRUE,
+           Bool_t valueOnly=kFALSE, Bool_t recurseNonDerived=kFALSE) const ;
 
 
   /// Is this object a fundamental type that can be added to a dataset?
   /// Fundamental-type subclasses override this method to return kTRUE.
-  /// Note that this test is subtlely different from the dynamic isDerived()
+  /// Note that this test is subtlety different from the dynamic isDerived()
   /// test, e.g. a constant is not derived but is also not fundamental.
   inline virtual Bool_t isFundamental() const {
     return kFALSE;
@@ -281,7 +281,7 @@ public:
   friend class RooAddPdfOrig ;
   RooArgSet* getVariables(Bool_t stripDisconnected=kTRUE) const ;
   RooArgSet* getParameters(const RooAbsData* data, bool stripDisconnected=true) const ;
-  /// Return the parameters of this p.d.f when used in conjuction with dataset 'data'
+  /// Return the parameters of this p.d.f when used in conjunction with dataset 'data'
   RooArgSet* getParameters(const RooAbsData& data, bool stripDisconnected=true) const {
     return getParameters(&data,stripDisconnected) ;
   }
@@ -380,7 +380,7 @@ public:
     return kTRUE ;
   }
   virtual Bool_t hasRange(const char*) const {
-    // Has this argument a defined range (dummy interface always returns flase)
+    // Has this argument a defined range (dummy interface always returns false)
     return kFALSE ;
   }
 
@@ -443,8 +443,8 @@ public:
       return kTRUE ;
     case Auto:
       if (_valueDirty) {
-	_valueDirty = kFALSE ;
-	return isDerived();
+   _valueDirty = kFALSE ;
+   return isDerived();
       }
       return kFALSE ;
     }
@@ -463,9 +463,9 @@ public:
       return kTRUE ;
     case Auto:
       if (_valueDirty || _shapeDirty) {
-	_shapeDirty = kFALSE ;
-	_valueDirty = kFALSE ;
-	return isDerived();
+   _shapeDirty = kFALSE ;
+   _valueDirty = kFALSE ;
+   return isDerived();
       }
       _shapeDirty = kFALSE ;
       _valueDirty = kFALSE ;

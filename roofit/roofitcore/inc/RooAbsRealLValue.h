@@ -81,7 +81,7 @@ public:
   /// Get number of bins of currently defined range.
   /// \param name Optionally, request number of bins for range with given name.
   virtual Int_t getBins(const char* name=0) const { return getBinning(name).numBins(); }
-  /// Get miniminum of currently defined range.
+  /// Get minimum of currently defined range.
   /// \param name Optionally, request minimum of range with given name.
   virtual Double_t getMin(const char* name=0) const { return getBinning(name).lowBound(); }
   /// Get maximum of currently defined range.
@@ -145,12 +145,12 @@ public:
   TH1F *createHistogram(const char *name, const char *yAxisLabel, const RooAbsBinning& bins) const ;
 
   TH2F *createHistogram(const char *name, const RooAbsRealLValue &yvar, const char *zAxisLabel=0,
-			Double_t* xlo=0, Double_t* xhi=0, Int_t* nBins=0) const ;
+         Double_t* xlo=0, Double_t* xhi=0, Int_t* nBins=0) const ;
   TH2F *createHistogram(const char *name, const RooAbsRealLValue &yvar, const char *zAxisLabel, const RooAbsBinning** bins) const ;
 
 
   TH3F *createHistogram(const char *name, const RooAbsRealLValue &yvar, const RooAbsRealLValue &zvar,
-			const char *tAxisLabel, Double_t* xlo=0, Double_t* xhi=0, Int_t* nBins=0) const ;
+         const char *tAxisLabel, Double_t* xlo=0, Double_t* xhi=0, Int_t* nBins=0) const ;
   TH3F *createHistogram(const char *name, const RooAbsRealLValue &yvar, const RooAbsRealLValue &zvar, const char* tAxisLabel, const RooAbsBinning** bins) const ;
 
   static TH1* createHistogram(const char *name, RooArgList &vars, const char *tAxisLabel, Double_t* xlo, Double_t* xhi, Int_t* nBins) ;

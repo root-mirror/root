@@ -34,7 +34,7 @@ public:
     if(y > _ymax) _ymax= y;
     if(y < _ymin) _ymin= y;
   }
-  inline void setYAxisLimits(Double_t ymin, Double_t ymax) { 
+  inline void setYAxisLimits(Double_t ymin, Double_t ymax) {
     _ymin = ymin ;
     _ymax = ymax ;
   }

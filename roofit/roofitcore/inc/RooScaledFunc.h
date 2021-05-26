@@ -32,7 +32,7 @@ public:
   inline virtual Double_t getMaxLimit(UInt_t index) const { return _func->getMaxLimit(index); }
 
   virtual std::list<Double_t>* plotSamplingHint(RooAbsRealLValue& obs, Double_t xlo, Double_t xhi) const {
-    return _func->plotSamplingHint(obs,xlo,xhi) ; 
+    return _func->plotSamplingHint(obs,xlo,xhi) ;
   }
 
 protected:

@@ -202,7 +202,7 @@ public:
   }
 
   virtual TObject* Clone(const char* newName=0) const { return new RooTemplateProxy<T>(newName,_owner,*this); }
- 
+
 
   /// Return reference to the proxied object.
   T& operator*() const {
@@ -326,7 +326,7 @@ private:
   /// - in a debug build, a dynamic_cast with an assertion is used.
   /// - in a release build, a static_cast is forced, irrespective of what the type of the object actually is. This
   /// is dangerous, but equivalent to the behaviour before refactoring the RooFit proxies.
-  /// \deprecated This function is unneccessary if the template parameter is RooAbsRealLValue (+ derived types) or
+  /// \deprecated This function is unnecessary if the template parameter is RooAbsRealLValue (+ derived types) or
   /// RooAbsCategoryLValue (+derived types), as arg() will always return the correct type.
   const LValue_t* lvptr(const LValue_t*) const {
     return static_cast<const LValue_t*>(_arg);

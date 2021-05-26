@@ -28,7 +28,7 @@ class RooAbsAnaConvPdf ;
 class RooConvCoefVar : public RooAbsReal {
 public:
   // Constructors, assignment etc.
-  inline RooConvCoefVar() { 
+  inline RooConvCoefVar() {
     // Default constructor
   }
   RooConvCoefVar(const char *name, const char *title, const RooAbsAnaConvPdf& input, Int_t coefIdx, const RooArgSet* varList=0) ;

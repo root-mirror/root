@@ -28,7 +28,7 @@ public:
 
   RooNumConvPdf() ;
 
-  RooNumConvPdf(const char *name, const char *title, 
+  RooNumConvPdf(const char *name, const char *title,
                 RooRealVar& convVar, RooAbsPdf& pdf, RooAbsPdf& resmodel) ;
 
   RooNumConvPdf(const RooNumConvPdf& other, const char* name=0) ;
@@ -41,11 +41,11 @@ public:
   // Calls forwarded to RooNumConvolution
   inline RooNumIntConfig& convIntConfig() { return conv().convIntConfig() ; }
   inline void clearConvolutionWindow() { conv().clearConvolutionWindow() ; }
-  inline void setConvolutionWindow(RooAbsReal& centerParam, RooAbsReal& widthParam, Double_t widthScaleFactor=1) 
-	{ conv().setConvolutionWindow(centerParam,widthParam,widthScaleFactor) ; }
+  inline void setConvolutionWindow(RooAbsReal& centerParam, RooAbsReal& widthParam, Double_t widthScaleFactor=1)
+   { conv().setConvolutionWindow(centerParam,widthParam,widthScaleFactor) ; }
   inline void setCallWarning(Int_t threshold=2000) { conv().setCallWarning(threshold) ; }
-  inline void setCallProfiling(Bool_t flag, Int_t nbinX = 40, Int_t nbinCall = 40, Int_t nCallHigh=1000) 
-	{ conv().setCallProfiling(flag,nbinX,nbinCall,nCallHigh) ; }
+  inline void setCallProfiling(Bool_t flag, Int_t nbinX = 40, Int_t nbinCall = 40, Int_t nCallHigh=1000)
+   { conv().setCallProfiling(flag,nbinX,nbinCall,nCallHigh) ; }
   inline const TH2* profileData() const { return conv().profileData() ; }
 
   // Access components
@@ -70,7 +70,7 @@ protected:
   RooRealProxy _origPdf ;         // Original input PDF
   RooRealProxy _origModel ;       // Original resolution model
 
-  virtual RooAbsGenContext* genContext(const RooArgSet &vars, const RooDataSet *prototype=0, 
+  virtual RooAbsGenContext* genContext(const RooArgSet &vars, const RooDataSet *prototype=0,
                                        const RooArgSet* auxProto=0, Bool_t verbose= kFALSE) const ;
 
   friend class RooConvGenContext ;

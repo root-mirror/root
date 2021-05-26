@@ -22,7 +22,7 @@ class TIterator;
 #include "RooAbsCategoryLValue.h"
 #include "RooArgSet.h"
 #include "RooTemplateProxy.h"
- 
+
 
 class RooSuperCategory : public RooAbsCategoryLValue {
 public:

@@ -36,7 +36,7 @@ public:
 
   using RooAbsIntegrator::setLimits ;
   Bool_t setLimits(Double_t *xmin, Double_t *xmax);
-  virtual Bool_t setUseIntegrandLimits(Bool_t flag) { _useIntegrandLimits = flag ; return kTRUE ; } 
+  virtual Bool_t setUseIntegrandLimits(Bool_t flag) { _useIntegrandLimits = flag ; return kTRUE ; }
 
   virtual Bool_t canIntegrate1D() const { return kTRUE ; }
   virtual Bool_t canIntegrate2D() const { return kFALSE ; }
@@ -46,16 +46,16 @@ public:
 protected:
 
   friend class RooNumIntFactory ;
-  static void registerIntegrator(RooNumIntFactory& fact) ;	
+  static void registerIntegrator(RooNumIntFactory& fact) ;
 
   mutable Double_t _xmin ;
   mutable Double_t _xmax ;
   mutable Double_t _range ;
   Bool_t _valid ;
-  Int_t _nseg ; // Number of segments 
+  Int_t _nseg ; // Number of segments
   Bool_t _useIntegrandLimits ;
 
-  RooNumIntConfig _config ;  
+  RooNumIntConfig _config ;
   RooIntegrator1D** _array ; // Array of segment integrators
 
   Bool_t initialize();

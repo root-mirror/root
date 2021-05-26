@@ -29,5 +29,5 @@ public:
   // Soft abort function that interrupts macro execution but doesn't kill ROOT
   static void softAbort() { raise(11) ; }
 } ;
- 
+
 #endif

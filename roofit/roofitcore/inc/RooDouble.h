@@ -31,21 +31,21 @@ public:
     // Destructor
   } ;
 
-  // Double_t cast operator 
-  inline operator Double_t() const { 
+  // Double_t cast operator
+  inline operator Double_t() const {
     // Return value of contained double
-    return _value ; 
+    return _value ;
   }
-  RooDouble& operator=(Double_t value) { 
+  RooDouble& operator=(Double_t value) {
     // Return true if contained double equals value
-    _value = value ; return *this ; 
+    _value = value ; return *this ;
   }
 
   // Sorting interface ;
   Int_t Compare(const TObject* other) const ;
-  virtual Bool_t IsSortable() const { 
+  virtual Bool_t IsSortable() const {
     // We are a sortable object
-    return kTRUE ; 
+    return kTRUE ;
   }
 
 protected:

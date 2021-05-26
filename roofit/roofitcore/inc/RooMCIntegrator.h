@@ -29,7 +29,7 @@ public:
   enum GeneratorType { QuasiRandom, PseudoRandom };
   RooMCIntegrator() ;
   RooMCIntegrator(const RooAbsFunc& function, SamplingMode mode= Importance,
-		  GeneratorType genType= QuasiRandom, Bool_t verbose= kFALSE);
+        GeneratorType genType= QuasiRandom, Bool_t verbose= kFALSE);
   RooMCIntegrator(const RooAbsFunc& function, const RooNumIntConfig& config);
   virtual RooAbsIntegrator* clone(const RooAbsFunc& function, const RooNumIntConfig& config) const ;
   virtual ~RooMCIntegrator();
@@ -56,7 +56,7 @@ public:
 protected:
 
   friend class RooNumIntFactory ;
-  static void registerIntegrator(RooNumIntFactory& fact) ;	
+  static void registerIntegrator(RooNumIntFactory& fact) ;
 
   mutable RooGrid _grid;  // Sampling grid definition
 

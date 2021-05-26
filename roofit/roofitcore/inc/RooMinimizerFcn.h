@@ -1,6 +1,6 @@
 /*****************************************************************************
  * Project: RooFit                                                           *
- * Package: RooFitCore                                                       * 
+ * Package: RooFitCore                                                       *
  * @(#)root/roofitcore:$Id$
  * Authors:                                                                  *
  *   AL, Alfio Lazzaro,   INFN Milan,        alfio.lazzaro@mi.infn.it        *
@@ -34,8 +34,8 @@ class RooMinimizerFcn : public ROOT::Math::IBaseFunctionMultiDim {
 
  public:
 
-  RooMinimizerFcn(RooAbsReal *funct, RooMinimizer *context, 
-	       bool verbose = false);
+  RooMinimizerFcn(RooAbsReal *funct, RooMinimizer *context,
+          bool verbose = false);
   RooMinimizerFcn(const RooMinimizerFcn& other);
   virtual ~RooMinimizerFcn();
 
@@ -62,10 +62,10 @@ class RooMinimizerFcn : public ROOT::Math::IBaseFunctionMultiDim {
   Double_t& GetMaxFCN() { return _maxFCN; }
   Int_t GetNumInvalidNLL() const { return _numBadNLL; }
 
-  Bool_t Synchronize(std::vector<ROOT::Fit::ParameterSettings>& parameters, 
-		     Bool_t optConst, Bool_t verbose);
-  void BackProp(const ROOT::Fit::FitResult &results);  
-  void ApplyCovarianceMatrix(TMatrixDSym& V); 
+  Bool_t Synchronize(std::vector<ROOT::Fit::ParameterSettings>& parameters,
+           Bool_t optConst, Bool_t verbose);
+  void BackProp(const ROOT::Fit::FitResult &results);
+  void ApplyCovarianceMatrix(TMatrixDSym& V);
 
   Int_t evalCounter() const { return _evalCounter ; }
   void zeroEvalCount() { _evalCounter = 0 ; }
@@ -80,7 +80,7 @@ class RooMinimizerFcn : public ROOT::Math::IBaseFunctionMultiDim {
   Bool_t SetPdfParamVal(int index, double value) const;
   void printEvalErrors() const;
 
-  virtual double DoEval(const double * x) const;  
+  virtual double DoEval(const double * x) const;
 
 
   RooAbsReal *_funct;

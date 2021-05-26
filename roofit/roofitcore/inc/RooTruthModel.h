@@ -24,10 +24,10 @@ public:
   enum RooTruthBasis { noBasis=0, expBasisMinus= 1, expBasisSum= 2, expBasisPlus= 3,
                                   sinBasisMinus=11, sinBasisSum=12, sinBasisPlus=13,
                                   cosBasisMinus=21, cosBasisSum=22, cosBasisPlus=23,
-		                                                    linBasisPlus=33,
-		                                                   quadBasisPlus=43,
-				  coshBasisMinus=51,coshBasisSum=52,coshBasisPlus=53,
- 	  			  sinhBasisMinus=61,sinhBasisSum=62,sinhBasisPlus=63,
+                                                          linBasisPlus=33,
+                                                         quadBasisPlus=43,
+              coshBasisMinus=51,coshBasisSum=52,coshBasisPlus=53,
+                 sinhBasisMinus=61,sinhBasisSum=62,sinhBasisPlus=63,
                        genericBasis=100 } ;
 
   enum BasisType { none=0, expBasis=1, sinBasis=2, cosBasis=3,
@@ -40,7 +40,7 @@ public:
   RooTruthModel(const RooTruthModel& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooTruthModel(*this,newname) ; }
   virtual ~RooTruthModel();
-  
+
   virtual Int_t basisCode(const char* name) const ;
 
   virtual RooAbsGenContext* modelGenContext(const RooAbsAnaConvPdf& convPdf, const RooArgSet &vars,

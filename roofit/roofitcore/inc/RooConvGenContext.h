@@ -31,11 +31,11 @@ class RooFFTConvPdf ;
 class RooConvGenContext : public RooAbsGenContext {
 public:
   RooConvGenContext(const RooFFTConvPdf &model, const RooArgSet &vars, const RooDataSet *prototype= 0,
-		    const RooArgSet* auxProto=0, Bool_t _verbose= kFALSE);
+          const RooArgSet* auxProto=0, Bool_t _verbose= kFALSE);
   RooConvGenContext(const RooNumConvPdf &model, const RooArgSet &vars, const RooDataSet *prototype= 0,
-		    const RooArgSet* auxProto=0, Bool_t _verbose= kFALSE);
+          const RooArgSet* auxProto=0, Bool_t _verbose= kFALSE);
   RooConvGenContext(const RooAbsAnaConvPdf &model, const RooArgSet &vars, const RooDataSet *prototype= 0,
-		    const RooArgSet* auxProto=0, Bool_t _verbose= kFALSE);
+          const RooArgSet* auxProto=0, Bool_t _verbose= kFALSE);
   virtual ~RooConvGenContext();
 
   virtual void setProtoDataOrder(Int_t* lut) ;

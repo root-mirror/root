@@ -27,8 +27,8 @@ public:
   // Constructors, assignment etc
   RooBinIntegrator() ;
 
-  RooBinIntegrator(const RooAbsFunc& function) ; 
-  RooBinIntegrator(const RooAbsFunc& function, const RooNumIntConfig& config) ; 
+  RooBinIntegrator(const RooAbsFunc& function) ;
+  RooBinIntegrator(const RooAbsFunc& function, const RooNumIntConfig& config) ;
 
   virtual RooAbsIntegrator* clone(const RooAbsFunc& function, const RooNumIntConfig& config) const ;
   virtual ~RooBinIntegrator();
@@ -48,21 +48,21 @@ public:
 protected:
 
   friend class RooNumIntFactory ;
-  static void registerIntegrator(RooNumIntFactory& fact) ;	
+  static void registerIntegrator(RooNumIntFactory& fact) ;
   RooBinIntegrator(const RooBinIntegrator&) ;
-  
+
   // Numerical integrator workspace
   mutable std::vector<Double_t> _xmin;      //! Lower integration bound
   mutable std::vector<Double_t> _xmax;      //! Upper integration bound
   std::vector<std::vector<double>> _binb;   //! list of bin boundaries
   mutable Int_t _numBins;                   //! Size of integration range
-  
-  Bool_t _useIntegrandLimits;  // If true limits of function binding are ued
+
+  Bool_t _useIntegrandLimits;  // If true limits of function binding are used
 
   double* xvec(double xx) { _x[0] = xx ; return _x ; }
   double* xvec(double xx, double yy) { _x[0] = xx ; _x[1] = yy ; return _x ; }
   double* xvec(double xx, double yy, double zz) { _x[0] = xx ; _x[1] = yy ; _x[2] = zz ; return _x ; }
-  
+
   Double_t *_x ; //! do not persist
 
   ClassDef(RooBinIntegrator,0) // 1-dimensional numerical integration engine

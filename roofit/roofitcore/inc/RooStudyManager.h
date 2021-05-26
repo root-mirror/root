@@ -26,7 +26,7 @@ class RooPlot ;
 class RooRealVar ;
 class RooWorkspace ;
 class RooAbsStudy ;
-#include "RooStudyPackage.h" 
+#include "RooStudyPackage.h"
 #include <list>
 #include <string>
 
@@ -41,7 +41,7 @@ public:
   // Interactive running
   void run(Int_t nExperiments) ;
 
-  // PROOF-based paralllel running
+  // PROOF-based parallel running
   void runProof(Int_t nExperiments, const char* proofHost="", Bool_t showGui=kTRUE) ;
   static void closeProof(Option_t *option = "s") ;
 
@@ -50,7 +50,7 @@ public:
   void processBatchOutput(const char* filePat) ;
 
   RooWorkspace& wspace() { return _pkg->wspace() ; }
-  std::list<RooAbsStudy*>& studies() { return _pkg->studies() ; }  
+  std::list<RooAbsStudy*>& studies() { return _pkg->studies() ; }
 
 protected:
 
@@ -60,7 +60,7 @@ protected:
   RooStudyPackage* _pkg ;
 
   RooStudyManager(const RooStudyManager&) ;
-	
+
   ClassDef(RooStudyManager,1) // A general purpose workspace oriented parallelizing study manager
 } ;
 

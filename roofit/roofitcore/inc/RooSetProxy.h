@@ -34,8 +34,8 @@ public:
   _defValueServer{false},
   _defShapeServer{false} { }
 
-  RooSetProxy(const char* name, const char* desc, RooAbsArg* owner, 
-	      Bool_t defValueServer=kTRUE, Bool_t defShapeServer=kFALSE) ;
+  RooSetProxy(const char* name, const char* desc, RooAbsArg* owner,
+         Bool_t defValueServer=kTRUE, Bool_t defShapeServer=kFALSE) ;
   RooSetProxy(const char* name, RooAbsArg* owner, const RooSetProxy& other) ;
   virtual ~RooSetProxy() ;
 
@@ -60,7 +60,7 @@ public:
   virtual void print(std::ostream& os, Bool_t addContents=kFALSE) const override;
 
   RooSetProxy& operator=(const RooArgSet& other) ;
-  
+
 protected:
 
   RooAbsArg* _owner ;

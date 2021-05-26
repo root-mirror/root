@@ -33,13 +33,13 @@ public:
 
 /*   Int_t numCall() const { return _ftor.numCall() ; } */
 /*   void resetNumCall() const { _ftor.resetNumCall() ; } */
-  
+
 protected:
 
   double DoEval(double) const ;
 
   RooFunctor _ftor ;
-  
+
   ClassDef(RooGenFunction,0) // Export RooAbsReal as functor
 };
 

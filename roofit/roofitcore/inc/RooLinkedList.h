@@ -42,7 +42,7 @@ public:
   // Copy constructor
   RooLinkedList(const RooLinkedList& other) ;
 
-  virtual TObject* Clone(const char* =0) const { 
+  virtual TObject* Clone(const char* =0) const {
     return new RooLinkedList(*this) ;
   }
 
@@ -73,7 +73,7 @@ public:
   void Delete(Option_t *o=0) ;
   TObject* find(const char* name) const ;
   RooAbsArg* findArg(const RooAbsArg*) const ;
-  TObject* FindObject(const char* name) const ; 
+  TObject* FindObject(const char* name) const ;
   TObject* FindObject(const TObject* obj) const ;
   Int_t IndexOf(const char* name) const ;
   Int_t IndexOf(const TObject* arg) const ;
@@ -85,7 +85,7 @@ public:
 
   void Print(const char* opt) const ;
   void Sort(Bool_t ascend=kTRUE) ;
-  
+
   // const char* GetName() const { return "" ; /*_name.Data() ; */ }
   // void SetName(const char* /*name*/) { /*_name = name ; */ }
   const char* GetName() const { return _name.Data() ;  }
@@ -97,7 +97,7 @@ public:
    ULong_t  Hash() const { return _name.Hash(); }
    //ULong_t  Hash() const { return TString().Hash(); }
 
-protected:  
+protected:
 
   RooLinkedListElem* createElement(TObject* obj, RooLinkedListElem* elem=0) ;
   void deleteElement(RooLinkedListElem*) ;
@@ -109,7 +109,7 @@ protected:
   virtual void Add(TObject* arg, Int_t refCount) ;
 
   RooLinkedListElem* findLink(const TObject* arg) const ;
-    
+
   Int_t _hashThresh ;          //  Size threshold for hashing
   Int_t _size ;                //  Current size of list
   RooLinkedListElem*  _first ; //! Link to first element of list
@@ -117,16 +117,16 @@ protected:
 
   using HashTableByName = std::unordered_map<std::string,TObject const*>;
   using HashTableByLink = std::unordered_map<TObject const*,TObject const*>;
-  std::unique_ptr<HashTableByName> _htableName; //! Hash table by name 
+  std::unique_ptr<HashTableByName> _htableName; //! Hash table by name
   std::unique_ptr<HashTableByLink> _htableLink; //! Hash table by link pointer
 
-  TString             _name ; 
+  TString             _name ;
   Bool_t              _useNptr ; //!
 
 private:
   template <bool ascending>
   static RooLinkedListElem* mergesort_impl(RooLinkedListElem* l1,
-	  const unsigned sz, RooLinkedListElem** tail = 0);
+     const unsigned sz, RooLinkedListElem** tail = 0);
   /// memory pool for quick allocation of RooLinkedListElems
   typedef RooLinkedListImplDetails::Pool Pool;
   /// shared memory pool for allocation of RooLinkedListElems

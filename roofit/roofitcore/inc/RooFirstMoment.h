@@ -41,7 +41,7 @@ public:
 
 protected:
 
-  RooRealProxy _xf ;                     // X*F 
+  RooRealProxy _xf ;                     // X*F
   RooRealProxy _ixf ;                    // Int(X*F(X))dx ;
   RooRealProxy _if ;                     // Int(F(x))dx ;
   Double_t evaluate() const;

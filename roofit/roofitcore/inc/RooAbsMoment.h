@@ -39,12 +39,12 @@ public:
 
 protected:
 
-  Int_t _order ;                         // Moment order
-  Int_t _takeRoot ;                      // Return n-order root of moment
-  RooSetProxy  _nset ;                   // Normalization set (optional)
-  RooRealProxy _func ;                   // Input function
-  RooRealProxy _x     ;                  // Observable
-  RooRealProxy _mean ;                   // Mean (if calculated for central moment)
+  Int_t _order ;                         ///< Moment order
+  Int_t _takeRoot ;                      ///< Return n-order root of moment
+  RooSetProxy  _nset ;                   ///< Normalization set (optional)
+  RooRealProxy _func ;                   ///< Input function
+  RooRealProxy _x     ;                  ///< Observable
+  RooRealProxy _mean ;                   ///< Mean (if calculated for central moment)
 
   ClassDef(RooAbsMoment,1) // Abstract representation of moment in a RooAbsReal in a given RooRealVar
 };

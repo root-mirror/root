@@ -33,13 +33,13 @@ public:
   // Constructors, assignment etc
   RooNLLVar();
   RooNLLVar(const char *name, const char* title, RooAbsPdf& pdf, RooAbsData& data,
-	    const RooCmdArg& arg1=RooCmdArg::none(), const RooCmdArg& arg2=RooCmdArg::none(),const RooCmdArg& arg3=RooCmdArg::none(),
-	    const RooCmdArg& arg4=RooCmdArg::none(), const RooCmdArg& arg5=RooCmdArg::none(),const RooCmdArg& arg6=RooCmdArg::none(),
-	    const RooCmdArg& arg7=RooCmdArg::none(), const RooCmdArg& arg8=RooCmdArg::none(),const RooCmdArg& arg9=RooCmdArg::none()) ;
+       const RooCmdArg& arg1=RooCmdArg::none(), const RooCmdArg& arg2=RooCmdArg::none(),const RooCmdArg& arg3=RooCmdArg::none(),
+       const RooCmdArg& arg4=RooCmdArg::none(), const RooCmdArg& arg5=RooCmdArg::none(),const RooCmdArg& arg6=RooCmdArg::none(),
+       const RooCmdArg& arg7=RooCmdArg::none(), const RooCmdArg& arg8=RooCmdArg::none(),const RooCmdArg& arg9=RooCmdArg::none()) ;
 
   RooNLLVar(const char *name, const char *title, RooAbsPdf& pdf, RooAbsData& data,
             RooAbsTestStatistic::Configuration const& cfg, bool extended);
-  
+
   RooNLLVar(const char *name, const char *title, RooAbsPdf& pdf, RooAbsData& data,
             const RooArgSet& projDeps, RooAbsTestStatistic::Configuration const& cfg,
             bool extended = false) ;
@@ -49,10 +49,10 @@ public:
 
   virtual RooAbsTestStatistic* create(const char *name, const char *title, RooAbsReal& pdf, RooAbsData& adata,
                                       const RooArgSet& projDeps, RooAbsTestStatistic::Configuration const& cfg);
-  
+
   virtual ~RooNLLVar();
 
-  void applyWeightSquared(Bool_t flag) ; 
+  void applyWeightSquared(Bool_t flag) ;
 
   virtual Double_t defaultErrorLevel() const { return 0.5 ; }
 
@@ -82,7 +82,7 @@ private:
   mutable std::vector<Double_t> _binw ; //!
   mutable RooRealSumPdf* _binnedPdf{nullptr}; //!
   mutable std::unique_ptr<RooBatchCompute::RunContext> _evalData; //! Struct to store function evaluation workspaces.
-   
+
   ClassDef(RooNLLVar,3) // Function representing (extended) -log(L) of p.d.f and dataset
 };
 

@@ -35,22 +35,22 @@ public:
   virtual TObject* clone(const char* newname) const { return new RooHistPdf(*this,newname); }
   virtual ~RooHistPdf() ;
 
-  RooDataHist& dataHist()  { 
+  RooDataHist& dataHist()  {
     // Return RooDataHist that is represented
-    return *_dataHist ; 
+    return *_dataHist ;
   }
-  const RooDataHist& dataHist() const { 
+  const RooDataHist& dataHist() const {
     // Return RooDataHist that is represented
-    return *_dataHist ; 
+    return *_dataHist ;
   }
-  
-  void setInterpolationOrder(Int_t order) { 
-    // Set histogram interpolation order 
-    _intOrder = order ; 
+
+  void setInterpolationOrder(Int_t order) {
+    // Set histogram interpolation order
+    _intOrder = order ;
   }
-  Int_t getInterpolationOrder() const { 
+  Int_t getInterpolationOrder() const {
     // Return histogram interpolation order
-    return _intOrder ; 
+    return _intOrder ;
   }
 
   static Int_t getAnalyticalIntegral(RooArgSet& allVars,
@@ -70,22 +70,22 @@ public:
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ;
 
-  void setCdfBoundaries(Bool_t flag) { 
+  void setCdfBoundaries(Bool_t flag) {
     // Set use of special boundary conditions for c.d.f.s
-    _cdfBoundaries = flag ; 
+    _cdfBoundaries = flag ;
   }
-  Bool_t getCdfBoundaries() const { 
+  Bool_t getCdfBoundaries() const {
     // If true, special boundary conditions for c.d.f.s are used
-    return _cdfBoundaries ; 
+    return _cdfBoundaries ;
   }
 
-  void setUnitNorm(Bool_t flag) { 
+  void setUnitNorm(Bool_t flag) {
     // Declare contents to have unit normalization
-    _unitNorm = flag ; 
+    _unitNorm = flag ;
   }
-  Bool_t haveUnitNorm() const { 
+  Bool_t haveUnitNorm() const {
     // Return true if contents is declared to be unit normalized
-    return _unitNorm ; 
+    return _unitNorm ;
   }
 
   virtual Bool_t selfNormalized() const { return _unitNorm ; }
@@ -93,7 +93,7 @@ public:
   virtual Int_t getMaxVal(const RooArgSet& vars) const ;
   virtual Double_t maxVal(Int_t code) const ;
 
-  virtual std::list<Double_t>* plotSamplingHint(RooAbsRealLValue& obs, Double_t xlo, Double_t xhi) const ; 
+  virtual std::list<Double_t>* plotSamplingHint(RooAbsRealLValue& obs, Double_t xlo, Double_t xhi) const ;
   virtual std::list<Double_t>* binBoundaries(RooAbsRealLValue& /*obs*/, Double_t /*xlo*/, Double_t /*xhi*/) const ;
   virtual Bool_t isBinnedDistribution(const RooArgSet&) const { return _intOrder==0 ; }
 
@@ -103,7 +103,7 @@ protected:
   Bool_t areIdentical(const RooDataHist& dh1, const RooDataHist& dh2) ;
 
   Bool_t importWorkspaceHook(RooWorkspace& ws) ;
-  
+
   Double_t evaluate() const;
   Double_t totalVolume() const ;
   friend class RooAbsCachedPdf ;

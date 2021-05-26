@@ -51,7 +51,7 @@ public:
   void resize(UInt_t bins);
   void resetValues();
   void generatePoint(const UInt_t box[], Double_t x[], UInt_t bin[],
-		     Double_t &vol, Bool_t useQuasiRandom= kTRUE) const;
+           Double_t &vol, Bool_t useQuasiRandom= kTRUE) const;
   void accumulate(const UInt_t bin[], Double_t amount);
   void refine(Double_t alpha= 1.5);
 

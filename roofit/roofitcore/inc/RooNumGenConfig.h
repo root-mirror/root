@@ -51,10 +51,10 @@ public:
     printStream(defaultPrintStream(),defaultPrintContents(options),defaultPrintStyle(options));
   }
   virtual StyleOption defaultPrintStyle(Option_t* opt) const ;
-  
+
 
 protected:
-  
+
   RooCategory _method1D        ; // Selects integration method for 1D p.d.f.s
   RooCategory _method1DCat     ; // Selects integration method for 1D  p.d.f.s with categories
   RooCategory _method1DCond    ; // Selects integration method for 1D conditional p.d.f.s
@@ -72,7 +72,7 @@ protected:
 
   RooLinkedList _configSets ; // List of configuration sets for individual integration methods
 
-  ClassDef(RooNumGenConfig,1) // Numeric (MC) Event generator configuration 
+  ClassDef(RooNumGenConfig,1) // Numeric (MC) Event generator configuration
 };
 
 #endif

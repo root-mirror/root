@@ -30,27 +30,27 @@ public:
 
 protected:
 
-  virtual const char* inputBaseName() const { 
+  virtual const char* inputBaseName() const {
     // Return the base name for cache objects, in this case the name of the cached p.d.f
-    return pdf.arg().GetName() ; 
+    return pdf.arg().GetName() ;
   } ;
   virtual RooArgSet* actualObservables(const RooArgSet& nset) const ;
   virtual RooArgSet* actualParameters(const RooArgSet& nset) const ;
   virtual void fillCacheObject(PdfCacheElem& cachePdf) const ;
-  virtual Double_t evaluate() const { 
+  virtual Double_t evaluate() const {
     // Dummy evaluate, it is never called
-    return 0 ; 
+    return 0 ;
   }
 
   virtual const char* payloadUniqueSuffix() const { return pdf.arg().aggregateCacheUniqueSuffix() ; }
-  
+
   RooRealProxy pdf ;       // Proxy to p.d.f being cached
   RooSetProxy  _cacheObs ; // Observable to be cached
 
 private:
 
-  ClassDef(RooCachedPdf,1) // P.d.f class that wraps another p.d.f and caches its output 
+  ClassDef(RooCachedPdf,1) // P.d.f class that wraps another p.d.f and caches its output
 
 };
- 
+
 #endif

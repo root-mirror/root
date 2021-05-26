@@ -35,58 +35,58 @@ public:
   RooAddPdf() ;
   RooAddPdf(const char *name, const char *title=0);
   RooAddPdf(const char *name, const char *title,
-	    RooAbsPdf& pdf1, RooAbsPdf& pdf2, RooAbsReal& coef1) ;
+       RooAbsPdf& pdf1, RooAbsPdf& pdf2, RooAbsReal& coef1) ;
   RooAddPdf(const char *name, const char *title, const RooArgList& pdfList) ;
   RooAddPdf(const char *name, const char *title, const RooArgList& pdfList, const RooArgList& coefList, Bool_t recursiveFraction=kFALSE) ;
-  
+
   RooAddPdf(const RooAddPdf& other, const char* name=0) ;
   virtual TObject* clone(const char* newname) const { return new RooAddPdf(*this,newname) ; }
   virtual ~RooAddPdf() ;
 
-  virtual Bool_t checkObservables(const RooArgSet* nset) const ;	
+  virtual Bool_t checkObservables(const RooArgSet* nset) const ;
 
-  virtual Bool_t forceAnalyticalInt(const RooAbsArg& /*dep*/) const { 
+  virtual Bool_t forceAnalyticalInt(const RooAbsArg& /*dep*/) const {
     // Force RooRealIntegral to offer all observables for internal integration
-    return kTRUE ; 
+    return kTRUE ;
   }
   Int_t getAnalyticalIntegralWN(RooArgSet& allVars, RooArgSet& numVars, const RooArgSet* normSet, const char* rangeName=0) const ;
   Double_t analyticalIntegralWN(Int_t code, const RooArgSet* normSet, const char* rangeName=0) const ;
-  virtual Bool_t selfNormalized() const { 
+  virtual Bool_t selfNormalized() const {
     // P.d.f is self normalized
-    return kTRUE ; 
+    return kTRUE ;
   }
 
-  virtual ExtendMode extendMode() const { 
+  virtual ExtendMode extendMode() const {
     // Return extended mode capabilities
-    return ((_haveLastCoef&&!_recursive) || _allExtendable) ? MustBeExtended : CanNotBeExtended; 
+    return ((_haveLastCoef&&!_recursive) || _allExtendable) ? MustBeExtended : CanNotBeExtended;
   }
   virtual Double_t expectedEvents(const RooArgSet* nset) const ;
-  virtual Double_t expectedEvents(const RooArgSet& nset) const { 
+  virtual Double_t expectedEvents(const RooArgSet& nset) const {
     // Return expected number of events for extended likelihood calculation
     // which is the sum of all coefficients
-    return expectedEvents(&nset) ; 
+    return expectedEvents(&nset) ;
   }
 
-  const RooArgList& pdfList() const { 
+  const RooArgList& pdfList() const {
     // Return list of component p.d.fs
-    return _pdfList ; 
+    return _pdfList ;
   }
-  const RooArgList& coefList() const { 
+  const RooArgList& coefList() const {
     // Return list of coefficients of component p.d.f.s
-    return _coefList ; 
+    return _coefList ;
   }
 
-  void fixCoefNormalization(const RooArgSet& refCoefNorm) ;  
+  void fixCoefNormalization(const RooArgSet& refCoefNorm) ;
   void fixCoefRange(const char* rangeName) ;
-  
+
   const RooArgSet& getCoefNormalization() const { return _refCoefNorm ; }
   const char* getCoefRange() const { return _refCoefRangeName?RooNameReg::str(_refCoefRangeName):"" ; }
 
   virtual Double_t getValV(const RooArgSet *set = 0) const;
-  
+
   virtual void resetErrorCounters(Int_t resetValue=10) ;
 
-  virtual std::list<Double_t>* plotSamplingHint(RooAbsRealLValue& obs, Double_t xlo, Double_t xhi) const ; 
+  virtual std::list<Double_t>* plotSamplingHint(RooAbsRealLValue& obs, Double_t xlo, Double_t xhi) const ;
   virtual std::list<Double_t>* binBoundaries(RooAbsRealLValue& /*obs*/, Double_t /*xlo*/, Double_t /*xhi*/) const ;
   Bool_t isBinnedDistribution(const RooArgSet& obs) const  ;
 
@@ -126,9 +126,9 @@ protected:
   CacheElem* getProjCache(const RooArgSet* nset, const RooArgSet* iset=0, const char* rangeName=0) const ;
   void updateCoefficients(CacheElem& cache, const RooArgSet* nset) const ;
 
-  
+
   friend class RooAddGenContext ;
-  virtual RooAbsGenContext* genContext(const RooArgSet &vars, const RooDataSet *prototype=0, 
+  virtual RooAbsGenContext* genContext(const RooArgSet &vars, const RooDataSet *prototype=0,
                                        const RooArgSet* auxProto=0, Bool_t verbose= kFALSE) const ;
 
 
@@ -141,7 +141,7 @@ protected:
   RooListProxy _pdfList ;   //  List of component PDFs
   RooListProxy _coefList ;  //  List of coefficients
   mutable RooArgList* _snormList{nullptr};  //!  List of supplemental normalization factors
-  
+
   Bool_t _haveLastCoef ;    //  Flag indicating if last PDFs coefficient was supplied in the ctor
   Bool_t _allExtendable ;   //  Flag indicating if all PDF components are extendable
   Bool_t _recursive ;       //  Flag indicating is fractions are treated recursively

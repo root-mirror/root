@@ -27,7 +27,7 @@ public:
   RooInt(const RooInt& other) : TNamed(other), _value(other._value) {}
   virtual ~RooInt() {} ;
 
-  // Double_t cast operator 
+  // Double_t cast operator
   inline operator Int_t() const { return _value ; }
   RooInt& operator=(Int_t value) { _value = value ; return *this ; }
 

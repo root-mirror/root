@@ -29,13 +29,13 @@ public:
   RooRealSumPdf(const char *name, const char *title);
   RooRealSumPdf(const char *name, const char *title, const RooArgList& funcList, const RooArgList& coefList, Bool_t extended=kFALSE) ;
   RooRealSumPdf(const char *name, const char *title,
-		   RooAbsReal& func1, RooAbsReal& func2, RooAbsReal& coef1) ;
+         RooAbsReal& func1, RooAbsReal& func2, RooAbsReal& coef1) ;
   RooRealSumPdf(const RooRealSumPdf& other, const char* name=0) ;
   virtual TObject* clone(const char* newname) const { return new RooRealSumPdf(*this,newname) ; }
   virtual ~RooRealSumPdf() ;
 
   Double_t evaluate() const ;
-  virtual Bool_t checkObservables(const RooArgSet* nset) const ;	
+  virtual Bool_t checkObservables(const RooArgSet* nset) const ;
 
   virtual Bool_t forceAnalyticalInt(const RooAbsArg& arg) const { return arg.isFundamental() ; }
   Int_t getAnalyticalIntegralWN(RooArgSet& allVars, RooArgSet& numVars, const RooArgSet* normSet, const char* rangeName=0) const ;
@@ -44,13 +44,13 @@ public:
   const RooArgList& funcList() const { return _funcList ; }
   const RooArgList& coefList() const { return _coefList ; }
 
-  virtual ExtendMode extendMode() const ; 
+  virtual ExtendMode extendMode() const ;
 
   virtual Double_t expectedEvents(const RooArgSet* nset) const ;
-  virtual Double_t expectedEvents(const RooArgSet& nset) const { 
+  virtual Double_t expectedEvents(const RooArgSet& nset) const {
     // Return expected number of events for extended likelihood calculation
     // which is the sum of all coefficients
-    return expectedEvents(&nset) ; 
+    return expectedEvents(&nset) ;
   }
 
   virtual Bool_t selfNormalized() const { return getAttribute("BinnedLikelihoodActive") ; }
@@ -71,11 +71,11 @@ public:
   virtual void setCacheAndTrackHints(RooArgSet&) ;
 
 protected:
-  
+
   class CacheElem : public RooAbsCacheElement {
   public:
     CacheElem()  {} ;
-    virtual ~CacheElem() {} ; 
+    virtual ~CacheElem() {} ;
     virtual RooArgList containedArgs(Action) { RooArgList ret(_funcIntList) ; ret.add(_funcNormList) ; return ret ; }
     RooArgList _funcIntList ;
     RooArgList _funcNormList ;
@@ -90,7 +90,7 @@ protected:
   Bool_t _doFloor ; // Introduce floor at zero in pdf
   mutable bool _haveWarned{false}; //!
   static Bool_t _doFloorGlobal ; // Global flag for introducing floor at zero in pdf
-  
+
 private:
 
   bool haveLastCoef() const {

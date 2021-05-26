@@ -38,7 +38,7 @@ public:
   RooFormula(const char* name, const char* formula, const RooArgList& varList, bool checkVariables = true);
   RooFormula(const RooFormula& other, const char* name=0);
   virtual TObject* Clone(const char* newName = nullptr) const {return new RooFormula(*this, newName);}
-	
+
   ////////////////////////////////////////////////////////////////////////////////
   /// Return list of arguments which are used in the formula.
   RooArgSet actualDependents() const {return usedVariables();}
@@ -57,7 +57,7 @@ public:
   }
 
   Bool_t ok() const { return _tFormula != nullptr; }
-  /// Evalute all parameters/observables, and then evaluate formula.
+  /// Evaluate all parameters/observables, and then evaluate formula.
   Double_t eval(const RooArgSet* nset=0) const;
   RooSpan<double> evaluateSpan(const RooAbsReal* dataOwner, RooBatchCompute::RunContext& inputData, const RooArgSet* nset = nullptr) const;
 

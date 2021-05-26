@@ -42,7 +42,7 @@ public:
   void writeToStream(std::ostream& os, Bool_t compact) const ;
 
 protected:
-  
+
   RooRealProxy _inputVar ;
   const value_type _defIndex{std::numeric_limits<value_type>::min()};
   std::vector<std::pair<double,value_type>> _threshList;

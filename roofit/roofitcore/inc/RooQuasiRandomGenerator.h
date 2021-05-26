@@ -28,9 +28,9 @@ public:
 protected:
   void calculateCoefs(UInt_t dimension);
   void calculateV(const int px[], int px_degree,
-		  int pb[], int * pb_degree, int v[], int maxv);
+        int pb[], int * pb_degree, int v[], int maxv);
   void polyMultiply(const int pa[], int pa_degree, const int pb[],
-		    int pb_degree, int pc[], int  * pc_degree);
+          int pb_degree, int pc[], int  * pc_degree);
   // Z_2 field operations
   inline Int_t add(Int_t x, Int_t y) const { return (x+y)%2; }
   inline Int_t mul(Int_t x, Int_t y) const { return (x*y)%2; }

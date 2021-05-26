@@ -26,14 +26,14 @@ class RooTreeData : public RooAbsData {
 public:
 
   // Constructors, factory methods etc.
-  RooTreeData() : _tree(0) {} ; 
+  RooTreeData() : _tree(0) {} ;
   const TTree *GetTree() const { return _tree; }
-  
+
 private:
 
   TTree *_tree ;           // TTree holding the data points
-  RooArgSet _truth;        // Truth variables   
-  TString _blindString ;   // Blinding string (optionally read from ASCII files)  
+  RooArgSet _truth;        // Truth variables
+  TString _blindString ;   // Blinding string (optionally read from ASCII files)
 
   ClassDef(RooTreeData,1) // Dummy class for legacy RooDataSet support
 };

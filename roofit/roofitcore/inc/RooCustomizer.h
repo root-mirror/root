@@ -40,28 +40,28 @@ public:
   RooCustomizer(const RooAbsArg& pdf, const RooAbsCategoryLValue& masterCat, RooArgSet& splitLeafListOwned, RooArgSet* splitLeafListAll=0) ;
   RooCustomizer(const RooAbsArg& pdf, const char* name) ;
   virtual ~RooCustomizer() ;
-  
-  void setOwning(Bool_t flag) { 
+
+  void setOwning(Bool_t flag) {
     // If flag is true, make customizer own all created components
-    _owning = flag ; 
+    _owning = flag ;
   }
-  
+
   void splitArgs(const RooArgSet& argSet, const RooAbsCategory& splitCat) ;
   void splitArg(const RooAbsArg& arg, const RooAbsCategory& splitCat) ;
   void replaceArg(const RooAbsArg& orig, const RooAbsArg& subst) ;
   RooAbsArg* build(const char* masterCatState, Bool_t verbose=kFALSE) ;
   RooAbsArg* build(Bool_t verbose=kFALSE) ;
 
-  const RooArgSet& cloneBranchList() const { 
+  const RooArgSet& cloneBranchList() const {
     // Return list of cloned branch nodes
-    return *_cloneBranchList ; 
+    return *_cloneBranchList ;
   }
-  const RooArgSet& cloneLeafList() const { 
+  const RooArgSet& cloneLeafList() const {
     // Return list of cloned leaf nodes
-    return *_cloneNodeListOwned ; 
+    return *_cloneNodeListOwned ;
   }
 
-  // Printing interface 
+  // Printing interface
   virtual void printName(std::ostream& os) const ;
   virtual void printTitle(std::ostream& os) const ;
   virtual void printClassName(std::ostream& os) const ;
@@ -84,10 +84,10 @@ public:
   } ;
 
 protected:
-  
+
   RooCustomizer(const RooCustomizer&) ;
   void initialize() ;
-  
+
   RooAbsArg* doBuild(const char* masterCatState, Bool_t verbose) ;
 
   Bool_t _sterile ; // If true we do not have as associated master category

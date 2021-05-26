@@ -41,16 +41,16 @@ public:
   // Constructors, assignment etc.
   RooRealVar() ;
   RooRealVar(const char *name, const char *title,
-  	   Double_t value, const char *unit= "") ;
-  RooRealVar(const char *name, const char *title, Double_t minValue, 
-	   Double_t maxValue, const char *unit= "");
-  RooRealVar(const char *name, const char *title, Double_t value, 
-	   Double_t minValue, Double_t maxValue, const char *unit= "") ;
+        Double_t value, const char *unit= "") ;
+  RooRealVar(const char *name, const char *title, Double_t minValue,
+      Double_t maxValue, const char *unit= "");
+  RooRealVar(const char *name, const char *title, Double_t value,
+      Double_t minValue, Double_t maxValue, const char *unit= "") ;
   RooRealVar(const RooRealVar& other, const char* name=0);
   RooRealVar& operator=(const RooRealVar& other);
   virtual TObject* clone(const char* newname) const { return new RooRealVar(*this,newname); }
   virtual ~RooRealVar();
-  
+
   // Parameter value and error accessors
   virtual Double_t getValV(const RooArgSet* nset=0) const ;
   RooSpan<const double> getValues(RooBatchCompute::RunContext& inputData, const RooArgSet* = nullptr) const final;
@@ -68,7 +68,7 @@ public:
   inline void setAsymError(Double_t lo, Double_t hi) { _asymErrLo = lo ; _asymErrHi = hi ; }
   inline Double_t getErrorLo() const { return _asymErrLo<=0?_asymErrLo:-1*_error ; }
   inline Double_t getErrorHi() const { return _asymErrHi>=0?_asymErrHi:_error ; }
-  
+
   RooErrorVar* errorVar() const ;
 
   // Set/get finite fit range limits
@@ -89,7 +89,7 @@ public:
   // RooAbsRealLValue implementation
   Bool_t hasBinning(const char* name) const ;
   const RooAbsBinning& getBinning(const char* name=0, Bool_t verbose=kTRUE, Bool_t createOnTheFly=kFALSE) const ;
-  RooAbsBinning& getBinning(const char* name=0, Bool_t verbose=kTRUE, Bool_t createOnTheFly=kFALSE) ; 
+  RooAbsBinning& getBinning(const char* name=0, Bool_t verbose=kTRUE, Bool_t createOnTheFly=kFALSE) ;
   std::list<std::string> getBinningNames() const ;
 
   // Set infinite fit range limits
@@ -99,7 +99,7 @@ public:
   void removeMax(const char* name=0);
   /// Remove range limits for binning with given name. Empty name means default range.
   void removeRange(const char* name=0);
- 
+
   // I/O streaming interface (machine readable)
   virtual Bool_t readFromStream(std::istream& is, Bool_t compact, Bool_t verbose=kFALSE) ;
   virtual void writeToStream(std::ostream& os, Bool_t compact) const ;
@@ -108,7 +108,7 @@ public:
   inline virtual Bool_t isFundamental() const { return kTRUE; }
 
   // Force to be a leaf-node of any expression tree, even if we have (shape) servers
-  virtual Bool_t isDerived() const { 
+  virtual Bool_t isDerived() const {
     // Does value or shape of this arg depend on any other arg?
     return !_serverList.empty() || _proxyList.GetEntries()>0;
   }
@@ -158,10 +158,10 @@ public:
   std::shared_ptr<RooRealVarSharedProperties> sharedProp() const;
   void installSharedProp(std::shared_ptr<RooRealVarSharedProperties>&& prop);
 
-  virtual void setExpensiveObjectCache(RooExpensiveObjectCache&) { ; } // variables don't need caches 
+  virtual void setExpensiveObjectCache(RooExpensiveObjectCache&) { ; } // variables don't need caches
   static RooRealVarSharedProperties& _nullProp(); // Null property
   static std::map<std::string,std::weak_ptr<RooRealVarSharedProperties>>& _sharedPropList(); // List of properties shared among clones of a variable
-  
+
   std::shared_ptr<RooRealVarSharedProperties> _sharedProp; //! Shared binnings associated with this instance
 
   ClassDef(RooRealVar,7) // Real-valued variable

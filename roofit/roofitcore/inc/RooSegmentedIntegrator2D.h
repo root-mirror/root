@@ -28,7 +28,7 @@ public:
 
   RooSegmentedIntegrator2D(const RooAbsFunc& function, const RooNumIntConfig& config) ;
   RooSegmentedIntegrator2D(const RooAbsFunc& function, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax,
-		  const RooNumIntConfig& config) ;
+        const RooNumIntConfig& config) ;
   virtual RooAbsIntegrator* clone(const RooAbsFunc& function, const RooNumIntConfig& config) const ;
   virtual ~RooSegmentedIntegrator2D() ;
 
@@ -42,7 +42,7 @@ public:
 protected:
 
   friend class RooNumIntFactory ;
-  static void registerIntegrator(RooNumIntFactory& fact) ;	
+  static void registerIntegrator(RooNumIntFactory& fact) ;
 
   RooSegmentedIntegrator1D* _xIntegrator ;
   RooAbsFunc* _xint ;

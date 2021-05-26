@@ -25,7 +25,7 @@ public:
 
   RooMPSentinel() ;
   virtual ~RooMPSentinel() ;
- 
+
 protected:
 
   friend class RooRealMPFE ;
@@ -36,7 +36,7 @@ protected:
     // Default constructor
   }
   RooArgSet _mpfeSet ;
-  
+
   ClassDef(RooMPSentinel,1) // Singleton class that terminate MP server processes when parent exists
 };
 

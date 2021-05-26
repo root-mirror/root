@@ -45,25 +45,25 @@ public:
   static Bool_t makeAndCompilePdf(const char* name, const char* expression, const RooArgList& vars, const char* intExpression=0) ;
   static Bool_t makeAndCompileFunction(const char* name, const char* expression, const RooArgList& args, const char* intExpression=0) ;
 
-  static Bool_t makePdf(const char* name, const char* realArgNames=0, const char* catArgNames=0, 
-			const char* expression="1.0", Bool_t hasAnaInt=kFALSE, Bool_t hasIntGen=kFALSE, const char* intExpression=0) ;
-  static Bool_t makeFunction(const char* name, const char* realArgNames=0, const char* catArgNames=0, 
-			     const char* expression="1.0", Bool_t hasAnaInt=kFALSE, const char* intExpression=0) ;
-  static Bool_t makeClass(const char* className, const char* name, const char* realArgNames=0, const char* catArgNames=0, 
-			  const char* expression="1.0", Bool_t hasAnaInt=kFALSE, Bool_t hasIntGen=kFALSE, const char* intExpression=0) ;
+  static Bool_t makePdf(const char* name, const char* realArgNames=0, const char* catArgNames=0,
+         const char* expression="1.0", Bool_t hasAnaInt=kFALSE, Bool_t hasIntGen=kFALSE, const char* intExpression=0) ;
+  static Bool_t makeFunction(const char* name, const char* realArgNames=0, const char* catArgNames=0,
+              const char* expression="1.0", Bool_t hasAnaInt=kFALSE, const char* intExpression=0) ;
+  static Bool_t makeClass(const char* className, const char* name, const char* realArgNames=0, const char* catArgNames=0,
+           const char* expression="1.0", Bool_t hasAnaInt=kFALSE, Bool_t hasIntGen=kFALSE, const char* intExpression=0) ;
 
   class ClassFacIFace : public RooFactoryWSTool::IFace {
   public:
     std::string create(RooFactoryWSTool& ft, const char* typeName, const char* instanceName, std::vector<std::string> args) ;
   } ;
-  
+
 protected:
 
 
-  
+
   RooClassFactory(const RooClassFactory&) ;
 
-  ClassDef(RooClassFactory,0) // RooFit class code and instance factory 
+  ClassDef(RooClassFactory,0) // RooFit class code and instance factory
 } ;
 
 #endif

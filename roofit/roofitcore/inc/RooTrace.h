@@ -35,18 +35,18 @@ public:
   static void createSpecial(const char* name, int size) ;
   static void destroySpecial(const char* name) ;
 
-  
+
   static void active(Bool_t flag) ;
   static void verbose(Bool_t flag) ;
 
   static void dump() ;
   static void dump(std::ostream& os, Bool_t sinceMarked=kFALSE) ;
   static void mark() ;
-  
+
   static void callgrind_zero() ;
   static void callgrind_dump() ;
 
-  
+
   static RooTrace& instance() ;
 
   static void printObjectCounts() ;
@@ -60,7 +60,7 @@ protected:
 
   void mark3() ;
   void printObjectCounts3() ;
-   
+
   void create2(const TObject* obj) ;
   void destroy2(const TObject* obj) ;
 

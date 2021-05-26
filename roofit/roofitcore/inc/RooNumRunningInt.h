@@ -37,24 +37,24 @@ protected:
 
     RooNumRunningInt* _self ;
     Double_t* _ax ;
-    Double_t* _ay ;    
-    RooRealVar* _xx ; 
+    Double_t* _ay ;
+    RooRealVar* _xx ;
 
   } ;
 
   friend class RICacheElem ;
   virtual const char* binningName() const { return _binningName.c_str() ; }
   virtual FuncCacheElem* createCache(const RooArgSet* nset) const ;
-  virtual const char* inputBaseName() const ; 
+  virtual const char* inputBaseName() const ;
   virtual RooArgSet* actualObservables(const RooArgSet& nset) const ;
   virtual RooArgSet* actualParameters(const RooArgSet& nset) const ;
   virtual void fillCacheObject(FuncCacheElem& cacheFunc) const ;
   virtual Double_t evaluate() const ;
 
   virtual const char* payloadUniqueSuffix() const { return func.arg().aggregateCacheUniqueSuffix() ; }
-  
+
   RooRealProxy func ; // Proxy to functions whose running integral is calculated
-  RooRealProxy x   ; // Intergrated observable
+  RooRealProxy x   ; // Integrated observable
   std::string _binningName ; // Name of binning to be used for cache histogram
 
 private:
@@ -62,5 +62,5 @@ private:
   ClassDef(RooNumRunningInt,1) // Numeric calculator for running integral of a given function
 
 };
- 
+
 #endif

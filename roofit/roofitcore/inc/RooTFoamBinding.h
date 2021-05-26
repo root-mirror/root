@@ -27,7 +27,7 @@ public:
   virtual ~RooTFoamBinding();
 
   virtual Double_t Density(Int_t ndim, Double_t *) ;
-  
+
   RooRealBinding& binding() { return *_binding ; }
 
 protected:

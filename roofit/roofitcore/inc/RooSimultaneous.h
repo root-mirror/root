@@ -60,22 +60,22 @@ public:
   Double_t analyticalIntegralWN(Int_t code, const RooArgSet* normSet, const char* rangeName=0) const ;
 
   using RooAbsPdf::plotOn ;
-  virtual RooPlot* plotOn(RooPlot* frame, 
-			  const RooCmdArg& arg1            , const RooCmdArg& arg2=RooCmdArg(),
-			  const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
-			  const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(),
-			  const RooCmdArg& arg7=RooCmdArg(), const RooCmdArg& arg8=RooCmdArg(),
-			  const RooCmdArg& arg9=RooCmdArg(), const RooCmdArg& arg10=RooCmdArg()) const {
+  virtual RooPlot* plotOn(RooPlot* frame,
+           const RooCmdArg& arg1            , const RooCmdArg& arg2=RooCmdArg(),
+           const RooCmdArg& arg3=RooCmdArg(), const RooCmdArg& arg4=RooCmdArg(),
+           const RooCmdArg& arg5=RooCmdArg(), const RooCmdArg& arg6=RooCmdArg(),
+           const RooCmdArg& arg7=RooCmdArg(), const RooCmdArg& arg8=RooCmdArg(),
+           const RooCmdArg& arg9=RooCmdArg(), const RooCmdArg& arg10=RooCmdArg()) const {
     return RooAbsReal::plotOn(frame,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10) ;
   }
   virtual RooPlot* plotOn(RooPlot* frame, RooLinkedList& cmdList) const ;
 
   // Backward compatibility function
-  virtual RooPlot *plotOn(RooPlot *frame, Option_t* drawOptions, Double_t scaleFactor=1.0, 
-			  ScaleType stype=Relative, const RooAbsData* projData=0, const RooArgSet* projSet=0,
-			  Double_t precision=1e-3, Bool_t shiftToZero=kFALSE, const RooArgSet* projDataSet=0,
-			  Double_t rangeLo=0, Double_t rangeHi=0, RooCurve::WingMode wmode=RooCurve::Extended) const;
-  
+  virtual RooPlot *plotOn(RooPlot *frame, Option_t* drawOptions, Double_t scaleFactor=1.0,
+           ScaleType stype=Relative, const RooAbsData* projData=0, const RooArgSet* projSet=0,
+           Double_t precision=1e-3, Bool_t shiftToZero=kFALSE, const RooArgSet* projDataSet=0,
+           Double_t rangeLo=0, Double_t rangeHi=0, RooCurve::WingMode wmode=RooCurve::Extended) const;
+
   RooAbsPdf* getPdf(const char* catName) const ;
   const RooAbsCategoryLValue& indexCat() const { return (RooAbsCategoryLValue&) _indexCat.arg() ; }
 
@@ -83,8 +83,8 @@ public:
   virtual RooDataSet* generateSimGlobal(const RooArgSet& whatVars, Int_t nEvents) ;
 
   virtual RooDataHist* fillDataHist(RooDataHist *hist, const RooArgSet* nset, Double_t scaleFactor,
-				    Bool_t correctForBinVolume=kFALSE, Bool_t showProgress=kFALSE) const ;
-  
+                Bool_t correctForBinVolume=kFALSE, Bool_t showProgress=kFALSE) const ;
+
 protected:
 
   void initialize(RooAbsCategoryLValue& inIndexCat, std::map<std::string,RooAbsPdf*> pdfMap) ;
@@ -105,11 +105,11 @@ protected:
 
   friend class RooSimGenContext ;
   friend class RooSimSplitGenContext ;
-  virtual RooAbsGenContext* autoGenContext(const RooArgSet &vars, const RooDataSet* prototype=0, const RooArgSet* auxProto=0, 
-					   Bool_t verbose=kFALSE, Bool_t autoBinned=kTRUE, const char* binnedTag="") const ;
-  virtual RooAbsGenContext* genContext(const RooArgSet &vars, const RooDataSet *prototype=0, 
-	                               const RooArgSet* auxProto=0, Bool_t verbose= kFALSE) const ;
- 
+  virtual RooAbsGenContext* autoGenContext(const RooArgSet &vars, const RooDataSet* prototype=0, const RooArgSet* auxProto=0,
+                  Bool_t verbose=kFALSE, Bool_t autoBinned=kTRUE, const char* binnedTag="") const ;
+  virtual RooAbsGenContext* genContext(const RooArgSet &vars, const RooDataSet *prototype=0,
+                                  const RooArgSet* auxProto=0, Bool_t verbose= kFALSE) const ;
+
   RooCategoryProxy _indexCat ; // Index category
   TList    _pdfProxyList ;     // List of PDF proxies (named after applicable category state)
   Int_t    _numPdf ;           // Number of registered PDFs

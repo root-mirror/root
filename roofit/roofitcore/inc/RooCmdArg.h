@@ -28,24 +28,24 @@ class RooCmdArg : public TNamed {
 public:
 
   RooCmdArg();
-  RooCmdArg(const char* name, 
-	    Int_t i1=0, Int_t i2=0, 
-	    Double_t d1=0, Double_t d2=0, 
-	    const char* s1=0, const char* s2=0, 
-	    const TObject* o1=0, const TObject* o2=0, const RooCmdArg* ca=0, const char* s3=0,
-	    const RooArgSet* c1=0, const RooArgSet* c2=0) ;
+  RooCmdArg(const char* name,
+       Int_t i1=0, Int_t i2=0,
+       Double_t d1=0, Double_t d2=0,
+       const char* s1=0, const char* s2=0,
+       const TObject* o1=0, const TObject* o2=0, const RooCmdArg* ca=0, const char* s3=0,
+       const RooArgSet* c1=0, const RooArgSet* c2=0) ;
   RooCmdArg(const RooCmdArg& other) ;
   RooCmdArg& operator=(const RooCmdArg& other) ;
   void addArg(const RooCmdArg& arg) ;
-  void setProcessRecArgs(Bool_t flag, Bool_t prefix=kTRUE) { 
+  void setProcessRecArgs(Bool_t flag, Bool_t prefix=kTRUE) {
     // If true flag this object as containing recursive arguments
-    _procSubArgs = flag ; 
+    _procSubArgs = flag ;
     _prefixSubArgs = prefix ;
   }
 
-  RooLinkedList& subArgs() { 
+  RooLinkedList& subArgs() {
     // Return list of sub-arguments in this RooCmdArg
-    return _argList ; 
+    return _argList ;
   }
 
   virtual TObject* Clone(const char* newName=0) const {
@@ -58,9 +58,9 @@ public:
 
   static const RooCmdArg& none() ;
 
-  const char* opcode() const { 
+  const char* opcode() const {
     // Return operator code
-    return strlen(GetName()) ? GetName() : 0 ; 
+    return strlen(GetName()) ? GetName() : 0 ;
   }
 
   void setInt(Int_t idx,Int_t value) {
@@ -77,21 +77,21 @@ public:
   }
   void setSet(Int_t idx,const RooArgSet& set) ;
 
-  Int_t getInt(Int_t idx) const { 
+  Int_t getInt(Int_t idx) const {
     // Return integer stored in slot idx
-    return _i[idx] ; 
+    return _i[idx] ;
   }
-  Double_t getDouble(Int_t idx) const { 
+  Double_t getDouble(Int_t idx) const {
     // Return double stored in slot idx
-    return _d[idx] ; 
+    return _d[idx] ;
   }
-  const char* getString(Int_t idx) const { 
+  const char* getString(Int_t idx) const {
     // Return string stored in slot idx
-      return (_s[idx].size()>0) ? _s[idx].c_str() : 0 ; 
+      return (_s[idx].size()>0) ? _s[idx].c_str() : 0 ;
   }
-  const TObject* getObject(Int_t idx) const { 
+  const TObject* getObject(Int_t idx) const {
   // Return TObject stored in slot idx
-    return _o[idx] ; 
+    return _o[idx] ;
   }
 
   const RooArgSet* getSet(Int_t idx) const ;
@@ -119,16 +119,16 @@ private:
   std::string _s[3] ;    // Payload strings
   TObject* _o[2] ;       // Payload objects
   Bool_t _procSubArgs ;  // If true argument requires recursive processing
-  RooArgSet* _c ;        // Payload RooArgSets 
+  RooArgSet* _c ;        // Payload RooArgSets
   RooLinkedList _argList ; // Payload sub-arguments
-  Bool_t _prefixSubArgs ; // Prefix subarguments with container name?
+  Bool_t _prefixSubArgs ; // Prefix sub-arguments with container name?
 
   using DataCollection = std::vector<std::unique_ptr<TObject>>;
   std::shared_ptr<DataCollection> _sharedData; //!
 
   // the next RooCmdArg created will take ownership of this data
   static DataCollection _nextSharedData;
-  
+
   ClassDef(RooCmdArg,2) // Generic named argument container
 };
 

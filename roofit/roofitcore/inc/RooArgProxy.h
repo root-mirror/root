@@ -29,19 +29,19 @@ public:
     // Default constructor
   } ;
   RooArgProxy(const char* name, const char* desc, RooAbsArg* owner,
-	      Bool_t valueServer, Bool_t shapeServer, Bool_t proxyOwnsArg=kFALSE) ;
-  RooArgProxy(const char* name, const char* desc, RooAbsArg* owner, RooAbsArg& arg, 
-	      Bool_t valueServer, Bool_t shapeServer, Bool_t proxyOwnsArg=kFALSE) ;
+         Bool_t valueServer, Bool_t shapeServer, Bool_t proxyOwnsArg=kFALSE) ;
+  RooArgProxy(const char* name, const char* desc, RooAbsArg* owner, RooAbsArg& arg,
+         Bool_t valueServer, Bool_t shapeServer, Bool_t proxyOwnsArg=kFALSE) ;
   RooArgProxy(const char* name, RooAbsArg* owner, const RooArgProxy& other) ;
   virtual ~RooArgProxy() ;
-  inline RooAbsArg* absArg() const { 
+  inline RooAbsArg* absArg() const {
     // Return pointer to contained argument
-    return _arg ; 
+    return _arg ;
   }
 
-  virtual const char* name() const { 
+  virtual const char* name() const {
     // Return name of proxy
-    return GetName() ; 
+    return GetName() ;
   }
   virtual void print(std::ostream& os, Bool_t addContents=kFALSE) const ;
 
@@ -58,13 +58,13 @@ protected:
 
   friend class RooAbsArg ;
 
-  inline Bool_t isValueServer() const { 
+  inline Bool_t isValueServer() const {
     // Returns true of contents is value server of owner
-    return _valueServer ; 
+    return _valueServer ;
   }
-  inline Bool_t isShapeServer() const { 
+  inline Bool_t isShapeServer() const {
     // Returns true if contents is shape server of owner
-    return _shapeServer ; 
+    return _shapeServer ;
   }
   virtual Bool_t changePointer(const RooAbsCollection& newServerSet, Bool_t nameChange=kFALSE, Bool_t factoryInitMode=kFALSE) ;
 

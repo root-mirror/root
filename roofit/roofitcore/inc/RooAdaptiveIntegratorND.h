@@ -20,7 +20,7 @@
 #include "RooNumIntConfig.h"
 #include "TString.h"
 
-namespace ROOT { namespace Math { class AdaptiveIntegratorMultiDim ; } } 
+namespace ROOT { namespace Math { class AdaptiveIntegratorMultiDim ; } }
 class RooMultiGenFunction ;
 
 class RooAdaptiveIntegratorND : public RooAbsIntegrator {
@@ -47,24 +47,24 @@ public:
   virtual Bool_t setUseIntegrandLimits(Bool_t flag) {_useIntegrandLimits = flag ; return kTRUE ; }
 
 protected:
-  
+
   RooAdaptiveIntegratorND(const RooAdaptiveIntegratorND&) ;
 
-  Bool_t _useIntegrandLimits;  // If true limits of function binding are ued
+  Bool_t _useIntegrandLimits;  // If true limits of function binding are used
 
-  mutable Double_t* _xmin ;  // Lower bound in each dimension
-  mutable Double_t* _xmax ;  // Upper bound in each dimension
-  Double_t _epsRel ; // Relative precision
-  Double_t _epsAbs ; // Absolute precision
-  Int_t    _nmax ;   // Max number of divisions
-  Int_t    _nError ; // Number of error occurrences
-  Int_t    _nWarn ; // Max number of warnings to be issued ;
-  RooMultiGenFunction* _func ; //! ROOT::Math multi-parameter function binding 
+  mutable Double_t* _xmin ;    // Lower bound in each dimension
+  mutable Double_t* _xmax ;    // Upper bound in each dimension
+  Double_t _epsRel ;           // Relative precision
+  Double_t _epsAbs ;           // Absolute precision
+  Int_t    _nmax ;             // Max number of divisions
+  Int_t    _nError ;           // Number of error occurrences
+  Int_t    _nWarn ;            // Max number of warnings to be issued ;
+  RooMultiGenFunction* _func ; //! ROOT::Math multi-parameter function binding
   ROOT::Math::AdaptiveIntegratorMultiDim* _integrator ;
   TString _intName ; // Integrand name
 
   friend class RooNumIntFactory ;
-  static void registerIntegrator(RooNumIntFactory& fact) ;	
+  static void registerIntegrator(RooNumIntFactory& fact) ;
 
   ClassDef(RooAdaptiveIntegratorND,0) // N-dimensional adaptive integration (interface to MathCore integrator)
 };

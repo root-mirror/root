@@ -22,7 +22,7 @@
 #include "RooArgList.h"
 #include "RooMPSentinel.h"
 #include "TStopwatch.h"
-#include <vector> 
+#include <vector>
 
 class RooArgSet ;
 namespace RooFit { class BidirMMapPipe; }
@@ -46,7 +46,7 @@ public:
   void enableOffsetting(Bool_t flag) ;
 
   void followAsSlave(RooRealMPFE& master) { _updateMaster = &master ; }
-  
+
   protected:
 
   // Function evaluation
@@ -58,10 +58,10 @@ public:
   enum State { Initialize,Client,Server,Inline } ;
   State _state ;
 
-  enum Message { SendReal=0, SendCat, Calculate, Retrieve, ReturnValue, Terminate, 
-		 ConstOpt, Verbose, LogEvalError, ApplyNLLW2, EnableOffset, CalculateNoOffset } ;
-  
-  void initialize() ; 
+  enum Message { SendReal=0, SendCat, Calculate, Retrieve, ReturnValue, Terminate,
+       ConstOpt, Verbose, LogEvalError, ApplyNLLW2, EnableOffset, CalculateNoOffset } ;
+
+  void initialize() ;
   void initVars() ;
   void serverLoop() ;
 
@@ -87,7 +87,7 @@ public:
 
   static RooMPSentinel _sentinel ;
 
-  ClassDef(RooRealMPFE,2) // Multi-process front-end for parallel calculation of a real valued function 
+  ClassDef(RooRealMPFE,2) // Multi-process front-end for parallel calculation of a real valued function
 };
 
 #endif

@@ -27,8 +27,8 @@ class RooGenProdProj : public RooAbsReal {
 public:
 
   RooGenProdProj() ;
-  RooGenProdProj(const char *name, const char *title, const RooArgSet& _prodSet, const RooArgSet& _intSet, 
-		 const RooArgSet& _normSet, const char* isetRangeName, const char* normRangeName=0, Bool_t doFactorize=kTRUE) ;
+  RooGenProdProj(const char *name, const char *title, const RooArgSet& _prodSet, const RooArgSet& _intSet,
+       const RooArgSet& _normSet, const char* isetRangeName, const char* normRangeName=0, Bool_t doFactorize=kTRUE) ;
 
   RooGenProdProj(const RooGenProdProj& other, const char* name = 0);
   virtual TObject* clone(const char* newname) const { return new RooGenProdProj(*this, newname); }
@@ -36,16 +36,16 @@ public:
 
 protected:
 
-  RooAbsReal* makeIntegral(const char* name, const RooArgSet& compSet, const RooArgSet& intSet, 
-			   RooArgSet& saveSet, const char* isetRangeName, Bool_t doFactorize) ;
+  RooAbsReal* makeIntegral(const char* name, const RooArgSet& compSet, const RooArgSet& intSet,
+            RooArgSet& saveSet, const char* isetRangeName, Bool_t doFactorize) ;
 
   virtual void operModeHook() ;
 
   Double_t evaluate() const;
-  RooArgSet* _compSetOwnedN ; // Owner of numerator components 
+  RooArgSet* _compSetOwnedN ; // Owner of numerator components
   RooArgSet* _compSetOwnedD ; // Owner of denominator components
-  RooSetProxy _compSetN ; // Set proxy for numerator components 
-  RooSetProxy _compSetD ; // Set proxy for denominator components 
+  RooSetProxy _compSetN ; // Set proxy for numerator components
+  RooSetProxy _compSetD ; // Set proxy for denominator components
   RooListProxy _intList ; // Master integrals representing numerator and denominator
   Bool_t _haveD ;         // Do we have a denominator term?
 

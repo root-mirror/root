@@ -36,17 +36,17 @@ public:
   Bool_t storeProtoSampler(RooAbsNumGenerator* proto, const RooArgSet& defConfig) ;
   const RooAbsNumGenerator* getProtoSampler(const char* name) ;
 
-  RooAbsNumGenerator* createSampler(RooAbsReal& func, const RooArgSet& genVars, const RooArgSet& condVars, 
-				    const RooNumGenConfig& config, Bool_t verbose=kFALSE, RooAbsReal* maxFuncVal=0) ;
+  RooAbsNumGenerator* createSampler(RooAbsReal& func, const RooArgSet& genVars, const RooArgSet& condVars,
+                const RooNumGenConfig& config, Bool_t verbose=kFALSE, RooAbsReal* maxFuncVal=0) ;
 
 
 protected:
-	 
+
   friend class RooNumGenConfig ;
 
   std::map<std::string,RooAbsNumGenerator*> _map ;
 
-  RooNumGenFactory(); 
+  RooNumGenFactory();
   RooNumGenFactory(const RooNumGenFactory& other) ;
 
 

@@ -38,7 +38,7 @@ public:
    *
    * The method described in
    *
-   * S.M. Abrarov, B.M. Quine: "Efficient algotithmic implementation of
+   * S.M. Abrarov, B.M. Quine: "Efficient algorithmic implementation of
    * Voigt/complex error function based on exponential series approximation"
    * published in Applied Mathematics and Computation 218 (2011) 1894-1902
    * doi:10.1016/j.amc.2011.06.072
@@ -52,7 +52,7 @@ public:
    * \frac{1-e^{i(-n\pi+\tau_m z)}}{n\pi - \tau_m z}
    * \right) - a_0 \frac{1-e^{i \tau_m z}}{z}
    * \right) @f]
-   * 
+   *
    * The coefficients @f$a_b@f$ are given by:
    *
    * @f[ a_n=\frac{2\sqrt{\pi}}{\tau_m}
@@ -85,7 +85,7 @@ public:
    * fast than the old CERNLIB implementation and offers better accuracy.
    *
    * For large @f$|z|@f$, the familiar continued fraction approximation
-   * 
+   *
    * @f[ w(z)=\frac{-iz/\sqrt{\pi}}{-z^2+\frac{1/2}{1+\frac{2/2}{-z^2 +
    * \frac{3/2}{1+\frac{4/2}{-z^2+\frac{5/2}{1+\frac{6/2}{-z^2+\frac{7/2
    * }{1+\frac{8/2}{-z^2+\frac{9/2}{1+\ldots}}}}}}}}}} @f]
@@ -121,7 +121,7 @@ public:
    * a factor 280 smaller than the old interpolation/table lookup routine).
    *
    * For large @f$|z|@f$, the familiar continued fraction approximation
-   * 
+   *
    * @f[ w(z)=\frac{-iz/\sqrt{\pi}}{-z^2+\frac{1/2}{1+\frac{2/2}{-z^2 +
    * \frac{3/2}{1+\ldots}}}} @f]
    *

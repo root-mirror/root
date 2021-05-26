@@ -33,7 +33,7 @@ public:
   enum ContentsOption { kName=1, kClassName=2, kValue=4, kArgs=8, kExtras=16, kAddress=32, kTitle=64,  kCollectionHeader=128} ; // Can be ORed
   enum StyleOption { kInline=1, kSingleLine=2, kStandard=3, kVerbose=4, kTreeStructure=5 } ; // Exclusive
   virtual void printStream(std::ostream& os, Int_t contents, StyleOption style, TString indent="") const ;
-  
+
   // Virtual hook function for class-specific content implementation
   virtual void printAddress(std::ostream& os) const ;
   virtual void printName(std::ostream& os) const ;
@@ -48,7 +48,7 @@ public:
   static std::ostream& defaultPrintStream(std::ostream *os= 0);
   virtual Int_t defaultPrintContents(Option_t* opt) const ;
   virtual StyleOption defaultPrintStyle(Option_t* opt) const ;
-   
+
   // Formatting control
   static void nameFieldLength(Int_t newLen) ;
 
@@ -62,7 +62,7 @@ protected:
 };
 
 namespace RooFit {
-std::ostream& operator<<(std::ostream& os, const RooPrintable& rp) ; 
+std::ostream& operator<<(std::ostream& os, const RooPrintable& rp) ;
 }
 
 #ifndef __CINT__

@@ -38,7 +38,7 @@ public:
            Double_t denominator);
   RooRatio(const char *name, const char *title, RooAbsReal &numerator,
            RooAbsReal &denominator);
-  RooRatio(const char *name, const char *title, 
+  RooRatio(const char *name, const char *title,
            const RooArgList &num, const RooArgList &denom);
 
   RooRatio(const RooRatio &other, const char *name = 0);

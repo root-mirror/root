@@ -20,7 +20,7 @@
 #include "RooArgSet.h"
 #include "RooLinkedList.h"
 #include "RooCmdArg.h"
-#include "RooExpensiveObjectCache.h" 
+#include "RooExpensiveObjectCache.h"
 #include "TUUID.h"
 #include <map>
 #include <list>
@@ -55,22 +55,22 @@ public:
   Bool_t importClassCode(TClass* theClass, Bool_t doReplace=kFALSE) ;
 
   // Import functions for dataset, functions, generic objects
-  Bool_t import(const RooAbsArg& arg, 
-		const RooCmdArg& arg1=RooCmdArg(),const RooCmdArg& arg2=RooCmdArg(),const RooCmdArg& arg3=RooCmdArg(),
-		const RooCmdArg& arg4=RooCmdArg(),const RooCmdArg& arg5=RooCmdArg(),const RooCmdArg& arg6=RooCmdArg(),
-		const RooCmdArg& arg7=RooCmdArg(),const RooCmdArg& arg8=RooCmdArg(),const RooCmdArg& arg9=RooCmdArg()) ;
-  Bool_t import(const RooArgSet& args, 
-		const RooCmdArg& arg1=RooCmdArg(),const RooCmdArg& arg2=RooCmdArg(),const RooCmdArg& arg3=RooCmdArg(),
-		const RooCmdArg& arg4=RooCmdArg(),const RooCmdArg& arg5=RooCmdArg(),const RooCmdArg& arg6=RooCmdArg(),
-		const RooCmdArg& arg7=RooCmdArg(),const RooCmdArg& arg8=RooCmdArg(),const RooCmdArg& arg9=RooCmdArg()) ;
-  Bool_t import(RooAbsData& data, 
-		const RooCmdArg& arg1=RooCmdArg(),const RooCmdArg& arg2=RooCmdArg(),const RooCmdArg& arg3=RooCmdArg(),
-		const RooCmdArg& arg4=RooCmdArg(),const RooCmdArg& arg5=RooCmdArg(),const RooCmdArg& arg6=RooCmdArg(),
-		const RooCmdArg& arg7=RooCmdArg(),const RooCmdArg& arg8=RooCmdArg(),const RooCmdArg& arg9=RooCmdArg()) ;
-  Bool_t import(const char *fileSpec, 
-		const RooCmdArg& arg1=RooCmdArg(),const RooCmdArg& arg2=RooCmdArg(),const RooCmdArg& arg3=RooCmdArg(),
-		const RooCmdArg& arg4=RooCmdArg(),const RooCmdArg& arg5=RooCmdArg(),const RooCmdArg& arg6=RooCmdArg(),
-		const RooCmdArg& arg7=RooCmdArg(),const RooCmdArg& arg8=RooCmdArg(),const RooCmdArg& arg9=RooCmdArg()) ;
+  Bool_t import(const RooAbsArg& arg,
+      const RooCmdArg& arg1=RooCmdArg(),const RooCmdArg& arg2=RooCmdArg(),const RooCmdArg& arg3=RooCmdArg(),
+      const RooCmdArg& arg4=RooCmdArg(),const RooCmdArg& arg5=RooCmdArg(),const RooCmdArg& arg6=RooCmdArg(),
+      const RooCmdArg& arg7=RooCmdArg(),const RooCmdArg& arg8=RooCmdArg(),const RooCmdArg& arg9=RooCmdArg()) ;
+  Bool_t import(const RooArgSet& args,
+      const RooCmdArg& arg1=RooCmdArg(),const RooCmdArg& arg2=RooCmdArg(),const RooCmdArg& arg3=RooCmdArg(),
+      const RooCmdArg& arg4=RooCmdArg(),const RooCmdArg& arg5=RooCmdArg(),const RooCmdArg& arg6=RooCmdArg(),
+      const RooCmdArg& arg7=RooCmdArg(),const RooCmdArg& arg8=RooCmdArg(),const RooCmdArg& arg9=RooCmdArg()) ;
+  Bool_t import(RooAbsData& data,
+      const RooCmdArg& arg1=RooCmdArg(),const RooCmdArg& arg2=RooCmdArg(),const RooCmdArg& arg3=RooCmdArg(),
+      const RooCmdArg& arg4=RooCmdArg(),const RooCmdArg& arg5=RooCmdArg(),const RooCmdArg& arg6=RooCmdArg(),
+      const RooCmdArg& arg7=RooCmdArg(),const RooCmdArg& arg8=RooCmdArg(),const RooCmdArg& arg9=RooCmdArg()) ;
+  Bool_t import(const char *fileSpec,
+      const RooCmdArg& arg1=RooCmdArg(),const RooCmdArg& arg2=RooCmdArg(),const RooCmdArg& arg3=RooCmdArg(),
+      const RooCmdArg& arg4=RooCmdArg(),const RooCmdArg& arg5=RooCmdArg(),const RooCmdArg& arg6=RooCmdArg(),
+      const RooCmdArg& arg7=RooCmdArg(),const RooCmdArg& arg8=RooCmdArg(),const RooCmdArg& arg9=RooCmdArg()) ;
   Bool_t import(TObject& object, Bool_t replaceExisting=kFALSE) ;
   Bool_t import(TObject& object, const char* aliasName, Bool_t replaceExisting=kFALSE) ;
 
@@ -90,7 +90,7 @@ public:
   // Import, load and save parameter value snapshots
   Bool_t saveSnapshot(const char* name, const char* paramNames) ;
   Bool_t saveSnapshot(const char* name, const RooArgSet& params, Bool_t importValues=kFALSE) ;
-  Bool_t loadSnapshot(const char* name) ;  
+  Bool_t loadSnapshot(const char* name) ;
   const RooArgSet* getSnapshot(const char* name) const ;
 
   // Retrieve list of parameter snapshots
@@ -99,10 +99,10 @@ public:
   void merge(const RooWorkspace& /*other*/) {} ;
 
   // Join p.d.f.s and datasets for simultaneous analysis
-  //   RooAbsPdf* joinPdf(const char* jointPdfName, const char* indexName, const char* inputMapping) ; 
-  //   RooAbsData* joinData(const char* jointDataName, const char* indexName, const char* inputMapping) ; 
+  //   RooAbsPdf* joinPdf(const char* jointPdfName, const char* indexName, const char* inputMapping) ;
+  //   RooAbsData* joinData(const char* jointDataName, const char* indexName, const char* inputMapping) ;
 
-  // Accessor functions 
+  // Accessor functions
   RooAbsPdf* pdf(const char* name) const ;
   RooAbsReal* function(const char* name) const ;
   RooRealVar* var(const char* name) const ;
@@ -129,7 +129,7 @@ public:
   std::list<RooAbsData*> allEmbeddedData() const ;
   std::list<TObject*> allGenericObjects() const ;
 
-  Bool_t makeDir() ; 
+  Bool_t makeDir() ;
   Bool_t cd(const char* path = 0) ;
 
   Bool_t writeToFile(const char* fileName, Bool_t recreate=kTRUE) ;
@@ -150,7 +150,7 @@ public:
   RooAbsArg* factory(const char* expr) ;
 
   // RooStudyManager modules
-  Bool_t addStudy(RooAbsStudy& study) ;  
+  Bool_t addStudy(RooAbsStudy& study) ;
   TIterator* studyIterator() { return _studyMods.MakeIterator() ; }
   void clearStudies() ;
 
@@ -158,10 +158,10 @@ public:
   void Print(Option_t* opts=0) const ;
 
   static void autoImportClassCode(Bool_t flag) ;
- 
+
   static void addClassDeclImportDir(const char* dir) ;
   static void addClassImplImportDir(const char* dir) ;
-  static void setClassFileExportDir(const char* dir=0) ; 
+  static void setClassFileExportDir(const char* dir=0) ;
 
   const TUUID& uuid() const { return _uuid ; }
 
@@ -172,7 +172,7 @@ public:
     CodeRepo(RooWorkspace* wspace=0) : _wspace(wspace), _compiledOK(kTRUE) {} ;
 
     CodeRepo(const CodeRepo& other, RooWorkspace* wspace=0) : TObject(other) ,
-          _wspace(wspace?wspace:other._wspace), 
+          _wspace(wspace?wspace:other._wspace),
           _c2fmap(other._c2fmap),
           _fmap(other._fmap),
           _ehmap(other._ehmap),
@@ -187,11 +187,11 @@ public:
 
     std::string listOfClassNames() const ;
 
-       
+
 
     class ClassRelInfo {
     public:
-      TString _baseName;      
+      TString _baseName;
       TString _fileBase ;
     } ;
 
@@ -201,11 +201,11 @@ public:
       TString _hext ;
       TString _hfile ;
       TString _cxxfile ;
-      Bool_t _extracted ; 
-    } ;    
-    
+      Bool_t _extracted ;
+    } ;
 
-    class ExtraHeader {     
+
+    class ExtraHeader {
     public:
       TString _hname ;
       TString _hfile ;
@@ -222,19 +222,19 @@ public:
   } ;
 
 
-  class WSDir : public TDirectoryFile {    
+  class WSDir : public TDirectoryFile {
   public:
-    WSDir(const char* name, const char* title, RooWorkspace* wspace) : 
-      TDirectoryFile(name,title,"RooWorkspace::WSDir",0), 
-      _wspace(wspace) 
+    WSDir(const char* name, const char* title, RooWorkspace* wspace) :
+      TDirectoryFile(name,title,"RooWorkspace::WSDir",0),
+      _wspace(wspace)
       {
       }
 
-    virtual ~WSDir() { Clear("nodelete") ; } ; 
+    virtual ~WSDir() { Clear("nodelete") ; } ;
 
 
-    virtual void Add(TObject*,Bool_t) ; 
-    virtual void Append(TObject*,Bool_t) ; 
+    virtual void Add(TObject*,Bool_t) ;
+    virtual void Append(TObject*,Bool_t) ;
 
   protected:
     friend class RooWorkspace ;

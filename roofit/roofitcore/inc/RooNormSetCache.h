@@ -33,9 +33,9 @@ protected:
   struct PairCmp {
       inline bool operator()(const Pair& a, const Pair& b) const
       {
-	  if (a.first < b.first) return true;
-	  if (b.first < a.first) return false;
-	  return a.second < b.second;
+     if (a.first < b.first) return true;
+     if (b.first < a.first) return false;
+     return a.second < b.second;
       }
   };
   typedef std::vector<Pair> PairVectType;
@@ -55,7 +55,7 @@ public:
     const Pair pair(set1, set2);
     PairIdxMapType::const_iterator it = _pairToIdx.lower_bound(pair);
     if (_pairToIdx.end() != it &&
-	!PairCmp()(it->first, pair) && !PairCmp()(pair, it->first))
+   !PairCmp()(it->first, pair) && !PairCmp()(pair, it->first))
       return it->second;
     return -1;
   }
@@ -81,7 +81,7 @@ public:
   Bool_t autoCache(const RooAbsArg* self, const RooArgSet* set1,
       const RooArgSet* set2 = 0, const TNamed* set2RangeName = 0,
       Bool_t autoRefill = kTRUE);
-    
+
   void clear();
   Int_t entries() const { return _pairs.size(); }
 
@@ -101,4 +101,4 @@ protected:
   ClassDef(RooNormSetCache, 0) // Management tool for tracking sets of similar integration/normalization sets
 };
 
-#endif 
+#endif

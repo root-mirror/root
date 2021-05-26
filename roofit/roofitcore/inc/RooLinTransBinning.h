@@ -48,7 +48,7 @@ public:
   void updateInput(const RooAbsBinning& input, Double_t slope=1.0, Double_t offset=0.0) ;
 
 protected:
-    
+
   inline Int_t binTrans(Int_t bin) const { if (_slope>0) return bin ; else return numBins()-bin-1 ; }
   inline Double_t trans(Double_t x) const { return x*_slope + _offset ; }
   inline Double_t invTrans(Double_t x) const { if (_slope==0.) return 0 ; return (x-_offset)/_slope ; }

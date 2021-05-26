@@ -40,7 +40,7 @@ public:
   virtual void saveXVec() const ;
   virtual void restoreXVec() const ;
 
-  virtual const char* getName() const ; 
+  virtual const char* getName() const ;
 
   virtual std::list<Double_t>* binBoundaries(Int_t) const ;
   virtual std::list<Double_t>* plotSamplingHint(RooAbsRealLValue& /*obs*/, Double_t /*xlo*/, Double_t /*xhi*/) const ;
@@ -55,12 +55,12 @@ protected:
   Bool_t _clipInvalid ;
   mutable Double_t* _xsave ;
   const TNamed* _rangeName ; //!
-  
+
   mutable std::vector<RooAbsReal*> _compList ; //!
   mutable std::vector<Double_t>    _compSave ; //!
   mutable Double_t _funcSave ; //!
   mutable std::unique_ptr<RooBatchCompute::RunContext> _evalData; /// Memory for batch evaluations
-  
+
   ClassDef(RooRealBinding,0) // Function binding to RooAbsReal object
 };
 

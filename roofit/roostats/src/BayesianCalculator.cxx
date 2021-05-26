@@ -776,7 +776,7 @@ void BayesianCalculator::SetModel(const ModelConfig & model) {
 /// the integration is performed assuming a flat prior for the nuisance parameters.
 ///
 /// NOTE: the return object is managed by the BayesianCalculator class, users do not need to delete it,
-///       but the object will be deleted when the BayesiabCalculator object is deleted  
+///       but the object will be deleted when the BayesiabCalculator object is deleted
 
 RooAbsReal* BayesianCalculator::GetPosteriorFunction() const
 {
@@ -995,7 +995,7 @@ RooAbsPdf* BayesianCalculator::GetPosteriorPdf() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// When am approximate posterior is computed binninig the parameter of interest (poi) range
+/// When an approximate posterior is computed binning the parameter of interest (poi) range
 /// (see SetScanOfPosteriors) an histogram is created and can be returned to the user
 ///  A nullptr is instead returned when the posterior is computed without binning the poi.
 ///
@@ -1006,7 +1006,7 @@ RooAbsPdf* BayesianCalculator::GetPosteriorPdf() const
 TH1 *  BayesianCalculator::GetPosteriorHistogram() const
 {
    return  (fApproxPosterior) ? fApproxPosterior->GetHistogram() : nullptr;
-} 
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1412,7 +1412,7 @@ void BayesianCalculator::ComputeShortestInterval( ) const {
    // get bins and sort them
    double * bins = h1->GetArray();
    // exclude under/overflow bins
-   int n = h1->GetSize()-2; 
+   int n = h1->GetSize()-2;
    std::vector<int> index(n);
    //  exclude bins[0] (the underflow bin content)
    TMath::Sort(n, bins+1, &index[0]);

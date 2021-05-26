@@ -20,15 +20,15 @@
 
 class RooSentinel {
 public:
-  
+
   static void activate() ;
- 
+
 protected:
 
   static Bool_t _active ;
- 
+
   RooSentinel() {} ;
-  RooSentinel(const RooSentinel&) {}  
+  RooSentinel(const RooSentinel&) {}
 
 };
 
