@@ -64,8 +64,9 @@ Double_t RooChiSquarePdf::evaluate() const
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Compute multiple values of ChiSquare distribution.  
-RooSpan<double> RooChiSquarePdf::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
-  return RooBatchCompute::dispatch->computeChiSquare(this, evalData, _x->getValues(evalData, normSet), _ndof->getValues(evalData, normSet));
+void RooChiSquarePdf::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const
+{
+  rbc::dispatch->compute(rbc::ChiSquare, output, nEvents, dataMap, {&*_x,&*_norm}, {_ndof});
 }
 
 ////////////////////////////////////////////////////////////////////////////////

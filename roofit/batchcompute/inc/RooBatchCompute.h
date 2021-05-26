@@ -1,14 +1,13 @@
 #ifndef ROOFIT_BATCHCOMPUTE_ROOBATCHCOMPUTE_H
 #define ROOFIT_BATCHCOMPUTE_ROOBATCHCOMPUTE_H
 
+#include "rbc.h"
 #include "Batches.h"
-#include "RooSpan.h"
 #include "RunContext.h"
 #include "RooVDTHeaders.h"
 
 #include "DllImport.h" //for R__EXTERN, needed for windows
 
-#include <vector>
 #include <functional>
 
 class RooAbsReal;
@@ -29,7 +28,9 @@ class RooListProxy;
 namespace rbc = RooBatchCompute;
 namespace RooBatchCompute {
 
-enum Computer{AddPdf, ArgusBG, Bernstein, Exponential, Gaussian, NegativeLogarithms, ProdPdf};
+enum Computer{AddPdf, ArgusBG, Bernstein, BifurGauss, BreitWigner, Bukin, CBShape, Chebychev, ChiSquare, 
+              DstD0BG, Exponential, Gaussian, Gamma, Johnson, Lognormal, NegativeLogarithms, Novosibirsk, 
+              Polynomial, ProdPdf};
 
 struct RunContext;
 /**
@@ -55,16 +56,6 @@ class RooBatchComputeInterface {
     virtual void   memcpyToCPU(void* dest, const void* src, size_t) { (void)dest; (void)src; throw std::bad_function_call(); }
 
                             
-    virtual RooSpan<double> computeBifurGauss(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}
-    virtual RooSpan<double> computeBukin(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}
-    virtual RooSpan<double> computeBreitWigner(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}
-    virtual RooSpan<double> computeCBShape(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}
-    virtual void computeChebychev(size_t , double * __restrict , const double * __restrict const , double , double , std::vector<double> ) {return;}
-    virtual RooSpan<double> computeChiSquare(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> ) {return{};}
-    virtual RooSpan<double> computeDstD0BG(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}
-    virtual RooSpan<double> computeExponential(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> ) {return{};}
-    virtual RooSpan<double> computeGamma(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}
-    virtual RooSpan<double> computeJohnson(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , double ) {return{};}
     virtual RooSpan<double> computeLandau(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}
     virtual RooSpan<double> computeLognormal(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}
     virtual RooSpan<double> computeNovosibirsk(const RooAbsReal*, RunContext&, RooSpan<const double> , RooSpan<const double> , RooSpan<const double> , RooSpan<const double> ) {return{};}

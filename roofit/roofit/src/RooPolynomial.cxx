@@ -145,22 +145,14 @@ Double_t RooPolynomial::evaluate() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Compute multiple values of Polynomial.  
-RooSpan<double> RooPolynomial::evaluateSpan(RooBatchCompute::RunContext& , const RooArgSet* ) const {
-  //~  RooSpan<const double> xData = _x->getValues(evalData, normSet);
-  //~  int batchSize = xData.size();  
-  //~  RooSpan<double> output = evalData.makeBatch(this, batchSize);
-
-  //~  const int nCoef = _coefList.getSize();
-  //~  const RooArgSet* listNormSet = _coefList.nset();
-  //~  std::vector<RooBatchCompute::BracketAdapterWithMask> coefList;
-  //~  for (int i=0; i<nCoef; i++) {
-    //~  auto valBatch = static_cast<RooAbsReal&>(_coefList[i]).getValues(evalData, listNormSet);
-    //~  coefList.emplace_back(valBatch);
-  //~  }
-
-  //~  RooBatchCompute::dispatch->computePolynomial(batchSize, output.data(), xData.data(), _lowestOrder, coefList);
-  return {};//output;
+/// Compute multiple values of Polynomial.
+void RooPolynomial::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const
+{
+  rbc::ArgVector extraArgs;
+  for (auto* coef:_coefList)
+    extraArgs.push_back( static_cast<const RooAbsReal*>(coef)->getVal() );
+  extraArgs.push_back(_lowestOrder);
+  rbc::dispatch->compute(rbc::Polynomial, output, nEvents, dataMap, {&*_x,&*_norm}, extraArgs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

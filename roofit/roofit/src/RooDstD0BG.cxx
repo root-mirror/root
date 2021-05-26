@@ -80,11 +80,11 @@ Double_t RooDstD0BG::evaluate() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Compute multiple values of D*-D0 mass difference distribution.  
-RooSpan<double> RooDstD0BG::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
-  return RooBatchCompute::dispatch->computeDstD0BG(this, evalData, dm->getValues(evalData, normSet), dm0->getValues(evalData, normSet), C->getValues(evalData, normSet), A->getValues(evalData, normSet), B->getValues(evalData, normSet));
+/// Compute multiple values of D*-D0 mass difference distribution. 
+void RooDstD0BG::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const
+{
+  rbc::dispatch->compute(rbc::DstD0BG, output, nEvents, dataMap, {&*dm,&*dm0,&*C,&*A,&*B,&*_norm});
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /// if (matchArgs(allVars,analVars,dm)) return 1 ;
