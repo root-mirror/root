@@ -106,8 +106,8 @@ public:
 
   virtual Double_t weight() const override;
   virtual Double_t weightSquared() const override;
-  virtual void weightError(Double_t& lo, Double_t& hi,ErrorType etype=SumW2) const override;
-  Double_t weightError(ErrorType etype=SumW2) const override;
+  virtual void weightError(double& lo, double& hi,ErrorType etype=SumW2) const override;
+  double weightError(ErrorType etype=SumW2) const override;
 
   virtual const RooArgSet* get(Int_t index) const override;
   virtual const RooArgSet* get() const override;

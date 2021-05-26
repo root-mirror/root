@@ -1034,21 +1034,19 @@ void RooDataSet::getBatches(RooBatchCompute::RunContext& evalData, std::size_t b
 
 
 ////////////////////////////////////////////////////////////////////////////////
-
-void RooDataSet::weightError(Double_t& lo, Double_t& hi, ErrorType etype) const 
+/// \copydoc RooAbsData::weightError(double&,double&,RooAbsData::ErrorType) const
+void RooDataSet::weightError(double& lo, double& hi, ErrorType etype) const
 {
   store()->weightError(lo,hi,etype) ;
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
-
-Double_t RooDataSet::weightError(ErrorType etype) const 
+/// \copydoc RooAbsData::weightError(ErrorType)
+double RooDataSet::weightError(ErrorType etype) const
 {
   return store()->weightError(etype) ;
 }
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
