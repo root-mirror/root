@@ -23,9 +23,9 @@
 #define ROOT_RVEC
 
 #if __cplusplus > 201402L
-#define RVEC_NODISCARD [[nodiscard]]
+#define R__RVEC_NODISCARD [[nodiscard]]
 #else
-#define RVEC_NODISCARD
+#define R__RVEC_NODISCARD
 #endif
 
 #ifdef _WIN32
@@ -169,7 +169,7 @@ public:
    size_t size() const { return fSize; }
    size_t capacity() const noexcept { return Capacity; }
 
-   RVEC_NODISCARD bool empty() const { return !fSize; }
+   R__RVEC_NODISCARD bool empty() const { return !fSize; }
 
    /// Set the array size to \p N, which the current array must have enough
    /// capacity for.
@@ -564,7 +564,7 @@ public:
       this->set_size(this->size() - NumItems);
    }
 
-   RVEC_NODISCARD T pop_back_val()
+   R__RVEC_NODISCARD T pop_back_val()
    {
       T Result = ::std::move(this->back());
       this->pop_back();
