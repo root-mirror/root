@@ -356,7 +356,7 @@ void TClingMethodInfo::Init(const clang::FunctionDecl *decl)
 void *TClingMethodInfo::InterfaceMethod(const ROOT::TMetaUtils::TNormalizedCtxt &normCtxt) const
 {
    if (!IsValid()) {
-      return 0;
+      return nullptr;
    }
    R__LOCKGUARD(gInterpreterMutex);
    TClingCallFunc cf(fInterp,normCtxt);
@@ -597,7 +597,7 @@ std::string TClingMethodInfo::GetMangledName() const
 const char *TClingMethodInfo::GetPrototype()
 {
    if (!IsValid()) {
-      return 0;
+      return nullptr;
    }
    TTHREAD_TLS_DECL( std::string, buf );
    buf.clear();
@@ -640,7 +640,7 @@ const char *TClingMethodInfo::GetPrototype()
 const char *TClingMethodInfo::Name() const
 {
    if (!IsValid()) {
-      return 0;
+      return nullptr;
    }
    if (!fNameCache.empty())
      return fNameCache.c_str();
@@ -653,7 +653,7 @@ const char *TClingMethodInfo::TypeName() const
 {
    if (!IsValid()) {
       // FIXME: Cint does not check!
-      return 0;
+      return nullptr;
    }
    return Type()->Name();
 }
@@ -661,7 +661,7 @@ const char *TClingMethodInfo::TypeName() const
 const char *TClingMethodInfo::Title()
 {
    if (!IsValid()) {
-      return 0;
+      return nullptr;
    }
 
    //NOTE: We can't use it as a cache due to the "thoughtful" self iterator

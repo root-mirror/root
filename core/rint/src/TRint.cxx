@@ -72,7 +72,7 @@ static Int_t BeepHook()
 
 static void ResetTermAtExit()
 {
-   Getlinem(kCleanUp, 0);
+   Getlinem(kCleanUp, nullptr);
 }
 
 
@@ -96,7 +96,7 @@ Bool_t TInterruptHandler::Notify()
    }
 
    // make sure we use the sbrk heap (in case of mapped files)
-   ROOT::Internal::gMmallocDesc = 0;
+   ROOT::Internal::gMmallocDesc = nullptr;
 
    if (TROOT::Initialized() && gROOT->IsLineProcessing()) {
       Break("TInterruptHandler::Notify", "keyboard interrupt");
@@ -191,7 +191,7 @@ TRint::TRint(const char *appClassName, Int_t *argc, char **argv, void *options,
 
    // Load user functions
    const char *logon;
-   logon = gEnv->GetValue("Rint.Load", (char*)0);
+   logon = gEnv->GetValue("Rint.Load", (char*)nullptr);
    if (logon) {
       char *mac = gSystem->Which(TROOT::GetMacroPath(), logon, kReadPermission);
       if (mac)
@@ -278,9 +278,9 @@ TRint::TRint(const char *appClassName, Int_t *argc, char **argv, void *options,
 TRint::~TRint()
 {
    delete gTabCom;
-   gTabCom = 0;
-   Gl_in_key = 0;
-   Gl_beep_hook = 0;
+   gTabCom = nullptr;
+   Gl_in_key = nullptr;
+   Gl_beep_hook = nullptr;
    fInputHandler->Remove();
    delete fInputHandler;
    // We can't know where the signal handler was changed since we started ...
@@ -324,7 +324,7 @@ void TRint::ExecLogon()
    }
 
    // execute also the logon macro specified by "Rint.Logon"
-   const char *logon = gEnv->GetValue("Rint.Logon", (char*)0);
+   const char *logon = gEnv->GetValue("Rint.Logon", (char*)nullptr);
    if (logon) {
       char *mac = gSystem->Which(TROOT::GetMacroPath(), logon, kReadPermission);
       if (mac)
@@ -413,7 +413,7 @@ void TRint::Run(Bool_t retrn)
                   snprintf(cmd, kMAXPATHLEN+50, ".x %s", (const char*)file->String());
                }
             }
-            Getlinem(kCleanUp, 0);
+            Getlinem(kCleanUp, nullptr);
             Gl_histadd(cmd);
             fNcmd++;
 
@@ -465,7 +465,7 @@ void TRint::Run(Bool_t retrn)
    // Reset to happiness.
    fCaughtSignal = -1;
 
-   Getlinem(kCleanUp, 0);
+   Getlinem(kCleanUp, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -575,7 +575,7 @@ Bool_t TRint::HandleTermInput()
    static TStopwatch timer;
    const char *line;
 
-   if ((line = Getlinem(kOneChar, 0))) {
+   if ((line = Getlinem(kOneChar, nullptr))) {
       if (line[0] == 0 && Gl_eof())
          Terminate(0);
 
@@ -662,7 +662,7 @@ void TRint::HandleException(Int_t sig)
    fCaughtSignal = sig;
    if (TROOT::Initialized()) {
       if (gException) {
-         Getlinem(kCleanUp, 0);
+         Getlinem(kCleanUp, nullptr);
          Getlinem(kInit, "Root > ");
       }
    }
@@ -675,17 +675,17 @@ void TRint::HandleException(Int_t sig)
 
 void TRint::Terminate(Int_t status)
 {
-   Getlinem(kCleanUp, 0);
+   Getlinem(kCleanUp, nullptr);
 
    if (ReturnFromRun()) {
       gSystem->ExitLoop();
    } else {
       delete gTabCom;
-      gTabCom = 0;
+      gTabCom = nullptr;
 
       //Execute logoff macro
       const char *logoff;
-      logoff = gEnv->GetValue("Rint.Logoff", (char*)0);
+      logoff = gEnv->GetValue("Rint.Logoff", (char*)nullptr);
       if (logoff && !NoLogOpt()) {
          char *mac = gSystem->Which(TROOT::GetMacroPath(), logoff, kReadPermission);
          if (mac)

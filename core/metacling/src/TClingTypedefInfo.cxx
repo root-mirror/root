@@ -57,7 +57,7 @@ TClingTypedefInfo::TClingTypedefInfo(cling::Interpreter *interp,
 
 void TClingTypedefInfo::Init(const char *name)
 {
-   fDecl = 0;
+   fDecl = nullptr;
 
    // Reset the iterator to invalid.
    fFirstTime = true;
@@ -149,7 +149,7 @@ int TClingTypedefInfo::InternalNext()
          // Check for final termination.
          if (!*fIter) {
             // We have reached the end of the translation unit, all done.
-            fDecl = 0;
+            fDecl = nullptr;
             return 0;
          }
       }
@@ -271,7 +271,7 @@ const char *TClingTypedefInfo::Name() const
 const char *TClingTypedefInfo::Title()
 {
    if (!IsValid()) {
-      return 0;
+      return nullptr;
    }
    //NOTE: We can't use it as a cache due to the "thoughtful" self iterator
    //if (fTitle.size())

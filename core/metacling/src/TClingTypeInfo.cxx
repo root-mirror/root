@@ -236,7 +236,7 @@ int TClingTypeInfo::Size() const
 const char *TClingTypeInfo::TrueName(const ROOT::TMetaUtils::TNormalizedCtxt &normCtxt) const
 {
    if (!IsValid()) {
-      return 0;
+      return nullptr;
    }
    // Note: This *must* be static because we are returning a pointer inside it.
    TTHREAD_TLS_DECL( std::string, buf);
