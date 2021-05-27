@@ -114,8 +114,8 @@ auto MapFromTuple(Tuple_t &&t, std::index_sequence<Is...>)
    return MapImpl(std::get<tupleSizeM1>(t), std::get<Is>(t)...);
 }
 
-}
-}
+} // namespace VecOps
+} // namespace Detail
 
 namespace Internal {
 namespace VecOps {
