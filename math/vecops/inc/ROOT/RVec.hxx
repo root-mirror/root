@@ -9,9 +9,9 @@
  *************************************************************************/
 
 /*
- * The implementation of RVec is based in LLVM's SmallVector.
+ * The implementation of RVec is based on LLVM's SmallVector.
  *
- * The ability to adopt an existing memory buffer has been added,
+ * Compared to LLVM's SmallVectors, the ability to adopt an existing memory buffer has been added,
  * as well as other minor patches for backward compatibility with
  * the previous implementation of RVec (which did not have a small buffer
  * optimization and was based on std::vector with a custom allocator) and
