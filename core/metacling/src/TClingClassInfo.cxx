@@ -123,7 +123,7 @@ TClingClassInfo::TClingClassInfo(cling::Interpreter *interp,
 TClingClassInfo::TClingClassInfo(cling::Interpreter *interp,
                                  const Decl *D)
    : TClingDeclInfo(nullptr), fInterp(interp), fFirstTime(true), fDescend(false), fIterAll(kTRUE),
-     fIsIter(false), fType(nullptr), fTitle(""), fOffsetCache(0)
+     fIsIter(false), fOffsetCache(0)
 {
    Init(D);
 }
