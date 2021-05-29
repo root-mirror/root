@@ -70,7 +70,7 @@ static std::string FullyQualifiedName(const Decl *decl) {
 
 TClingClassInfo::TClingClassInfo(cling::Interpreter *interp, Bool_t all)
    : TClingDeclInfo(nullptr), fInterp(interp), fFirstTime(true), fDescend(false), fIterAll(all),
-     fIsIter(true), fType(nullptr), fOffsetCache(0)
+     fIsIter(true), fOffsetCache(0)
 {
    TranslationUnitDecl *TU =
       interp->getCI()->getASTContext().getTranslationUnitDecl();
@@ -1446,4 +1446,3 @@ const char *TClingClassInfo::TmpltName() const
    }
    return buf.c_str();  // NOLINT
 }
-
