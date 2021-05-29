@@ -80,7 +80,7 @@ TClingClassInfo::TClingClassInfo(cling::Interpreter *interp, Bool_t all)
 
 TClingClassInfo::TClingClassInfo(cling::Interpreter *interp, const char *name, bool intantiateTemplate /* = true */)
    : TClingDeclInfo(nullptr), fInterp(interp), fFirstTime(true), fDescend(false), fIterAll(kTRUE), fIsIter(false),
-     fType(nullptr), fTitle(""), fOffsetCache(0)
+     fOffsetCache(0)
 {
    const cling::LookupHelper& lh = fInterp->getLookupHelper();
    const Type *type = nullptr;
