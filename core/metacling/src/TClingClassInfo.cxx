@@ -76,7 +76,6 @@ TClingClassInfo::TClingClassInfo(cling::Interpreter *interp, Bool_t all)
       interp->getCI()->getASTContext().getTranslationUnitDecl();
    fFirstTime = true;
    SetDecl(TU);
-   fType = nullptr;
 }
 
 TClingClassInfo::TClingClassInfo(cling::Interpreter *interp, const char *name, bool intantiateTemplate /* = true */)
