@@ -115,7 +115,7 @@ TClingClassInfo::TClingClassInfo(cling::Interpreter *interp, const char *name, b
 TClingClassInfo::TClingClassInfo(cling::Interpreter *interp,
                                  const Type &tag)
    : TClingDeclInfo(nullptr), fInterp(interp), fFirstTime(true), fDescend(false), fIterAll(kTRUE),
-     fIsIter(false), fType(nullptr), fTitle(""), fOffsetCache(0)
+     fIsIter(false), fOffsetCache(0)
 {
    Init(tag);
 }
