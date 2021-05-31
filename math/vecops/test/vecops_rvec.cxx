@@ -1088,3 +1088,14 @@ TEST(VecOps, Construct)
    EXPECT_TRUE(fourVects[2] == ref2);
 }
 
+// this is a regression test for https://github.com/root-project/root/issues/6796
+TEST(VecOps, MemoryAdoptionAndClear)
+{
+   ROOT::RVec<int> v{1, 2, 3};
+   ROOT::RVec<int> v2(v.data(), v.size());
+   v2[0] = 0;
+   v2.clear();
+   EXPECT_TRUE(All(v == RVec<int>{0, 2, 3}));
+   v2.push_back(42);
+   EXPECT_TRUE(All(v2 == RVec<int>{42}));
+}
