@@ -5,6 +5,16 @@
 
 #include "TMath.h"
 #include <vector>
+// Class to pass information for multi-threading
+template <typename Index, typename Value>
+class TKDTreeInfo{
+public:
+    Int_t crow;
+    Int_t cnode;
+    Int_t npoints;
+    Int_t cpos;
+    Int_t nthread;
+};
 
 template <typename Index, typename Value> class TKDTree : public TObject
 {
@@ -15,7 +25,9 @@ public:
    TKDTree(Index npoints, Index ndim, UInt_t bsize, Value **data);
    ~TKDTree();
 
-   void            Build();  // build the tree
+   void            Build();  // Old version
+   void            Build(Int_t nthread);  // build the tree with multi-thread
+   void            Build_relay(TKDTreeInfo<Index, Value> info, std::vector<TKDTreeInfo<Index, Value> > *threads);
 
    Double_t        Distance(const Value *point, Index ind, Int_t type=2) const;
    void            DistanceToNode(const Value *point, Index inode, Value &min, Value &max, Int_t type=2);
@@ -99,7 +111,6 @@ public:
 
    ClassDef(TKDTree, 1)  // KD tree
 };
-
 
 typedef TKDTree<Int_t, Double_t> TKDTreeID;
 typedef TKDTree<Int_t, Float_t> TKDTreeIF;
