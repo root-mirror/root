@@ -1219,14 +1219,15 @@ hpt->Draw();
 
 
 
-/// This is a 'vector' (really, a variable-sized array), optimized
-/// for the case when the array is small.  It contains some number of elements
-/// in-place, which allows it to avoid heap allocation when the actual number of
-/// elements is below that threshold.  This allows normal "small" cases to be
-/// fast without losing generality for large inputs.
-///
-/// Note that this does not attempt to be exception safe.
-///
+// From the original SmallVector code:
+// This is a 'vector' (really, a variable-sized array), optimized
+// for the case when the array is small.  It contains some number of elements
+// in-place, which allows it to avoid heap allocation when the actual number of
+// elements is below that threshold.  This allows normal "small" cases to be
+// fast without losing generality for large inputs.
+//
+// Note that this does not attempt to be exception safe.
+
 template <typename T>
 class RVec : public Internal::VecOps::SmallVectorImpl<T>, Internal::VecOps::SmallVectorStorage<T, 8> {
 public:
