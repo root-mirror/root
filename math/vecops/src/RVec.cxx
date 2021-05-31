@@ -61,18 +61,18 @@ void ROOT::Internal::VecOps::SmallVectorBase<Size_T>::grow_pod(void *FirstEl, si
    NewCapacity = std::min(std::max(NewCapacity, MinSize), SizeTypeMax());
 
    void *NewElts;
-   if (BeginX == FirstEl) {
+   if (fBeginX == FirstEl) {
       NewElts = malloc(NewCapacity * TSize);
 
       // Copy the elements over.  No need to run dtors on PODs.
-      memcpy(NewElts, this->BeginX, size() * TSize);
+      memcpy(NewElts, this->fBeginX, size() * TSize);
    } else {
       // If this wasn't grown from the inline copy, grow the allocated space.
-      NewElts = realloc(this->BeginX, NewCapacity * TSize);
+      NewElts = realloc(this->fBeginX, NewCapacity * TSize);
    }
 
-   this->BeginX = NewElts;
-   this->Capacity = NewCapacity;
+   this->fBeginX = NewElts;
+   this->fCapacity = NewCapacity;
 }
 
 template class ROOT::Internal::VecOps::SmallVectorBase<uint32_t>;

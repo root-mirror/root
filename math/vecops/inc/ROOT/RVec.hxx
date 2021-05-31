@@ -143,15 +143,16 @@ inline uint64_t NextPowerOf2(uint64_t A)
 template <class Size_T>
 class SmallVectorBase {
 protected:
-   void *BeginX;
-   Size_T fSize = 0, Capacity;
-   bool Owns = true;
+   void *fBeginX;
+   Size_T fSize = 0;
+   Size_T fCapacity;
+   bool fOwns = true;
 
    /// The maximum value of the Size_T used.
    static constexpr size_t SizeTypeMax() { return std::numeric_limits<Size_T>::max(); }
 
    SmallVectorBase() = delete;
-   SmallVectorBase(void *FirstEl, size_t TotalCapacity) : BeginX(FirstEl), Capacity(TotalCapacity) {}
+   SmallVectorBase(void *FirstEl, size_t TotalCapacity) : fBeginX(FirstEl), fCapacity(TotalCapacity) {}
 
    /// This is an implementation of the grow() method which only works
    /// on POD-like data types and is out of line to reduce code duplication.
@@ -167,7 +168,7 @@ protected:
 
 public:
    size_t size() const { return fSize; }
-   size_t capacity() const noexcept { return Capacity; }
+   size_t capacity() const noexcept { return fCapacity; }
 
    R__RVEC_NODISCARD bool empty() const { return !fSize; }
 
@@ -226,15 +227,15 @@ protected:
 
    /// Return true if this is a smallvector which has not had dynamic
    /// memory allocated for it.
-   bool isSmall() const { return this->BeginX == getFirstEl(); }
+   bool isSmall() const { return this->fBeginX == getFirstEl(); }
 
    /// Put this vector in a state of being small.
    void resetToSmall()
    {
-      this->BeginX = getFirstEl();
+      this->fBeginX = getFirstEl();
       // from the original LLVM implementation:
-      // FIXME: Setting Capacity to 0 is suspect.
-      this->fSize = this->Capacity = 0;
+      // FIXME: Setting fCapacity to 0 is suspect.
+      this->fSize = this->fCapacity = 0;
    }
 
 public:
@@ -257,9 +258,9 @@ public:
    using Base::size;
 
    // forward iterator creation methods.
-   iterator begin() noexcept { return (iterator)this->BeginX; }
-   const_iterator begin() const noexcept { return (const_iterator)this->BeginX; }
-   const_iterator cbegin() const noexcept { return (const_iterator)this->BeginX; }
+   iterator begin() noexcept { return (iterator)this->fBeginX; }
+   const_iterator begin() const noexcept { return (const_iterator)this->fBeginX; }
+   const_iterator cbegin() const noexcept { return (const_iterator)this->fBeginX; }
    iterator end() noexcept { return begin() + size(); }
    const_iterator end() const noexcept { return begin() + size(); }
    const_iterator cend() const noexcept { return begin() + size(); }
@@ -397,7 +398,7 @@ void SmallVectorTemplateBase<T, TriviallyCopyable>::grow(size_t MinSize)
    // Move the elements over.
    this->uninitialized_move(this->begin(), this->end(), NewElts);
 
-   if (this->Owns) {
+   if (this->fOwns) {
       // Destroy the original elements.
       destroy_range(this->begin(), this->end());
 
@@ -406,9 +407,9 @@ void SmallVectorTemplateBase<T, TriviallyCopyable>::grow(size_t MinSize)
          free(this->begin());
    }
 
-   this->BeginX = NewElts;
-   this->Capacity = NewCapacity;
-   this->Owns = true;
+   this->fBeginX = NewElts;
+   this->fCapacity = NewCapacity;
+   this->fOwns = true;
 }
 
 /// SmallVectorTemplateBase<TriviallyCopyable = true> - This is where we put
@@ -463,7 +464,7 @@ protected:
    void grow(size_t MinSize = 0)
    {
       this->grow_pod(MinSize, sizeof(T));
-      this->Owns = true;
+      this->fOwns = true;
    }
 
 public:
@@ -506,14 +507,14 @@ public:
    {
       // Subclass has already destructed this vector's elements.
       // If this wasn't grown from the inline copy, deallocate the old space.
-      if (!this->isSmall() && this->Owns)
+      if (!this->isSmall() && this->fOwns)
          free(this->begin());
    }
 
    // also give up adopted memory if applicable
    void clear()
    {
-      if (this->Owns) {
+      if (this->fOwns) {
          this->destroy_range(this->begin(), this->end());
          this->fSize = 0;
       } else {
@@ -524,7 +525,7 @@ public:
    void resize(size_type N)
    {
       if (N < this->size()) {
-         if (this->Owns)
+         if (this->fOwns)
             this->destroy_range(this->begin() + N, this->end());
          this->set_size(N);
       } else if (N > this->size()) {
@@ -539,7 +540,7 @@ public:
    void resize(size_type N, const T &NV)
    {
       if (N < this->size()) {
-         if (this->Owns)
+         if (this->fOwns)
             this->destroy_range(this->begin() + N, this->end());
          this->set_size(N);
       } else if (N > this->size()) {
@@ -559,7 +560,7 @@ public:
    void pop_back_n(size_type NumItems)
    {
       assert(this->size() >= NumItems);
-      if (this->Owns)
+      if (this->fOwns)
          this->destroy_range(this->end() - NumItems, this->end());
       this->set_size(this->size() - NumItems);
    }
@@ -657,7 +658,7 @@ public:
       // Shift all elts down.
       iterator I = std::move(E, this->end(), S);
       // Drop the last elts.
-      if (this->Owns)
+      if (this->fOwns)
          this->destroy_range(I, this->end());
       this->set_size(I - this->begin());
       return (N);
@@ -881,10 +882,10 @@ void SmallVectorImpl<T>::swap(SmallVectorImpl<T> &RHS)
 
    // We can only avoid copying elements if neither vector is small.
    if (!this->isSmall() && !RHS.isSmall()) {
-      std::swap(this->BeginX, RHS.BeginX);
+      std::swap(this->fBeginX, RHS.fBeginX);
       std::swap(this->fSize, RHS.fSize);
-      std::swap(this->Capacity, RHS.Capacity);
-      std::swap(this->Owns, RHS.Owns);
+      std::swap(this->fCapacity, RHS.fCapacity);
+      std::swap(this->fOwns, RHS.fOwns);
       return;
    }
    if (RHS.size() > this->capacity())
@@ -904,14 +905,14 @@ void SmallVectorImpl<T>::swap(SmallVectorImpl<T> &RHS)
       size_t EltDiff = this->size() - RHS.size();
       this->uninitialized_copy(this->begin() + NumShared, this->end(), RHS.end());
       RHS.set_size(RHS.size() + EltDiff);
-      if (this->Owns)
+      if (this->fOwns)
          this->destroy_range(this->begin() + NumShared, this->end());
       this->set_size(NumShared);
    } else if (RHS.size() > this->size()) {
       size_t EltDiff = RHS.size() - this->size();
       this->uninitialized_copy(RHS.begin() + NumShared, RHS.end(), this->end());
       this->set_size(this->size() + EltDiff);
-      if (RHS.Owns)
+      if (RHS.fOwns)
          this->destroy_range(RHS.begin() + NumShared, RHS.end());
       RHS.set_size(NumShared);
    }
@@ -937,7 +938,7 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(const SmallVectorImpl<T> &RHS)
          NewEnd = this->begin();
 
       // Destroy excess elements.
-      if (this->Owns)
+      if (this->fOwns)
          this->destroy_range(NewEnd, this->end());
 
       // Trim.
@@ -950,7 +951,7 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(const SmallVectorImpl<T> &RHS)
    // From the original LLVM implementation:
    // FIXME: don't do this if they're efficiently moveable.
    if (this->capacity() < RHSSize) {
-      if (this->Owns) {
+      if (this->fOwns) {
          // Destroy current elements.
          this->destroy_range(this->begin(), this->end());
       }
@@ -979,15 +980,15 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(SmallVectorImpl<T> &&RHS)
 
    // If the RHS isn't small, clear this vector and then steal its buffer.
    if (!RHS.isSmall()) {
-      if (this->Owns) {
+      if (this->fOwns) {
          this->destroy_range(this->begin(), this->end());
          if (!this->isSmall())
             free(this->begin());
       }
-      this->BeginX = RHS.BeginX;
+      this->fBeginX = RHS.fBeginX;
       this->fSize = RHS.fSize;
-      this->Capacity = RHS.Capacity;
-      this->Owns = RHS.Owns;
+      this->fCapacity = RHS.fCapacity;
+      this->fOwns = RHS.fOwns;
       RHS.resetToSmall();
       return *this;
    }
@@ -1003,7 +1004,7 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(SmallVectorImpl<T> &&RHS)
          NewEnd = std::move(RHS.begin(), RHS.end(), NewEnd);
 
       // Destroy excess elements and trim the bounds.
-      if (this->Owns)
+      if (this->fOwns)
          this->destroy_range(NewEnd, this->end());
       this->set_size(RHSSize);
 
@@ -1019,7 +1020,7 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(SmallVectorImpl<T> &&RHS)
    // FIXME: this may not actually make any sense if we can efficiently move
    // elements.
    if (this->capacity() < RHSSize) {
-      if (this->Owns) {
+      if (this->fOwns) {
          // Destroy current elements.
          this->destroy_range(this->begin(), this->end());
       }
@@ -1236,7 +1237,7 @@ public:
 
    ~RVec()
    {
-      if (this->Owns) {
+      if (this->fOwns) {
          // Destroy the constructed elements in the vector.
          this->destroy_range(this->begin(), this->end());
       }
@@ -1291,10 +1292,10 @@ public:
 
    RVec(T* p, size_t n) : Internal::VecOps::SmallVectorImpl<T>(N)
    {
-      this->BeginX = p;
+      this->fBeginX = p;
       this->fSize = n;
-      this->Capacity = n;
-      this->Owns = false;
+      this->fCapacity = n;
+      this->fOwns = false;
    }
 
    RVec &operator=(Internal::VecOps::SmallVectorImpl<T> &&RHS)
