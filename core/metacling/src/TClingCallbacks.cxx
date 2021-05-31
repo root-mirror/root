@@ -328,6 +328,8 @@ bool TClingCallbacks::findInGlobalModuleIndex(DeclarationName Name, bool loadFir
             if (gDebug > 2)
                llvm::errs() << "Module '" << ModuleName << "' already loaded"
                             << " for '" << Name.getAsString() << "'\n";
+            if (loadFirstMatchOnly)
+               break;
             continue;
          }
 
@@ -359,7 +361,7 @@ bool TClingCallbacks::LookupObject(const DeclContext* DC, DeclarationName Name) 
    if (fIsAutoParsingSuspended || fIsAutoLoadingRecursively)
       return false;
 
-   if (findInGlobalModuleIndex(Name, /*loadFirstMatchOnly*/ false))
+   if (findInGlobalModuleIndex(Name, /*loadFirstMatchOnly*/ true))
       return true;
 
    if (Name.getNameKind() != DeclarationName::Identifier)
