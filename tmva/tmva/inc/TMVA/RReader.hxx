@@ -69,11 +69,11 @@ inline XMLConfig ParseXMLConfig(const std::string &filename)
       }
       // Read out input spectators
       else if (nodeName.compare("Spectators") == 0) {
-         c.numSpectators = std::atoi(xml.GetAttr(node, "NVar"));
+         c.numSpectators = std::atoi(xml.GetAttr(node, "NSpec"));
          c.spectators = std::vector<std::string>(c.numSpectators);
          c.spectator_expressions = std::vector<std::string>(c.numSpectators);
          for (auto thisNode = xml.GetChild(node); thisNode; thisNode = xml.GetNext(thisNode)) {
-            const auto iVariable = std::atoi(xml.GetAttr(thisNode, "VarIndex"));
+            const auto iVariable = std::atoi(xml.GetAttr(thisNode, "SpecIndex"));
             c.spectators[iVariable] = xml.GetAttr(thisNode, "Title");
             c.spectator_expressions[iVariable] = xml.GetAttr(thisNode, "Expression");
          }
@@ -110,7 +110,7 @@ inline XMLConfig ParseXMLConfig(const std::string &filename)
       ss << "Failed to parse input variables from TMVA config " << filename << ".";
       throw std::runtime_error(ss.str());
    }
-   if (c.numSpectators != c.spectators.size() || c.numSpectators == 0) {
+   if (c.numSpectators != c.spectators.size()) {
       std::stringstream ss;
       ss << "Failed to parse input spectators from TMVA config " << filename << ".";
       throw std::runtime_error(ss.str());
@@ -176,12 +176,16 @@ public:
    /// Compute model prediction on vector
    std::vector<float> Compute(const std::vector<float> &x)
    {
-      if (x.size() != fVariables.size())
+      if (x.size() != (fVariables.size()+fSpectators.size()))
          throw std::runtime_error("Size of input vector is not equal to number of variables.");
 
       // Copy over inputs to memory used by TMVA reader
-      for (std::size_t i = 0; i < x.size(); i++) {
+      const auto nVars = fVariables.size();
+      for (std::size_t i = 0; i != nVars ; ++i) {
          fVariableValues[i] = x[i];
+      }
+      for (std::size_t i = 0; i != fSpectators.size(); ++i) {
+         fSpectatorValues[i] = x[nVars+i];
       }
 
       // Take lock to protect model evaluation
