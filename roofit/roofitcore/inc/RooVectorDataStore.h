@@ -109,7 +109,6 @@ public:
   virtual void append(RooAbsDataStore& other) override;
 
   // General & bookkeeping methods
-  virtual Bool_t valid() const override;
   virtual Int_t numEntries() const override { return static_cast<int>(size()); }
   virtual Double_t sumEntries() const override { return _sumWeight ; }
   /// Get size of stored dataset.

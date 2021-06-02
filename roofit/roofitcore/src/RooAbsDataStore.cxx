@@ -98,17 +98,6 @@ RooAbsDataStore::~RooAbsDataStore()
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return true if currently loaded coordinate is considered valid within
-/// the current range definitions of all observables
-
-Bool_t RooAbsDataStore::valid() const 
-{
-  return kTRUE ;
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Print name of dataset
 

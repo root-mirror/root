@@ -127,18 +127,6 @@ RooCompositeDataStore::~RooCompositeDataStore()
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Return true if currently loaded coordinate is considered valid within
-/// the current range definitions of all observables
-
-Bool_t RooCompositeDataStore::valid() const 
-{
-  return kTRUE ;
-}
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
 /// Forward recalculate request to all subsets
 
 void RooCompositeDataStore::recalculateCache(const RooArgSet* proj, Int_t firstEvent, Int_t lastEvent, Int_t stepSize, Bool_t skipZeroWeights) 

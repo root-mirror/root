@@ -615,19 +615,6 @@ void RooTreeDataStore::loadValues(const RooAbsDataStore *ads, const RooFormulaVa
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return true if currently loaded coordinate is considered valid within
-/// the current range definitions of all observables
-
-Bool_t RooTreeDataStore::valid() const
-{
-  return kTRUE ;
-}
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Interface function to TTree::Fill
 

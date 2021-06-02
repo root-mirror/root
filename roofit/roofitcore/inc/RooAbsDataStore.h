@@ -84,7 +84,6 @@ public:
   virtual void append(RooAbsDataStore& other)= 0 ;
 
   // General & bookkeeping methods
-  virtual Bool_t valid() const = 0 ;
   virtual Int_t numEntries() const = 0 ;
   virtual Double_t sumEntries() const { return 0 ; } ;
   virtual void reset() = 0 ;
