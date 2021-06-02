@@ -21,6 +21,8 @@
 #include "RooArgSet.h"
 #include "RooArgList.h"
 #include "RooSpan.h"
+#include "UniqueId.h"
+
 #include <map>
 #include <string>
 
@@ -251,6 +253,12 @@ public:
 
   static StorageType getDefaultStorageType();
 
+  /// Returns a unique ID that is different for every instantiated RooAbsData object.
+  /// This ID can be used whether two RooAbsData are the same object, which is safer
+  /// than memory address comparisons that might result in false positives when
+  /// memory is reused.
+  UniqueId<RooAbsData> const& uniqueId() const { return _uniqueId; }
+
 protected:
 
   static StorageType defaultStorageType ;
@@ -296,6 +304,8 @@ protected:
   std::map<std::string,RooAbsData*> _ownedComponents ; // Owned external components
 
 private:
+   const UniqueId<RooAbsData> _uniqueId; //!
+
    ClassDef(RooAbsData, 5) // Abstract data collection
 };
 
