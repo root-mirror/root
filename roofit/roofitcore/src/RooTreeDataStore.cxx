@@ -694,18 +694,6 @@ const RooArgSet* RooTreeDataStore::get(Int_t index) const
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return the weight of the n-th data point (n='index') in memory
-
-Double_t RooTreeDataStore::weight(Int_t index) const
-{
-  get(index) ;
-  return weight() ;
-}
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Return the weight of the n-th data point (n='index') in memory
 

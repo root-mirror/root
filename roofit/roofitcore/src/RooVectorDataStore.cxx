@@ -467,18 +467,6 @@ const RooArgSet* RooVectorDataStore::getNative(Int_t index) const
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-/// Load data point at `index`, and return its weight.
-Double_t RooVectorDataStore::weight(Int_t index) const 
-{
-  get(index) ;
-  return weight() ;
-}
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Return the error of the current weight.
 /// @param[in] etype Switch between simple Poisson or sum-of-weights statistics

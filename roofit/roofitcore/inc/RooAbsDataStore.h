@@ -60,7 +60,10 @@ public:
   virtual Double_t weightError(RooAbsData::ErrorType etype=RooAbsData::Poisson) const = 0 ;
   virtual void weightError(Double_t& lo, Double_t& hi, RooAbsData::ErrorType etype=RooAbsData::Poisson) const = 0 ; 
 
-  virtual Double_t weight(Int_t index) const = 0 ;
+  double weight(Int_t index) const {
+    get(index) ;
+    return weight() ;
+  }
   virtual Bool_t isWeighted() const = 0 ;
 
   /// Retrieve batches for all observables in this data store.

@@ -240,20 +240,6 @@ Double_t RooCompositeDataStore::weight() const
 }
 
 
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-Double_t RooCompositeDataStore::weight(Int_t idx) const 
-{
-  get(idx) ;
-  return weight() ;
-}
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 
 Double_t RooCompositeDataStore::weightError(RooAbsData::ErrorType etype) const 
