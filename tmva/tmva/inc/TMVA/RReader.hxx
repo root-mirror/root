@@ -221,7 +221,7 @@ public:
 
       const auto numEntries = shape[0];
       const auto numVars = shape[1];
-      if (numVars != fVariables.size())
+      if (numVars != (fVariables.size()+fSpectators.size()))
          throw std::runtime_error("Second dimension of input tensor is not equal to number of variables.");
 
       // Define shape of output tensor based on analysis type
@@ -233,9 +233,13 @@ public:
          y = y.Reshape({numEntries, numClasses});
 
       // Fill output tensor
+      const auto nVars = fVariables.size(); // number of non-spectator variables
       for (std::size_t i = 0; i < numEntries; i++) {
-         for (std::size_t j = 0; j < numVars; j++) {
+         for (std::size_t j = 0; j < nVars; j++) {
             fVariableValues[j] = x(i, j);
+         }
+         for (std::size_t j = 0; j < fSpectators.size(); ++j) {
+            fSpectatorValues[j] = x(i, nVars+j);
          }
          R__WRITE_LOCKGUARD(ROOT::gCoreMutex);
          // Classification
