@@ -856,3 +856,10 @@ void RooAbsOptTestStatistic::setUpBinSampling() {
     _funcClone = newPdf;
   }
 }
+
+
+/// Returns a suffix string that is unique for RooAbsOptTestStatistic
+/// instances that don't share the same cloned input data object.
+const char* RooAbsOptTestStatistic::cacheUniqueSuffix() const {
+   return Form("_%lx", _dataClone->uniqueId().value()) ;
+}

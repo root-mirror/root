@@ -45,7 +45,7 @@ public:
   const RooAbsData& data() const ;
 
 
-  virtual const char* cacheUniqueSuffix() const { return Form("_%lx", (ULong_t)_dataClone) ; }
+  virtual const char* cacheUniqueSuffix() const;
 
   // Override this to be always true to force calculation of likelihood without parameters
   virtual Bool_t isDerived() const { return kTRUE ; }
