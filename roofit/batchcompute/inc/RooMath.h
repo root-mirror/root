@@ -16,10 +16,9 @@
 #ifndef ROO_MATH
 #define ROO_MATH
 
-#include <cmath>
-#include <complex>
-
+#include "rbc.h"
 #include "TMath.h"
+#include <complex>
 
 typedef Double_t* pDouble_t;
 
@@ -96,7 +95,7 @@ public:
    * @f$Im(z)<0@f$, the symmetry property @f$w(x-iy)=2e^{-(x+iy)^2-w(x+iy)}@f$
    * is used.
    */
-  static std::complex<double> faddeeva(std::complex<double> z);
+  __device__ __host__ static std::complex<double> faddeeva(std::complex<double> z);
   /** @brief evaluate Faddeeva function for complex argument (fast version)
    *
    * @author Manuel Schiller <manuel.schiller@nikhef.nl>

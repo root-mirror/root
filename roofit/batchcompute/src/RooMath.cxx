@@ -19,21 +19,16 @@
 // functions not found in TMath, mostly involving complex algebra
 //
 //
-
-#include <complex>
-#include <cmath>
-#include <algorithm>
-
-#include "RooFit.h"
-
 #include "RooMath.h"
-#include "Riostream.h"
-#include "RooMsgService.h"
+#include "rbc.h"
 
-using namespace std;
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <iostream>
 
 namespace faddeeva_impl {
-    static inline void cexp(double& re, double& im)
+__device__ __host__ static inline void cexp(double& re, double& im)
     {
 	// with gcc on unix machines and on x86_64, we can gain by hand-coding
 	// exp(z) for the x87 coprocessor; other platforms have the default
@@ -43,7 +38,7 @@ namespace faddeeva_impl {
 	// is optimising for code size
 	// (we insist on __unix__ here, since the assemblers on other OSs
 	// typically do not speak AT&T syntax as gas does...)
-#if !(defined(__GNUC__) || defined(__clang__)) || \
+#if defined(__CUDACC__) || !(defined(__GNUC__) || defined(__clang__)) || \
 	!defined(__unix__) || !defined(__x86_64__) || \
 	!defined(__OPTIMIZE__) || defined(__OPTIMIZE_SIZE__) || \
 	defined(__INTEL_COMPILER) || \
@@ -116,7 +111,7 @@ namespace faddeeva_impl {
     }
 
     template <class T, unsigned N, unsigned NTAYLOR, unsigned NCF>
-    static inline std::complex<T> faddeeva_smabmq_impl(
+__device__ __host__ static inline std::complex<T> faddeeva_smabmq_impl(
 	    T zre, T zim, const T tm,
 	    const T (&a)[N], const T (&npi)[N],
 	    const T (&taylorarr)[N * NTAYLOR * 2])
@@ -286,7 +281,7 @@ namespace faddeeva_impl {
 	}
     }
 
-    static const double npi24[24] = { // precomputed values n * pi
+__device__ static constexpr double npi24[24] = { // precomputed values n * pi
 	0.00000000000000000e+00, 3.14159265358979324e+00, 6.28318530717958648e+00,
 	9.42477796076937972e+00, 1.25663706143591730e+01, 1.57079632679489662e+01,
 	1.88495559215387594e+01, 2.19911485751285527e+01, 2.51327412287183459e+01,
@@ -296,7 +291,7 @@ namespace faddeeva_impl {
 	5.65486677646162783e+01, 5.96902604182060715e+01, 6.28318530717958648e+01,
 	6.59734457253856580e+01, 6.91150383789754512e+01, 7.22566310325652445e+01,
     };
-    static const double a24[24] = { // precomputed Fourier coefficient prefactors
+__device__ static constexpr double a24[24] = { // precomputed Fourier coefficient prefactors
 	2.95408975150919338e-01, 2.75840233292177084e-01, 2.24573955224615866e-01,
 	1.59414938273911723e-01, 9.86657664154541891e-02, 5.32441407876394120e-02,
 	2.50521500053936484e-02, 1.02774656705395362e-02, 3.67616433284484706e-03,
@@ -306,7 +301,7 @@ namespace faddeeva_impl {
 	6.70217160600200763e-11, 5.30726516347079017e-12, 3.66432411346763916e-13,
 	2.20589494494103134e-14, 1.15782686262855879e-15, 5.29871142946730482e-17,
     };
-    static const double taylorarr24[24 * 12] = {
+__device__ static constexpr double taylorarr24[24 * 12] = {
 	// real part imaginary part, low order coefficients last
 	// nsing = 0
 	 0.00000000000000000e-00,  3.00901111225470020e-01,
@@ -539,7 +534,7 @@ namespace faddeeva_impl {
     };
 }
 
-std::complex<double> RooMath::faddeeva(std::complex<double> z)
+__device__ __host__ std::complex<double> RooMath::faddeeva(std::complex<double> z)
 {
     return faddeeva_impl::faddeeva_smabmq_impl<double, 24, 6, 9>(
 	    z.real(), z.imag(), 12., faddeeva_impl::a24,
@@ -667,8 +662,9 @@ Double_t RooMath::interpolate(Double_t xa[], Double_t ya[], Int_t n, Double_t x)
       w=c[i+1]-d[i] ;
       den=ho-hp ;
       if (den==0.) {
-	oocoutE((TObject*)0,Eval) << "RooMath::interpolate ERROR: zero distance between points not allowed" << endl ;
-	return 0 ;
+        std::cerr << "In " << __func__ << "(), " << __FILE__ << ":" << __LINE__ << 
+          ": Zero distance between points not allowed." << std::endl;
+        return 0 ;
       }
       den = w/den ;
       d[i]=hp*den ;

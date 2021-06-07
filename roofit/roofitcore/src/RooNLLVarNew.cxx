@@ -24,7 +24,7 @@ void RooNLLVarNew::computeBatch(double* output, size_t nEvents, rbc::DataMap& da
 
 double RooNLLVarNew::reduce(const double* input, size_t nEvents) const
 {
-  return RooBatchCompute::dispatch->sumReduce(input, nEvents);
+  return rbc::dispatch->sumReduce(input, nEvents);
 }
 
 double RooNLLVarNew::getValV(const RooArgSet *) const

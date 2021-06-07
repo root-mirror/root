@@ -29,14 +29,16 @@ RooFitDriver::RooFitDriver(const RooAbsData& data, const RooNLLVarNew& _topNode,
   // If cuda mode is on, copy all observable data to device memory
   if (batchMode == -1)
   {
+    if (!rbc::dispatch_gpu) 
+      throw std::runtime_error(std::string("In: ")+__func__+"(), "+__FILE__+":"+__LINE__+": Cuda implementation of the computing library is not available\n");
     rbc::dispatch = rbc::dispatch_gpu;
-    cudaMemDataset = static_cast<double*>(RooBatchCompute::dispatch->malloc( nEvents*dataMap.size()*sizeof(double) ));
+    cudaMemDataset = static_cast<double*>(rbc::dispatch->malloc( nEvents*dataMap.size()*sizeof(double) ));
     size_t idx=0;
-    RooBatchCompute::DataMap afterCopy;
+    rbc::DataMap afterCopy;
     for (auto& record:dataMap)
     {
       afterCopy[record.first] = RooSpan<double>(cudaMemDataset+idx, nEvents);
-      RooBatchCompute::dispatch->memcpyToGPU(cudaMemDataset+idx, record.second.data(), nEvents*sizeof(double));
+      rbc::dispatch->memcpyToGPU(cudaMemDataset+idx, record.second.data(), nEvents*sizeof(double));
       idx += nEvents;
     }
     dataMap.swap(afterCopy);
@@ -94,10 +96,10 @@ RooFitDriver::~RooFitDriver()
 {
   while (!buffers.empty())
   {
-    RooBatchCompute::dispatch->free( buffers.front() );
+    rbc::dispatch->free( buffers.front() );
     buffers.pop();
   }
-  RooBatchCompute::dispatch->free(cudaMemDataset);
+  rbc::dispatch->free(cudaMemDataset);
 }
 
 double RooFitDriver::getVal()
@@ -112,7 +114,7 @@ double RooFitDriver::getVal()
     // get an available buffer for storing the comptation results
     double* buffer;
     if (buffers.empty())
-      buffer = static_cast<double*>(RooBatchCompute::dispatch->malloc( nEvents*sizeof(double) ));
+      buffer = static_cast<double*>(rbc::dispatch->malloc( nEvents*sizeof(double) ));
     else
     {
       buffer = buffers.front();

@@ -1,6 +1,7 @@
 # Library which powers fast batch computations in Roofit.
 ROOT_LINKER_LIBRARY(RooBatchCompute
     src/Initialisation.cxx
+    src/RooMath.cxx
     src/RunContext.cxx
   DEPENDENCIES
     Core
@@ -54,7 +55,7 @@ endif() # vector versions of library
 
 if (cuda)
   ROOT_LINKER_LIBRARY(RooBatchCompute_CUDA  src/RooBatchCompute.cu src/ComputeFunctions.cu TYPE SHARED DEPENDENCIES RooBatchCompute)
-  target_compile_options(RooBatchCompute_CUDA  PRIVATE -DRF_ARCH=CUDA -G)
+  target_compile_options(RooBatchCompute_CUDA  PRIVATE -DRF_ARCH=CUDA -G --expt-relaxed-constexpr)
 endif()
 
 ROOT_INSTALL_HEADERS()

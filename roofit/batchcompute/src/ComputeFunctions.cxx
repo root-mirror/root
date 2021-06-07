@@ -3,16 +3,17 @@
 #include "RooBatchCompute.h"
 #include "Batches.h"
 #include "RooVDTHeaders.h"
-//~  #include "RooMath.h"
 
 #include <complex>
 
 #ifdef __CUDACC__
   #define BEGIN blockDim.x*blockIdx.x + threadIdx.x
   #define STEP  blockDim.x*gridDim.x
+  // for CUDA, we include RooMath.cxx and ComputeFunctions.cxx in ComputeFunctions.cu
 #else
   #define BEGIN  0
   #define STEP   1
+  #include "RooMath.h"
 #endif // #ifdef __CUDACC__
 
 namespace RooBatchCompute {
@@ -352,99 +353,85 @@ __global__ void computeJohnson(Batches batches)
   }
 }
 
-//~ /* Actual computation of Landau(x,mean,sigma) in a vectorization-friendly way
- //~ * Code copied from function landau_pdf (math/mathcore/src/PdfFuncMathCore.cxx)
- //~ * and rewritten to take advantage for the most popular case
- //~ * which is -1 < (x-mean)/sigma < 1. The rest cases are handled in scalar way
- //~ */
-//~ __global__ void computeLandau(Batches batches)
-//~ {
-  //~ Batch X=batches[0], M=batches[1], S=batches[2], normVal=batches[3];
-  //~ const double p1[5] = {0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635,   0.001511162253};
-  //~ const double q1[5] = {1.0         ,-0.3388260629, 0.09594393323, -0.01608042283,    0.003778942063};
+/* Actual computation of Landau(x,mean,sigma) in a vectorization-friendly way
+ * Code copied from function landau_pdf (math/mathcore/src/PdfFuncMathCore.cxx)
+ * and rewritten to enable vectorization.
+ */
+__global__ void computeLandau(Batches batches)
+{
+  auto case0 = [](double x)
+  {
+    const double a1[3] = {0.04166666667,-0.01996527778, 0.02709538966};
+    const double u = fast_exp(x+1.0);
+    return 0.3989422803*fast_exp( -1/u -0.5*(x+1) )*(1+(a1[0]+(a1[1]+a1[2]*u)*u)*u);
+  };
+  auto case1 = [](double x)
+  {
+    constexpr double p1[5] = {0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635,   0.001511162253};
+    constexpr double q1[5] = {1.0         ,-0.3388260629, 0.09594393323, -0.01608042283,    0.003778942063};
+    const double u = fast_exp(-x-1);
+    return fast_exp( -u -0.5*(x+1) ) *
+      (p1[0]+(p1[1]+(p1[2]+(p1[3]+p1[4]*x)*x)*x)*x) / (q1[0]+(q1[1]+(q1[2]+(q1[3]+q1[4]*x)*x)*x)*x);
+  };
+  auto case2 = [](double x)
+  {
+    constexpr double p2[5] = {0.1788541609, 0.1173957403, 0.01488850518, -0.001394989411,   0.0001283617211};
+    constexpr double q2[5] = {1.0         , 0.7428795082, 0.3153932961,   0.06694219548,    0.008790609714};
+    return (p2[0]+(p2[1]+(p2[2]+(p2[3]+p2[4]*x)*x)*x)*x) / (q2[0]+(q2[1]+(q2[2]+(q2[3]+q2[4]*x)*x)*x)*x);
+  };
+  auto case3 = [](double x)
+  {
+    constexpr double p3[5] = {0.1788544503, 0.09359161662,0.006325387654, 0.00006611667319,-0.000002031049101};
+    constexpr double q3[5] = {1.0         , 0.6097809921, 0.2560616665,   0.04746722384,    0.006957301675};
+    return (p3[0]+(p3[1]+(p3[2]+(p3[3]+p3[4]*x)*x)*x)*x) / (q3[0]+(q3[1]+(q3[2]+(q3[3]+q3[4]*x)*x)*x)*x);
+  };
+  auto case4 = [](double x)
+  {
+    constexpr double p4[5] = {0.9874054407, 118.6723273,  849.2794360,   -743.7792444,      427.0262186};
+    constexpr double q4[5] = {1.0         , 106.8615961,  337.6496214,    2016.712389,      1597.063511};
+    const double u = 1/x;
+    return u*u*(p4[0]+(p4[1]+(p4[2]+(p4[3]+p4[4]*u)*u)*u)*u) / (q4[0]+(q4[1]+(q4[2]+(q4[3]+q4[4]*u)*u)*u)*u);
+  };
+  auto case5 = [](double x)
+  {
+    constexpr double p5[5] = {1.003675074,  167.5702434,  4789.711289,    21217.86767,     -22324.94910};
+    constexpr double q5[5] = {1.0         , 156.9424537,  3745.310488,    9834.698876,      66924.28357};
+    const double u = 1/x;
+    return u*u*(p5[0]+(p5[1]+(p5[2]+(p5[3]+p5[4]*u)*u)*u)*u) / (q5[0]+(q5[1]+(q5[2]+(q5[3]+q5[4]*u)*u)*u)*u);
+  };
+  auto case6 = [](double x)
+  {
+    constexpr double p6[5] = {1.000827619,  664.9143136,  62972.92665,    475554.6998,     -5743609.109};
+    constexpr double q6[5] = {1.0         , 651.4101098,  56974.73333,    165917.4725,     -2815759.939};
+    const double u = 1/x;
+    return u*u*(p6[0]+(p6[1]+(p6[2]+(p6[3]+p6[4]*u)*u)*u)*u) / (q6[0]+(q6[1]+(q6[2]+(q6[3]+q6[4]*u)*u)*u)*u);
+  };
+  auto case7 = [](double x)
+  {
+    const double a2[2] = {-1.845568670,-4.284640743};
+    const double u = 1 / ( x-x*fast_log(x)/(x+1) );
+    return u*u*(1+(a2[0]+a2[1]*u)*u);
+  };
+  
+  Batch X=batches[0], M=batches[1], S=batches[2], normVal=batches[3];
+  
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+    batches.output[i] = (X[i]-M[i]) / S[i];
 
-  //~ const double p2[5] = {0.1788541609, 0.1173957403, 0.01488850518, -0.001394989411,   0.0001283617211};
-  //~ const double q2[5] = {1.0         , 0.7428795082, 0.3153932961,   0.06694219548,    0.008790609714};
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+    if (S[i] <= 0.0) batches.output[i] = 0;
+    else if (batches.output[i]<-5.5) batches.output[i] = case0(batches.output[i]);
+    else if (batches.output[i]<-1.0) batches.output[i] = case1(batches.output[i]);
+    else if (batches.output[i]< 1.0) batches.output[i] = case2(batches.output[i]);
+    else if (batches.output[i]< 5.0) batches.output[i] = case3(batches.output[i]);
+    else if (batches.output[i]<12.0) batches.output[i] = case4(batches.output[i]);
+    else if (batches.output[i]<50.0) batches.output[i] = case5(batches.output[i]);
+    else if (batches.output[i]<300.) batches.output[i] = case6(batches.output[i]);
+    else                             batches.output[i] = case7(batches.output[i]);
 
-  //~ const double p3[5] = {0.1788544503, 0.09359161662,0.006325387654, 0.00006611667319,-0.000002031049101};
-  //~ const double q3[5] = {1.0         , 0.6097809921, 0.2560616665,   0.04746722384,    0.006957301675};
-
-  //~ const double p4[5] = {0.9874054407, 118.6723273,  849.2794360,   -743.7792444,      427.0262186};
-  //~ const double q4[5] = {1.0         , 106.8615961,  337.6496214,    2016.712389,      1597.063511};
-
-  //~ const double p5[5] = {1.003675074,  167.5702434,  4789.711289,    21217.86767,     -22324.94910};
-  //~ const double q5[5] = {1.0         , 156.9424537,  3745.310488,    9834.698876,      66924.28357};
-
-  //~ const double p6[5] = {1.000827619,  664.9143136,  62972.92665,    475554.6998,     -5743609.109};
-  //~ const double q6[5] = {1.0         , 651.4101098,  56974.73333,    165917.4725,     -2815759.939};
-
-  //~ const double a1[3] = {0.04166666667,-0.01996527778, 0.02709538966};
-  //~ const double a2[2] = {-1.845568670,-4.284640743};
-
-  //~ const double NaN = std::nan("");
-  //~ const size_t block=256;
-  //~ double v[block];
-
-  //~ for (size_t i=0; i<batchSize; i+=block) { //CHECK_VECTORISE
-    //~ const size_t stop = (i+block < batchSize) ? block : batchSize-i ;
-
-    //~ for (size_t j=0; j<stop; j++) { //CHECK_VECTORISE
-      //~ v[j] = (X[i+j]-M[i+j]) / S[i+j];
-      //~ batches.output[i+j] = (p2[0]+(p2[1]+(p2[2]+(p2[3]+p2[4]*v[j])*v[j])*v[j])*v[j]) /
-                    //~ (q2[0]+(q2[1]+(q2[2]+(q2[3]+q2[4]*v[j])*v[j])*v[j])*v[j]);
-    //~ }
-
-    //~ for (size_t j=0; j<stop; j++) { //CHECK_VECTORISE
-      //~ const bool mask = S[i+j] > 0;
-      //~ /*  comparison with NaN will give result false, so the next
-       //~ *  loop won't affect batches.output, for cases where sigma <=0
-       //~ */
-      //~ if (!mask) v[j] = NaN;
-      //~ batches.output[i+j] *= mask;
-    //~ }
-
-    //~ double u, ue, us;
-    //~ for (size_t j=0; j<stop; j++) { //CHECK_VECTORISE
-      //~ // if branch written in way to quickly process the most popular case -1 <= v[j] < 1
-      //~ if (v[j] >= 1) {
-        //~ if (v[j] < 5) {
-          //~ batches.output[i+j] = (p3[0]+(p3[1]+(p3[2]+(p3[3]+p3[4]*v[j])*v[j])*v[j])*v[j]) /
-                   //~ (q3[0]+(q3[1]+(q3[2]+(q3[3]+q3[4]*v[j])*v[j])*v[j])*v[j]);
-        //~ } else if (v[j] < 12) {
-            //~ u   = 1/v[j];
-            //~ batches.output[i+j] = u*u*(p4[0]+(p4[1]+(p4[2]+(p4[3]+p4[4]*u)*u)*u)*u) /
-                    //~ (q4[0]+(q4[1]+(q4[2]+(q4[3]+q4[4]*u)*u)*u)*u);
-        //~ } else if (v[j] < 50) {
-            //~ u   = 1/v[j];
-            //~ batches.output[i+j] = u*u*(p5[0]+(p5[1]+(p5[2]+(p5[3]+p5[4]*u)*u)*u)*u) /
-                     //~ (q5[0]+(q5[1]+(q5[2]+(q5[3]+q5[4]*u)*u)*u)*u);
-        //~ } else if (v[j] < 300) {
-            //~ u   = 1/v[j];
-            //~ batches.output[i+j] = u*u*(p6[0]+(p6[1]+(p6[2]+(p6[3]+p6[4]*u)*u)*u)*u) /
-                     //~ (q6[0]+(q6[1]+(q6[2]+(q6[3]+q6[4]*u)*u)*u)*u);
-        //~ } else {
-            //~ u   = 1 / (v[j] -v[j]*std::log(v[j])/(v[j]+1) );
-            //~ batches.output[i+j] = u*u*(1 +(a2[0] +a2[1]*u)*u );
-        //~ }
-      //~ } else if (v[j] < -1) {
-          //~ if (v[j] >= -5.5) {
-            //~ u   = std::exp(-v[j]-1);
-            //~ batches.output[i+j] = std::exp(-u)*std::sqrt(u)*
-              //~ (p1[0]+(p1[1]+(p1[2]+(p1[3]+p1[4]*v[j])*v[j])*v[j])*v[j])/
-              //~ (q1[0]+(q1[1]+(q1[2]+(q1[3]+q1[4]*v[j])*v[j])*v[j])*v[j]);
-          //~ } else  {
-              //~ u   = std::exp(v[j]+1.0);
-              //~ if (u < 1e-10) batches.output[i+j] = 0.0;
-              //~ else {
-                //~ ue  = std::exp(-1/u);
-                //~ us  = std::sqrt(u);
-                //~ batches.output[i+j] = 0.3989422803*(ue/us)*(1+(a1[0]+(a1[1]+a1[2]*u)*u)*u);
-              //~ }
-          //~ }
-        //~ }
-    //~ }
-  //~ }
-//~ }
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+    batches.output[i] /= normVal[i];
+}
 
 __global__ void computeLognormal(Batches batches)
 {
@@ -491,34 +478,34 @@ __global__ void computeNovosibirsk(Batches batches)
     batches.output[i] = fast_exp(batches.output[i])/normVal[i];
 }
 
-//~  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void computePoisson(Batches batches)
+{
+  Batch x=batches[0], mean=batches[1], normVal=batches[2];
+  bool protectNegative = batches.extraArg(0);
+  bool noRounding      = batches.extraArg(1);
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+  {
+    const double x_i = noRounding ? x[i] : floor(x[i]);
+    batches.output[i] = std::lgamma(x_i + 1.);
+  }
 
-  //~  void run(const size_t n, double* __restrict batches.output, Tx x, TMean mean) const
-  //~  {
-    //~  for (size_t i = 0; i < n; ++i) { //CHECK_VECTORISE
-      //~  const double x_i = noRounding ? x[i] : floor(x[i]);
-      //~  // The std::lgamma yields different values than in the scalar implementation.
-      //~  // Need to check which one is more accurate.
-      //~  batches.output[i] = std::lgamma(x_i + 1.);
-        // batches.output[i] = TMath::LnGamma(x_i + 1.);
-    //~  }
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+  {
+    const double x_i = noRounding ? x[i] : floor(x[i]);
+    const double logMean = fast_log(mean[i]);
+    const double logPoisson = x_i * logMean - mean[i] - batches.output[i];
+    batches.output[i] = fast_exp(logPoisson);
 
-    //~  for (size_t i = 0; i < n; ++i) {
-      //~  const double x_i = noRounding ? x[i] : floor(x[i]);
-      //~  const double logMean = fast_log(mean[i]);
-      //~  const double logPoisson = x_i * logMean - mean[i] - batches.output[i];
-      //~  batches.output[i] = fast_exp(logPoisson);
+    // Cosmetics
+    if (x_i < 0)       batches.output[i] = 0;
+    else if (x_i == 0) batches.output[i] = 1/fast_exp(mean[i]);
 
-      //~  // Cosmetics
-      //~  if (x_i < 0.)
-        //~  batches.output[i] = 0.;
-      //~  else if (x_i == 0.) {
-        //~  batches.output[i] = 1./fast_exp(mean[i]);
-      //~  }
-      //~  if (protectNegative && mean[i] < 0.)
-        //~  batches.output[i] = 1.E-3;
-    //~  }
-  //~  }
+    if (protectNegative && mean[i] < 0) batches.output[i] = 1.E-3;
+  }
+  
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+    batches.output[i] /= normVal[i];
+}
 
 __global__ void computePolynomial(Batches batches)
 {
@@ -576,41 +563,39 @@ __global__ void computeProdPdf(Batches batches)
       batches.output[i] *= batches[pdf][i];
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //~  void run(size_t batchSize, double * __restrict batches.output, Tx X, Tmean M, Twidth W, Tsigma S) const
-  //~  {
-    //~  const double invSqrt2 = 0.707106781186547524400844362105;
-    //~  for (size_t i=0; i<batchSize; i++) {
-      //~  const double arg = (X[i]-M[i])*(X[i]-M[i]);
-      //~  if (S[i]==0.0 && W[i]==0.0) {
-        //~  batches.output[i] = 1.0;
-      //~  } else if (S[i]==0.0) {
-        //~  batches.output[i] = 1/(arg+0.25*W[i]*W[i]);
-      //~  } else if (W[i]==0.0) {
-        //~  batches.output[i] = fast_exp(-0.5*arg/(S[i]*S[i]));
-      //~  } else {
-        //~  batches.output[i] = invSqrt2/S[i];
-      //~  }
-    //~  }
+__global__ void computeVoigtian(Batches batches)
+{
+  Batch X=batches[0], M=batches[1], W=batches[2], S=batches[3], normVal=batches[4];
+  const double invSqrt2 = 0.707106781186547524400844362105;
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+  {
+    const double arg = (X[i]-M[i])*(X[i]-M[i]);
+    if (S[i]==0.0 && W[i]==0.0) batches.output[i] = 1.0;
+    else if (S[i]==0.0) batches.output[i] = 1 / (arg +0.25*W[i]*W[i]);
+    else if (W[i]==0.0) batches.output[i] = fast_exp( -0.5*arg/(S[i]*S[i]) );
+    else                batches.output[i] = invSqrt2/S[i];
+  }
 
-    //~  for (size_t i=0; i<batchSize; i++) {
-      //~  if (S[i]!=0.0 && W[i]!=0.0) {
-        //~  if (batches.output[i] < 0) batches.output[i] = -batches.output[i];
-        //~  const double factor = W[i]>0.0 ? 0.5 : -0.5;
-        //~  std::complex<Double_t> z( batches.output[i]*(X[i]-M[i]) , factor*batches.output[i]*W[i] );
-        //~  batches.output[i] *= RooMath::faddeeva(z).real();
-      //~  }
-    //~  }
-  //~  }
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+    if (S[i]!=0.0 && W[i]!=0.0) 
+    {
+      if (batches.output[i] < 0) batches.output[i] = -batches.output[i];
+      const double factor = W[i]>0.0 ? 0.5 : -0.5;
+      std::complex<double> z( batches.output[i]*(X[i]-M[i]) , factor*batches.output[i]*W[i] );
+      batches.output[i] *= RooMath::faddeeva(z).real();
+    }
+    
+  for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+    batches.output[i] /= normVal[i];
+}
 
 std::vector<void(*)(Batches)> getFunctions()
 {
   return {computeAddPdf, computeArgusBG, computeBernstein, computeBifurGauss, computeBreitWigner,
           computeBukin, computeCBShape, computeChebychev, computeChiSquare, computeDstD0BG, 
-          computeExponential, computeGaussian, computeGamma, computeJohnson, computeLognormal,
-          computeNegativeLogarithms, computeNovosibirsk, computePolynomial, computeProdPdf};
+          computeExponential, computeGaussian, computeGamma, computeJohnson, computeLandau,
+          computeLognormal, computeNegativeLogarithms, computeNovosibirsk, computePoisson, 
+          computePolynomial, computeProdPdf, computeVoigtian};
 }
 } // End namespace RF_ARCH
-
-
 } //End namespace RooBatchCompute

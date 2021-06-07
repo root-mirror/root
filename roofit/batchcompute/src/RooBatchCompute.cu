@@ -4,8 +4,8 @@
 #include "Batches.h"
 
 #include "TEnv.h"
+#include "TError.h"
 
-#include <iostream>
 #include <thrust/reduce.h>
 
 namespace RooBatchCompute {
@@ -30,8 +30,7 @@ class RooBatchComputeClass : public RooBatchComputeInterface {
       else
       {
         dispatch_gpu = nullptr;
-        if (gDebug>0) 
-          std::cerr << "In " << __func__ << "(), " << __FILE__ << ":" << __LINE__ << ": " << cudaGetErrorString(err) << std::endl;
+        Error( (std::string(__func__)+"(), "+__FILE__+":"+std::to_string(__LINE__)).c_str(), "%s", cudaGetErrorString(err) );
       }
     }
 
@@ -52,7 +51,7 @@ class RooBatchComputeClass : public RooBatchComputeInterface {
       cudaError_t error = cudaMalloc(&ret, size);
       if (error != cudaSuccess)
       {
-        std::cerr << "In " << __func__ << "(), " << __FILE__ << ":" << __LINE__ << ": " << cudaGetErrorString(error) << std::endl;
+        Fatal( (std::string(__func__)+"(), "+__FILE__+":"+std::to_string(__LINE__)).c_str(), "%s", cudaGetErrorString(error) );
         throw std::bad_alloc();
       }
       else return ret;
