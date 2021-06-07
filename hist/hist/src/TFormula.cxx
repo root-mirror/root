@@ -484,6 +484,7 @@ TFormula::TFormula(const char *name, const char *formula, int ndim, int npar, bo
    fLambdaPtr = nullptr;
    fFuncPtr = nullptr;
    fGradFuncPtr = nullptr;
+   fHessFuncPtr = nullptr;
 
 
    fNdim = ndim;
@@ -702,10 +703,14 @@ void TFormula::Copy(TObject &obj) const
    fnew.fMethod.reset(m);
    TMethodCall *gm = (fGradMethod) ? new TMethodCall(*fGradMethod) : nullptr;
    fnew.fGradMethod.reset(gm);
+   TMethodCall *hm = (fHessMethod) ? new TMethodCall(*fHessMethod) : nullptr;
+   fnew.fHessMethod.reset(hm);
 
    fnew.fFuncPtr = fFuncPtr;
    fnew.fGradGenerationInput = fGradGenerationInput;
    fnew.fGradFuncPtr = fGradFuncPtr;
+   fnew.fHessGenerationInput = fHessGenerationInput;
+   fnew.fHessFuncPtr = fHessFuncPtr;
 
 }
 
@@ -723,6 +728,7 @@ void TFormula::Clear(Option_t * )
 
    fMethod.reset();
    fGradMethod.reset();
+   fHessMethod.reset();
 
    fClingVariables.clear();
    fClingParameters.clear();
@@ -747,7 +753,7 @@ void TFormula::Clear(Option_t * )
 // Returns nullptr on failure.
 static std::unique_ptr<TMethodCall>
 prepareMethod(bool HasParameters, bool HasVariables, const char* FuncName,
-              bool IsVectorized, bool IsGradient = false) {
+              bool IsVectorized, bool AddDoublePtr = false) {
    std::unique_ptr<TMethodCall> Method = std::unique_ptr<TMethodCall>(new TMethodCall());
 
    TString prototypeArguments = "";
@@ -764,8 +770,8 @@ prepareMethod(bool HasParameters, bool HasVariables, const char* FuncName,
    if (HasParameters)
       AddDoublePtrParam();
 
-   // We need an extra Double_t* for the gradient return result.
-   if (IsGradient)
+   // We need an extra Double_t* for the gradient and hessian return result.
+   if (AddDoublePtr)
       AddDoublePtrParam();
 
    // Initialize the method call using real function name (cling name) defined
@@ -3073,7 +3079,7 @@ void TFormula::SetVectorized(Bool_t vectorized)
       fClingInput = fFormula;
 
       fMethod.reset();
-      // should I add fGradMethod.reset() ?
+      // should I add fGradMethod.reset() and fHessMethod.reset() ?
 
       FillVecFunctionsShurtCuts();   // to replace with the right vectorized signature (e.g. sin  -> vecCore::math::Sin)
       PreProcessFormula(fFormula);
@@ -3171,7 +3177,7 @@ bool TFormula::GenerateGradientPar()
       std::string GradFuncName = GetGradientFuncName();
       fGradMethod = prepareMethod(hasParameters, hasVariables,
                                   GradFuncName.c_str(),
-                                  fVectorized, /*IsGradient*/ true);
+                                  fVectorized, /*AddDoublePtr*/ true);
       fGradFuncPtr = prepareFuncPtr(fGradMethod.get());
       return true;
    }
@@ -3233,6 +3239,107 @@ void TFormula::GradientPar(const Double_t *x, Double_t *result)
       args[1] = &pars;
       args[2] = &result;
       (*fGradFuncPtr)(0, 3, args, /*ret*/nullptr); // We do not use ret in a return-void func.
+   }
+}
+
+/// returns true on success.
+bool TFormula::GenerateHessianPar()
+{
+   // We already have generated the hessian.
+   if (fHessMethod)
+      return true;
+
+   if (!HasHessianGenerationFailed()) {
+      // FIXME: Move this elsewhere
+      if (!TFormula::fIsCladRuntimeIncluded) {
+         TFormula::fIsCladRuntimeIncluded = true;
+         gInterpreter->Declare("#include <Math/CladDerivator.h>\n#pragma clad OFF");
+      }
+
+      // Check if the hessian request was made as part of another TFormula.
+      // This can happen when we create multiple TFormula objects with the same
+      // formula. In that case, the hasher will give identical id and we can
+      // reuse the already generated hessian function.
+      if (!functionExists(GetHessianFuncName())) {
+         std::string HessReqFuncName = GetHessianFuncName() + "_req";
+         // We want to call clad::differentiate(TFormula_id);
+         fHessGenerationInput = std::string("#pragma cling optimize(2)\n") +
+             "#pragma clad ON\n" +
+             "void " + HessReqFuncName + "() {\n" +
+             "clad::hessian(" + std::string(fClingName.Data()) + ");\n }\n" +
+             "#pragma clad OFF";
+
+         if (!gInterpreter->Declare(fHessGenerationInput.c_str()))
+            return false;
+      }
+
+      Bool_t hasParameters = (fNpar > 0);
+      Bool_t hasVariables = (fNdim > 0);
+      std::string HessFuncName = GetHessianFuncName();
+      fHessMethod = prepareMethod(hasParameters, hasVariables,
+                                  HessFuncName.c_str(),
+                                  fVectorized, /*AddDoublePtr*/ true);
+      fHessFuncPtr = prepareFuncPtr(fHessMethod.get());
+      return true;
+   }
+   return false;
+}
+
+void TFormula::HessianPar(const Double_t *x, TFormula::HessianStorage& result)
+{
+   if (DoEval(x) == TMath::QuietNaN())
+      return;
+
+   if (!fClingInitialized) {
+      Error("HessianPar", "Could not initialize the formula!");
+      return;
+   }
+
+   if (!GenerateHessianPar()) {
+      Error("HessianPar", "Could not generate a hessian for the formula %s!",
+            fClingName.Data());
+      return;
+   }
+
+   if ((int)result.size() < fNpar) {
+      Warning("HessianPar",
+              "The size of hessian result is %zu but %d is required. Resizing.",
+              result.size(), fNpar * fNpar);
+      result.resize(fNpar * fNpar);
+   }
+   HessianPar(x, result.data());
+}
+
+void TFormula::HessianPar(const Double_t *x, Double_t *result)
+{
+   void* args[3];
+   const double * vars = (x) ? x : fClingVariables.data();
+   args[0] = &vars;
+   if (fNpar <= 0) {
+      // __attribute__((used)) extern "C" void __cf_0(void* obj, int nargs, void** args, void* ret)
+      // {
+      //    if (ret) {
+      //       new (ret) (double) (((double (&)(double*))TFormula____id)(*(double**)args[0]));
+      //       return;
+      //    } else {
+      //       ((double (&)(double*))TFormula____id)(*(double**)args[0]);
+      //       return;
+      //    }
+      // }
+      args[1] = &result;
+      (*fHessFuncPtr)(0, 2, args, /*ret*/nullptr); // We do not use ret in a return-void func.
+   } else {
+      // __attribute__((used)) extern "C" void __cf_0(void* obj, int nargs, void** args, void* ret)
+      // {
+      //    ((void (&)(double*, double*,
+      //               double*))TFormula____id_hess)(*(double**)args[0], *(double**)args[1],
+      //                                                                 *(double**)args[2]);
+      //    return;
+      // }
+      const double *pars = fClingParameters.data();
+      args[1] = &pars;
+      args[2] = &result;
+      (*fHessFuncPtr)(0, 3, args, /*ret*/nullptr); // We do not use ret in a return-void func.
    }
 }
 
@@ -3555,6 +3662,12 @@ TString TFormula::GetGradientFormula() const {
    return v->ToString();
 }
 
+TString TFormula::GetHessianFormula() const {
+   std::unique_ptr<TInterpreterValue> v = gInterpreter->MakeInterpreterValue();
+   gInterpreter->Evaluate(GetHessianFuncName().c_str(), *v);
+   return v->ToString();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Print the formula and its attributes.
 
@@ -3592,6 +3705,11 @@ void TFormula::Print(Option_t *option) const
          printf("Generated Gradient:\n");
          printf("%s\n", fGradGenerationInput.c_str());
          printf("%s\n", GetGradientFormula().Data());
+      }
+      if(fHessFuncPtr) {
+         printf("Generated Hessian:\n");
+         printf("%s\n", fHessGenerationInput.c_str());
+         printf("%s\n", GetHessianFormula().Data());
       }
    }
    if(!fReadyToExecute)
