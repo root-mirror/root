@@ -123,6 +123,7 @@ public:
   /// \param[in] cutSpec Apply given cut when counting (*e.g.* `0 < x && x < 5`). Passing `"1"` selects all events.
   /// \param[in] cutRange If the observables have a range with this name, only count events inside this range.
   virtual Double_t sumEntries(const char* cutSpec, const char* cutRange=0) const = 0 ; // DERIVED
+  double sumEntriesW2() const;
   virtual Bool_t isWeighted() const { 
     // Do events in dataset have weights?
     return kFALSE ; 
