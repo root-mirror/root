@@ -2374,3 +2374,21 @@ void RooAbsData::RecursiveRemove(TObject *obj)
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/// Return sum of squared weights of this data.
+
+double RooAbsData::sumEntriesW2() const {
+  double sumW2;
+  const RooSpan<const double> eventWeights = getWeightBatch(0, numEntries());
+  if (eventWeights.empty()) {
+    sumW2 = numEntries() * weightSquared();
+  } else {
+    ROOT::Math::KahanSum<double, 4u> kahanWeight;
+    for (std::size_t i = 0; i < eventWeights.size(); ++i) {
+      kahanWeight.AddIndexed(eventWeights[i] * eventWeights[i], i);
+    }
+    sumW2 = kahanWeight.Sum();
+  }
+  return sumW2;
+}
