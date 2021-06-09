@@ -26,6 +26,7 @@ Persistent version of a TClass.
 #include "TListOfEnums.h"
 #include "TRealData.h"
 #include "TError.h"
+#include "TVirtualCollectionProxy.h"
 
 #include <cassert>
 
@@ -76,6 +77,8 @@ TProtoClass::TProtoClass(TClass* cl):
       for (auto realDataObj: *cl->GetListOfRealData()) {
          TRealData *rd = (TRealData*)realDataObj;
          if (!precRd) precRd = rd;
+         if (!rd->GetDataMember())
+            continue;
          TClass* clRD = rd->GetDataMember()->GetClass();
          TProtoRealData protoRealData(rd);
          if (clRD != clCurrent) {
@@ -114,6 +117,12 @@ TProtoClass::TProtoClass(TClass* cl):
             //    Info("TProtoClass","And is transient");
          // }
       // }
+   } else if (cl->GetCollectionProxy()->GetProperties() & TVirtualCollectionProxy::kIsEmulated) {
+      // The collection proxy is emulated has the wrong size.
+      if (cl->HasInterpreterInfo())
+         fSizeof = gCling->ClassInfo_Size(cl->GetClassInfo());
+      else
+         fSizeof = -1;
    }
 
    // this crashes
@@ -208,12 +217,12 @@ void TProtoClass::Delete(Option_t* opt /*= ""*/) {
 /// duplicate dictionary is acceptable for namespace or STL collections.
 
 Bool_t TProtoClass::FillTClass(TClass* cl) {
-   if (cl->fRealData || cl->fBase.load() || cl->fData || cl->fEnums.load() || cl->fSizeof != -1 || cl->fCanSplit >= 0 ||
+   if (cl->fRealData || cl->fBase.load() || cl->fData || cl->fEnums.load() || cl->fCanSplit >= 0 ||
        cl->fProperty != (-1)) {
 
       if (cl->GetCollectionType() != ROOT::kNotSTL) {
          // We are in the case of collection, duplicate dictionary are allowed
-         // (and even somewhat excepted since they can be auto asked for).
+         // (and even somewhat expected since they can be auto asked for).
          // They do not always have a TProtoClass for them.  In particular
          // the one that are pre-generated in the ROOT build (in what was once
          // called the cintdlls) do not have a pcms, neither does vector<string>
@@ -222,13 +231,16 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
             Info("FillTClass", "Returning w/o doing anything. %s is a STL collection.",cl->GetName());
          return kFALSE;
       }
-      if (cl->Property() & kIsNamespace) {
+      if (cl->fProperty != -1 && (cl->fProperty & kIsNamespace)) {
          if (gDebug > 0)
             Info("FillTClass", "Returning w/o doing anything. %s is a namespace.",cl->GetName());
          return kFALSE;
       }
       Error("FillTClass", "TClass %s already initialized!", cl->GetName());
       return kFALSE;
+   }
+   if (cl->fHasRootPcmInfo) {
+      Fatal("FillTClass", "Filling TClass %s a second time but none of the info is in the TClass instance ... ", cl->GetName());
    }
    if (gDebug > 1) Info("FillTClass","Loading TProtoClass for %s - %s",cl->GetName(),GetName());
 
@@ -294,7 +306,12 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
       cl->fEnums = temp;
    }
 
-   cl->fSizeof = fSizeof;
+   if (cl->fSizeof != -1 && cl->fSizeof != fSizeof) {
+      Error("FillTClass",
+            "For %s the sizeof provided by GenerateInitInstance (%d) is different from the one provided by TProtoClass (%d)",
+            cl->GetName(), cl->fSizeof, fSizeof);
+   } else
+      cl->fSizeof = fSizeof;
    cl->fCheckSum = fCheckSum;
    cl->fCanSplit = fCanSplit;
    cl->fProperty = fProperty;
@@ -326,7 +343,9 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
    int prevLevel = 0;
    bool first = true;
    if (fPRealData.size()  > 0) {
+      size_t element_next_idx = 0;
       for (auto element: fPRealData) {
+         ++element_next_idx;
          //if (element->IsA() == TObjString::Class()) {
          if (element.IsAClass() ) {
             // We now check for the TClass entry, w/o loading. Indeed we did that above.
@@ -336,16 +355,34 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
             // will be issued.
             TInterpreter::SuspendAutoParsing autoParseRaii(gInterpreter);
 
+            const char *classname = GetClassName(element.fClassIndex);
+
             // Disable autoparsing which might be triggered by the use of ResolvedTypedef
             // and the fallback new TClass() below.
-            currentRDClass = TClass::GetClass(GetClassName(element.fClassIndex), false /* Load */ );
+            currentRDClass = TClass::GetClass(classname, false /* Load */ );
             //printf("element is a class - name %s  - index %d  %s \n ",currentRDClass->GetName(), element.fClassIndex, GetClassName(element.fClassIndex) );
             if (!currentRDClass && !element.TestFlag(TProtoRealData::kIsTransient)) {
-               if (gDebug>1)
-                  Info("FillTClass()",
-                       "Cannot find TClass for %s; Creating an empty one in the kForwardDeclared state.",
-                       GetClassName(element.fClassIndex));
-               currentRDClass = new TClass(GetClassName(element.fClassIndex),1,TClass::kForwardDeclared, true /*silent*/);
+
+               if (TClassEdit::IsStdPair(classname) && element.fDMIndex == 0 && fPRealData.size() > element_next_idx) {
+                  size_t hint_offset = fPRealData[element_next_idx].fOffset - element.fOffset;
+                  size_t hint_size = 0;
+                  // Now find the size.
+                  size_t end = element_next_idx + 1;
+                  while (end < fPRealData.size() && fPRealData[end].fLevel > element.fLevel)
+                     ++end;
+                  if (end < fPRealData.size()) {
+                     hint_size = fPRealData[end].fOffset - element.fOffset;
+                  } else {
+                     hint_size = fSizeof - element.fOffset;
+                  }
+                  currentRDClass = TClass::GetClass(classname, true, false, hint_offset, hint_size);
+               }
+               if (!currentRDClass) {
+                  if (gDebug > 1)
+                     Info("FillTClass()",
+                          "Cannot find TClass for %s; Creating an empty one in the kForwardDeclared state.", classname);
+                  currentRDClass = new TClass(classname, 1, TClass::kForwardDeclared, true /*silent*/);
+               }
             }
          }
          //else {
@@ -394,6 +431,7 @@ Bool_t TProtoClass::FillTClass(TClass* cl) {
    // delete fPRealData;
    // fPRealData = 0;
 
+   cl->fHasRootPcmInfo = kTRUE;
    return kTRUE;
 }
 
@@ -411,6 +449,7 @@ TProtoClass::TProtoRealData::TProtoRealData(const TRealData* rd):
    fStatusFlag(0)
 {
    TDataMember * dm = rd->GetDataMember();
+   assert(rd->GetDataMember());
    TClass * cl = dm->GetClass();
    assert(cl != NULL);
    fDMIndex = DataMemberIndex(cl,dm->GetName());
@@ -444,10 +483,10 @@ TRealData* TProtoClass::TProtoRealData::CreateRealData(TClass* dmClass,
    //TDataMember* dm = (TDataMember*)dmClass->GetListOfDataMembers()->FindObject(fName);
    TDataMember* dm = TProtoClass::FindDataMember(dmClass, fDMIndex);
 
-   if (!dm && dmClass->GetState()!=TClass::kForwardDeclared) {
+   if (!dm && dmClass->GetState()!=TClass::kForwardDeclared && !dmClass->fIsSyntheticPair) {
       ::Error("CreateRealData",
-              "Cannot find data member # %d of class %s for parent %s!", fDMIndex, dmClass->GetName(),
-              parent->GetName());
+            "Cannot find data member # %d of class %s for parent %s!", fDMIndex, dmClass->GetName(),
+            parent->GetName());
       return nullptr;
    }
 
@@ -456,6 +495,9 @@ TRealData* TProtoClass::TProtoRealData::CreateRealData(TClass* dmClass,
    TString realMemberName;
    // keep an empty name if data member is not found
    if (dm) realMemberName = dm->GetName();
+   else if (dmClass->fIsSyntheticPair) {
+      realMemberName = (fDMIndex == 0) ? "first" : "second";
+   }
    if (TestFlag(kIsPointer) )
       realMemberName = TString("*")+realMemberName;
    else if (dm){
@@ -542,7 +584,7 @@ TDataMember * TProtoClass::FindDataMember(TClass * cl, Int_t index)
          return dm;
       i++;
    }
-   if (cl->GetState()!=TClass::kForwardDeclared)
+   if (cl->GetState()!=TClass::kForwardDeclared && !cl->fIsSyntheticPair)
       ::Error("TProtoClass::FindDataMember","data member with index %d is not found in class %s",index,cl->GetName());
    return nullptr;
 }

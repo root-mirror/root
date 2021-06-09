@@ -36,8 +36,7 @@ ClassImp(TListOfDataMembers);
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TListOfDataMembers::TListOfDataMembers(TClass *cl /*=0*/) :
-   fClass(cl),fIds(0),fUnloaded(0),fIsLoaded(kFALSE), fLastLoadMarker(0)
+TListOfDataMembers::TListOfDataMembers(TClass *cl /*=0*/) : fClass(cl)
 {
 }
 

@@ -407,6 +407,9 @@ void TClassTable::Add(TProtoClass *proto)
    if (r->fName) {
       if (r->fProto) delete r->fProto;
       r->fProto = proto;
+      TClass *oldcl = (TClass*)gROOT->GetListOfClasses()->FindObject(cname);
+      if (oldcl && oldcl->GetState() == TClass::kHasTClassInit)
+         proto->FillTClass(oldcl);
       return;
    } else if (ROOT::Internal::gROOTLocal && gCling) {
       TClass *oldcl = (TClass*)gROOT->GetListOfClasses()->FindObject(cname);

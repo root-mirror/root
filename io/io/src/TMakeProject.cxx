@@ -517,7 +517,7 @@ UInt_t TMakeProject::GenerateIncludeForTemplate(FILE *fp, const char *clname, ch
                   AddInclude(fp, what, kTRUE, inclist);
                   fprintf(fp, "namespace std {} using namespace std;\n");
                   ninc += GenerateIncludeForTemplate(fp, incName, inclist, forward, extrainfos);
-               } else if (strncmp(incName.Data(), "pair<", strlen("pair<")) == 0) {
+               } else if (TClassEdit::IsStdPair(incName)) {
                   AddInclude(fp, "utility", kTRUE, inclist);
                   ninc += GenerateIncludeForTemplate(fp, incName, inclist, forward, extrainfos);
                } else if (strncmp(incName.Data(), "auto_ptr<", strlen("auto_ptr<")) == 0) {
@@ -614,7 +614,7 @@ void TMakeProject::GeneratePostDeclaration(FILE *fp, const TVirtualStreamerInfo 
          Int_t stlkind =  TClassEdit::STLKind(inside[0]);
          TClass *key = TClass::GetClass(inside[1].c_str());
          TString what;
-         if (strncmp(inside[1].c_str(),"pair<",strlen("pair<"))==0) {
+         if (TClassEdit::IsStdPair(inside[1])) {
             what = inside[1].c_str();
          } else if (key) {
             switch (stlkind)  {

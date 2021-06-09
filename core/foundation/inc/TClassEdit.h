@@ -155,6 +155,8 @@ namespace TClassEdit {
    void        Init(TClassEdit::TInterpreterLookupHelper *helper);
 
    std::string CleanType (const char *typeDesc,int mode = 0,const char **tail=0);
+   inline bool IsArtificial(std::string_view name) { return name.find('@') != name.npos; }
+   inline bool IsArtificial(ROOT::Internal::TStringView name) {return IsArtificial(std::string_view(name)); }
    bool        IsDefAlloc(const char *alloc, const char *classname);
    bool        IsDefAlloc(const char *alloc, const char *keyclassname, const char *valueclassname);
    bool        IsDefComp (const char *comp , const char *classname);
@@ -185,6 +187,16 @@ namespace TClassEdit {
    inline bool IsUniquePtr(ROOT::Internal::TStringView name) {return IsUniquePtr(std::string_view(name)); }
    inline bool IsStdArray(std::string_view name) {return 0 == name.compare(0, 6, "array<");}
    inline bool IsStdArray(ROOT::Internal::TStringView name) {return IsStdArray(std::string_view(name)); }
+   inline bool IsStdPair(std::string_view name)
+   {
+      return 0 == name.compare(0, 10, "std::pair<") || 0 == name.compare(0, 5, "pair<");
+   }
+   inline bool IsStdPair(ROOT::Internal::TStringView name) {return IsStdPair(std::string_view(name)); }
+   inline bool IsStdPairBase(std::string_view name)
+   {
+      return 0 == name.compare(0, 17, "std::__pair_base<") || 0 == name.compare(0, 12, "__pair_base<");
+   }
+   inline bool IsStdPairBase(ROOT::Internal::TStringView name) {return IsStdPair(std::string_view(name)); }
    inline std::string GetUniquePtrType(std::string_view name)
    {
       // Find the first template parameter

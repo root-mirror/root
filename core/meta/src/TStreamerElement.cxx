@@ -626,7 +626,7 @@ TStreamerBase::TStreamerBase() :
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TStreamerBase::TStreamerBase(const char *name, const char *title, Int_t offset)
+TStreamerBase::TStreamerBase(const char *name, const char *title, Int_t offset, Bool_t isTransient)
    : TStreamerElement(name,title,offset,TVirtualStreamerInfo::kBase,"BASE"),
      // Abuse TStreamerElement data member that is not used by TStreamerBase
      fBaseCheckSum( *( (UInt_t*)&(fMaxIndex[1]) ) ),
@@ -650,7 +650,7 @@ TStreamerBase::TStreamerBase(const char *name, const char *title, Int_t offset)
       fBaseVersion = 0;
    }
    fNewBaseClass = 0;
-   Init();
+   Init(isTransient);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -685,16 +685,21 @@ Int_t TStreamerBase::GetSize() const
 
 void TStreamerBase::Init(TVirtualStreamerInfo *)
 {
+   Init(kFALSE);
+}
+
+void TStreamerBase::Init(Bool_t isTransient)
+{
    fBaseClass = TClass::GetClass(GetName());
    if (!fBaseClass) return;
 
-   InitStreaming();
+   InitStreaming(isTransient);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Setup the fStreamerFunc and fStreamerinfo
 
-void TStreamerBase::InitStreaming()
+void TStreamerBase::InitStreaming(Bool_t isTransient)
 {
    if (fNewBaseClass) {
       fStreamerFunc = fNewBaseClass->GetStreamerFunc();
@@ -708,9 +713,9 @@ void TStreamerBase::InitStreaming()
       fStreamerFunc = fBaseClass->GetStreamerFunc();
       fConvStreamerFunc = fBaseClass->GetConvStreamerFunc();
       if (fBaseVersion >= 0 || fBaseCheckSum == 0) {
-         fStreamerInfo = fBaseClass->GetStreamerInfo(fBaseVersion);
+         fStreamerInfo = fBaseClass->GetStreamerInfo(fBaseVersion, isTransient);
       } else {
-         fStreamerInfo = fBaseClass->FindStreamerInfo(fBaseCheckSum);
+         fStreamerInfo = fBaseClass->FindStreamerInfo(fBaseCheckSum, isTransient);
       }
    } else {
       fStreamerFunc = 0;
@@ -839,14 +844,14 @@ void TStreamerBase::Update(const TClass *oldClass, TClass *newClass)
 
    if (fBaseClass == oldClass) {
       fBaseClass = newClass;
-      InitStreaming();
+      InitStreaming(kFALSE);
    } else if (fBaseClass == nullptr) {
       if (fName == newClass->GetName()) {
          fBaseClass = newClass;
-         InitStreaming();
+         InitStreaming(kFALSE);
       } else if (TClassTable::GetDict(fName)) {
          fBaseClass = TClass::GetClass(fName);
-         InitStreaming();
+         InitStreaming(kFALSE);
       }
    }
 }
