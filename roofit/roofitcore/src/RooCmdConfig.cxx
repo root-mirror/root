@@ -62,19 +62,30 @@ RooCmdConfig::RooCmdConfig(const char* methodName) :
   _error = kFALSE ;
   _allowUndefined = kFALSE ;
 
-  _iIter = _iList.MakeIterator() ;
-  _dIter = _dList.MakeIterator() ;
-  _sIter = _sList.MakeIterator() ;
-  _oIter = _oList.MakeIterator() ;
-  _cIter = _cList.MakeIterator() ;
-
-  _rIter = _rList.MakeIterator() ;
-  _fIter = _fList.MakeIterator() ;
-  _mIter = _mList.MakeIterator() ;
-  _yIter = _yList.MakeIterator() ;
-  _pIter = _pList.MakeIterator() ;
+  _iList.SetOwner() ;
+  _dList.SetOwner() ;
+  _sList.SetOwner() ;
+  _cList.SetOwner() ;
+  _oList.SetOwner() ;
+  _rList.SetOwner() ;
+  _fList.SetOwner() ;
+  _mList.SetOwner() ;
+  _yList.SetOwner() ;
+  _pList.SetOwner() ;
 }
 
+
+namespace {
+
+void cloneList(TList const& inList, TList & outList) {
+  outList.SetOwner(true);
+  std::unique_ptr<TIterator> iter{inList.MakeIterator()} ;
+  while(auto elem = iter->Next()) {
+    outList.Add(elem->Clone()) ;
+  }
+}
+
+} // namespace
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,107 +98,17 @@ RooCmdConfig::RooCmdConfig(const RooCmdConfig& other)  : TObject(other)
   _error = other._error ;
   _allowUndefined = other._allowUndefined ;
 
-  _iIter = _iList.MakeIterator() ;
-  _dIter = _dList.MakeIterator() ;
-  _sIter = _sList.MakeIterator() ;
-  _oIter = _oList.MakeIterator() ;
-  _cIter = _cList.MakeIterator() ;
-  _rIter = _rList.MakeIterator() ;
-  _fIter = _fList.MakeIterator() ;
-  _mIter = _mList.MakeIterator() ;
-  _yIter = _yList.MakeIterator() ;
-  _pIter = _pList.MakeIterator() ;
+  cloneList(other._iList, _iList); // Integer list
+  cloneList(other._dList, _dList); // Double list
+  cloneList(other._sList, _sList); // String list
+  cloneList(other._oList, _oList); // Object list
+  cloneList(other._cList, _cList); // RooArgSet list
 
-  other._iIter->Reset() ;
-  RooInt* ri ;
-  while((ri=(RooInt*)other._iIter->Next())) {
-    _iList.Add(ri->Clone()) ;
-  }
-
-  other._dIter->Reset() ;
-  RooDouble* rd ;
-  while((rd=(RooDouble*)other._dIter->Next())) {
-    _dList.Add(rd->Clone()) ;
-  }
-
-  other._sIter->Reset() ;
-  RooStringVar* rs ;
-  while((rs=(RooStringVar*)other._sIter->Next())) {
-    _sList.Add(rs->Clone()) ;
-  }
-
-  other._oIter->Reset() ;
-  RooTObjWrap* os ;
-  while((os=(RooTObjWrap*)other._oIter->Next())) {
-    _oList.Add(os->Clone()) ;
-  }
-
-  other._cIter->Reset() ;
-  RooTObjWrap* cs ;
-  while((cs=(RooTObjWrap*)other._cIter->Next())) {
-    _cList.Add(cs->Clone()) ;
-  }
-
-  other._rIter->Reset() ;
-  TObjString* rr ;
-  while((rr=(TObjString*)other._rIter->Next())) {
-    _rList.Add(rr->Clone()) ;
-  }
-
-  other._fIter->Reset() ;
-  TObjString* ff ;
-  while((ff=(TObjString*)other._fIter->Next())) {
-    _fList.Add(ff->Clone()) ;
-  }
-
-  other._mIter->Reset() ;
-  TObjString* mm ;
-  while((mm=(TObjString*)other._mIter->Next())) {
-    _mList.Add(mm->Clone()) ;
-  }
-
-  other._yIter->Reset() ;
-  TObjString* yy ;
-  while((yy=(TObjString*)other._yIter->Next())) {
-    _yList.Add(yy->Clone()) ;
-  }
-
-  other._pIter->Reset() ;
-  TObjString* pp ;
-  while((pp=(TObjString*)other._pIter->Next())) {
-    _pList.Add(pp->Clone()) ;
-  }
-
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Destructor 
-
-RooCmdConfig::~RooCmdConfig()
-{
-  delete _iIter ;
-  delete _dIter ;
-  delete _sIter ;
-  delete _oIter ;
-  delete _cIter ;
-  delete _rIter ;
-  delete _fIter ;
-  delete _mIter ;
-  delete _yIter ;
-  delete _pIter ;
-
-  _iList.Delete() ;
-  _dList.Delete() ;
-  _sList.Delete() ;
-  _cList.Delete() ;
-  _oList.Delete() ;
-  _rList.Delete() ;
-  _fList.Delete() ;
-  _mList.Delete() ;
-  _yList.Delete() ;
-  _pList.Delete() ;
+  cloneList(other._rList, _rList); // Required cmd list
+  cloneList(other._fList, _fList); // Forbidden cmd list
+  cloneList(other._mList, _mList); // Mutex cmd list 
+  cloneList(other._yList, _yList); // Dependency cmd list
+  cloneList(other._pList, _pList); // Processed cmd list 
 }
 
 
@@ -222,16 +143,15 @@ const char* RooCmdConfig::missingArgs() const
   static TString ret ;
   ret="" ;
 
-  _rIter->Reset() ;
-  TObjString* s ;
   Bool_t first(kTRUE) ;
-  while((s=(TObjString*)_rIter->Next())) {
+  std::unique_ptr<TIterator> iter{_rList.MakeIterator()};
+  while(auto const& s = iter->Next()) {
     if (first) {
       first=kFALSE ;
     } else {
       ret.Append(", ") ;
     }
-    ret.Append(s->String()) ;
+    ret.Append(static_cast<TObjString*>(s)->String()) ;
   }
 
   return ret.Length() ? ret.Data() : 0 ;
@@ -434,33 +354,30 @@ Bool_t RooCmdConfig::defineSet(const char* name, const char* argName, Int_t setN
 void RooCmdConfig::print()
 {
   // Find registered integer fields for this opcode 
-  _iIter->Reset() ;
-  RooInt* ri ;
-  while((ri=(RooInt*)_iIter->Next())) {
-    cout << ri->GetName() << "[Int_t] = " << *ri << endl ;
+  std::unique_ptr<TIterator> iter{_iList.MakeIterator()};
+  while(auto const& ri = iter->Next()) {
+    cout << ri->GetName() << "[Int_t] = " << static_cast<RooInt const&>(*ri) << endl ;
   }
 
   // Find registered double fields for this opcode 
-  _dIter->Reset() ;
-  RooDouble* rd ;
-  while((rd=(RooDouble*)_dIter->Next())) {
-    cout << rd->GetName() << "[Double_t] = " << *rd << endl ;
+  iter.reset(_dList.MakeIterator());
+  while(auto const& rd = iter->Next()) {
+    cout << rd->GetName() << "[Double_t] = " << static_cast<RooDouble const&>(*rd) << endl ;
   }
 
   // Find registered string fields for this opcode 
-  _sIter->Reset() ;
-  RooStringVar* rs ;
-  while((rs=(RooStringVar*)_sIter->Next())) {
-    cout << rs->GetName() << "[string] = \"" << rs->getVal() << "\"" << endl ;
+  iter.reset(_sList.MakeIterator());
+  while(auto const& rs = iter->Next()) {
+    cout << rs->GetName() << "[string] = \"" << static_cast<RooStringVar const&>(*rs).getVal() << "\"" << endl ;
   }
 
   // Find registered argset fields for this opcode 
-  _oIter->Reset() ;
-  RooTObjWrap* ro ;
-  while((ro=(RooTObjWrap*)_oIter->Next())) {
+  iter.reset(_oList.MakeIterator());
+  while(auto const& ro = iter->Next()) {
     cout << ro->GetName() << "[TObject] = " ; 
-    if (ro->obj()) {
-      cout << ro->obj()->GetName() << endl ;
+    auto const * obj = static_cast<RooTObjWrap const&>(ro).obj();
+    if (obj) {
+      cout << obj->GetName() << endl ;
     } else {
 
       cout << "(null)" << endl ;
@@ -476,12 +393,11 @@ void RooCmdConfig::print()
 Bool_t RooCmdConfig::process(const RooLinkedList& argList) 
 {
   Bool_t ret(kFALSE) ;
-  TIterator* iter = argList.MakeIterator() ;
+  std::unique_ptr<TIterator> iter{argList.MakeIterator()} ;
   RooCmdArg* arg ;
   while((arg=(RooCmdArg*)iter->Next())) {
     ret |= process(*arg) ;
   }
-  delete iter ;
   return ret ;
 }
 
@@ -556,9 +472,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   Bool_t anyField(kFALSE) ;
 
   // Find registered integer fields for this opcode 
-  _iIter->Reset() ;
-  RooInt* ri ;
-  while((ri=(RooInt*)_iIter->Next())) {
+  std::unique_ptr<TIterator> iter{_iList.MakeIterator()};
+  while(auto const& elem = iter->Next()) {
+    auto ri = static_cast<RooInt*>(elem);
     if (!TString(opc).CompareTo(ri->GetTitle())) {
       *ri = arg.getInt(ri->GetUniqueID()) ;
       anyField = kTRUE ;
@@ -569,9 +485,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   }
 
   // Find registered double fields for this opcode 
-  _dIter->Reset() ;
-  RooDouble* rd ;
-  while((rd=(RooDouble*)_dIter->Next())) {
+  iter.reset(_dList.MakeIterator());
+  while(auto const& elem = iter->Next()) {
+    auto rd = static_cast<RooDouble*>(elem);
     if (!TString(opc).CompareTo(rd->GetTitle())) {
       *rd = arg.getDouble(rd->GetUniqueID()) ;
       anyField = kTRUE ;
@@ -582,9 +498,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   }
 
   // Find registered string fields for this opcode 
-  _sIter->Reset() ;
-  RooStringVar* rs ;
-  while((rs=(RooStringVar*)_sIter->Next())) {
+  iter.reset(_sList.MakeIterator());
+  while(auto const& elem = iter->Next()) {
+    auto rs = static_cast<RooStringVar*>(elem);
     if (!TString(opc).CompareTo(rs->GetTitle())) {
       
       const char* oldStr = rs->getVal() ;
@@ -602,9 +518,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   }
 
   // Find registered TObject fields for this opcode 
-  _oIter->Reset() ;
-  RooTObjWrap* os ;
-  while((os=(RooTObjWrap*)_oIter->Next())) {
+  iter.reset(_oList.MakeIterator());
+  while(auto const& elem = iter->Next()) {
+    auto os = static_cast<RooTObjWrap*>(elem);
     if (!TString(opc).CompareTo(os->GetTitle())) {
       os->setObj((TObject*)arg.getObject(os->GetUniqueID())) ;
       anyField = kTRUE ;
@@ -620,9 +536,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   }
 
   // Find registered RooArgSet fields for this opcode 
-  _cIter->Reset() ;
-  RooTObjWrap* cs ;
-  while((cs=(RooTObjWrap*)_cIter->Next())) {
+  iter.reset(_cList.MakeIterator());
+  while(auto const& elem = iter->Next()) {
+    auto cs = static_cast<RooTObjWrap*>(elem);
     if (!TString(opc).CompareTo(cs->GetTitle())) {
       cs->setObj((TObject*)arg.getSet(cs->GetUniqueID())) ;
       anyField = kTRUE ;

@@ -29,7 +29,6 @@ public:
 
   RooCmdConfig(const char* methodName);
   RooCmdConfig(const RooCmdConfig& other) ;
-  ~RooCmdConfig();
 
   void setVerbose(Bool_t flag) { 
     // If flag is true verbose messaging is activated
@@ -129,20 +128,7 @@ protected:
   TList _yList ; // Dependency cmd list
   TList _pList ; // Processed cmd list 
 
-  TIterator* _iIter ; // Iterator over integer list
-  TIterator* _dIter ; // Iterator over double list
-  TIterator* _sIter ; // Iterator over string list
-  TIterator* _oIter ; // Iterator over object list
-  TIterator* _cIter ; // Iterator over RooArgSet list
-  TIterator* _rIter ; // Iterator over required cmd list
-  TIterator* _fIter ; // Iterator over forbidden cmd list
-  TIterator* _mIter ; // Iterator over mutex list
-  TIterator* _yIter ; // Iterator over dependency list
-  TIterator* _pIter ; // Iterator over processed cmd list
-
-  ClassDef(RooCmdConfig,0) // Configurable parse of RooCmdArg objects
+  ClassDef(RooCmdConfig,1) // Configurable parse of RooCmdArg objects
 };
 
 #endif
-
-
