@@ -2406,7 +2406,7 @@ void TBranchElement::InitInfo()
                SetOnfileObject(fInfo);
             }
          }
-         if (fType == 3 || fType == 4 || (fType == 0 && fID == -2)) {
+         if (fType == 3 || fType == 4 || (fType == 0 && fID == -2) || fType == 2) {
             // Need to add the rule targeting transient members.
             TStreamerInfo *localInfo = fInfo;
             if (fType == 3 || fType == 4) {

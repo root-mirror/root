@@ -103,9 +103,9 @@ namespace TStreamerInfoActions
       aElement->GetSequenceType(sequenceType);
 
       printf("StreamerInfoAction, class:%s, name=%s, fType[%d]=%d,"
-             " %s, offset=%d (%s)\n",
+             " %s, offset=%d (%s), elemnId=%d \n",
              info->GetClass()->GetName(), aElement->GetName(), fElemId, fCompInfo->fType,
-             aElement->ClassName(), fOffset, sequenceType.Data());
+             aElement->ClassName(), fOffset, sequenceType.Data(), fElemId);
    }
 
    void TConfiguration::PrintDebug(TBuffer &buf, void *addr) const
@@ -4197,7 +4197,8 @@ void TStreamerInfoActions::TActionSequence::AddToOffset(Int_t delta)
        iter != end;
        ++iter)
    {
-      if (!iter->fConfiguration->fInfo->GetElements()->At(iter->fConfiguration->fElemId)->TestBit(TStreamerElement::kCache))
+      if (iter->fConfiguration->fElemId != (UInt_t)-1 &&
+          !iter->fConfiguration->fInfo->GetElements()->At(iter->fConfiguration->fElemId)->TestBit(TStreamerElement::kCache))
          iter->fConfiguration->AddToOffset(delta);
    }
 }
