@@ -316,17 +316,80 @@ Bool_t RooCmdConfig::process(const RooLinkedList& argList)
 }
 
 
+namespace {
+
+const std::unordered_map<std::string,std::string> originalGlobalFuncNameMap{
+  {"BinningName", "Binning"},
+  {"BinningSpec", "Binning"},
+  {"CutSpec", "Cut"},
+  {"CutVar", "Cut"},
+  {"ImportData", "Import"},
+  {"ImportDataSlice", "Import"},
+  {"ImportHistoSlice", "Import"},
+  {"ImportTree", "Import"},
+  {"IntObs", "IntegratedObservables"},
+  {"LinkDataSlice", "Link"},
+  {"ProjData", "ProjWData"},
+  {"RangeWithName", "Range"},
+  {"SliceCat", "Slice"},
+  {"SliceVars", "Slice"},
+  {"VisualizeErrorData", "VisualizeError"},
+  {"WeightVarName", "WeightVar"}
+};
+
+// Get the name of the original RooGlobalFunc that created the RooCmdArg (see RooGlobalFunc.cxx).
+// This is used to emit warning messages if a RooCmdArg is repeated that the user can understand.
+std::string originalGlobalFuncName(std::string const& opc) {
+  auto found = originalGlobalFuncNameMap.find(opc);
+  if(found != originalGlobalFuncNameMap.end()) return found->second;
+  return opc;
+}
+
+} // namespace
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Process given RooCmdArg
 
-Bool_t RooCmdConfig::process(const RooCmdArg& arg) 
+bool RooCmdConfig::process(const RooCmdArg& arg, bool warnAboutDuplicates)
 {
   // Retrive command code
   const char* opc = arg.opcode() ;
 
   // Ignore empty commands
   if (!opc) return kFALSE ;
+
+  {
+    const std::string opcString = opc;
+    _processedCmdArgNames[opcString]++;
+    // check if no insertion happened, meaning `opc` was already in the set
+    if(warnAboutDuplicates && _processedCmdArgNames[opcString] == 2) {
+      std::stringstream msg;
+      // Some command arguments are allowed to be passed multiple times in the
+      // C++ interface. However, in pythonized RooFit this is not possible,
+      // because keyword argumencts cannot be repeated. That's why we issue a
+      // warning and recommend the aggregate alternatives even for C++, because
+      // otherwise we risk that C++ an pyROOT code diverges too much.
+      if(opcString == "SliceCat") {
+        msg << _name << " duplicate command: Slice(RooCategory& cat, const char* label)."
+            << "\n     To omit multiple categories from the plot projection,"
+            << " prefer Slice(std::map<RooCategory*, std::string> const&).";
+      } else if(opcString == "ImportDataSlice" || opcString == "ImportHistoSlice") {
+        msg << _name << " duplicate command: Import(const char* state, RooDataSet& data)."
+            << "\n     To specify many imports in one operation,"
+            << " prefer Import(std::map<string,RooDataSet*> const&).";
+      } else if(opcString == "LinkDataSlice") {
+        msg << _name << " duplicate command: Link(const char* state, RooAbsData& data)."
+            << "\n     To specify many links in one operation,"
+            << " prefer Link(std::map<string,RooDataSet*> const&).";
+      } else {
+        // For most command arguments, passing them multiple times is usually a use error,
+        // so we emit a general warning.
+        msg << _name << " duplicate command " << originalGlobalFuncName(opcString) << "().";
+      }
+      coutW(InputArguments) << msg.str() << endl ;
+    }
+  }
 
   // Check if not forbidden
   if (_fList.FindObject(opc)) {
@@ -469,11 +532,11 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
     for (Int_t ia=0 ; ia<arg.subArgs().GetSize() ; ia++) {
       RooCmdArg* subArg = static_cast<RooCmdArg*>(arg.subArgs().At(ia)) ;
       if (strlen(subArg->GetName())>0) {
-	RooCmdArg subArgCopy(*subArg) ;
-	if (arg.prefixSubArgs()) {
-	  subArgCopy.SetName(Form("%s::%s",arg.GetName(),subArg->GetName())) ;
-	}
-	depRet |= process(subArgCopy) ;
+        RooCmdArg subArgCopy(*subArg) ;
+        if (arg.prefixSubArgs()) {
+          subArgCopy.SetName(Form("%s::%s",arg.GetName(),subArg->GetName())) ;
+        }
+        depRet |= process(subArgCopy, /* warnAboutDuplicates= */ false) ;
       }
     }
   }

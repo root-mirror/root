@@ -23,9 +23,11 @@
 #include "TList.h"
 #include "RooCmdArg.h"
 #include "RooArgSet.h"
-#include <string>
 
-class RooCmdConfig : public TObject {
+#include <string>
+#include <unordered_map>
+
+class RooCmdConfig final : public TObject {
 public:
 
   RooCmdConfig(const char* methodName);
@@ -56,7 +58,7 @@ public:
   Bool_t defineObject(const char* name, const char* argName, Int_t setNum, const TObject* obj=0, Bool_t isArray=kFALSE) ;
   Bool_t defineSet(const char* name, const char* argName, Int_t setNum, const RooArgSet* set=0) ;
 
-  Bool_t process(const RooCmdArg& arg) ;
+  bool process(const RooCmdArg& arg, bool warnAboutDuplicates=true) ;
   template<class... Args_t>
   bool process(const RooCmdArg& arg, Args_t && ...args);
   Bool_t process(const RooLinkedList& argList) ;
@@ -96,7 +98,7 @@ public:
   static double decodeDoubleOnTheFly(const char* callerID, const char* cmdArgName, int idx, double defVal,
       std::initializer_list<std::reference_wrapper<const RooCmdArg>> args);
 
-protected:
+private:
 
   TString _name ;
   
@@ -115,6 +117,8 @@ protected:
   TList _mList ; // Mutex cmd list 
   TList _yList ; // Dependency cmd list
   TList _pList ; // Processed cmd list 
+
+  std::unordered_map<std::string, int> _processedCmdArgNames; //!
 
   ClassDef(RooCmdConfig,1) // Configurable parse of RooCmdArg objects
 };
