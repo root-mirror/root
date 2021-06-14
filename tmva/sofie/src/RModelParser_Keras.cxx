@@ -151,14 +151,14 @@ RModel Parse(std::string filename){
    for(modelIterator=0;modelIterator<modelSize;++modelIterator){
       layer=PyList_GetItem(pModel,modelIterator);
 
-      std::string type(PyString_AsString(PyDict_GetItemString(layer,"__class__")));
-      std::string name(PyString_AsString(PyDict_GetItemString(layer,"name")));
-      std::string activation(PyString_AsString(PyDict_GetItemString(layer,"activation")));
-      std::string dtype(PyString_AsString(PyDict_GetItemString(layer,"dtype")));
-      std::string input(PyString_AsString(PyDict_GetItemString(layer,"input")));
-      std::string output(PyString_AsString(PyDict_GetItemString(layer,"output")));
-      std::string kernel(PyString_AsString(PyDict_GetItemString(layer,"kernel")));
-      std::string bias(PyString_AsString(PyDict_GetItemString(layer,"bias")));
+      std::string type(PyStringAsString(PyDict_GetItemString(layer,"__class__")));
+      std::string name(PyStringAsString(PyDict_GetItemString(layer,"name")));
+      std::string activation(PyStringAsString(PyDict_GetItemString(layer,"activation")));
+      std::string dtype(PyStringAsString(PyDict_GetItemString(layer,"dtype")));
+      std::string input(PyStringAsString(PyDict_GetItemString(layer,"input")));
+      std::string output(PyStringAsString(PyDict_GetItemString(layer,"output")));
+      std::string kernel(PyStringAsString(PyDict_GetItemString(layer,"kernel")));
+      std::string bias(PyStringAsString(PyDict_GetItemString(layer,"bias")));
 
       if(dType.find(dtype)==dType.end())
          throw std::runtime_error("Type error: Layer data type not yet registered in TMVA SOFIE");
@@ -218,8 +218,8 @@ RModel Parse(std::string filename){
 
    for (Py_ssize_t weightIter = 0; weightIter < PyList_Size(pWeight); weightIter++) {
       weightTensor  = PyList_GetItem(pWeight, weightIter);
-      std::string weightName(PyString_AsString(PyDict_GetItemString(weightTensor,"name")));
-      std::string weightType(PyString_AsString(PyDict_GetItemString(weightTensor,"dtype")));
+      std::string weightName(PyStringAsString(PyDict_GetItemString(weightTensor,"name")));
+      std::string weightType(PyStringAsString(PyDict_GetItemString(weightTensor,"dtype")));
       weightValue   = PyDict_GetItemString(weightTensor,"weight");
 
       //Converting numpy array to RTensor
@@ -258,7 +258,7 @@ RModel Parse(std::string filename){
    PyObject* pInputShapes  = PyDict_GetItemString(fLocalNS,"inputShapes");
    PyObject* pInputTypes   = PyDict_GetItemString(fLocalNS,"inputTypes");
    for(Py_ssize_t inputIter = 0; inputIter < PyList_Size(pInputs);++inputIter){
-      std::string inputDType(PyString_AsString(PyList_GetItem(pInputTypes,inputIter)));
+      std::string inputDType(PyStringAsString(PyList_GetItem(pInputTypes,inputIter)));
       if(dType.find(inputDType)==dType.end())
          throw std::runtime_error("Type error: Initialized tensor type not yet registered in TMVA SOFIE");
 
@@ -266,7 +266,7 @@ RModel Parse(std::string filename){
 
          case ETensorType::FLOAT : {
          std::vector<size_t>inputShape;
-         std::string inputName(PyString_AsString(PyList_GetItem(pInputs,inputIter)));
+         std::string inputName(PyStringAsString(PyList_GetItem(pInputs,inputIter)));
          PyObject* shapeTuple=PyList_GetItem(pInputShapes,inputIter);
          for(Py_ssize_t tupleIter=1;tupleIter<PyTuple_Size(shapeTuple);++tupleIter){
                inputShape.push_back((size_t)PyLong_AsLong(PyTuple_GetItem(shapeTuple,tupleIter)));
