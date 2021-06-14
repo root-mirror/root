@@ -131,7 +131,7 @@ private:
    }
    std::string GetHessianFuncName() const {
       assert(fClingName.Length() && "TFormula is not initialized yet!");
-      return std::string(fClingName.Data()) + "_grad";
+      return std::string(fClingName.Data()) + "_hess";
    }
    bool HasGradientGenerationFailed() const {
       return !fGradMethod && !fGradGenerationInput.empty();
