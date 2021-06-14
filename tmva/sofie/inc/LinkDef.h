@@ -11,5 +11,6 @@
 // the classifiers
 #pragma link C++ class TMVA::Experimental::SOFIE::RModel+;
 #pragma link C++ class TMVA::Experimental::SOFIE::RModelParser_ONNX+;
+#pragma link C++ function TMVA::Experimental::SOFIE::PyKeras::Parse+;
 
 #endif

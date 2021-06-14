@@ -21,6 +21,7 @@ enum class ETensorType{
     FLOAT16 = 10, DOUBLE = 11, UINT32 = 12, UINT64 = 13, COMPLEX64 = 14, COMPLEX28 = 15, BFLOAT16 = 16
 };
 
+
 typedef std::int64_t int_t;
 
 std::string ConvertTypeToString(ETensorType type);
@@ -83,6 +84,7 @@ extern "C" void sgemm_(const char * transa, const char * transb, const int * m, 
                        const float * beta, float * C, const int * ldc);
 }//BLAS
 
+std::string toLower(std::string str);
 
 }//SOFIE
 }//Experimental
