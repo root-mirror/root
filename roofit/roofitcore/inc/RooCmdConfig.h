@@ -78,7 +78,7 @@ public:
   void stripCmdList(RooLinkedList& cmdList, const char* cmdsToPurge) const;
   Bool_t hasProcessed(const char* cmdName) const ;
 
-  void print() ;
+  void print() const;
 
 
   template<class ...Args_t>

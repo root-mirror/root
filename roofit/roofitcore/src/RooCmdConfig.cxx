@@ -265,7 +265,7 @@ Bool_t RooCmdConfig::defineSet(const char* name, const char* argName, Int_t setN
 ////////////////////////////////////////////////////////////////////////////////
 /// Print configuration of parser
 
-void RooCmdConfig::print()
+void RooCmdConfig::print() const
 {
   // Find registered integer fields for this opcode 
   std::unique_ptr<TIterator> iter{_iList.MakeIterator()};
@@ -465,12 +465,12 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   _pList.Add(pcmd) ;
 
   Bool_t depRet = kFALSE ;
-  if (arg._procSubArgs) {
-    for (Int_t ia=0 ; ia<arg._argList.GetSize() ; ia++) {
-      RooCmdArg* subArg = static_cast<RooCmdArg*>(arg._argList.At(ia)) ;
+  if (arg.procSubArgs()) {
+    for (Int_t ia=0 ; ia<arg.subArgs().GetSize() ; ia++) {
+      RooCmdArg* subArg = static_cast<RooCmdArg*>(arg.subArgs().At(ia)) ;
       if (strlen(subArg->GetName())>0) {
 	RooCmdArg subArgCopy(*subArg) ;
-	if (arg._prefixSubArgs) {
+	if (arg.prefixSubArgs()) {
 	  subArgCopy.SetName(Form("%s::%s",arg.GetName(),subArg->GetName())) ;
 	}
 	depRet |= process(subArgCopy) ;

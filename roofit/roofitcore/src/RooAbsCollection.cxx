@@ -1264,12 +1264,12 @@ void RooAbsCollection::printLatex(ostream& ofs, Int_t ncol, const char* option, 
     sibOption.ReplaceAll("n","") ;
   } else {
     sibFormatCmd = *formatCmd ;
-    TString tmp = formatCmd->_s[0] ;
+    TString tmp = formatCmd->getString(0) ;
     tmp.ReplaceAll("N","") ;
     tmp.ReplaceAll("n","") ;
     static char buf[100] ;
     strlcpy(buf,tmp.Data(),100) ;
-    sibFormatCmd._s[0] = buf ;
+    sibFormatCmd.setString(0, buf);
   }
 
 
