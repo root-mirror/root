@@ -37,7 +37,6 @@ arguments and dependencies between arguments
 #include "RooStringVar.h"
 #include "RooTObjWrap.h"
 #include "RooAbsData.h"
-#include "TObjString.h"
 #include "RooMsgService.h"
 #include "strlcpy.h"
 
@@ -58,10 +57,6 @@ RooCmdConfig::RooCmdConfig(const char* methodName) :
   TObject(),
   _name(methodName)
 {
-  _verbose = kFALSE ;
-  _error = kFALSE ;
-  _allowUndefined = kFALSE ;
-
   _iList.SetOwner() ;
   _dList.SetOwner() ;
   _sList.SetOwner() ;
@@ -114,27 +109,6 @@ RooCmdConfig::RooCmdConfig(const RooCmdConfig& other)  : TObject(other)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Add condition that any of listed arguments must be processed
-/// for parsing to be declared successful
-
-void RooCmdConfig::defineRequiredArgs(const char* argName1, const char* argName2,
-				      const char* argName3, const char* argName4,
-				      const char* argName5, const char* argName6,
-				      const char* argName7, const char* argName8) 
-{
-  if (argName1) _rList.Add(new TObjString(argName1)) ;
-  if (argName2) _rList.Add(new TObjString(argName2)) ;
-  if (argName3) _rList.Add(new TObjString(argName3)) ;
-  if (argName4) _rList.Add(new TObjString(argName4)) ;
-  if (argName5) _rList.Add(new TObjString(argName5)) ;
-  if (argName6) _rList.Add(new TObjString(argName6)) ;
-  if (argName7) _rList.Add(new TObjString(argName7)) ;
-  if (argName8) _rList.Add(new TObjString(argName8)) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
 /// Return string with names of arguments that were required, but not
 /// processed
 
@@ -167,64 +141,6 @@ void RooCmdConfig::defineDependency(const char* refArgName, const char* neededAr
 {
   TNamed* dep = new TNamed(refArgName,neededArgName) ;
   _yList.Add(dep) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Define arguments named argName1 and argName2 mutually exclusive
-
-void RooCmdConfig::defineMutex(const char* argName1, const char* argName2) 
-{
-  TNamed* mutex1 = new TNamed(argName1,argName2) ;
-  TNamed* mutex2 = new TNamed(argName2,argName1) ;
-  _mList.Add(mutex1) ;
-  _mList.Add(mutex2) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Define arguments named argName1,argName2 and argName3 mutually exclusive
-
-void RooCmdConfig::defineMutex(const char* argName1, const char* argName2, const char* argName3) 
-{
-  defineMutex(argName1,argName2) ;
-  defineMutex(argName1,argName3) ;
-  defineMutex(argName2,argName3) ;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Define arguments named argName1,argName2,argName3 and argName4 mutually exclusive
-
-void RooCmdConfig::defineMutex(const char* argName1, const char* argName2, const char* argName3, const char* argName4) 
-{
-  defineMutex(argName1,argName2) ;
-  defineMutex(argName1,argName3) ;
-  defineMutex(argName1,argName4) ;
-  defineMutex(argName2,argName3) ;
-  defineMutex(argName2,argName4) ;
-  defineMutex(argName3,argName4) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Define arguments named argName1,argName2,argName3 and argName4 mutually exclusive
-
-void RooCmdConfig::defineMutex(const char* argName1, const char* argName2, const char* argName3, const char* argName4, const char* argName5) 
-{
-  defineMutex(argName1,argName2) ;
-  defineMutex(argName1,argName3) ;
-  defineMutex(argName1,argName4) ;
-  defineMutex(argName1,argName4) ;
-  defineMutex(argName2,argName3) ;
-  defineMutex(argName2,argName4) ;
-  defineMutex(argName2,argName4) ;
-  defineMutex(argName3,argName4) ;
-  defineMutex(argName3,argName5) ;
-  defineMutex(argName4,argName5) ;
 }
 
 
@@ -398,26 +314,6 @@ Bool_t RooCmdConfig::process(const RooLinkedList& argList)
   while((arg=(RooCmdArg*)iter->Next())) {
     ret |= process(*arg) ;
   }
-  return ret ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Process given RooCmdArgs
-
-Bool_t RooCmdConfig::process(const RooCmdArg& arg1, const RooCmdArg& arg2, const RooCmdArg& arg3, const RooCmdArg& arg4,
-			     const RooCmdArg& arg5, const RooCmdArg& arg6, const RooCmdArg& arg7, const RooCmdArg& arg8) 
-{
-  Bool_t ret(kFALSE) ;
-  ret |= process(arg1) ;
-  ret |= process(arg2) ;
-  ret |= process(arg3) ;
-  ret |= process(arg4) ;
-  ret |= process(arg5) ;
-  ret |= process(arg6) ;
-  ret |= process(arg7) ;
-  ret |= process(arg8) ;
   return ret ;
 }
 
@@ -741,70 +637,6 @@ RooLinkedList RooCmdConfig::filterCmdList(RooLinkedList& cmdInList, const char* 
   return filterList ;  
 }
 
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Static decoder function allows to retrieve integer property from set of RooCmdArgs 
-/// For use in base member initializers in constructors
-
-Int_t RooCmdConfig::decodeIntOnTheFly(const char* callerID, const char* cmdArgName, Int_t intIdx, Int_t defVal, const RooCmdArg& arg1, 
-				      const RooCmdArg& arg2, const RooCmdArg& arg3, const RooCmdArg& arg4,
-				      const RooCmdArg& arg5, const RooCmdArg& arg6, const RooCmdArg& arg7,
-				      const RooCmdArg& arg8, const RooCmdArg& arg9) 
-{
-  RooCmdConfig pc(callerID) ;
-  pc.allowUndefined() ;
-  pc.defineInt("theInt",cmdArgName,intIdx,defVal) ;
-  pc.process(arg1) ;  pc.process(arg2) ;  pc.process(arg3) ;
-  pc.process(arg4) ;  pc.process(arg5) ;  pc.process(arg6) ;
-  pc.process(arg7) ;  pc.process(arg8) ;  pc.process(arg9) ;
-  return pc.getInt("theInt") ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Static decoder function allows to retrieve string property from set of RooCmdArgs 
-/// For use in base member initializers in constructors
-
-std::string RooCmdConfig::decodeStringOnTheFly(const char* callerID, const char* cmdArgName, Int_t strIdx, const char* defVal, const RooCmdArg& arg1,
-					 const RooCmdArg& arg2, const RooCmdArg& arg3, const RooCmdArg& arg4,
-					 const RooCmdArg& arg5, const RooCmdArg& arg6, const RooCmdArg& arg7,
-					 const RooCmdArg& arg8, const RooCmdArg& arg9) 
-{  
-  RooCmdConfig pc(callerID) ;
-  pc.allowUndefined() ;
-  pc.defineString("theString",cmdArgName,strIdx,defVal) ;
-  pc.process(arg1) ;  pc.process(arg2) ;  pc.process(arg3) ;
-  pc.process(arg4) ;  pc.process(arg5) ;  pc.process(arg6) ;
-  pc.process(arg7) ;  pc.process(arg8) ;  pc.process(arg9) ;
-  const char* ret =  pc.getString("theString",0,kTRUE) ;
-
-  if (ret)
-    return std::string(ret);
-
-  return std::string();
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Static decoder function allows to retrieve object property from set of RooCmdArgs 
-/// For use in base member initializers in constructors
-
-TObject* RooCmdConfig::decodeObjOnTheFly(const char* callerID, const char* cmdArgName, Int_t objIdx, TObject* defVal, const RooCmdArg& arg1, 
-					 const RooCmdArg& arg2, const RooCmdArg& arg3, const RooCmdArg& arg4,
-					 const RooCmdArg& arg5, const RooCmdArg& arg6, const RooCmdArg& arg7,
-					 const RooCmdArg& arg8, const RooCmdArg& arg9) 
-{
-  RooCmdConfig pc(callerID) ;
-  pc.allowUndefined() ;
-  pc.defineObject("theObj",cmdArgName,objIdx,defVal) ;
-  pc.process(arg1) ;  pc.process(arg2) ;  pc.process(arg3) ;
-  pc.process(arg4) ;  pc.process(arg5) ;  pc.process(arg6) ;
-  pc.process(arg7) ;  pc.process(arg8) ;  pc.process(arg9) ;
-  return (TObject*) pc.getObject("theObj") ;
-}
 
 
 ////////////////////////////////////////////////////////////////////////////////
