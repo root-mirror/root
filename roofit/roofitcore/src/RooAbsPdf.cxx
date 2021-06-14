@@ -1,3 +1,4 @@
+
 /*****************************************************************************
  * Project: RooFit                                                           *
  * Package: RooFitCore                                                       *
@@ -1589,10 +1590,22 @@ RooFitResult* RooAbsPdf::fitTo(RooAbsData& data, const RooLinkedList& cmdList)
 
   RooAbsReal* nll=nullptr;
   std::unique_ptr<RooFitDriver> driver;
-  if (pc.getInt("BatchMode")==0) {
-    nll = createNLL(data,nllCmdList);
-  } else {
-    nll = new RooNLLVarNew("NewNLLVar","NewNLLVar",*this);
+  std::unique_ptr<RooRealVar> weightVar;
+  if (pc.getInt("BatchMode")==0) nll = createNLL(data,nllCmdList);
+  else
+  {
+    if (data.isWeighted())
+    {
+      std::string weightVarName = data.getWeightVarName();
+      if (weightVarName=="") weightVarName = "_weight";
+      
+      // make a clone of the weight variable (or an initial instance, if it doesn't exist)
+      // the clone will hold the weight value (or values as a batch) and will participate
+      // in the computation graph of the RooFit driver. 
+      weightVar.reset( new RooRealVar(weightVarName.c_str(), "Weight(s) of events", data.weight()) );
+      nll = new RooNLLVarNew("NewNLLVar", "NewNLLVar", *this, *weightVar.get());
+    }
+    else nll = new RooNLLVarNew("NewNLLVar", "NewNLLVar", *this);
     driver.reset(new RooFitDriver( data, static_cast<RooNLLVarNew&>(*nll), pc.getInt("BatchMode") ));
   }
   RooFitResult *ret = 0 ;

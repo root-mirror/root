@@ -1018,6 +1018,13 @@ RooSpan<const double> RooDataSet::getWeightBatch(std::size_t first, std::size_t 
 
 
 ////////////////////////////////////////////////////////////////////////////////
+std::string RooDataSet::getWeightVarName() const
+{
+  return std::string( _wgtVar ? _wgtVar->GetName() : "" );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// Write information to retrieve data columns into `evalData.spans`.
 /// All spans belonging to variables of this dataset are overwritten. Spans to other
 /// variables remain intact.

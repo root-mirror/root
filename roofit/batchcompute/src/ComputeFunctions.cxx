@@ -329,6 +329,11 @@ __global__ void computeNegativeLogarithms(Batches batches)
 {
   for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
     batches.output[i] = -fast_log(batches[0][i]);
+  // Multiply by weights if they exist
+  if (batches.extraArg(0))
+    for (size_t i=BEGIN; i<batches.getNEvents(); i+=STEP)
+      batches.output[i] *= batches[1][i];
+
 }
 
 __global__ void computeJohnson(Batches batches)

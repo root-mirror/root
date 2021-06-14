@@ -114,6 +114,7 @@ public:
   /// If no contiguous structure of weights is stored, an empty batch can be returned.
   /// This indicates that the weight is constant. Use weight() to retrieve it.
   virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const = 0;
+  virtual std::string getWeightVarName() const { return ""; }
 
   /// Return number of entries in dataset, *i.e.*, count unweighted entries.
   virtual Int_t numEntries() const ;

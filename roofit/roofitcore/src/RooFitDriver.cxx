@@ -25,6 +25,20 @@ RooFitDriver::RooFitDriver(const RooAbsData& data, const RooNLLVarNew& _topNode,
   std::unordered_map<const TNamed*,const RooAbsReal*> nameResolver;
   for (auto& it:dataMap) nameResolver[it.first->namePtr()]=it.first;
 
+  // Check if there is a batch for weights and if it's already in the dataMap.
+  // If not, we need to put the batch and give as a key a RooRealVar* that has
+  // the same name as RooNLLVarNew's _weight proxy, so that it gets renamed like
+  // every other observable.
+  RooSpan<const double> weights = data.getWeightBatch(0, nEvents);
+  std::string weightVarName = data.getWeightVarName()!="" ? data.getWeightVarName() : "_weight";
+  RooRealVar dummy (weightVarName.c_str(), "dummy", 0.0);
+  const TNamed* pTNamed = dummy.namePtr();
+  if (!weights.empty() && nameResolver.count(pTNamed)==0)
+  {
+    dataMap[&dummy] = weights;
+    nameResolver[pTNamed] = &dummy;
+  }
+
   rbc::dispatch = rbc::dispatch_cpu;
   // If cuda mode is on, copy all observable data to device memory
   if (batchMode == -1)
@@ -67,18 +81,18 @@ RooFitDriver::RooFitDriver(const RooAbsData& data, const RooNLLVarNew& _topNode,
       // set nameResolver to nullptr to be able to detect future duplicates
       nameResolver[pAbsReal->namePtr()] = nullptr;
     }
-    else if (!pRealVar) //this node needs computing, mark it's clients
+    else if (pRealVar) //this node is a scalar parameter
+    {
+      dataMap.emplace( pAbsReal, RooSpan<const double>(pRealVar->getValPtr(),1) );
+      pRealVar->setError(0.0);
+    }
+    else //this node needs computing, mark it's clients
     {
       computeQueue.push(pAbsReal);
       auto clients = pAbsReal->valueClients();
       for (auto* client:clients)
         ++nServersClients[static_cast<const RooAbsReal*>(client)].first;
       nServersClients[pAbsReal].second = clients.size();
-    }
-    else //this node is a scalar parameter
-    {
-      dataMap.emplace( pAbsReal, RooSpan<const double>(pRealVar->getValPtr(),1) );
-      pRealVar->setError(0.0);
     }
   }
 
