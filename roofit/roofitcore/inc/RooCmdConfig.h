@@ -72,7 +72,7 @@ public:
 
   Bool_t ok(Bool_t verbose) const ;
 
-  const char* missingArgs() const ;
+  std::string missingArgs() const ;
 
   RooLinkedList filterCmdList(RooLinkedList& cmdInList, const char* cmdNameList, Bool_t removeFromInList=kTRUE) ;
   void stripCmdList(RooLinkedList& cmdList, const char* cmdsToPurge) ;

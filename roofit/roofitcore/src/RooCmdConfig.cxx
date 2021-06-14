@@ -112,23 +112,22 @@ RooCmdConfig::RooCmdConfig(const RooCmdConfig& other)  : TObject(other)
 /// Return string with names of arguments that were required, but not
 /// processed
 
-const char* RooCmdConfig::missingArgs() const 
+std::string RooCmdConfig::missingArgs() const 
 {
-  static TString ret ;
-  ret="" ;
+  std::string ret = "";
 
-  Bool_t first(kTRUE) ;
+  bool first = true;
   std::unique_ptr<TIterator> iter{_rList.MakeIterator()};
   while(auto const& s = iter->Next()) {
     if (first) {
       first=kFALSE ;
     } else {
-      ret.Append(", ") ;
+      ret += ", ";
     }
-    ret.Append(static_cast<TObjString*>(s)->String()) ;
+    ret += static_cast<TObjString*>(s)->String();
   }
 
-  return ret.Length() ? ret.Data() : 0 ;
+  return ret;
 }
 
 
@@ -560,7 +559,7 @@ RooArgSet* RooCmdConfig::getSet(const char* name, RooArgSet* defVal)
 
 const RooLinkedList& RooCmdConfig::getObjectList(const char* name) 
 {
-  static RooLinkedList defaultDummy ;
+  const static RooLinkedList defaultDummy ;
   RooTObjWrap* ro = (RooTObjWrap*) _oList.FindObject(name) ;
   return ro ? ro->objList() : defaultDummy ;
 }
@@ -575,8 +574,8 @@ Bool_t RooCmdConfig::ok(Bool_t verbose) const
   if (_rList.GetSize()==0 && !_error) return kTRUE ;
 
   if (verbose) {
-    const char* margs = missingArgs() ;
-    if (margs) {
+    std::string margs = missingArgs() ;
+    if (!margs.empty()) {
       coutE(InputArguments) << _name << " ERROR: missing arguments: " << margs << endl ;
     } else {
       coutE(InputArguments) << _name << " ERROR: illegal combination of arguments and/or missing arguments" << endl ;
