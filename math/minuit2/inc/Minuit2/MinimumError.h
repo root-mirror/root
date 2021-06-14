@@ -67,7 +67,7 @@ public:
    Status GetStatus() const { return fPtr->fStatus; }
 
    bool IsValid() const { return IsAvailable() && (IsPosDef() || IsMadePosDef()); }
-   bool IsAccurate() const { return IsValid() && Dcovar() < 0.1; }
+   bool IsAccurate() const { return IsPosDef() && Dcovar() < 0.1; }
 
    bool IsPosDef() const { return GetStatus() == MnPosDef; }
    bool IsMadePosDef() const { return GetStatus() == MnMadePosDef; }
