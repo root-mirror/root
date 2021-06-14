@@ -38,7 +38,7 @@ arguments and dependencies between arguments
 #include "RooTObjWrap.h"
 #include "RooAbsData.h"
 #include "RooMsgService.h"
-#include "strlcpy.h"
+#include "RooHelpers.h"
 
 #include <iostream>
 
@@ -138,8 +138,7 @@ std::string RooCmdConfig::missingArgs() const
 
 void RooCmdConfig::defineDependency(const char* refArgName, const char* neededArgName) 
 {
-  TNamed* dep = new TNamed(refArgName,neededArgName) ;
-  _yList.Add(dep) ;
+  _yList.Add(new TNamed(refArgName,neededArgName)) ;
 }
 
 
@@ -589,20 +588,16 @@ Bool_t RooCmdConfig::ok(Bool_t verbose) const
 ////////////////////////////////////////////////////////////////////////////////
 /// Utility function that strips command names listed (comma separated) in cmdsToPurge from cmdList
 
-void RooCmdConfig::stripCmdList(RooLinkedList& cmdList, const char* cmdsToPurge) 
+void RooCmdConfig::stripCmdList(RooLinkedList& cmdList, const char* cmdsToPurge) const
 {
   // Sanity check
   if (!cmdsToPurge) return ;
   
   // Copy command list for parsing
-  char buf[1024] ;
-  strlcpy(buf,cmdsToPurge,1024) ;
-  
-  char* name = strtok(buf,",") ;
-  while(name) {
-    TObject* cmd = cmdList.FindObject(name) ;
-    if (cmd) cmdList.Remove(cmd) ;
-    name = strtok(0,",") ;
+  for(auto const& name : RooHelpers::tokenise(cmdsToPurge, ",", false)) {
+    if (TObject* cmd = cmdList.FindObject(name.c_str())) {
+      cmdList.Remove(cmd);
+    }
   }
 
 }
@@ -613,25 +608,19 @@ void RooCmdConfig::stripCmdList(RooLinkedList& cmdList, const char* cmdsToPurge)
 /// Utility function to filter commands listed in cmdNameList from cmdInList. Filtered arguments are put in the returned list.
 /// If removeFromInList is true then these commands are removed from the input list
 
-RooLinkedList RooCmdConfig::filterCmdList(RooLinkedList& cmdInList, const char* cmdNameList, Bool_t removeFromInList) 
+RooLinkedList RooCmdConfig::filterCmdList(RooLinkedList& cmdInList, const char* cmdNameList, bool removeFromInList) const
 {
   RooLinkedList filterList ;
   if (!cmdNameList) return filterList ;
 
   // Copy command list for parsing
-  char buf[1024] ;
-  strlcpy(buf,cmdNameList,1024) ;
-  
-  char* name = strtok(buf,",") ;
-  while(name) {
-    TObject* cmd = cmdInList.FindObject(name) ;
-    if (cmd) {
+  for(auto const& name : RooHelpers::tokenise(cmdNameList, ",", false)) {
+    if (TObject* cmd = cmdInList.FindObject(name.c_str())) {
       if (removeFromInList) {
-	cmdInList.Remove(cmd) ;
+        cmdInList.Remove(cmd) ;
       }
       filterList.Add(cmd) ;
     }
-    name = strtok(0,",") ;
   }
   return filterList ;  
 }
