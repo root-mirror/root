@@ -48,7 +48,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cassert>
 #include <cstring>
 #include <numeric> // for inner_product
 #include <new>
@@ -190,7 +189,9 @@ public:
    /// which will only be overwritten.
    void set_size(size_t N)
    {
-      assert(N <= capacity());
+      if (N > capacity()) {
+         throw std::runtime_error("Setting size to a value greater than capacity.");
+      }
       fSize = N;
    }
 
@@ -291,23 +292,33 @@ public:
 
    reference front()
    {
-      assert(!empty());
+      if (empty()) {
+         throw std::runtime_error("`front` called on an empty RVec");
+      }
       return begin()[0];
    }
+
    const_reference front() const
    {
-      assert(!empty());
+      if (empty()) {
+         throw std::runtime_error("`front` called on an empty RVec");
+      }
       return begin()[0];
    }
 
    reference back()
    {
-      assert(!empty());
+      if (empty()) {
+         throw std::runtime_error("`back` called on an empty RVec");
+      }
       return end()[-1];
    }
+
    const_reference back() const
    {
-      assert(!empty());
+      if (empty()) {
+         throw std::runtime_error("`back` called on an empty RVec");
+      }
       return end()[-1];
    }
 };
@@ -583,7 +594,9 @@ public:
 
    void pop_back_n(size_type NumItems)
    {
-      assert(this->size() >= NumItems);
+      if (this->size() < NumItems) {
+         throw std::runtime_error("Popping back more elements than those available.");
+      }
       if (this->Owns())
          this->destroy_range(this->end() - NumItems, this->end());
       this->set_size(this->size() - NumItems);
@@ -657,8 +670,9 @@ public:
       // Just cast away constness because this is a non-const member function.
       iterator I = const_cast<iterator>(CI);
 
-      assert(I >= this->begin() && "Iterator to erase is out of bounds.");
-      assert(I < this->end() && "Erasing at past-the-end iterator.");
+      if (I < this->begin() || I >= this->end()) {
+         throw std::runtime_error("The iterator passed to `erase` is out of bounds.");
+      }
 
       iterator N = I;
       // Shift all elts down one.
@@ -674,9 +688,9 @@ public:
       iterator S = const_cast<iterator>(CS);
       iterator E = const_cast<iterator>(CE);
 
-      assert(S >= this->begin() && "Range to erase is out of bounds.");
-      assert(S <= E && "Trying to erase invalid range.");
-      assert(E <= this->end() && "Trying to erase past the end.");
+      if (S < this->begin() || E > this->end() || S > E) {
+         throw std::runtime_error("Invalid start/end pair passed to `erase` (out of bounds or start > end).");
+      }
 
       iterator N = S;
       // Shift all elts down.
@@ -695,8 +709,9 @@ public:
          return this->end() - 1;
       }
 
-      assert(I >= this->begin() && "Insertion iterator is out of bounds.");
-      assert(I <= this->end() && "Inserting past the end of the vector.");
+      if (I < this->begin() || I > this->end()) {
+         throw std::runtime_error("The iterator passed to `insert` is out of bounds.");
+      }
 
       if (this->size() >= this->capacity()) {
          size_t EltNo = I - this->begin();
@@ -726,8 +741,9 @@ public:
          return this->end() - 1;
       }
 
-      assert(I >= this->begin() && "Insertion iterator is out of bounds.");
-      assert(I <= this->end() && "Inserting past the end of the vector.");
+      if (I < this->begin() || I > this->end()) {
+         throw std::runtime_error("The iterator passed to `insert` is out of bounds.");
+      }
 
       if (this->size() >= this->capacity()) {
          size_t EltNo = I - this->begin();
@@ -759,8 +775,9 @@ public:
          return this->begin() + InsertElt;
       }
 
-      assert(I >= this->begin() && "Insertion iterator is out of bounds.");
-      assert(I <= this->end() && "Inserting past the end of the vector.");
+      if (I < this->begin() || I > this->end()) {
+         throw std::runtime_error("The iterator passed to `insert` is out of bounds.");
+      }
 
       // Ensure there is enough space.
       reserve(this->size() + NumToInsert);
@@ -813,8 +830,9 @@ public:
          return this->begin() + InsertElt;
       }
 
-      assert(I >= this->begin() && "Insertion iterator is out of bounds.");
-      assert(I <= this->end() && "Inserting past the end of the vector.");
+      if (I < this->begin() || I > this->end()) {
+         throw std::runtime_error("The iterator passed to `insert` is out of bounds.");
+      }
 
       size_t NumToInsert = std::distance(From, To);
 
@@ -1326,12 +1344,12 @@ public:
 
    reference operator[](size_type idx)
    {
-      assert(idx < size());
+      R__ASSERT(idx < size());
       return begin()[idx];
    }
    const_reference operator[](size_type idx) const
    {
-      assert(idx < size());
+      R__ASSERT(idx < size());
       return begin()[idx];
    }
 
