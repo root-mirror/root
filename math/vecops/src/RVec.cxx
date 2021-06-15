@@ -24,24 +24,21 @@ static_assert(sizeof(SmallVector<char, 0>) == sizeof(void *) * 2 + sizeof(void *
               "1 byte elements have word-sized type for size and capacity");
 ************/
 
-template <class Size_T>
-void ROOT::Internal::VecOps::SmallVectorBase<Size_T>::report_size_overflow(size_t MinSize)
+void ROOT::Internal::VecOps::SmallVectorBase::report_size_overflow(size_t MinSize)
 {
    std::string Reason = "RVec unable to grow. Requested capacity (" + std::to_string(MinSize) +
                         ") is larger than maximum value for size type (" + std::to_string(SizeTypeMax()) + ")";
    throw std::length_error(Reason);
 }
 
-template <class Size_T>
-void ROOT::Internal::VecOps::SmallVectorBase<Size_T>::report_at_maximum_capacity()
+void ROOT::Internal::VecOps::SmallVectorBase::report_at_maximum_capacity()
 {
    std::string Reason = "RVec capacity unable to grow. Already at maximum size " + std::to_string(SizeTypeMax());
    throw std::length_error(Reason);
 }
 
 // Note: Moving this function into the header may cause performance regression.
-template <class Size_T>
-void ROOT::Internal::VecOps::SmallVectorBase<Size_T>::grow_pod(void *FirstEl, size_t MinSize, size_t TSize)
+void ROOT::Internal::VecOps::SmallVectorBase::grow_pod(void *FirstEl, size_t MinSize, size_t TSize)
 {
    // Ensure we can fit the new capacity.
    // This is only going to be applicable when the capacity is 32 bit.
@@ -74,23 +71,6 @@ void ROOT::Internal::VecOps::SmallVectorBase<Size_T>::grow_pod(void *FirstEl, si
    this->fBeginX = NewElts;
    this->fCapacity = NewCapacity;
 }
-
-template class ROOT::Internal::VecOps::SmallVectorBase<uint32_t>;
-
-// Disable the uint64_t instantiation for 32-bit builds.
-// Both uint32_t and uint64_t instantations are needed for 64-bit builds.
-// This instantiation will never be used in 32-bit builds, and will cause
-// warnings when sizeof(Size_T) > sizeof(size_t).
-#if SIZE_MAX > UINT32_MAX
-template class ROOT::Internal::VecOps::SmallVectorBase<uint64_t>;
-
-// Assertions to ensure this #if stays in sync with SmallVectorSizeType.
-static_assert(sizeof(ROOT::Internal::VecOps::SmallVectorSizeType<char>) == sizeof(uint64_t),
-              "Expected SmallVectorBase<uint64_t> variant to be in use.");
-#else
-static_assert(sizeof(ROOT::Internal::VecOps::SmallVectorSizeType<char>) == sizeof(uint32_t),
-              "Expected SmallVectorBase<uint32_t> variant to be in use.");
-#endif
 
 #if (_VECOPS_USE_EXTERN_TEMPLATES)
 

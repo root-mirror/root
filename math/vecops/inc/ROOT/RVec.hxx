@@ -140,11 +140,13 @@ inline uint64_t NextPowerOf2(uint64_t A)
 /// Using 64 bit size is desirable for cases like SmallVector<char>, where a
 /// 32 bit size would limit the vector to ~4GB. SmallVectors are used for
 /// buffering bitcode output - which can exceed 4GB.
-template <class Size_T>
 class SmallVectorBase {
+public:
+   using Size_T = int32_t;
+
 protected:
    void *fBeginX;
-   Size_T fSize = 0;
+   Size_T fSize = 0; // never negative even if type is signed
    Size_T fCapacity;
    bool fOwns = true;
 
@@ -193,13 +195,10 @@ public:
    void shrink_to_fit() { }
 };
 
-template <class T>
-using SmallVectorSizeType = typename std::conditional<sizeof(T) < 4 && sizeof(void *) >= 8, uint64_t, uint32_t>::type;
-
 /// Figure out the offset of the first element.
 template <class T, typename = void>
 struct SmallVectorAlignmentAndSize {
-   alignas(SmallVectorBase<SmallVectorSizeType<T>>) char Base[sizeof(SmallVectorBase<SmallVectorSizeType<T>>)];
+   alignas(SmallVectorBase) char Base[sizeof(SmallVectorBase)];
    alignas(T) char FirstEl[sizeof(T)];
 };
 
@@ -207,8 +206,8 @@ struct SmallVectorAlignmentAndSize {
 /// the type T is a POD. The extra dummy template argument is used by ArrayRef
 /// to avoid unnecessarily requiring T to be complete.
 template <typename T, typename = void>
-class SmallVectorTemplateCommon : public SmallVectorBase<SmallVectorSizeType<T>> {
-   using Base = SmallVectorBase<SmallVectorSizeType<T>>;
+class SmallVectorTemplateCommon : public SmallVectorBase {
+   using Base = SmallVectorBase;
 
    /// Find the address of the first element.  For this pointer math to be valid
    /// with small-size of 0 for T with lots of alignment, it's important that
@@ -239,6 +238,8 @@ protected:
    }
 
 public:
+   // note that fSize is a _signed_ integer, but we expose it as an unsigned integer for consistency with STL containers
+   // as well as backward-compatibility
    using size_type = size_t;
    using difference_type = ptrdiff_t;
    using value_type = T;
@@ -1359,14 +1360,14 @@ public:
 
    reference at(size_type pos)
    {
-      if (pos >= this->fSize)
+      if (pos >= size_type(this->fSize))
          throw std::out_of_range("RVec");
       return this->operator[](pos);
    }
 
    const_reference at(size_type pos) const
    {
-      if (pos >= this->fSize)
+      if (pos >= size_type(this->fSize))
          throw std::out_of_range("RVec");
       return this->operator[](pos);
    }
@@ -1374,7 +1375,7 @@ public:
    /// No exception thrown. The user specifies the desired value in case the RVec is shorter than `pos`.
    value_type at(size_type pos, value_type fallback)
    {
-      if (pos >= this->fSize)
+      if (pos >= size_type(this->fSize))
          return fallback;
       return this->operator[](pos);
    }
@@ -1382,7 +1383,7 @@ public:
    /// No exception thrown. The user specifies the desired value in case the RVec is shorter than `pos`.
    value_type at(size_type pos, value_type fallback) const
    {
-      if (pos >= this->fSize)
+      if (pos >= size_type(this->fSize))
          return fallback;
       return this->operator[](pos);
    }
