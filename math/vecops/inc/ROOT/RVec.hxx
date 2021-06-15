@@ -146,9 +146,11 @@ public:
 
 protected:
    void *fBeginX;
-   Size_T fSize = 0; // never negative even if type is signed
+   /// Always >= 0.
+   // Type is signed only for consistency with fCapacity.
+   Size_T fSize = 0;
+   /// Always >= -1. fCapacity == -1 indicates the RVec is in "memory adoption" mode.
    Size_T fCapacity;
-   bool fOwns = true;
 
    /// The maximum value of the Size_T used.
    static constexpr size_t SizeTypeMax() { return std::numeric_limits<Size_T>::max(); }
@@ -168,9 +170,12 @@ protected:
    /// std::length_error or calls report_fatal_error.
    static void report_at_maximum_capacity();
 
+   /// If true, the RVec is in "memory adoption" mode, i.e. it is acting as a view on a memory buffer it does not own.
+   bool Owns() const { return fCapacity != -1; }
+
 public:
    size_t size() const { return fSize; }
-   size_t capacity() const noexcept { return fCapacity; }
+   size_t capacity() const noexcept { return Owns() ? fCapacity : fSize; }
 
    R__RVEC_NODISCARD bool empty() const { return !fSize; }
 
@@ -399,7 +404,7 @@ void SmallVectorTemplateBase<T, TriviallyCopyable>::grow(size_t MinSize)
    // Move the elements over.
    this->uninitialized_move(this->begin(), this->end(), NewElts);
 
-   if (this->fOwns) {
+   if (this->Owns()) {
       // Destroy the original elements.
       destroy_range(this->begin(), this->end());
 
@@ -410,7 +415,6 @@ void SmallVectorTemplateBase<T, TriviallyCopyable>::grow(size_t MinSize)
 
    this->fBeginX = NewElts;
    this->fCapacity = NewCapacity;
-   this->fOwns = true;
 }
 
 /// SmallVectorTemplateBase<TriviallyCopyable = true> - This is where we put
@@ -465,7 +469,6 @@ protected:
    void grow(size_t MinSize = 0)
    {
       this->grow_pod(MinSize, sizeof(T));
-      this->fOwns = true;
    }
 
 public:
@@ -528,14 +531,14 @@ public:
    {
       // Subclass has already destructed this vector's elements.
       // If this wasn't grown from the inline copy, deallocate the old space.
-      if (!this->isSmall() && this->fOwns)
+      if (!this->isSmall() && this->Owns())
          free(this->begin());
    }
 
    // also give up adopted memory if applicable
    void clear()
    {
-      if (this->fOwns) {
+      if (this->Owns()) {
          this->destroy_range(this->begin(), this->end());
          this->fSize = 0;
       } else {
@@ -546,7 +549,7 @@ public:
    void resize(size_type N)
    {
       if (N < this->size()) {
-         if (this->fOwns)
+         if (this->Owns())
             this->destroy_range(this->begin() + N, this->end());
          this->set_size(N);
       } else if (N > this->size()) {
@@ -561,7 +564,7 @@ public:
    void resize(size_type N, const T &NV)
    {
       if (N < this->size()) {
-         if (this->fOwns)
+         if (this->Owns())
             this->destroy_range(this->begin() + N, this->end());
          this->set_size(N);
       } else if (N > this->size()) {
@@ -581,7 +584,7 @@ public:
    void pop_back_n(size_type NumItems)
    {
       assert(this->size() >= NumItems);
-      if (this->fOwns)
+      if (this->Owns())
          this->destroy_range(this->end() - NumItems, this->end());
       this->set_size(this->size() - NumItems);
    }
@@ -679,7 +682,7 @@ public:
       // Shift all elts down.
       iterator I = std::move(E, this->end(), S);
       // Drop the last elts.
-      if (this->fOwns)
+      if (this->Owns())
          this->destroy_range(I, this->end());
       this->set_size(I - this->begin());
       return (N);
@@ -906,7 +909,6 @@ void RVecImpl<T>::swap(RVecImpl<T> &RHS)
       std::swap(this->fBeginX, RHS.fBeginX);
       std::swap(this->fSize, RHS.fSize);
       std::swap(this->fCapacity, RHS.fCapacity);
-      std::swap(this->fOwns, RHS.fOwns);
       return;
    }
    if (RHS.size() > this->capacity())
@@ -926,14 +928,14 @@ void RVecImpl<T>::swap(RVecImpl<T> &RHS)
       size_t EltDiff = this->size() - RHS.size();
       this->uninitialized_copy(this->begin() + NumShared, this->end(), RHS.end());
       RHS.set_size(RHS.size() + EltDiff);
-      if (this->fOwns)
+      if (this->Owns())
          this->destroy_range(this->begin() + NumShared, this->end());
       this->set_size(NumShared);
    } else if (RHS.size() > this->size()) {
       size_t EltDiff = RHS.size() - this->size();
       this->uninitialized_copy(RHS.begin() + NumShared, RHS.end(), this->end());
       this->set_size(this->size() + EltDiff);
-      if (RHS.fOwns)
+      if (RHS.Owns())
          this->destroy_range(RHS.begin() + NumShared, RHS.end());
       RHS.set_size(NumShared);
    }
@@ -959,7 +961,7 @@ RVecImpl<T> &RVecImpl<T>::operator=(const RVecImpl<T> &RHS)
          NewEnd = this->begin();
 
       // Destroy excess elements.
-      if (this->fOwns)
+      if (this->Owns())
          this->destroy_range(NewEnd, this->end());
 
       // Trim.
@@ -972,7 +974,7 @@ RVecImpl<T> &RVecImpl<T>::operator=(const RVecImpl<T> &RHS)
    // From the original LLVM implementation:
    // FIXME: don't do this if they're efficiently moveable.
    if (this->capacity() < RHSSize) {
-      if (this->fOwns) {
+      if (this->Owns()) {
          // Destroy current elements.
          this->destroy_range(this->begin(), this->end());
       }
@@ -1001,7 +1003,7 @@ RVecImpl<T> &RVecImpl<T>::operator=(RVecImpl<T> &&RHS)
 
    // If the RHS isn't small, clear this vector and then steal its buffer.
    if (!RHS.isSmall()) {
-      if (this->fOwns) {
+      if (this->Owns()) {
          this->destroy_range(this->begin(), this->end());
          if (!this->isSmall())
             free(this->begin());
@@ -1009,7 +1011,6 @@ RVecImpl<T> &RVecImpl<T>::operator=(RVecImpl<T> &&RHS)
       this->fBeginX = RHS.fBeginX;
       this->fSize = RHS.fSize;
       this->fCapacity = RHS.fCapacity;
-      this->fOwns = RHS.fOwns;
       RHS.resetToSmall();
       return *this;
    }
@@ -1025,7 +1026,7 @@ RVecImpl<T> &RVecImpl<T>::operator=(RVecImpl<T> &&RHS)
          NewEnd = std::move(RHS.begin(), RHS.end(), NewEnd);
 
       // Destroy excess elements and trim the bounds.
-      if (this->fOwns)
+      if (this->Owns())
          this->destroy_range(NewEnd, this->end());
       this->set_size(RHSSize);
 
@@ -1041,7 +1042,7 @@ RVecImpl<T> &RVecImpl<T>::operator=(RVecImpl<T> &&RHS)
    // FIXME: this may not actually make any sense if we can efficiently move
    // elements.
    if (this->capacity() < RHSSize) {
-      if (this->fOwns) {
+      if (this->Owns()) {
          // Destroy current elements.
          this->destroy_range(this->begin(), this->end());
       }
@@ -1244,7 +1245,7 @@ public:
 
    ~RVec()
    {
-      if (this->fOwns) {
+      if (this->Owns()) {
          // Destroy the constructed elements in the vector.
          this->destroy_range(this->begin(), this->end());
       }
@@ -1301,8 +1302,7 @@ public:
    {
       this->fBeginX = p;
       this->fSize = n;
-      this->fCapacity = n;
-      this->fOwns = false;
+      this->fCapacity = -1;
    }
 
    RVec &operator=(Detail::VecOps::RVecImpl<T> &&RHS)
