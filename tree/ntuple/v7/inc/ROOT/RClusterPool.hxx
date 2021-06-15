@@ -92,6 +92,8 @@ private:
    /// Every cluster pool is responsible for exactly one page source that triggers loading of the clusters
    /// (GetCluster()) and is used for implementing the I/O and cluster memory allocation (PageSource::LoadCluster()).
    RPageSource &fPageSource;
+   /// Each cluster pool might also need to create a PageSink if caching of the RNTuple is enabled
+   std::unique_ptr<RPageSink> fPageSink{nullptr};
    /// The number of clusters before the currently active cluster that should stay in the pool if present
    unsigned int fWindowPre;
    /// The number of desired clusters in the pool, including the currently active cluster

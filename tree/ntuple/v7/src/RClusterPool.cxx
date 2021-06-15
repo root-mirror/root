@@ -15,6 +15,7 @@
 
 #include <ROOT/RClusterPool.hxx>
 #include <ROOT/RNTupleDescriptor.hxx>
+#include <ROOT/RNTupleModel.hxx>
 #include <ROOT/RPageStorage.hxx>
 
 #include <TError.h>
@@ -120,12 +121,63 @@ void ROOT::Experimental::Detail::RClusterPool::ExecReadClusters()
          }
       }
 
+      // At this point, but not before, we can create an RPageSink with the same metadata held by fPageSource
+      // Before this point, fPageSource still doesn't have all the header metadata so it's pointless.
+      if (!fPageSink){
+
+         // HARDCODED FILENAME FOR THE CACHED RNTUPLE
+         std::string_view cachedntuplepath = "cachedntuple.root";
+
+         fPageSink = RPageSink::Create(fPageSource.GetNTupleName(), cachedntuplepath);
+         auto modelptr = fPageSource.GetDescriptor().GenerateModel()->Clone();
+         fPageSink->Create(*modelptr);
+      }
+
+      // Track the number of entries seen so far
+      // Needed in the call to fPageSink->CommitCluster that will be done in CacheCluster
+      ClusterSize_t entriessofar{0};
       for (auto &item : readItems) {
-         if (item.fClusterId == kInvalidDescriptorId)
+         if (item.fClusterId == kInvalidDescriptorId){
+            // Need to commit the cached dataset if present
+            fPageSink->CommitDataset();
             return;
+         }
 
          // TODO(jblomer): the page source needs to be capable of loading multiple clusters in one go
          auto cluster = fPageSource.LoadCluster(item.fClusterId, item.fColumns);
+
+         // Cache the current cluster
+         auto CacheCluster = [&](DescriptorId_t clusterId){
+            const auto &clusterDesc = fPageSource.GetDescriptor().GetClusterDescriptor(clusterId);
+            const auto clusterentries = clusterDesc.GetNEntries();
+
+            // Traverse columns in cluster
+            for (auto columnId: clusterDesc.GetColumnIds()){
+
+               const auto &pageRange = clusterDesc.GetPageRange(columnId);
+               std::uint32_t firstElementInPage = 0;
+
+
+               RPageStorage::RSealedPage sealedPage;
+               // Traverse pages in column
+               for (const auto &pi : pageRange.fPageInfos) {
+
+                  auto buffer = std::make_unique<unsigned char []>(pi.fLocator.fBytesOnStorage);
+                  sealedPage.fBuffer = buffer.get();
+                  fPageSource.LoadSealedPage(columnId, RClusterIndex(clusterId, firstElementInPage), sealedPage);
+                  firstElementInPage += pi.fNElements;
+
+                  // Commit page
+                  fPageSink->CommitSealedPage(columnId, sealedPage);
+
+               }
+
+            }
+            entriessofar += clusterentries;
+            fPageSink->CommitCluster(entriessofar);
+
+         };
+         CacheCluster(cluster->GetId());
 
          // Meanwhile, the user might have requested clusters outside the look-ahead window, so that we don't
          // need the cluster anymore, in which case we simply discard it right away, before moving it to the pool
