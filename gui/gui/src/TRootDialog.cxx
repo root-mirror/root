@@ -31,6 +31,8 @@ when selecting a member function taking arguments.
 #include "TObjString.h"
 #include "KeySymbols.h"
 #include "TVirtualX.h"
+#include "TROOT.h"
+#include "TGlobal.h"
 
 extern TGTextEntry *gBlinkingEntry;
 
@@ -143,11 +145,21 @@ const char *TRootDialog::GetParameters()
       }
 
       if (params.Length()) params += ",";
-      if (type && data) {
-         if (!strncmp(type, "char*", 5))
+      TDataType  *datatype = gROOT->GetType(type);
+      if (datatype && type && data) {
+         param = TString::Format("(%s)%s", type, data);
+      } else if (type && data) {
+         if (!strncmp(type, "char*", 5) || !strncmp(type, "const char*", 11))
             param = TString::Format("\"%s\"", data);
-         else
-            param = TString::Format("(%s)%s", type, data);
+         else {
+            ULong_t address = (Long_t)gROOT->FindObject(data);
+            if (address == 0) {
+               TGlobal* gb = (TGlobal*)gROOT->GetListOfGlobals(kTRUE)->FindObject(data);
+               if (gb)
+                  address = (ULong_t)gb->GetAddress();
+            }
+            param = TString::Format("(%s)0x%lx", type, address);
+         }
       } else
          param = "0";
 

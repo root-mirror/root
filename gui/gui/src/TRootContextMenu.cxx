@@ -449,6 +449,7 @@ void TRootContextMenu::Dialog(TObject *object, TFunction *function)
       if (selfobjpos != argpos) {
          const char *argname    = fContextMenu->CreateArgumentTitle(argument);
          const char *type       = argument->GetTypeName();
+         const char *fulltype   = argument->GetFullTypeName();
          TDataType  *datatype   = gROOT->GetType(type);
          const char *charstar   = "char*";
          char        basictype[32];
@@ -456,9 +457,9 @@ void TRootContextMenu::Dialog(TObject *object, TFunction *function)
          if (datatype) {
             strlcpy(basictype, datatype->GetTypeName(), 32);
          } else {
-            TClass *cl = TClass::GetClass(type);
-            if (strncmp(type, "enum", 4) && (cl && !(cl->Property() & kIsEnum)))
-               Warning("Dialog", "data type is not basic type, assuming (int)");
+            //TClass *cl = TClass::GetClass(type);
+            //if (strncmp(type, "enum", 4) && (cl && !(cl->Property() & kIsEnum)))
+            //   Warning("Dialog", "data type is not basic type, assuming (int)");
             strlcpy(basictype, "int", 32);
          }
 
@@ -523,7 +524,7 @@ void TRootContextMenu::Dialog(TObject *object, TFunction *function)
 #endif
             } else {
                // we haven't got options - textfield ...
-               fDialog->Add(argname, val, type);
+               fDialog->Add(argname, val, fulltype);
             }
          } else {    // if m not found ...
 
@@ -535,7 +536,7 @@ void TRootContextMenu::Dialog(TObject *object, TFunction *function)
                if (val[strlen(val)-1] == '"')
                   val[strlen(val)-1]= 0;
             }
-            fDialog->Add(argname, val, type);
+            fDialog->Add(argname, val, fulltype);
          }
       }
       argpos++;
