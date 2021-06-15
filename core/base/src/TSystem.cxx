@@ -3315,15 +3315,17 @@ int TSystem::CompileMacro(const char *filename, Option_t *opt,
 #endif
    Bool_t linkDepLibraries = !produceRootmap;
    if (gEnv) {
-#if (defined(R__MACOSX) && !defined(MAC_OS_X_VERSION_10_5))
-      Int_t linkLibs = gEnv->GetValue("ACLiC.LinkLibs",2);
-#elif defined(R__WIN32)
+#if defined(R__WIN32)
       Int_t linkLibs = gEnv->GetValue("ACLiC.LinkLibs",3);
 #else
       Int_t linkLibs = gEnv->GetValue("ACLiC.LinkLibs",1);
 #endif
       produceRootmap = linkLibs & 0x2;
       linkDepLibraries = linkLibs & 0x1;
+      if (!linkDepLibraries) {
+         static int onetime = (Warning("ACLiC", "Unsetting `ACLiC.LinkLibs & 1` is deprecated!"),1);
+         (void) onetime;
+      }
    }
 
    // FIXME: Triggers clang false positive warning -Wunused-lambda-capture.
@@ -3373,7 +3375,11 @@ int TSystem::CompileMacro(const char *filename, Option_t *opt,
          if (!keep) k->SetBit(kMustCleanup);
          fCompiled->Add(k);
 
-         gInterpreter->GetSharedLibDeps(library);
+         if (!linkDepLibraries) {
+            // if linkDepLibraries the library might not know its dependencies
+            // and "just load the library" might fail.
+            gInterpreter->GetSharedLibDeps(library);
+         }
 
          return LoadLibrary(library);
       }
