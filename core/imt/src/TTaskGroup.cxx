@@ -55,9 +55,6 @@ using namespace ROOT::Internal;
 TTaskGroup::TTaskGroup()
 {
 #ifdef R__USE_IMT
-   if (!ROOT::IsImplicitMTEnabled()) {
-      throw std::runtime_error("Implicit parallelism not enabled. Cannot instantiate a TTaskGroup.");
-   }
    fTaskContainer = ((void *)new tbb::task_group());
 #endif
 }
