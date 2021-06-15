@@ -294,6 +294,9 @@ else()
 
   set(LLVM_DIR "${LLVM_BINARY_DIR}")
 
+  find_package(LLVM REQUIRED HINTS "${LLVM_CMAKE_PATH}")
+  find_package(Clang REQUIRED HINTS "${LLVM_CMAKE_PATH}")
+
   # Normalize LLVM_CMAKE_PATH. --cmakedir might contain backslashes.
   # CMake assumes slashes as PATH.
   file(TO_CMAKE_PATH ${LLVM_CONFIG_CMAKE_PATH} LLVM_CMAKE_PATH)
@@ -457,7 +460,10 @@ if (builtin_cling)
   # LLVM doesn't really give us a API to get this with an in-source build
   # so we just use the normal way of doing this and read the llvm directory
   # compilation properties.
-  get_directory_property(LLVM_DEFS DIRECTORY llvm/src COMPILE_DEFINITIONS)
+  set(LLVM_DEFS "__STDC_CONSTANT_MACROS;__STDC_FORMAT_MACROS;__STDC_LIMIT_MACROS")
+  if( LLVM_USING_GLIBC )
+    list(APPEND LLVM_DEFS "_GNU_SOURCE")
+  endif()
   # Turns DEFINE1;DEFINE2 to -DDEFINE1 -DDEFINE2
   string (REPLACE ";" " -D" LLVM_DEFS ";${LLVM_DEFS}")
 
