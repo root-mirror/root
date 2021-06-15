@@ -27,5 +27,14 @@ class RVec(unittest.TestCase):
             self.assertEqual(c, 3)
 
 
+    def test_from_root_namespace(self):
+        '''
+        Test that RVec is accessible from the ROOT and ROOT::VecOps namespace
+        '''
+
+        v1 = ROOT.VecOps.RVec['float']()
+        v2 = ROOT.RVec['float']()
+
+
 if __name__ == '__main__':
     unittest.main()
