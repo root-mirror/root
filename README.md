@@ -62,6 +62,7 @@ See more screenshots on our [gallery](https://root.cern/gallery).
 ## Download and Getting Started
 See [root.cern download page](https://root.cern/downloading-root) for the latest binary releases.
 
+
 [Getting started with ROOT.](https://root.cern/getting-started)
 
 ## Building
