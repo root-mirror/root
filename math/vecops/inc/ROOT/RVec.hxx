@@ -484,11 +484,31 @@ public:
    void pop_back() { this->set_size(this->size() - 1); }
 };
 
+/// Storage for the SmallVector elements.  This is specialized for the N=0 case
+/// to avoid allocating unnecessary storage.
+template <typename T, unsigned N>
+struct SmallVectorStorage {
+   alignas(T) char InlineElts[N * sizeof(T)];
+};
+
+/// We need the storage to be properly aligned even for small-size of 0 so that
+/// the pointer math in \a SmallVectorTemplateCommon::getFirstEl() is
+/// well-defined.
+template <typename T>
+struct alignas(T) SmallVectorStorage<T, 0> {
+};
+
+} // namespace VecOps
+} // namespace Internal
+
+namespace Detail {
+namespace VecOps {
+
 /// This class consists of common code factored out of the SmallVector class to
 /// reduce code duplication based on the SmallVector 'N' template parameter.
 template <typename T>
-class SmallVectorImpl : public SmallVectorTemplateBase<T> {
-   using SuperClass = SmallVectorTemplateBase<T>;
+class RVecImpl : public Internal::VecOps::SmallVectorTemplateBase<T> {
+   using SuperClass = Internal::VecOps::SmallVectorTemplateBase<T>;
 
 public:
    using iterator = typename SuperClass::iterator;
@@ -498,12 +518,12 @@ public:
 
 protected:
    // Default ctor - Initialize to empty.
-   explicit SmallVectorImpl(unsigned N) : SmallVectorTemplateBase<T>(N) {}
+   explicit RVecImpl(unsigned N) : Internal::VecOps::SmallVectorTemplateBase<T>(N) {}
 
 public:
-   SmallVectorImpl(const SmallVectorImpl &) = delete;
+   RVecImpl(const RVecImpl &) = delete;
 
-   ~SmallVectorImpl()
+   ~RVecImpl()
    {
       // Subclass has already destructed this vector's elements.
       // If this wasn't grown from the inline copy, deallocate the old space.
@@ -572,7 +592,7 @@ public:
       return Result;
    }
 
-   void swap(SmallVectorImpl &RHS);
+   void swap(RVecImpl &RHS);
 
    /// Add the specified range to the end of the SmallVector.
    template <typename in_iter,
@@ -856,26 +876,26 @@ public:
       return this->back();
    }
 
-   SmallVectorImpl &operator=(const SmallVectorImpl &RHS);
+   RVecImpl &operator=(const RVecImpl &RHS);
 
-   SmallVectorImpl &operator=(SmallVectorImpl &&RHS);
+   RVecImpl &operator=(RVecImpl &&RHS);
 
-   bool operator==(const SmallVectorImpl &RHS) const
+   bool operator==(const RVecImpl &RHS) const
    {
       if (this->size() != RHS.size())
          return false;
       return std::equal(this->begin(), this->end(), RHS.begin());
    }
-   bool operator!=(const SmallVectorImpl &RHS) const { return !(*this == RHS); }
+   bool operator!=(const RVecImpl &RHS) const { return !(*this == RHS); }
 
-   bool operator<(const SmallVectorImpl &RHS) const
+   bool operator<(const RVecImpl &RHS) const
    {
       return std::lexicographical_compare(this->begin(), this->end(), RHS.begin(), RHS.end());
    }
 };
 
 template <typename T>
-void SmallVectorImpl<T>::swap(SmallVectorImpl<T> &RHS)
+void RVecImpl<T>::swap(RVecImpl<T> &RHS)
 {
    if (this == &RHS)
       return;
@@ -919,7 +939,7 @@ void SmallVectorImpl<T>::swap(SmallVectorImpl<T> &RHS)
 }
 
 template <typename T>
-SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(const SmallVectorImpl<T> &RHS)
+RVecImpl<T> &RVecImpl<T>::operator=(const RVecImpl<T> &RHS)
 {
    // Avoid self-assignment.
    if (this == &RHS)
@@ -972,7 +992,7 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(const SmallVectorImpl<T> &RHS)
 }
 
 template <typename T>
-SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(SmallVectorImpl<T> &&RHS)
+RVecImpl<T> &RVecImpl<T>::operator=(RVecImpl<T> &&RHS)
 {
    // Avoid self-assignment.
    if (this == &RHS)
@@ -1041,22 +1061,8 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(SmallVectorImpl<T> &&RHS)
    RHS.clear();
    return *this;
 }
-
-/// Storage for the SmallVector elements.  This is specialized for the N=0 case
-/// to avoid allocating unnecessary storage.
-template <typename T, unsigned N>
-struct SmallVectorStorage {
-   alignas(T) char InlineElts[N * sizeof(T)];
-};
-
-/// We need the storage to be properly aligned even for small-size of 0 so that
-/// the pointer math in \a SmallVectorTemplateCommon::getFirstEl() is
-/// well-defined.
-template <typename T>
-struct alignas(T) SmallVectorStorage<T, 0> {
-};
 } // namespace VecOps
-} // namespace Internal
+} // namespace Detail
 
 namespace VecOps {
 // Note that we open here with @{ the Doxygen group vecops and it is
@@ -1230,10 +1236,10 @@ hpt->Draw();
 // Note that this does not attempt to be exception safe.
 
 template <typename T>
-class RVec : public Internal::VecOps::SmallVectorImpl<T>, Internal::VecOps::SmallVectorStorage<T, 8> {
+class RVec : public Detail::VecOps::RVecImpl<T>, Internal::VecOps::SmallVectorStorage<T, 8> {
 public:
    static constexpr unsigned N = 8;
-   RVec() : Internal::VecOps::SmallVectorImpl<T>(N) {}
+   RVec() : Detail::VecOps::RVecImpl<T>(N) {}
 
    ~RVec()
    {
@@ -1243,7 +1249,7 @@ public:
       }
    }
 
-   explicit RVec(size_t Size, const T &Value = T()) : Internal::VecOps::SmallVectorImpl<T>(N)
+   explicit RVec(size_t Size, const T &Value = T()) : Detail::VecOps::RVecImpl<T>(N)
    {
       this->assign(Size, Value);
    }
@@ -1251,46 +1257,46 @@ public:
    template <typename ItTy,
              typename = typename std::enable_if<std::is_convertible<
                 typename std::iterator_traits<ItTy>::iterator_category, std::input_iterator_tag>::value>::type>
-   RVec(ItTy S, ItTy E) : Internal::VecOps::SmallVectorImpl<T>(N)
+   RVec(ItTy S, ItTy E) : Detail::VecOps::RVecImpl<T>(N)
    {
       this->append(S, E);
    }
 
-   RVec(std::initializer_list<T> IL) : Internal::VecOps::SmallVectorImpl<T>(N) { this->assign(IL); }
+   RVec(std::initializer_list<T> IL) : Detail::VecOps::RVecImpl<T>(N) { this->assign(IL); }
 
-   RVec(const RVec &RHS) : Internal::VecOps::SmallVectorImpl<T>(N)
+   RVec(const RVec &RHS) : Detail::VecOps::RVecImpl<T>(N)
    {
       if (!RHS.empty())
-         Internal::VecOps::SmallVectorImpl<T>::operator=(RHS);
+         Detail::VecOps::RVecImpl<T>::operator=(RHS);
    }
 
    RVec &operator=(const RVec &RHS)
    {
-      Internal::VecOps::SmallVectorImpl<T>::operator=(RHS);
+      Detail::VecOps::RVecImpl<T>::operator=(RHS);
       return *this;
    }
 
-   RVec(RVec &&RHS) : Internal::VecOps::SmallVectorImpl<T>(N)
+   RVec(RVec &&RHS) : Detail::VecOps::RVecImpl<T>(N)
    {
       if (!RHS.empty())
-         Internal::VecOps::SmallVectorImpl<T>::operator=(::std::move(RHS));
+         Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
    }
 
-   RVec(Internal::VecOps::SmallVectorImpl<T> &&RHS) : Internal::VecOps::SmallVectorImpl<T>(N)
+   RVec(Detail::VecOps::RVecImpl<T> &&RHS) : Detail::VecOps::RVecImpl<T>(N)
    {
       if (!RHS.empty())
-         Internal::VecOps::SmallVectorImpl<T>::operator=(::std::move(RHS));
+         Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
    }
 
    RVec(const std::vector<T> &RHS) : RVec(RHS.begin(), RHS.end()) {}
 
    RVec &operator=(RVec &&RHS)
    {
-      Internal::VecOps::SmallVectorImpl<T>::operator=(::std::move(RHS));
+      Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
       return *this;
    }
 
-   RVec(T* p, size_t n) : Internal::VecOps::SmallVectorImpl<T>(N)
+   RVec(T* p, size_t n) : Detail::VecOps::RVecImpl<T>(N)
    {
       this->fBeginX = p;
       this->fSize = n;
@@ -1298,9 +1304,9 @@ public:
       this->fOwns = false;
    }
 
-   RVec &operator=(Internal::VecOps::SmallVectorImpl<T> &&RHS)
+   RVec &operator=(Detail::VecOps::RVecImpl<T> &&RHS)
    {
-      Internal::VecOps::SmallVectorImpl<T>::operator=(::std::move(RHS));
+      Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
       return *this;
    }
 
