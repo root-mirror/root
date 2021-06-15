@@ -1601,6 +1601,10 @@ TCling::TCling(const char *name, const char *title, const char* const argv[])
    fClingCallbacks->SetAutoParsingSuspended(fIsAutoParsingSuspended);
    fInterpreter->setCallbacks(std::move(clingCallbacks));
 
+   // force optlevel 3
+   fInterpreter->getCI()->getCodeGenOpts().OptimizationLevel = 3;
+   fInterpreter->setDefaultOptLevel(3);
+
    if (!fromRootCling) {
       cling::DynamicLibraryManager& DLM = *fInterpreter->getDynamicLibraryManager();
       // Make sure cling looks into ROOT's libdir, even if not part of LD_LIBRARY_PATH

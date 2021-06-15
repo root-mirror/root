@@ -170,6 +170,9 @@ void BackendPasses::CreatePasses(llvm::Module& M, int OptLevel)
     // Inlining = CGOpts.NoInlining;
   }
 
+  // force normal inlining (as above says: NoInlining is kills)
+  const_cast<CodeGenOptions&>(m_CGOpts).setInlining(CodeGenOptions::NormalInlining);
+
   llvm::PassManagerBuilder PMBuilder;
   PMBuilder.OptLevel = OptLevel;
   PMBuilder.SizeLevel = m_CGOpts.OptimizeSize;
