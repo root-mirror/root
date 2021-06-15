@@ -1319,6 +1319,7 @@ public:
    using reference = typename Internal::VecOps::SmallVectorTemplateCommon<T>::reference;
    using const_reference = typename Internal::VecOps::SmallVectorTemplateCommon<T>::const_reference;
    using size_type = typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type;
+   using value_type = typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type;
    using Internal::VecOps::SmallVectorTemplateCommon<T>::begin;
    using Internal::VecOps::SmallVectorTemplateCommon<T>::size;
 
@@ -1356,31 +1357,30 @@ public:
       return RVec<U>(this->begin(), this->end());
    }
 
-   // from the original LLVM implementation:
-   // FIXME find a less verbose way
-   typename Internal::VecOps::SmallVectorTemplateCommon<T>::reference at(typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type pos)
+   reference at(size_type pos)
    {
       if (pos >= this->fSize)
          throw std::out_of_range("RVec");
       return this->operator[](pos);
    }
-   typename Internal::VecOps::SmallVectorTemplateCommon<T>::const_reference at(typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type pos) const
+
+   const_reference at(size_type pos) const
    {
       if (pos >= this->fSize)
          throw std::out_of_range("RVec");
       return this->operator[](pos);
    }
+
    /// No exception thrown. The user specifies the desired value in case the RVec is shorter than `pos`.
-   typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type
-   at(typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type pos, typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type fallback)
+   value_type at(size_type pos, value_type fallback)
    {
       if (pos >= this->fSize)
          return fallback;
       return this->operator[](pos);
    }
+
    /// No exception thrown. The user specifies the desired value in case the RVec is shorter than `pos`.
-   typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type
-   at(typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type pos, typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type fallback) const
+   value_type at(size_type pos, value_type fallback) const
    {
       if (pos >= this->fSize)
          return fallback;
