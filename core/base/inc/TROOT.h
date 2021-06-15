@@ -310,6 +310,8 @@ public:
                                     const FwdDeclArgsToKeepCollection_t& fwdDeclsArgToSkip,
                                     const char** classesHeaders,
                                     bool hasCxxModule = false);
+   static void       UnRegisterModule(const char* modulename,
+                                      void (*triggerFunc)());
    TObject          *Remove(TObject*);
    void              RemoveClass(TClass *);
    void              Reset(Option_t *option="");

@@ -2568,6 +2568,18 @@ void TROOT::RegisterModule(const char* modulename,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Called by static dictionary deinitialization to deregister clang modules
+/// for headers. Calls TCling::UnRegisterModule().
+
+void TROOT::UnRegisterModule(const char* modulename, void (*triggerFunc)())
+{
+   if (TROOT::Initialized())
+      gCling->UnRegisterModule(modulename, triggerFunc);
+   // FIXME: Handle the deinitialization properly. ~TCling should call in
+   // reverse order UnRegisterModule when it is shutting down.
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Remove an object from the in-memory list.
 ///    Since TROOT is global resource, this is lock protected.
 

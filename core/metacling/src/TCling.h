@@ -254,6 +254,7 @@ public: // Public Interface
                           Bool_t lateRegistration = false,
                           Bool_t hasCxxModule = false);
    virtual void AddAvailableIndentifiers(TSeqCollection& Idents);
+   void    UnRegisterModule(const char* modulename, void (*triggerFunc)());
    void    RegisterTClassUpdate(TClass *oldcl,DictFuncPtr_t dict);
    void    UnRegisterTClassUpdate(const TClass *oldcl);
 
@@ -621,9 +622,12 @@ private: // Private Utility Functions and Classes
    void AddFriendToClass(clang::FunctionDecl*, clang::CXXRecordDecl*) const;
 
    std::map<std::string, llvm::StringRef> fPendingRdicts;
+   std::vector<TFile*> fLoadedRdicts; // ROOT owns the TFile-s.
    void RegisterRdictForLoadPCM(const std::string &pcmFileNameFullPath, llvm::StringRef *pcmContent);
    void LoadPCM(std::string pcmFileNameFullPath);
-   void LoadPCMImpl(TFile &pcmFile);
+   void LoadPCMImpl(TFile &pcmFile) const;
+   void UnLoadPCM(std::string pcmFileNameFullPath);
+   void UnLoadPCMImpl(const TFile &pcmFile);
 
    void InitRootmapFile(const char *name);
    int  ReadRootmapFile(const char *rootmapfile, TUniqueString* uniqueString = nullptr);

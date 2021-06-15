@@ -1699,7 +1699,7 @@ void TCling::RegisterRdictForLoadPCM(const std::string &pcmFileNameFullPath, llv
 ////////////////////////////////////////////////////////////////////////////////
 /// Tries to load a PCM from TFile; returns true on success.
 
-void TCling::LoadPCMImpl(TFile &pcmFile)
+void TCling::LoadPCMImpl(TFile &pcmFile) const
 {
    auto listOfKeys = pcmFile.GetListOfKeys();
 
@@ -1846,10 +1846,10 @@ void TCling::LoadPCM(std::string pcmFileNameFullPath)
       llvm::StringRef pcmContent = pendingRdict->second;
       TMemFile::ZeroCopyView_t range{pcmContent.data(), pcmContent.size()};
       std::string RDictFileOpts = pcmFileNameFullPath + "?filetype=pcm";
-      TMemFile pcmMemFile(RDictFileOpts.c_str(), range);
-
+      fLoadedRdicts.push_back(new TMemFile(RDictFileOpts.c_str(), range));
+      TFile* pcmMemFile = fLoadedRdicts.back();
       cling::Interpreter::PushTransactionRAII deserRAII(GetInterpreterImpl());
-      LoadPCMImpl(pcmMemFile);
+      LoadPCMImpl(*pcmMemFile);
       fPendingRdicts.erase(pendingRdict);
 
       return;
@@ -1869,8 +1869,55 @@ void TCling::LoadPCM(std::string pcmFileNameFullPath)
       Fatal("LoadPCM", "The file %s is not a ROOT as was expected\n", pcmFileName.Data());
       return;
    }
-   TFile pcmFile(pcmFileName + "?filetype=pcm", "READ");
-   LoadPCMImpl(pcmFile);
+   fLoadedRdicts.push_back(new TFile(pcmFileName + "?filetype=pcm", "READ"));
+   TFile* pcmMemFile = fLoadedRdicts.back();
+   LoadPCMImpl(*pcmMemFile);
+}
+
+void TCling::UnLoadPCMImpl(const TFile& rdict)
+{
+   // FIXME: Reverse the effect of LoadPCMImpl.
+}
+
+void TCling::UnLoadPCM(std::string pcmFileNameFullPath)
+{
+   SuspendAutoLoadingRAII autoloadOff(this);
+   SuspendAutoParsing autoparseOff(this);
+   assert(!pcmFileNameFullPath.empty());
+   assert(llvm::sys::path::is_absolute(pcmFileNameFullPath));
+
+   // Easier to work with the ROOT interfaces.
+   TString pcmFileName = pcmFileNameFullPath;
+
+   // FIXME: @pcanal: how to deinitialize the streamer info factory?
+   R__InitStreamerInfoFactory();
+
+   TDirectory::TContext ctxt;
+   llvm::SaveAndRestore<Int_t> SaveGDebug(gDebug);
+   if (gDebug > 5) {
+      gDebug -= 5;
+      ::Info("TCling::UnLoadPCM", "Loading ROOT PCM %s", pcmFileName.Data());
+   } else {
+      gDebug = 0;
+   }
+
+   if (llvm::sys::fs::is_symlink_file(pcmFileNameFullPath))
+      pcmFileNameFullPath = ROOT::TMetaUtils::GetRealPath(pcmFileNameFullPath);
+
+   TFile* rdictToUnload = nullptr;
+   for (const auto& rdict : fLoadedRdicts) {
+      if (rdict->GetName() == pcmFileNameFullPath) {
+         rdictToUnload = rdict;
+         break;
+      }
+   }
+
+   assert(rdictToUnload && "Rdict not loaded!");
+
+   // FIXME: Restore the state to fPendingRdicts, where we will need to have
+   // enough information to create an TMemFile.
+
+   UnLoadPCMImpl(*rdictToUnload);
 }
 
 //______________________________________________________________________________
@@ -1999,6 +2046,20 @@ void TCling::ProcessClassesToUpdate()
       }
    }
 }
+
+static std::string GetRdictFullPath(const std::string &dyLibName,
+                                    const char* modulename)
+{
+   llvm::SmallString<256> pcmFileNameFullPath(dyLibName);
+   // The path dyLibName might not be absolute. This can happen if dyLibName
+   // is linked to an executable in the same folder.
+   llvm::sys::fs::make_absolute(pcmFileNameFullPath);
+   llvm::sys::path::remove_filename(pcmFileNameFullPath);
+   llvm::sys::path::append(pcmFileNameFullPath,
+                           ROOT::TMetaUtils::GetModuleFileName(modulename));
+   return pcmFileNameFullPath.str().str();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Inject the module named "modulename" into cling; load all headers.
 /// headers is a 0-terminated array of header files to #include after
@@ -2289,16 +2350,8 @@ void TCling::RegisterModule(const char* modulename,
       }
    }
 
-   if (gIgnoredPCMNames.find(modulename) == gIgnoredPCMNames.end()) {
-      llvm::SmallString<256> pcmFileNameFullPath(dyLibName);
-      // The path dyLibName might not be absolute. This can happen if dyLibName
-      // is linked to an executable in the same folder.
-      llvm::sys::fs::make_absolute(pcmFileNameFullPath);
-      llvm::sys::path::remove_filename(pcmFileNameFullPath);
-      llvm::sys::path::append(pcmFileNameFullPath,
-                              ROOT::TMetaUtils::GetModuleFileName(modulename));
-      LoadPCM(pcmFileNameFullPath.str().str());
-   }
+   if (gIgnoredPCMNames.find(modulename) == gIgnoredPCMNames.end())
+      LoadPCM(GetRdictFullPath(dyLibName, modulename));
 
    { // scope within which diagnostics are de-activated
    // For now we disable diagnostics because we saw them already at
@@ -2375,6 +2428,24 @@ void TCling::AddAvailableIndentifiers(TSeqCollection& Idents) {
    }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+/// Clean up after a dictionary was deinitialized (happens on dlclose).
+///
+
+void TCling::UnRegisterModule(const char* modulename, void (*triggerFunc)())
+{
+   std::string dyLibName = cling::DynamicLibraryManager::getSymbolLocation(triggerFunc);
+   assert(!llvm::sys::fs::is_symlink_file(dyLibName));
+
+   if (dyLibName.empty()) {
+      ::Error("TCling::UnRegisterModule", "Dictionary trigger function for %s not found", modulename);
+      return;
+   }
+
+   if (gIgnoredPCMNames.find(modulename) == gIgnoredPCMNames.end())
+      UnLoadPCM(GetRdictFullPath(dyLibName, modulename));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Register classes that already existed prior to their dictionary loading
