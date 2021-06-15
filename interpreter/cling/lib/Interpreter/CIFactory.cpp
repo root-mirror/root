@@ -1659,7 +1659,9 @@ static void stringifyPreprocSetting(PreprocessorOptions& PPOpts,
                        ? CodeGenOptions::OnlyAlwaysInlining
                        : CodeGenOptions::NormalInlining);
 
-    // CGOpts.setDebugInfo(clang::CodeGenOptions::FullDebugInfo);
+    CGOpts.setDebugInfo(clang::codegenoptions::FullDebugInfo);
+    CGOpts.DebugInfoForProfiling = 1;
+
     // CGOpts.EmitDeclMetadata = 1; // For unloading, for later
     // aliasing the complete ctor to the base ctor causes the JIT to crash
     CGOpts.CXXCtorDtorAliases = 0;

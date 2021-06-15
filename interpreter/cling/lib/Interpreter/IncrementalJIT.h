@@ -54,7 +54,7 @@ private:
     NotifyObjectLoadedT(IncrementalJIT &jit) : m_JIT(jit) {}
     void operator()(llvm::orc::VModuleKey K,
                     const llvm::object::ObjectFile &Object,
-                    const llvm::LoadedObjectInfo &/*Info*/) const {
+                    const llvm::RuntimeDyld::LoadedObjectInfo &Info) const {
       m_JIT.m_UnfinalizedSections[K]
         = std::move(m_JIT.m_SectionsAllocatedSinceLastLoad);
       m_JIT.m_SectionsAllocatedSinceLastLoad = SectionAddrSet();
@@ -66,8 +66,8 @@ private:
       // disabling this since we have globally disabled this functionality in
       // IncrementalJIT.cpp (m_GDBListener = 0).
       //
-      // if (auto GDBListener = m_JIT.m_GDBListener)
-      //   GDBListener->NotifyObjectEmitted(*Object->getBinary(), Info);
+      if (auto GDBListener = m_JIT.m_GDBListener)
+        GDBListener->notifyObjectLoaded(K, Object, Info);
 
       for (const auto &Symbol: Object.symbols()) {
         auto Flags = Symbol.getFlags();
