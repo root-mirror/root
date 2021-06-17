@@ -1,5 +1,6 @@
 #include "TMVA/SOFIE_common.hxx"
 #include<cctype>
+#include<algorithm>
 
 namespace TMVA{
 namespace Experimental{
@@ -104,7 +105,7 @@ template float* UTILITY::Unidirectional_broadcast(const float* original_data, co
 
 
 std::string toLower(std::string name){
-          transform(name.begin(), name.end(), name.begin(), ::tolower);
+          std::transform(name.begin(), name.end(), name.begin(), ::tolower);
           return name;
    }
 
