@@ -209,7 +209,7 @@ void ROOT::Internal::RStl::WriteClassInit(std::ostream &ostr,
          const cling::LookupHelper& lh = interp.getLookupHelper();
          result = llvm::dyn_cast_or_null<clang::CXXRecordDecl>(lh.findScope(iter->GetNormalizedName(),
                                                                             cling::LookupHelper::NoDiagnostics,
-                                                                            0)
+                                                                            nullptr)
                                                                );
 
          if (!result || !iter->GetRecordDecl()->getDefinition()) {

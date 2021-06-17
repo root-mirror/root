@@ -29,14 +29,14 @@ TClingDeclInfo::~TClingDeclInfo() {}
 const char* TClingDeclInfo::Name() const
 {
    if (!IsValid())
-      return 0;
+      return nullptr;
 
    if (!fNameCache.empty())
       return fNameCache.c_str();
 
    const Decl* D = GetDecl();
    if (!isa<NamedDecl>(D))
-      return 0;
+      return nullptr;
 
    const NamedDecl* ND = cast<NamedDecl>(D);
    clang::PrintingPolicy policy(ND->getASTContext().getPrintingPolicy());

@@ -164,7 +164,7 @@ ClassImp(TTabCom);
 //
 //             global/file scope variables
 //
-TTabCom *gTabCom = 0;
+TTabCom *gTabCom = nullptr;
 
 // ----------------------------------------------------------------------------
 //
@@ -175,17 +175,17 @@ TTabCom *gTabCom = 0;
 /// Default constructor.
 
 TTabCom::TTabCom():
-   fpClasses(0),
+   fpClasses(nullptr),
    fPrevInterpMarker(0),
-   fpDirectives(0),
-   fpEnvVars(0),
-   fpFiles(0),
-   fpGlobals(0),
-   fpPragmas(0),
-   fpSysIncFiles(0),
-   fpUsers(0),
-   fBuf(0),
-   fpLoc(0),
+   fpDirectives(nullptr),
+   fpEnvVars(nullptr),
+   fpFiles(nullptr),
+   fpGlobals(nullptr),
+   fpPragmas(nullptr),
+   fpSysIncFiles(nullptr),
+   fpUsers(nullptr),
+   fBuf(nullptr),
+   fpLoc(nullptr),
    fVarIsPointer(kFALSE),
    fLastIter(0)
 {
@@ -219,7 +219,7 @@ void TTabCom::ClearClasses()
 {
    if (fpClasses) {
       delete fpClasses;
-      fpClasses = 0;
+      fpClasses = nullptr;
    }
 
 }
@@ -231,9 +231,9 @@ void TTabCom::ClearCppDirectives()
 {
    if (!fpDirectives)
       return;
-   fpDirectives->Delete(0);
+   fpDirectives->Delete(nullptr);
    delete fpDirectives;
-   fpDirectives = 0;
+   fpDirectives = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -243,9 +243,9 @@ void TTabCom::ClearEnvVars()
 {
    if (!fpEnvVars)
       return;
-   fpEnvVars->Delete(0);
+   fpEnvVars->Delete(nullptr);
    delete fpEnvVars;
-   fpEnvVars = 0;
+   fpEnvVars = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -255,9 +255,9 @@ void TTabCom::ClearFiles()
 {
    if (!fpFiles)
       return;
-   fpFiles->Delete(0);
+   fpFiles->Delete(nullptr);
    delete fpFiles;
-   fpFiles = 0;
+   fpFiles = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -283,9 +283,9 @@ void TTabCom::ClearPragmas()
 {
    if (!fpPragmas)
       return;
-   fpPragmas->Delete(0);
+   fpPragmas->Delete(nullptr);
    delete fpPragmas;
-   fpPragmas = 0;
+   fpPragmas = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -295,9 +295,9 @@ void TTabCom::ClearSysIncFiles()
 {
    if (!fpSysIncFiles)
       return;
-   fpSysIncFiles->Delete(0);
+   fpSysIncFiles->Delete(nullptr);
    delete fpSysIncFiles;
-   fpSysIncFiles = 0;
+   fpSysIncFiles = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -307,9 +307,9 @@ void TTabCom::ClearUsers()
 {
    if (!fpUsers)
       return;
-   fpUsers->Delete(0);
+   fpUsers->Delete(nullptr);
    delete fpUsers;
-   fpUsers = 0;
+   fpUsers = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -529,14 +529,14 @@ const TSeqCollection *TTabCom::GetListOfEnvVars()
    if (!fpEnvVars) {
       TString outf = ".TTabCom-";
       FILE *fout = gSystem->TempFileName(outf);
-      if (!fout) return 0;
+      if (!fout) return nullptr;
       fclose(fout);
       TString cmd;
 
 #ifndef WIN32
       char *env = gSystem->Which(gSystem->Getenv("PATH"), "env", kExecutePermission);
       if (!env)
-         return 0;
+         return nullptr;
       cmd = env;
       cmd += " > ";
       delete [] env;
@@ -553,7 +553,7 @@ const TSeqCollection *TTabCom::GetListOfEnvVars()
          Error("TTabCom::GetListOfEnvVars", "could not open file \"%s\"",
                outf.Data());
          gSystem->Unlink(outf);
-         return 0;
+         return nullptr;
       }
       // parse, add
       fpEnvVars = new TContainer;
@@ -685,7 +685,7 @@ const TSeqCollection *TTabCom::GetListOfUsers()
 Char_t TTabCom::AllAgreeOnChar(int i, const TSeqCollection * pList,
                                Int_t & nGoodStrings)
 {
-   assert(pList != 0);
+   assert(pList != nullptr);
 
    TIter next(pList);
    TObject *pObj;
@@ -750,8 +750,8 @@ Char_t TTabCom::AllAgreeOnChar(int i, const TSeqCollection * pList,
 void TTabCom::AppendListOfFilesInDirectory(const char dirName[],
                                            TSeqCollection * pList)
 {
-   assert(dirName != 0);
-   assert(pList != 0);
+   assert(dirName != nullptr);
+   assert(pList != nullptr);
 
    // open the directory
    void *dir = gSystem->OpenDirectory(dirName);
@@ -811,7 +811,7 @@ TString TTabCom::DetermineClass(const char varName[])
    //
    ///////////////////////////////////
 
-   assert(varName != 0);
+   assert(varName != nullptr);
    IfDebug(std::cerr << "DetermineClass(\"" << varName << "\");" << std::endl);
 
    TString outf = ".TTabCom-";
@@ -891,7 +891,7 @@ cleanup:
 
 Bool_t TTabCom::ExcludedByFignore(TString s)
 {
-   const char *fignore = gEnv->GetValue("TabCom.FileIgnore", (char *) 0);
+   const char *fignore = gEnv->GetValue("TabCom.FileIgnore", (char *) nullptr);
 
    if (!fignore) {
       return kFALSE;
@@ -1048,7 +1048,7 @@ Bool_t TTabCom::IsDirectory(const char fileName[])
 
 TSeqCollection *TTabCom::NewListOfFilesInPath(const char path1[])
 {
-   assert(path1 != 0);
+   assert(path1 != nullptr);
    if (!path1[0]) path1 = ".";
 
    TContainer *pList = new TContainer;  // maybe use RTTI here? (since its a static function)
@@ -1175,8 +1175,8 @@ Int_t TTabCom::Complete(const TRegexp & re,
    //  n ==> after nth char
 
    IfDebug(std::cerr << "TTabCom::Complete() ..." << std::endl);
-   assert(fpLoc != 0);
-   assert(pListOfCandidates != 0);
+   assert(fpLoc != nullptr);
+   assert(pListOfCandidates != nullptr);
 
    Int_t pos = 0;               // position of first change
    const int loc = *fpLoc;      // location where TAB was pressed
@@ -1223,7 +1223,7 @@ Int_t TTabCom::Complete(const TRegexp & re,
       // get the full filename
       const char *s4 = pObj->GetName();
 
-      assert(s4 != 0);
+      assert(s4 != nullptr);
 
       // pick off tail
       const char *s5 = strrchr(s4, '/');
@@ -1402,8 +1402,8 @@ Int_t TTabCom::Complete(const TRegexp & re,
 
 done:                         // <----- goto label
    // un-init
-   fpLoc = 0;
-   fBuf = 0;
+   fpLoc = nullptr;
+   fBuf = nullptr;
 
    return pos;
 }
@@ -1425,8 +1425,8 @@ void TTabCom::CopyMatch(char *dest, int dest_len,
    //
    // if "appendage" is of the form "XXX" then "XXX" will be appended to the match.
 
-   assert(dest != 0);
-   assert(localName != 0);
+   assert(dest != nullptr);
+   assert(localName != nullptr);
 
    // potential buffer overflow.
    strlcpy(dest, localName, dest_len);
@@ -1466,7 +1466,7 @@ void TTabCom::CopyMatch(char *dest, int dest_len,
 
 TTabCom::EContext_t TTabCom::DetermineContext() const
 {
-   assert(fBuf != 0);
+   assert(fBuf != nullptr);
 
    const char *pStart;          // start of match
    const char *pEnd;            // end of match
@@ -1612,7 +1612,7 @@ Int_t TTabCom::Hook(char *buf, int *pLoc, std::ostream& out)
    case kCINT_stdin:
       {
          const TString fileName = s3("[^ ><]*$");
-         const TString filePath = DeterminePath(fileName,0);
+         const TString filePath = DeterminePath(fileName,nullptr);
          const TSeqCollection *pListOfFiles =
              GetListOfFilesInPath(filePath.Data());
 
@@ -2222,7 +2222,7 @@ TClass *TTabCom::MakeClassFromClassName(const char className[]) const
       // i'm assuming this happens iff there was some error.
       // (misspelled the class name, for example)
       Error("TTabCom::MakeClassFromClassName", "class \"%s\" is not defined.", className);
-      return 0;
+      return nullptr;
    }
 
    return pClass;
@@ -2269,7 +2269,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
    // need to make sure "varName" exists
    // because "DetermineClass()" prints clumsy error message otherwise.
    Bool_t varName_exists = GetListOfGlobals()->Contains(varName) || // check in list of globals first.
-       (gROOT->FindObject(varName) != 0);  // then check CINT "shortcut #3"
+       (gROOT->FindObject(varName) != nullptr);  // then check CINT "shortcut #3"
 
 
    //
@@ -2338,7 +2338,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
             memberName.Data(), pclass->GetName());
 
          // Check if it's a member
-         TDataMember *dmptr = 0; //pclass->GetDataMember(memberName.Data());
+         TDataMember *dmptr = nullptr; //pclass->GetDataMember(memberName.Data());
          TIter   next(pclass->GetListOfAllPublicDataMembers());
          while ((dmptr = (TDataMember *) next())) {
             if (memberName == dmptr->GetName()) break;
@@ -2366,7 +2366,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
             memberName.Data(), pclass->GetName());
 
          // Check if it's a method
-         TMethod *mptr = 0; // pclass->GetMethodAny(memberName.Data());
+         TMethod *mptr = nullptr; // pclass->GetMethodAny(memberName.Data());
          const TList  *mlist = pclass->GetListOfAllPublicMethods();
          next = mlist;
          while ((mptr = (TMethod *) next())) {
@@ -2405,7 +2405,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
    if (!varName_exists) {
       std::cerr << std::endl << "variable " << dblquote(varName) << " not defined."
          << std::endl;
-      return 0;                 //* RETURN *//
+      return nullptr;                 //* RETURN *//
    }
 
    /*****************************************************************************************/
@@ -2425,7 +2425,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
       // or a function pointer.
       std::cerr << std::endl << "problem determining class of " << dblquote(varName)
          << std::endl;
-      return 0;                 //* RETURN *//
+      return nullptr;                 //* RETURN *//
    }
 
    fVarIsPointer = className[className.Length() - 1] == '*';
@@ -2463,7 +2463,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
          break;
       default:
          Fatal("TTabCom::MakeClassFromVarName","Conext case %d not handled",context);
-         return 0; // Avoid warning about uninitialized pClass.
+         return nullptr; // Avoid warning about uninitialized pClass.
          }
 
          // 2. fix the operator.
@@ -2481,7 +2481,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
          // 3. inform the user.
          std::cerr << std::endl << dblquote(varName) <<
             " is of pointer type. Use this operator: ->" << std::endl;
-         return 0;
+         return nullptr;
    }
 
    if (context == kCXX_IndirectMember || context == kCXX_IndirectProto) {
@@ -2491,7 +2491,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
 
          if (className[className.Length() - 1] == '*') {
             std::cerr << std::endl << "can't handle pointers to pointers." << std::endl;
-            return 0;           // RETURN
+            return nullptr;           // RETURN
          }
       } else {
          // user is using operator->() instead of operator.()
@@ -2510,7 +2510,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
             break;
          default:
             Fatal("TTabCom::MakeClassFromVarName","Conext case %d not handled",context);
-            return 0; // Avoid warning about uninitialized pClass.
+            return nullptr; // Avoid warning about uninitialized pClass.
          }
 
          // 2. fix the operator.
@@ -2527,7 +2527,7 @@ TClass *TTabCom::MakeClassFromVarName(const char varName[],
          // 3. inform the user.
          std::cerr << std::endl << dblquote(varName) <<
              " is not of pointer type. Use this operator: ." << std::endl;
-         return 0;
+         return nullptr;
       }
    }
 
