@@ -1,6 +1,6 @@
 import unittest
 
-from DistRDF import ComputationGraphGenerator, Node, Proxy
+from DistRDF import ComputationGraphGenerator, Node, HeadNode, Proxy
 from DistRDF.Backends import Base
 
 
@@ -58,7 +58,7 @@ class ComputationGraphGeneratorTest(unittest.TestCase):
         t = ComputationGraphGeneratorTest.Temp()
 
         # Head node
-        hn = Node.HeadNode(1)
+        hn = HeadNode.Factory.get_headnode(1)
         hn.backend = ComputationGraphGeneratorTest.TestBackend()
         node = Proxy.TransformationProxy(hn)
         # Set of operations to build the graph
@@ -91,7 +91,7 @@ class ComputationGraphGeneratorTest(unittest.TestCase):
         t = ComputationGraphGeneratorTest.Temp()
 
         # Head node
-        hn = Node.HeadNode(1)
+        hn = HeadNode.Factory.get_headnode(1)
         hn.backend = ComputationGraphGeneratorTest.TestBackend()
         node = Proxy.TransformationProxy(hn)
 

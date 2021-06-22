@@ -1,4 +1,4 @@
-## @author Vincenzo Eduardo Padulano
+# @author Vincenzo Eduardo Padulano
 #  @author Enric Tejedor
 #  @date 2021-02
 
@@ -113,16 +113,13 @@ class BaseBackend(ABC):
         """
         headnode = generator.headnode
         computation_graph_callable = generator.get_callable()
-        # Arguments needed to create PyROOT RDF object
-        rdf_args = headnode.args
-        treename = headnode.get_treename()
-        selected_branches = headnode.get_branches()
 
         # Avoid having references to the instance inside the mapper
         initialization = self.initialization
 
         # Build the ranges for the current dataset
         ranges = headnode.build_ranges()
+        headnode_type = headnode.TYPE
 
         def mapper(current_range):
             """
@@ -141,6 +138,7 @@ class BaseBackend(ABC):
             """
             import ROOT
 
+            print(current_range)
             # We have to decide whether to do this in Dist or in subclasses
             # Utils.declare_headers(worker_includes)  # Declare headers if any
             # Run initialization method to prepare the worker runtime
@@ -151,47 +149,61 @@ class BaseBackend(ABC):
             start = int(current_range.start)
             end = int(current_range.end)
 
-            if treename:
+            # Check the type of the headnode. Each headnode will create Range
+            # objects of different kinds and in the distributed mapper will be
+            # needed to create the RDataFrame object according to the constructor
+            # arguments. The following two approaches cannot work
+            # 1. Having separate helper functions to create the RDataFrames,
+            #    for example `rdf = headnode.get_rdf_for_mapper()`, because
+            #    RDataFrame is not serializable (it misses a default constructor)
+            # 2. Checking for the type of the Range object, e.g.
+            #    `if isinstance(current_range, Ranges.TreeRange`, because the
+            #    type of a namedtuple is actually `collections.TreeRange` but
+            #    it's not sufficient to `import collections` at the beginning
+            #    of this file.
+            # For now the easiest and most lightweight approach is to store a
+            # string with a certain name unique to the headnode and use that
+            # as a discriminant.
+            if headnode_type == "TREE":
                 # Build TChain of files for this range:
-                chain = ROOT.TChain(treename)
-                for f in current_range.filelist:
+                chain = ROOT.TChain(current_range.treename)
+                for f in current_range.treefilenames:
                     chain.Add(str(f))
 
                 # We assume 'end' is exclusive
                 chain.SetCacheEntryRange(start, end)
 
                 # Gather information about friend trees
-                friend_info = current_range.friend_info
-                if friend_info:
-                    # Zip together the treenames of the friend trees and the
-                    # respective file names. Each friend treename can have
-                    # multiple corresponding friend file names.
+                if current_range.friendnamesalias and current_range.friendfilenames and current_range.friendchainsubnames:
+                    # Zip together the information about friend trees. Each element if of the form:
+                    # (name, alias), (file1.root, file2.root, ...), (subname1, subname2, ...)
                     tree_files_names = zip(
-                        friend_info.friend_names,
-                        friend_info.friend_file_names
+                        current_range.friendnamesalias,
+                        current_range.friendfilenames,
+                        current_range.friendchainsubnames
                     )
-                    for friend_treename, friend_filenames in tree_files_names:
+                    for (friend_name, friend_alias), friend_filenames, friendchainsubnames in tree_files_names:
                         # Start a TChain with the current friend treename
-                        friend_chain = ROOT.TChain(friend_treename)
+                        friend_chain = ROOT.TChain(friend_name)
                         # Add each corresponding file to the TChain
-                        for filename in friend_filenames:
-                            friend_chain.Add(filename)
+                        for filename, chainsubname in zip(friend_filenames, friendchainsubnames):
+                            # filename is an std::string, Add accepts a const char*
+                            if not chainsubname:
+                                friend_chain.Add(filename)
+                            else:
+                                friend_chain.Add(filename+"/"+chainsubname)
 
                         # Set cache on the same range as the parent TChain
                         friend_chain.SetCacheEntryRange(start, end)
-                        # Finally add friend TChain to the parent
-                        chain.AddFriend(friend_chain)
+                        # Finally add friend TChain to the parent (with alias)
+                        chain.AddFriend(friend_chain, friend_alias)
 
-                if selected_branches:
-                    rdf = ROOT.ROOT.RDataFrame(chain, selected_branches)
+                if current_range.defaultbranches is not None:
+                    rdf = ROOT.RDataFrame(chain, current_range.defaultbranches)
                 else:
-                    rdf = ROOT.ROOT.RDataFrame(chain)
-            else:
-                rdf = ROOT.ROOT.RDataFrame(*rdf_args)  # PyROOT RDF object
-
-            # # TODO : If we want to run multi-threaded in a Spark node in
-            # # the future, use `TEntryList` instead of `Range`
-            # rdf_range = rdf.Range(current_range.start, current_range.end)
+                    rdf = ROOT.RDataFrame(chain)
+            elif headnode_type == "ENTRIES":
+                rdf = ROOT.RDataFrame(current_range.nentries)
 
             # Output of the callable
             resultptr_list = computation_graph_callable(

@@ -13,7 +13,7 @@
 import ntpath  # Filename from path (should be platform-independent)
 
 from DistRDF import DataFrame
-from DistRDF import Node
+from DistRDF import HeadNode
 from DistRDF.Backends import Base
 from DistRDF.Backends import Utils
 
@@ -150,5 +150,5 @@ class SparkBackend(Base.BaseBackend):
 
     def make_dataframe(self, *args, **kwargs):
         """Creates an instance of SparkDataFrame"""
-        headnode = Node.HeadNode(*args)
+        headnode = HeadNode.Factory.get_headnode(*args)
         return DataFrame.RDataFrame(headnode, self, **kwargs)

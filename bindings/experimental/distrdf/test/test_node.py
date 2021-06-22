@@ -1,6 +1,7 @@
 import unittest
 
 from DistRDF import Node, Proxy
+from DistRDF.HeadNode import Factory
 from DistRDF.Backends import Base
 
 
@@ -30,7 +31,7 @@ class OperationReadTest(unittest.TestCase):
 
     def test_attr_read(self):
         """Function names are read accurately."""
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
         func = node.Define  # noqa: avoid PEP8 F841
@@ -38,7 +39,7 @@ class OperationReadTest(unittest.TestCase):
 
     def test_args_read(self):
         """Arguments (unnamed) are read accurately."""
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
         newNode = node.Define(1, "b", a="1", b=2)
@@ -46,7 +47,7 @@ class OperationReadTest(unittest.TestCase):
 
     def test_kwargs_read(self):
         """Named arguments are read accurately."""
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
         newNode = node.Define(1, "b", a="1", b=2)
@@ -61,7 +62,7 @@ class NodeReturnTest(unittest.TestCase):
 
     def test_action_proxy_return(self):
         """Proxy objects are returned for action nodes."""
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
         newNode = node.Count()
@@ -70,7 +71,7 @@ class NodeReturnTest(unittest.TestCase):
 
     def test_transformation_proxy_return(self):
         """Node objects are returned for transformation nodes."""
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
         newNode = node.Define(1)
@@ -135,7 +136,7 @@ class DfsTest(unittest.TestCase):
 
         """
         # Head node
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
 
@@ -163,7 +164,7 @@ class DfsTest(unittest.TestCase):
 
         """
         # Head node
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
 
@@ -190,7 +191,7 @@ class DfsTest(unittest.TestCase):
         and no children get pruned recursively.
         """
         # Head node
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
 
@@ -218,7 +219,7 @@ class DfsTest(unittest.TestCase):
 
         """
         # Head node
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
 
@@ -248,7 +249,7 @@ class DfsTest(unittest.TestCase):
 
         """
         # Head node
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
 
@@ -284,7 +285,7 @@ class DfsTest(unittest.TestCase):
 
         """
         # Head node
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
 
@@ -316,7 +317,7 @@ class DunderMethodsTest(unittest.TestCase):
         Node class.
 
         """
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
         n1 = node.Define("a", b="c")  # First child node
@@ -341,7 +342,7 @@ class DunderMethodsTest(unittest.TestCase):
 
         """
         # Head node
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
 
@@ -433,7 +434,7 @@ class PickleTest(unittest.TestCase):
 
         # Node definitions
         # Head node
-        hn = Node.HeadNode(1)
+        hn = Factory.get_headnode(1)
         hn.backend = TestBackend()
         node = Proxy.TransformationProxy(hn)
         n1 = node.Define("a", b="c")  # First child node
