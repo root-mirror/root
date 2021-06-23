@@ -1010,6 +1010,17 @@ std::unique_ptr<RooAbsReal> createMultiRangeNLLCorrectionTerm(
 }
 
 
+const std::string constraintsTermCommandNames = "Constrain,GlobalObservables,GlobalObservablesTag,ExternalConstraints";
+
+void defineConstraintsTermCommands(RooCmdConfig& pc) {
+  pc.defineSet("cPars","Constrain",0,0) ;
+  pc.defineSet("glObs","GlobalObservables",0,0) ;
+  pc.defineString("globstag","GlobalObservablesTag",0,"") ;
+  pc.defineSet("extCons","ExternalConstraints",0,0) ;
+  pc.defineMutex("GlobalObservables","GlobalObservablesTag") ;
+}
+
+
 } // namespace
 
 
@@ -1029,7 +1040,6 @@ RooAbsReal* RooAbsPdf::createNLL(RooAbsData& data, const RooLinkedList& cmdList)
 
   pc.defineString("rangeName","RangeWithName",0,"",kTRUE) ;
   pc.defineString("addCoefRange","SumCoefRange",0,"") ;
-  pc.defineString("globstag","GlobalObservablesTag",0,"") ;
   pc.defineDouble("rangeLo","Range",0,-999.) ;
   pc.defineDouble("rangeHi","Range",1,-999.) ;
   pc.defineInt("splitRange","SplitRange",0,0) ;
@@ -1040,14 +1050,12 @@ RooAbsReal* RooAbsPdf::createNLL(RooAbsData& data, const RooLinkedList& cmdList)
   pc.defineInt("optConst","Optimize",0,0) ;
   pc.defineInt("cloneData","CloneData", 0, 2);
   pc.defineObject("projDepSet","ProjectedObservables",0,0) ;
-  pc.defineSet("cPars","Constrain",0,0) ;
-  pc.defineSet("glObs","GlobalObservables",0,0) ;
   pc.defineInt("doOffset","OffsetLikelihood",0,0) ;
-  pc.defineSet("extCons","ExternalConstraints",0,0) ;
   pc.defineInt("BatchMode", "BatchMode", 0, 0);
   pc.defineDouble("IntegrateBins", "IntegrateBins", 0, -1.);
   pc.defineMutex("Range","RangeWithName") ;
-  pc.defineMutex("GlobalObservables","GlobalObservablesTag") ;
+
+  defineConstraintsTermCommands(pc);
 
   // Process and check varargs
   pc.process(cmdList) ;
@@ -1477,9 +1485,23 @@ RooFitResult* RooAbsPdf::fitTo(RooAbsData& data, const RooLinkedList& cmdList)
   RooCmdConfig pc(Form("RooAbsPdf::fitTo(%s)",GetName())) ;
 
   RooLinkedList fitCmdList(cmdList) ;
+
   RooLinkedList nllCmdList = pc.filterCmdList(fitCmdList,"ProjectedObservables,Extended,Range,"
-      "RangeWithName,SumCoefRange,NumCPU,SplitRange,Constrained,Constrain,ExternalConstraints,"
-      "CloneData,GlobalObservables,GlobalObservablesTag,OffsetLikelihood,IntegrateBins");
+      "RangeWithName,SumCoefRange,NumCPU,SplitRange,Constrained,"
+      "CloneData,OffsetLikelihood,IntegrateBins");
+
+  {
+      // some arguments should not be filtered out, but we will use them also in fitTo
+      // to create the constraints term.
+      RooLinkedList tmp = pc.filterCmdList(fitCmdList,constraintsTermCommandNames.c_str(),false);
+      std::unique_ptr<TIterator> iter{tmp.MakeIterator()} ;
+      while(auto arg=(RooCmdArg*)iter->Next()) {
+        nllCmdList.Add(arg);
+      }
+  }
+
+
+  defineConstraintsTermCommands(pc);
 
   pc.defineDouble("prefit", "Prefit",0,0);
   pc.defineInt("BatchMode", "BatchMode", 0, 0);
@@ -1505,8 +1527,6 @@ RooFitResult* RooAbsPdf::fitTo(RooAbsData& data, const RooLinkedList& cmdList)
   pc.defineString("mintype","Minimizer",0,"Minuit") ;
   pc.defineString("minalg","Minimizer",1,"minuit") ;
   pc.defineObject("minosSet","Minos",0,0) ;
-  pc.defineSet("cPars","Constrain",0,0) ;
-  pc.defineSet("extCons","ExternalConstraints",0,0) ;
   pc.defineMutex("FitOptions","Verbose") ;
   pc.defineMutex("FitOptions","Save") ;
   pc.defineMutex("FitOptions","Timer") ;
@@ -1627,9 +1647,20 @@ RooFitResult* RooAbsPdf::fitTo(RooAbsData& data, const RooLinkedList& cmdList)
   RooAbsReal* nll=nullptr;
   std::unique_ptr<RooFitDriver> driver;
   std::unique_ptr<RooRealVar> weightVar;
+  std::unique_ptr<RooAbsReal> constraintsTerm;
   if (pc.getInt("BatchMode")==0) nll = createNLL(data,nllCmdList);
   else
   {
+    constraintsTerm = RooConstraintSum::createConstraintTerm(
+            "NewNLLVar_constr", // name
+            *this, // pdf
+            *data.get(), // observables
+            pc.getSet("cPars"), // Constrain RooCmdArg
+            pc.getSet("extCons"), // ExternalConstraints RooCmdArg
+            pc.getSet("glObs"), // GlobalObservables RooCmdArg
+            pc.getString("globstag",0,true) // GlobalObservablesTag RooCmdArg
+    );
+
     if (data.isWeighted())
     {
       std::string weightVarName = data.getWeightVarName();
@@ -1639,9 +1670,11 @@ RooFitResult* RooAbsPdf::fitTo(RooAbsData& data, const RooLinkedList& cmdList)
       // the clone will hold the weight value (or values as a batch) and will participate
       // in the computation graph of the RooFit driver. 
       weightVar.reset( new RooRealVar(weightVarName.c_str(), "Weight(s) of events", data.weight()) );
-      nll = new RooNLLVarNew("NewNLLVar", "NewNLLVar", *this, *weightVar.get());
     }
-    else nll = new RooNLLVarNew("NewNLLVar", "NewNLLVar", *this);
+
+    nll = new RooNLLVarNew("NewNLLVar", "NewNLLVar", *this, weightVar.get(), constraintsTerm.get());
+    //nll->addOwnedComponents(RooArgSet(*constraintsTerm.release())) ;
+
     driver.reset(new RooFitDriver( data, static_cast<RooNLLVarNew&>(*nll), pc.getInt("BatchMode") ));
   }
   RooFitResult *ret = 0 ;
