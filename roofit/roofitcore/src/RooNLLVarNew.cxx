@@ -55,7 +55,7 @@ RooSpan<const double> RooNLLVarNew::getValues(RooBatchCompute::RunContext &, con
    throw std::runtime_error("RooNLLVarNew::getValues was called directly which should not happen!");
 }
 
-RooArgSet *RooNLLVarNew::getParameters(const RooArgSet *depList, Bool_t stripDisconnected) const
+bool RooNLLVarNew::getParameters(const RooArgSet *depList, RooArgSet& outSet, bool stripDisconnected) const
 {
-   return _pdf->getParameters(depList, stripDisconnected);
+   return _pdf->getParameters(depList, outSet, stripDisconnected);
 }
