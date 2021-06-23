@@ -581,18 +581,6 @@ namespace cling {
       Transaction* nestedT = beginTransaction(T->getCompilationOpts());
       // Pull all template instantiations in that came from the consumers.
       getCI()->getSema().PerformPendingInstantiations();
-#ifdef _WIN32
-      // Microsoft-specific:
-      // Late parsed templates can leave unswallowed "macro"-like tokens.
-      // They will seriously confuse the Parser when entering the next
-      // source file. So lex until we are EOF.
-      Token Tok;
-      Tok.setKind(tok::eof);
-      do {
-        getCI()->getSema().getPreprocessor().Lex(Tok);
-      } while (Tok.isNot(tok::eof));
-#endif
-
       ParseResultTransaction nestedPRT = endTransaction(nestedT);
       commitTransaction(nestedPRT);
       m_Consumer->setTransaction(prevConsumerT);
@@ -874,18 +862,6 @@ namespace cling {
 
       return kSuccess;
     }
-
-#ifdef _WIN32
-    // Microsoft-specific:
-    // Late parsed templates can leave unswallowed "macro"-like tokens.
-    // They will seriously confuse the Parser when entering the next
-    // source file. So lex until we are EOF.
-    Token Tok;
-    Tok.setKind(tok::eof);
-    do {
-      PP.Lex(Tok);
-    } while (Tok.isNot(tok::eof));
-#endif
 
 #ifndef NDEBUG
     Token AssertTok;
