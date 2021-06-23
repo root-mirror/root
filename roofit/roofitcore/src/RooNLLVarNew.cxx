@@ -7,8 +7,13 @@
 
 ClassImp(RooNLLVarNew);
 
-RooNLLVarNew::RooNLLVarNew(const char *name, const char *title, RooAbsPdf &pdf, RooAbsReal* weight, RooAbsReal* constraints)
-   : RooAbsReal(name, title), _pdf{"pdf", "pdf", this, pdf}
+RooNLLVarNew::RooNLLVarNew(const char *name, const char *title,
+                           RooAbsPdf &pdf, RooArgSet const& observables,
+                           RooAbsReal* weight, RooAbsReal* constraints, bool isExtended)
+   : RooAbsReal(name, title),
+    _pdf{"pdf", "pdf", this, pdf},
+    _observables{&observables},
+    _isExtended{isExtended}
 {
    if(weight)
        _weight = std::make_unique<RooTemplateProxy<RooAbsReal>>("_weight", "_weight", this, weight);
@@ -20,7 +25,8 @@ RooNLLVarNew::RooNLLVarNew(const char *name, const char *title, RooAbsPdf &pdf, 
 
 RooNLLVarNew::RooNLLVarNew(const RooNLLVarNew &other, const char *name)
    : RooAbsReal(other, name),
-    _pdf{"pdf", this, other._pdf}
+    _pdf{"pdf", this, other._pdf},
+    _observables{other._observables}
 {
     if(other._weight)
         _weight = std::make_unique<RooTemplateProxy<RooAbsReal>>("_weight", this, *other._weight);
@@ -34,6 +40,16 @@ void RooNLLVarNew::computeBatch(double* output, size_t nEvents, rbc::DataMap& da
   if (_weight) vars.push_back(&**_weight);
   rbc::ArgVector args = {static_cast<double>(vars.size()-1)};
   rbc::dispatch->compute(rbc::NegativeLogarithms, output, nEvents, dataMap, vars, args);
+
+  if (_isExtended && _sumWeight == 0.0) {
+    if(!_weight) {
+      _sumWeight = nEvents;
+    } else {
+      auto weightSpan = dataMap[&**_weight];
+      _sumWeight = weightSpan.size() == 1 ? weightSpan[0] * nEvents
+                                          : rbc::dispatch->sumReduce(dataMap[&**_weight].data(), nEvents);
+    }
+  }
 }
 
 double RooNLLVarNew::reduce(const double* input, size_t nEvents) const
@@ -42,6 +58,10 @@ double RooNLLVarNew::reduce(const double* input, size_t nEvents) const
   if (_constraints) {
     std::cout << "adding constraint value " << _constraints->getVal() << std::endl;
     nll += _constraints->getVal();
+  }
+  if (_isExtended) {
+    assert(_sumWeight != 0.0);
+    nll += _pdf->extendedTerm(_sumWeight, _observables);
   }
   return nll;
 }
