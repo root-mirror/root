@@ -8,5 +8,6 @@ struct CustomStruct {
    float a = 0.0;
    std::vector<float> v1;
    std::vector<std::vector<float>> v2;
-   std::string s;
+   typedef std::string typedef_string;
+   typedef_string s;
 };
