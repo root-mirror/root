@@ -16,6 +16,8 @@
 #include <string>
 #include <sstream>
 
+#include <iostream>
+
 namespace ROOT {
 
 namespace Minuit2 {

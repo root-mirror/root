@@ -50,6 +50,9 @@ integration is performed in the various implementations of the RooAbsIntegrator 
 #include "RooHelpers.h"
 
 #include "ROOT/RMakeUnique.hxx"
+#include "RooTimer.h"
+// getpid and getppid:
+#include "unistd.h"
 
 #include "TClass.h"
 
@@ -77,7 +80,8 @@ RooRealIntegral::RooRealIntegral() :
   _numIntegrand(0),
   _rangeName(0),
   _params(0),
-  _cacheNum(kFALSE)
+  _cacheNum(kFALSE),
+  _timeNumInt(kFALSE)
 {
   TRACE_CREATE
 }
@@ -567,7 +571,39 @@ RooRealIntegral::RooRealIntegral(const char *name, const char *title,
     _sumCat.addOwned(*sumCat) ;
   }
 
+  // activate timing on numerical integrals
+  if (RooTrace::time_numInts()) {
+    activateTimingNumInts();
+  }
+
   TRACE_CREATE
+}
+
+
+void RooRealIntegral::activateTimingNumInts() {
+  // activate timing on numerical integrals
+//  const RooAbsArg& pdfNode = _function.arg();
+  const RooAbsPdf& pdfNode = dynamic_cast<const RooAbsPdf&>(_function.arg());
+  // TODO: check whether indeed only RooAbsPdf _functions have integral components
+  Bool_t timing_flag = pdfNode.num_int_timing_flag();
+
+  RooFIter ni_iter = _intList.fwdIterator();
+  while (RooAbsArg *normint = ni_iter.next()) {
+    // Integral expressions can be composite objects (in case of disjoint normalization ranges)
+    // Therefore: retrieve list of branch nodes of integral expression
+    RooArgList bi;
+    normint->branchNodeServerList(&bi);
+    RooFIter ib_iter = bi.fwdIterator();
+    RooAbsArg *inode;
+    while ((inode = ib_iter.next())) {
+      // If a RooRealIntegal component is found...
+      if (inode->IsA() == RooRealIntegral::Class()) {
+        // Retrieve the number of real dimensions that is integrated numerically,
+        RooRealIntegral *rri = (RooRealIntegral *) inode;
+        rri->setNumIntTiming(timing_flag);
+      }
+    }
+  }
 }
 
 
@@ -702,7 +738,7 @@ Bool_t RooRealIntegral::initNumIntegrator() const
 RooRealIntegral::RooRealIntegral(const RooRealIntegral& other, const char* name) : 
   RooAbsReal(other,name), 
   _valid(other._valid),
-  _respectCompSelect(other._respectCompSelect),  
+  _respectCompSelect(other._respectCompSelect),
   _sumList("!sumList",this,other._sumList),
   _intList("!intList",this,other._intList), 
   _anaList("!anaList",this,other._anaList),
@@ -718,7 +754,8 @@ RooRealIntegral::RooRealIntegral(const RooRealIntegral& other, const char* name)
   _numIntegrand(0),
   _rangeName(other._rangeName),
   _params(0),
-  _cacheNum(kFALSE)
+  _cacheNum(kFALSE),
+  _timeNumInt(other._timeNumInt)
 {
  _funcNormSet = other._funcNormSet ? (RooArgSet*)other._funcNormSet->snapshot(kFALSE) : 0 ;
 
@@ -731,6 +768,9 @@ RooRealIntegral::RooRealIntegral(const RooRealIntegral& other, const char* name)
 
  other._intList.snapshot(_saveInt) ;
  other._sumList.snapshot(_saveSum) ;
+
+  // activate timing on numerical integrals
+  activateTimingNumInts();
 
   TRACE_CREATE
 }
@@ -819,8 +859,6 @@ Double_t RooRealIntegral::getValV(const RooArgSet* nset) const
 
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Perform the integration and return the result
 
@@ -832,7 +870,7 @@ Double_t RooRealIntegral::evaluate() const
   switch (_intOperMode) {    
     
   case Hybrid: 
-    {      
+    {
       // Cache numeric integrals in >1d expensive object cache
       RooDouble* cacheVal(0) ;
       if ((_cacheNum && _intList.getSize()>0) || _intList.getSize()>=_cacheAllNDim) {
@@ -845,40 +883,40 @@ Double_t RooRealIntegral::evaluate() const
       } else {
 
 
-        // Find any function dependents that are AClean 
+        // Find any function dependents that are AClean
         // and switch them temporarily to ADirty
         Bool_t origState = inhibitDirty() ;
         setDirtyInhibit(kTRUE) ;
-        
+
         // try to initialize our numerical integration engine
         if(!(_valid= initNumIntegrator())) {
           coutE(Integration) << ClassName() << "::" << GetName()
                              << ":evaluate: cannot initialize numerical integrator" << endl;
           return 0;
         }
-        
-        // Save current integral dependent values 
+
+        // Save current integral dependent values
         _saveInt = _intList ;
         _saveSum = _sumList ;
-        
+
         // Evaluate sum/integral
         retVal = sum() ;
-        
-        
+
+
         // This must happen BEFORE restoring dependents, otherwise no dirty state propagation in restore step
         setDirtyInhibit(origState) ;
-        
+
         // Restore integral dependent values
         _intList=_saveInt ;
         _sumList=_saveSum ;
-        
+
         // Cache numeric integrals in >1d expensive object cache
         if ((_cacheNum && _intList.getSize()>0) || _intList.getSize()>=_cacheAllNDim) {
           RooDouble* val = new RooDouble(retVal) ;
           expensiveObjectCache().registerObject(_function.arg().GetName(),GetName(),*val,parameters())  ;
           //  	  cout << "### caching value of integral" << GetName() << " in " << &expensiveObjectCache() << endl ;
         }
-        
+
       }
       break ;
     }
@@ -1147,4 +1185,12 @@ void RooRealIntegral::setCacheAllNumeric(Int_t ndim) {
 Int_t RooRealIntegral::getCacheAllNumeric() 
 {
   return _cacheAllNDim ;
+}
+
+void RooRealIntegral::setNumIntTiming(Bool_t flag) {
+  Int_t numIntDim = this->numIntRealVars().getSize();
+  // .. and activate timing if numeric integration occurs
+  if (numIntDim > 0) {
+    _timeNumInt = flag;
+  }
 }

@@ -46,7 +46,7 @@ public:
 
    ~Quad4FGrad() {}
 
-   double operator()(const std::vector<double> &par) const
+   double operator()(const std::vector<double> &par) const override
    {
 
       double x = par[0];
@@ -57,7 +57,7 @@ public:
       return ((1. / 70.) * (21 * x * x + 20 * y * y + 19 * z * z - 14 * x * z - 20 * y * z) + w * w);
    }
 
-   std::vector<double> Gradient(const std::vector<double> &par) const
+   std::vector<double> Gradient(const std::vector<double> &par) const override
    {
 
       double x = par[0];
@@ -73,7 +73,7 @@ public:
       return g;
    }
 
-   double Up() const { return 1.; }
+   double Up() const override { return 1.; }
 
 private:
 };

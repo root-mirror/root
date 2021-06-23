@@ -26,6 +26,8 @@ FunctionGradient InitialGradientCalculator::operator()(const MinimumParameters &
 {
    // initial rough  estimate of the gradient using the parameter step size
 
+//   std::cout << "########### InitialGradientCalculator::operator()" <<std::endl;
+
    assert(par.IsValid());
 
    unsigned int n = Trafo().VariableParameters();
@@ -41,8 +43,10 @@ FunctionGradient InitialGradientCalculator::operator()(const MinimumParameters &
       unsigned int exOfIn = Trafo().ExtOfInt(i);
 
       double var = par.Vec()(i);
+
       double werr = Trafo().Parameter(exOfIn).Error();
       double sav = Trafo().Int2ext(i, var);
+
       double sav2 = sav + werr;
       if (Trafo().Parameter(exOfIn).HasLimits()) {
          if (Trafo().Parameter(exOfIn).HasUpperLimit() && sav2 > Trafo().Parameter(exOfIn).UpperLimit())

@@ -338,9 +338,11 @@
 #pragma link C++ class std::pair<int,RooLinkedListElem*>+ ;
 #pragma link C++ class RooUnitTest+ ;
 #ifndef __ROOFIT_NOROOMINIMIZER
-#pragma link C++ class RooMinimizer+ ;
-#pragma link C++ class RooMinimizerFcn+ ;
+#pragma link C++ class RooMinimizerFcn+;
+#pragma link C++ class RooMinimizer+;
+#pragma link C++ class RooGradMinimizerFcn+;
 #endif
+#pragma link C++ class RooFit::TestStatistics::RooRealL+;
 #pragma link C++ class RooAbsMoment+ ;
 #pragma link C++ class RooMoment+ ;
 #pragma link C++ class RooFirstMoment+ ;

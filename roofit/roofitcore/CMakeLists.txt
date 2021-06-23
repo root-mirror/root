@@ -9,6 +9,22 @@
 # @author Pere Mato, CERN
 ############################################################################
 
+#find_package(ZeroMQ REQUIRED)
+
+# this should really be used as a dependency for the RooFitCore target, but since the ROOT macros do some custom variable mangling, instead of just using target_link_libraries, defining this library as INTERFACE gives an error like this: https://gitlab.kitware.com/cmake/cmake/issues/18194 when trying to call get_property(dep_include_dirs... in RootNewMacros.cmake.
+#add_library(ZeroMQ INTERFACE)
+#target_include_directories(ZeroMQ INTERFACE ${ZeroMQ_INCLUDE_DIR})
+#target_link_libraries(ZeroMQ INTERFACE ${ZeroMQ_LIBRARY})
+# so instead, we just use the old style include_directories which is also used inside ROOT_GENERATE_DICTIONARY
+#include_directories(${ZeroMQ_INCLUDE_DIR})
+
+if(UNIX AND NOT APPLE)
+    # for Linux, BSD, Solaris, Minix: add rt library for timing in RooCPUTimer
+    find_library(RT_LIBRARY rt)
+else()
+    set(RT_LIBRARY "")
+endif()
+
 ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
   HEADERS
     Floats.h
@@ -221,6 +237,36 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooWorkspace.h
     RooWorkspaceHandle.h
     RooXYChi2Var.h
+        RooTimer.h
+        RooJsonListFile.h
+        RooTaskSpec.h
+        RooGaussMinimizer.h
+        RooGaussMinimizerFcn.h
+        NumericalDerivatorMinuit2.h
+        RooGradMinimizerFcn.h
+        MultiProcess/BidirMMapPipe.h
+#        TestStatistics/GradMinimizer.h
+        TestStatistics/LikelihoodGradientJob.h
+        TestStatistics/LikelihoodGradientWrapper.h
+        TestStatistics/LikelihoodJob.h
+        TestStatistics/LikelihoodWrapper.h
+        TestStatistics/LikelihoodSerial.h
+#        TestStatistics/Minimizer.h
+#        TestStatistics/MinimizerFcn.h
+#        TestStatistics/MinimizerType.h
+#        TestStatistics/Minimizer_impl.h
+        TestStatistics/MinuitFcnGrad.h
+        TestStatistics/RooAbsL.h
+        TestStatistics/RooBinnedL.h
+        TestStatistics/RooSubsidiaryL.h
+        TestStatistics/RooSumL.h
+        TestStatistics/RooRealL.h
+        TestStatistics/RooUnbinnedL.h
+        TestStatistics/kahan_sum.h
+        TestStatistics/optional_parameter_types.h
+        TestStatistics/likelihood_builders.h
+        TestStatistics/optimization.h
+        RooAbsMinimizerFcn.h
     RooHelpers.h
     RooWrapperPdf.h
     RooNaNPacker.h
@@ -232,8 +278,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     RooFitLegacy/RooNameSet.h
     RooFitLegacy/RooTreeData.h
   SOURCES
-    src/BidirMMapPipe.cxx
-    src/BidirMMapPipe.h
     src/Roo1DTable.cxx
     src/RooAbsAnaConvPdf.cxx
     src/RooAbsArg.cxx
@@ -436,6 +480,35 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooVectorDataStore.cxx
     src/RooWorkspace.cxx
     src/RooXYChi2Var.cxx
+        src/RooTimer.cxx
+        src/RooJsonListFile.cxx
+        src/RooTaskSpec.cxx
+        src/RooGaussMinimizer.cxx
+        src/RooGaussMinimizerFcn.cxx
+        src/NumericalDerivatorMinuit2.cxx
+        src/RooGradMinimizerFcn.cxx
+        src/MultiProcess/BidirMMapPipe.cxx
+#        src/TestStatistics/GradMinimizerFcn.cxx
+        src/TestStatistics/LikelihoodGradientJob.cxx
+        src/TestStatistics/LikelihoodGradientWrapper.cxx
+        src/TestStatistics/LikelihoodJob.cxx
+        src/TestStatistics/LikelihoodWrapper.cxx
+        src/TestStatistics/LikelihoodSerial.cxx
+#        src/TestStatistics/Minimizer.cxx
+#        src/TestStatistics/MinimizerFcn.cxx
+#        src/TestStatistics/MinimizerType.cxx
+        TestStatistics/MinuitFcnGrad.cxx
+        src/TestStatistics/RooAbsL.cxx
+        src/TestStatistics/RooBinnedL.cxx
+        src/TestStatistics/RooSubsidiaryL.cxx
+        src/TestStatistics/RooSumL.cxx
+        src/TestStatistics/RooRealL.cxx
+        src/TestStatistics/RooUnbinnedL.cxx
+        src/TestStatistics/optional_parameter_types.cxx
+        src/TestStatistics/likelihood_builders.cxx
+        src/TestStatistics/kahan_sum.cxx
+        src/TestStatistics/optimization.cxx
+        src/RooAbsMinimizerFcn.cxx
     src/RooHelpers.cxx
     src/RooWrapperPdf.cxx
     src/RooBinSamplingPdf.cxx
@@ -447,8 +520,11 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     src/RooFitLegacy/RooNameSet.cxx
   DICTIONARY_OPTIONS
     "-writeEmptyRootPCM"
+#    -I${ZeroMQ_INCLUDE_DIR} # necessary because zmq.h is included in the RooFitCore dictionary as well via MultiProcess
   LIBRARIES
     RooBatchCompute
+    ${RT_LIBRARY}
+    ${ZeroMQ_LIBRARY}
   DEPENDENCIES
     Core
     Hist
@@ -456,10 +532,14 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RooFitCore
     Matrix
     Tree
     Minuit
+    Minuit2
     RIO
     MathCore
     Foam
     Smatrix
+        RooFitZMQ  # necessary for ppoll and zmqSvc that are necessary via MultiProcess includes
+        RooFitMultiProcess
+#        ZeroMQ # as noted above, this doesn't work here, so we instead list it as a library below
   LINKDEF
     inc/LinkDef.h
 )
@@ -470,4 +550,8 @@ if(NOT MSVC)
   target_compile_options(RooFitCore PUBLIC -fno-math-errno)
 endif()
 
-ROOT_ADD_TEST_SUBDIRECTORY(test)
+target_include_directories(RooFitCore PRIVATE ${ZeroMQ_INCLUDE_DIR})
+
+if(testing)
+    ROOT_ADD_TEST_SUBDIRECTORY(test)
+endif()

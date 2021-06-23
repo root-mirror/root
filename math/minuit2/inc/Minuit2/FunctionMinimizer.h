@@ -1,9 +1,10 @@
 // @(#)root/minuit2:$Id$
-// Authors: M. Winkler, F. James, L. Moneta, A. Zsenei   2003-2005
+// Authors: M. Winkler, F. James, L. Moneta, A. Zsenei, E.G.P. Bos   2003-2017
 
 /**********************************************************************
  *                                                                    *
  * Copyright (c) 2005 LCG ROOT Math team,  CERN/PH-SFT                *
+ * Copyright (c) 2017 Patrick Bos, Netherlands eScience Center        *
  *                                                                    *
  **********************************************************************/
 
@@ -11,6 +12,7 @@
 #define ROOT_Minuit2_FunctionMinimizer
 
 #include "Minuit2/MnConfig.h"
+#include "Minuit2/FCNGradientBase.h"
 #include <vector>
 
 namespace ROOT {

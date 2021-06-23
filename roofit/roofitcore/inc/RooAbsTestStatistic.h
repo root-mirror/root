@@ -37,7 +37,8 @@ typedef RooAbsData* pRooAbsData ;
 typedef RooRealMPFE* pRooRealMPFE ;
 
 class RooAbsTestStatistic : public RooAbsReal {
-    friend class RooRealMPFE;
+  friend class RooRealMPFE;
+  friend class RooWrapperL;
 public:
 
   struct Configuration {
@@ -46,6 +47,7 @@ public:
     std::string addCoefRangeName = "";
     int nCPU = 1;
     RooFit::MPSplit interleave = RooFit::BulkPartition;
+    bool CPUAffinity = true;
     bool verbose = true;
     bool splitCutRange = false;
     bool cloneInputData = true;
@@ -71,11 +73,20 @@ public:
   }
   
   Bool_t setData(RooAbsData& data, Bool_t cloneData=kTRUE) ;
+  //vinces accessors
+  Int_t numSimultaneous() const { return _nGof ; }
+  RooAbsTestStatistic** simComponents() { return _gofArray ; }
 
   void enableOffsetting(Bool_t flag) ;
   Bool_t isOffsetting() const { return _doOffset ; }
   virtual Double_t offset() const { return _offset.Sum() ; }
   virtual Double_t offsetCarry() const { return _offset.Carry(); }
+
+  virtual RooAbsReal& function() { return *_func ; }
+  virtual const RooAbsReal& function() const { return *_func ; }
+
+  virtual RooAbsData& data() { return *_data ; }
+  virtual const RooAbsData& data() const { return *_data ; }
 
 protected:
 
@@ -154,12 +165,19 @@ protected:
   pRooRealMPFE*  _mpfeArray = nullptr; //! Array of parallel execution frond ends
 
   RooFit::MPSplit _mpinterl = RooFit::BulkPartition; // Use interleaving strategy rather than N-wise split for partioning of dataset for multiprocessor-split
+  Bool_t         _CPUAffinity = true; // Use CPU affinity to pin processes to cores
   Bool_t         _doOffset = false; // Apply interval value offset to control numeric precision?
   mutable ROOT::Math::KahanSum<double> _offset = 0.0; //! Offset as KahanSum to avoid loss of precision
   mutable Double_t _evalCarry = 0.0; //! carry of Kahan sum in evaluatePartition
 
-  ClassDef(RooAbsTestStatistic,2) // Abstract base class for real-valued test statistics
+private:
+  void _collectNumIntTimings(Bool_t clear_timings = kTRUE) const;
 
+  void _setNumIntTimingInPdfs(Bool_t flag = kTRUE);
+
+  void _initTiming();
+
+  ClassDef(RooAbsTestStatistic,3) // Abstract base class for real-valued test statistics
 };
 
 #endif

@@ -139,6 +139,12 @@ protected:
   Bool_t _cacheNum ;           // Cache integral if numeric
   static Int_t _cacheAllNDim ; //! Cache all integrals with given numeric dimension
 
+public:
+  void setNumIntTiming(Bool_t flag);
+  void activateTimingNumInts();
+private:
+  mutable Bool_t _timeNumInt ; //! do not persist
+
   ClassDef(RooRealIntegral,3) // Real-valued function representing an integral over a RooAbsReal object
 };
 

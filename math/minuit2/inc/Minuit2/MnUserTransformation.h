@@ -26,7 +26,7 @@ namespace ROOT {
 
 namespace Minuit2 {
 
-class MnUserCovariance;
+    class MnUserCovariance;
 
 // class MnMachinePrecision;
 
@@ -112,7 +112,7 @@ public:
    // return initial parameter values (useful especially to get fixed parameter values)
    const std::vector<double> &InitialParValues() const { return fCache; }
 
-   /** forwarded interface */
+      /** forwarded interface */
 
    const MnMachinePrecision &Precision() const { return fPrecision; }
    void SetPrecision(double eps) { fPrecision.SetPrecision(eps); }

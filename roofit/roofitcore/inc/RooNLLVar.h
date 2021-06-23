@@ -52,7 +52,7 @@ public:
   
   virtual ~RooNLLVar();
 
-  void applyWeightSquared(Bool_t flag) ; 
+  void applyWeightSquared(Bool_t flag) ;
 
   virtual Double_t defaultErrorLevel() const { return 0.5 ; }
 

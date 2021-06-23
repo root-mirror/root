@@ -363,7 +363,11 @@ private:
 
   template<class Minimizer>
   int calculateSumW2CorrectedCovMatrix(Minimizer& minimizer, RooAbsReal const& nll) const;
-  
+
+public:
+  Bool_t num_int_timing_flag() const;
+  void set_num_int_timing_flag(Bool_t flag);
+
   ClassDef(RooAbsPdf,4) // Abstract PDF with normalization support
 };
 

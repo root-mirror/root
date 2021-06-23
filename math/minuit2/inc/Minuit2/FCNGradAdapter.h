@@ -21,7 +21,6 @@ namespace Minuit2 {
 
 /**
 
-
 template wrapped class for adapting to FCNBase signature a IGradFunction
 
 @author Lorenzo Moneta
@@ -29,6 +28,7 @@ template wrapped class for adapting to FCNBase signature a IGradFunction
 @ingroup Minuit
 
 */
+
 
 template <class Function>
 class FCNGradAdapter : public FCNGradientBase {
@@ -38,12 +38,12 @@ public:
 
    ~FCNGradAdapter() {}
 
-   double operator()(const std::vector<double> &v) const { return fFunc.operator()(&v[0]); }
+   double operator()(const std::vector<double> &v) const override { return fFunc.operator()(&v[0]); }
    double operator()(const double *v) const { return fFunc.operator()(v); }
 
-   double Up() const { return fUp; }
+   double Up() const override { return fUp; }
 
-   std::vector<double> Gradient(const std::vector<double> &v) const
+   std::vector<double> Gradient(const std::vector<double> &v) const override
    {
       fFunc.Gradient(&v[0], &fGrad[0]);
 
@@ -56,7 +56,15 @@ public:
    }
    // forward interface
    // virtual double operator()(int npar, double* params,int iflag = 4) const;
-   bool CheckGradient() const { return false; }
+   bool CheckGradient() const override { return false; }
+
+   GradientParameterSpace gradParameterSpace() const override {
+      if (fFunc.returnsInMinuit2ParameterSpace()) {
+         return GradientParameterSpace::Internal;
+      } else {
+         return GradientParameterSpace::External;
+      }
+   }
 
 private:
    const Function &fFunc;

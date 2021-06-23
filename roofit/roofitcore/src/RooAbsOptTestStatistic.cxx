@@ -770,33 +770,33 @@ Bool_t RooAbsOptTestStatistic::setDataSlave(RooAbsData& indata, Bool_t cloneData
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RooAbsData& RooAbsOptTestStatistic::data() 
-{ 
+RooAbsData& RooAbsOptTestStatistic::data()
+{
   if (_sealed) {
     Bool_t notice = (sealNotice() && strlen(sealNotice())) ;
-    coutW(ObjectHandling) << "RooAbsOptTestStatistic::data(" << GetName() 
-			  << ") WARNING: object sealed by creator - access to data is not permitted: " 
+    coutW(ObjectHandling) << "RooAbsOptTestStatistic::data(" << GetName()
+			  << ") WARNING: object sealed by creator - access to data is not permitted: "
 			  << (notice?sealNotice():"<no user notice>") << endl ;
     static RooDataSet dummy ("dummy","dummy",RooArgSet()) ;
     return dummy ;
   }
-  return *_dataClone ; 
+  return *_dataClone ;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const RooAbsData& RooAbsOptTestStatistic::data() const 
-{ 
+const RooAbsData& RooAbsOptTestStatistic::data() const
+{
   if (_sealed) {
     Bool_t notice = (sealNotice() && strlen(sealNotice())) ;
-    coutW(ObjectHandling) << "RooAbsOptTestStatistic::data(" << GetName() 
-			  << ") WARNING: object sealed by creator - access to data is not permitted: " 
+    coutW(ObjectHandling) << "RooAbsOptTestStatistic::data(" << GetName()
+			  << ") WARNING: object sealed by creator - access to data is not permitted: "
 			  << (notice?sealNotice():"<no user notice>") << endl ;
     static RooDataSet dummy ("dummy","dummy",RooArgSet()) ;
     return dummy ;
   }
-  return *_dataClone ; 
+  return *_dataClone ;
 }
 
 

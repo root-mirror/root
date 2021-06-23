@@ -51,6 +51,16 @@ public:
 
   static void printObjectCounts() ;
 
+  static std::map<std::string,double> objectTiming;
+
+  // TODO: for windows version, change to private _timing_flag and use public method that returns its value
+  static int timing_flag;
+
+  static Bool_t time_numInts();
+  static void set_time_numInts(Bool_t flag);
+
+private:
+  static Bool_t _time_numInts;
 
 protected:
 
@@ -81,7 +91,7 @@ protected:
   std::map<std::string,int> _specialCount ;
   std::map<std::string,int> _specialSize ;
 
-  ClassDef(RooTrace,0) // Memory tracer utility for RooFit objects
+  ClassDef(RooTrace,1) // Memory tracer utility for RooFit objects
 };
 
 

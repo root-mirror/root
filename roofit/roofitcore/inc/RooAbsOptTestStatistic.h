@@ -38,11 +38,11 @@ public:
 
   virtual Double_t combinedValue(RooAbsReal** gofArray, Int_t nVal) const ;
 
-  RooAbsReal& function() { return *_funcClone ; }
-  const RooAbsReal& function() const { return *_funcClone ; }
+  virtual RooAbsReal& function() { return *_funcClone ; }
+  virtual const RooAbsReal& function() const { return *_funcClone ; }
 
-  RooAbsData& data() ;
-  const RooAbsData& data() const ;
+  virtual RooAbsData& data() ;
+  virtual const RooAbsData& data() const ;
 
 
   virtual const char* cacheUniqueSuffix() const { return Form("_%lx", (ULong_t)_dataClone) ; }

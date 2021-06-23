@@ -4,7 +4,9 @@
  * and serves as communications channel between parent and child
  *
  * @author Manuel Schiller <manuel.schiller@nikhef.nl>
- * @date 2013-07-07
+ * @author Patrick Bos <p.bos@esciencecenter.nl>
+ * @author Inti Pelupessy <i.pelupessy@esciencecenter.nl>
+ * @date 2013-2018
  */
 #ifndef _WIN32
 #include <map>
@@ -28,7 +30,8 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 
-#include "BidirMMapPipe.h"
+#include <MultiProcess/BidirMMapPipe.h>
+#include <sstream>
 
 #define BEGIN_NAMESPACE_ROOFIT namespace RooFit {
 #define END_NAMESPACE_ROOFIT }
@@ -37,33 +40,16 @@ BEGIN_NAMESPACE_ROOFIT
 
 /// namespace for implementation details of BidirMMapPipe
 namespace BidirMMapPipe_impl {
-    /** @brief exception to throw if low-level OS calls go wrong
-     *
-     * @author Manuel Schiller <manuel.schiller@nikhef.nl>
-     * @date 2013-07-07
-     */
-    class BidirMMapPipeException : public std::exception
-    {
-        private:
-            enum {
-                s_sz = 256 ///< length of buffer
-            };
-            char m_buf[s_sz]; ///< buffer containing the error message
-
-            /// for the POSIX version of strerror_r
-            static int dostrerror_r(int err, char* buf, std::size_t sz,
-                    int (*f)(int, char*, std::size_t))
-            { return f(err, buf, sz); }
-            /// for the GNU version of strerror_r
-            static int dostrerror_r(int, char*, std::size_t,
-                    char* (*f)(int, char*, std::size_t));
-        public:
-            /// constructor taking error code, hint on operation (msg)
-            BidirMMapPipeException(const char* msg, int err);
-            /// return a destcription of what went wrong
-            virtual const char* what() const noexcept { return m_buf; }
-    };
-
+  // static function:
+  int BidirMMapPipeException::dostrerror_r(int err, char* buf, std::size_t sz,
+                                           int (*f)(int, char*, std::size_t)) {
+    return f(err, buf, sz);
+  }
+  
+  const char* BidirMMapPipeException::what() const noexcept {
+    return m_buf;
+  }
+  
     BidirMMapPipeException::BidirMMapPipeException(const char* msg, int err)
     {
         std::size_t msgsz = std::strlen(msg);
@@ -240,6 +226,7 @@ namespace BidirMMapPipe_impl {
 
             /// zap the pool (unmap all but Pages p)
             void zap(Pages& p);
+            void clear_freelist();
 
         private:
             /// list of chunks used by the pool
@@ -624,6 +611,20 @@ namespace BidirMMapPipe_impl {
         m_cursz = minsz;
     }
 
+    void PagePool::clear_freelist()
+    {
+//        m_freelist.clear();
+        for (auto chunk_it = m_freelist.begin(); chunk_it != m_freelist.end();) {
+            // clear only the chunks which are fully unused
+            if ( (*chunk_it)->empty()) {
+                chunk_it = m_freelist.erase(chunk_it);
+            } else {
+                ++chunk_it;
+            }
+        }
+
+    }
+
     Pages PagePool::pop()
     {
         if (m_freelist.empty()) {
@@ -649,8 +650,10 @@ namespace BidirMMapPipe_impl {
         // find chunk on freelist and remove
         ChunkList::iterator it = std::find(
                 m_freelist.begin(), m_freelist.end(), chunk);
+        std::stringstream exception_message;
+      exception_message << "PagePool::release(PageChunk*) on PID " << getpid();
         if (m_freelist.end() == it)
-            throw Exception("PagePool::release(PageChunk*)", EINVAL);
+            throw Exception(exception_message.str().c_str(), EINVAL);
         m_freelist.erase(it);
         // find chunk in m_chunks and remove
         it = std::find(m_chunks.begin(), m_chunks.end(), chunk);
@@ -717,8 +720,9 @@ int BidirMMapPipe::s_debugflag = 0;
 
 BidirMMapPipe_impl::PagePool& BidirMMapPipe::pagepool()
 {
-    if (!s_pagepool)
+    if (!s_pagepool) {
         s_pagepool = new BidirMMapPipe_impl::PagePool(TotPages);
+    }
     return *s_pagepool;
 }
 
@@ -746,11 +750,15 @@ BidirMMapPipe::BidirMMapPipe(const BidirMMapPipe&) :
     }
 }
 
-BidirMMapPipe::BidirMMapPipe(bool useExceptions, bool useSocketpair) :
+
+// When creating with keepLocal, the master (which loses its bipe pointers to
+// the child) must manually wait for its children after they are closed!
+// Otherwise zombies are created. The static function wait_for_child can be
+// used for this by master.
+BidirMMapPipe::BidirMMapPipe(bool useExceptions, bool useSocketpair, bool keepLocal) :
     m_pages(pagepool().pop()), m_busylist(0), m_freelist(0), m_dirtylist(0),
     m_inpipe(-1), m_outpipe(-1), m_flags(failbit), m_childPid(0),
-    m_parentPid(::getpid())
-
+    m_parentPid(::getpid()), kept_local(keepLocal)
 {
     ++s_pagepoolrefcnt;
     assert(0 < TotPages && 0 == (TotPages & 1) && TotPages <= 256);
@@ -783,7 +791,14 @@ BidirMMapPipe::BidirMMapPipe(bool useExceptions, bool useSocketpair) :
         // fork the child
         pthread_mutex_lock(&s_openpipesmutex);
         char c;
-        switch ((m_childPid = ::fork())) {
+        m_childPid = ::fork();
+//#ifndef NDEBUG
+//        if (m_childPid == 0) {
+//          std::cerr << "ignoring SIGTRAP in child process PID " << getpid() << " to allow debugger breakpoints in parent; signal(SIGTRAP, SIG_IGN) return code: " << signal(SIGTRAP, SIG_IGN) << std::endl;
+//          sleep(10);
+//        }
+//#endif  // NDEBUG
+        switch (m_childPid) {
             case -1: // error in fork()
                 myerrno = errno;
                 pthread_mutex_unlock(&s_openpipesmutex);
@@ -811,21 +826,27 @@ BidirMMapPipe::BidirMMapPipe(bool useExceptions, bool useSocketpair) :
                     fds[0] = -1;
                     m_inpipe = m_outpipe = fds[1];
                 }
-                // close other pipes our parent may have open - we have no business
-                // reading from/writing to those...
-                for (std::list<BidirMMapPipe*>::iterator it = s_openpipes.begin();
-                        s_openpipes.end() != it; ) {
-                    BidirMMapPipe* p = *it;
-                    it = s_openpipes.erase(it);
-                    p->doClose(true, true);
+                // choose whether to retain other pipes on parent or on children
+                // (the latter can be useful in special cases)
+                if(keepLocal) {
+                    for (std::list<BidirMMapPipe*>::iterator it = s_openpipes.begin();
+                            s_openpipes.end() != it; ) {
+                        BidirMMapPipe* p = *it;
+                        it = s_openpipes.erase(it);
+                        p->doClose(true, true);
+                    }
+                    // if new pages are made independently this should allow 
+                    // new BidirMMapPipes to be constructed in the child ??
+                    //~ s_pagepoolrefcnt = 0;
+                    //~ delete s_pagepool;
+                    //~ s_pagepool = 0;
+                    pagepool().zap(m_pages);
+                } else {
+                    pagepool().clear_freelist();
                 }
-                pagepool().zap(m_pages);
-                s_pagepoolrefcnt = 0;
-                delete s_pagepool;
-                s_pagepool = 0;
                 s_openpipes.push_front(this);
                 pthread_mutex_unlock(&s_openpipesmutex);
-                // ok, put our pages on freelist
+                //~ // ok, put our pages on freelist
                 m_freelist = m_pages[PagesPerEnd];
                 // handshare with other end (to make sure it's alive)...
                 c = 'C'; // ...hild
@@ -859,10 +880,22 @@ BidirMMapPipe::BidirMMapPipe(bool useExceptions, bool useSocketpair) :
                 }
                 // put on list of open pipes (so we can kill child processes
                 // if things go wrong)
+                if(keepLocal) {
+                // 
+                } else {
+                    for (std::list<BidirMMapPipe*>::iterator it = s_openpipes.begin();
+                            s_openpipes.end() != it; ) {
+                        BidirMMapPipe* p = *it;
+                        it = s_openpipes.erase(it);
+                        p->doClose(true, true);
+                    }
+                    pagepool().zap(m_pages);
+                }
                 s_openpipes.push_front(this);
                 pthread_mutex_unlock(&s_openpipesmutex);
                 // ok, put our pages on freelist
                 m_freelist = m_pages[0u];
+
                 // handshare with other end (to make sure it's alive)...
                 c = 'P'; // ...arent
                 if (1 != xferraw(m_outpipe, &c, 1, ::write))
@@ -911,6 +944,31 @@ int BidirMMapPipe::close()
     assert(!(m_flags & failbit));
     return doClose(false);
 }
+
+
+// static function
+int BidirMMapPipe::wait_for_child(pid_t child_pid, bool may_throw) {
+  int status = 0;
+  int tmp;
+  do {
+    tmp = waitpid(child_pid, &status, WNOHANG);
+  } while (-1 == tmp && EINTR == errno);
+  if (-1 == tmp && may_throw) throw Exception("waitpid", errno);
+
+  if (WIFEXITED(status)) {
+    printf("exited, status=%d\n", WEXITSTATUS(status));
+  } else if (WIFSIGNALED(status)) {
+    printf("killed by signal %d\n", WTERMSIG(status));
+  } else if (WIFSTOPPED(status)) {
+    printf("stopped by signal %d\n", WSTOPSIG(status));
+  } else if (WIFCONTINUED(status)) {
+    printf("continued\n");
+  }
+
+  return status;
+}
+
+
 
 int BidirMMapPipe::doClose(bool force, bool holdlock)
 {
@@ -963,6 +1021,7 @@ int BidirMMapPipe::doClose(bool force, bool holdlock)
     // unmap memory
     try {
         { BidirMMapPipe_impl::Pages p; p.swap(m_pages); }
+        assert(s_pagepoolrefcnt!=0);
         if (!--s_pagepoolrefcnt) {
             delete s_pagepool;
             s_pagepool = 0;
@@ -972,16 +1031,16 @@ int BidirMMapPipe::doClose(bool force, bool holdlock)
     }
     m_busylist = m_freelist = m_dirtylist = 0;
     // wait for child process
-    int retVal = 0;
-    if (isParent()) {
-        int tmp;
-        do {
-            tmp = waitpid(m_childPid, &retVal, 0);
-        } while (-1 == tmp && EINTR == errno);
-        if (-1 == tmp)
-            if (!force) throw Exception("waitpid", errno);
-        m_childPid = 0;
+    int retval = 0;
+    if (!kept_local && isParent() && ::getpid() == m_parentPid) { // double check whether actually parent
+      retval = BidirMMapPipe::wait_for_child(m_childPid, !force);
+      m_childPid = 0; // feeling that m_childPid can become zero when it should not be
     }
+
+    // When created with keepLocal (so kept_local is true), the master (which
+    // lost its bipe pointers to the child) must manually wait for its children
+    // after they are closed! Otherwise zombies are created.
+
     // remove from list of open pipes
     if (!holdlock) pthread_mutex_lock(&s_openpipesmutex);
     std::list<BidirMMapPipe*>::iterator it = std::find(
@@ -989,11 +1048,13 @@ int BidirMMapPipe::doClose(bool force, bool holdlock)
     if (s_openpipes.end() != it) s_openpipes.erase(it);
     if (!holdlock) pthread_mutex_unlock(&s_openpipesmutex);
     m_flags |= failbit;
-    return retVal;
+
+    return retval;
 }
 
 BidirMMapPipe::~BidirMMapPipe()
-{ doClose(false); }
+{ 
+  doClose(false); }
 
 BidirMMapPipe::size_type BidirMMapPipe::xferraw(
         int fd, void* addr, size_type len,
@@ -1771,6 +1832,7 @@ int main()
         if (retVal) return retVal;
         delete pipe;
     }
+
     // simple poll test - children send 5 results in random intervals
     {
         unsigned nch = 20;

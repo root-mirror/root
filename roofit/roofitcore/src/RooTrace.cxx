@@ -311,3 +311,32 @@ void RooTrace::callgrind_dump()
 {
   ooccoutD((TObject*)0,Tracing) << "RooTrace::callgrind_dump()" << endl ;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/// static map used to store timings of named objects
+std::map<std::string,double> RooTrace::objectTiming;
+
+////////////////////////////////////////////////////////////////////////////////
+/// Flag to switch on timers used for performance benchmarks. Use at your own peril!
+///
+/// 1: not used in code, used in scripts to time the entire minimization
+/// 2: timing_RATS_evaluate_full
+/// 3: timing_RATS_evaluate_mpmaster_perCPU
+/// 4: timing_RRMPFE_evaluate_full
+/// 5: timing_wall_RRMPFE_evaluate_client
+/// 6: timing_cpu_RRMPFE_evaluate_client
+/// 7: timing_RRMPFE_calculate_initialize
+/// 8: timing_RRMPFE_serverloop_p
+/// 9: timing_RRMPFE_serverloop_while_p
+/// 10: time communication overhead
+int RooTrace::timing_flag = 0;
+
+Bool_t RooTrace::time_numInts() {
+  return _time_numInts;
+}
+
+void RooTrace::set_time_numInts(Bool_t flag) {
+  _time_numInts = flag;
+}
+
+Bool_t RooTrace::_time_numInts = kFALSE;

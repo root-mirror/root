@@ -28,6 +28,7 @@ if(CMAKE_PROJECT_NAME STREQUAL ROOT)
       Minuit2/CombinedMinimumBuilder.h
       Minuit2/ContoursError.h
       Minuit2/DavidonErrorUpdator.h
+      Minuit2/ExternalInternalGradientCalculator.h
       Minuit2/FCNAdapter.h
       Minuit2/FCNBase.h
       Minuit2/FCNGradAdapter.h
@@ -128,6 +129,7 @@ if(CMAKE_PROJECT_NAME STREQUAL ROOT)
       src/CMakeLists.txt
       src/CombinedMinimumBuilder.cxx
       src/DavidonErrorUpdator.cxx
+      src/ExternalInternalGradientCalculator.cxx
       src/FitterUtil.h
       src/FumiliBuilder.cxx
       src/FumiliErrorUpdator.cxx

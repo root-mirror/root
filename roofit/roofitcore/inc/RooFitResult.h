@@ -37,6 +37,7 @@ class TObject ;
 class TH2 ;
 typedef RooArgSet* pRooArgSet ;
 
+
 class RooFitResult : public TNamed, public RooPrintable, public RooDirItem {
 public:
  
@@ -160,8 +161,8 @@ protected:
   
   friend class RooAbsPdf ;
   friend class RooMinuit ;
-  friend class RooMinimizer ;
-  void setCovarianceMatrix(TMatrixDSym& V) ; 
+  friend class RooMinimizer;
+  void setCovarianceMatrix(TMatrixDSym& V) ;
   void setConstParList(const RooArgList& list) ;
   void setInitParList(const RooArgList& list) ;
   void setFinalParList(const RooArgList& list) ;

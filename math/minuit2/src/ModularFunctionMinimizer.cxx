@@ -1,5 +1,5 @@
 // @(#)root/minuit2:$Id$
-// Authors: M. Winkler, F. James, L. Moneta, A. Zsenei   2003-2005
+// Authors: M. Winkler, F. James, L. Moneta, A. Zsenei, E.G.P. Bos   2003-2017
 
 /**********************************************************************
  *                                                                    *
@@ -10,6 +10,7 @@
 #include "Minuit2/ModularFunctionMinimizer.h"
 #include "Minuit2/MinimumSeedGenerator.h"
 #include "Minuit2/AnalyticalGradientCalculator.h"
+#include "Minuit2/ExternalInternalGradientCalculator.h"
 #include "Minuit2/Numerical2PGradientCalculator.h"
 #include "Minuit2/MinimumBuilder.h"
 #include "Minuit2/MinimumSeed.h"
@@ -148,7 +149,14 @@ FunctionMinimum ModularFunctionMinimizer::Minimize(const FCNGradientBase &fcn, c
    // Create the minuit FCN wrapper (MnUserFcn) containing the trasformation (int<->ext)
 
    MnUserFcn mfcn(fcn, st.Trafo());
-   AnalyticalGradientCalculator gc(fcn, st.Trafo());
+   AnalyticalGradientCalculator *gc;
+   if (fcn.gradParameterSpace() == GradientParameterSpace::Internal) {
+        //        std::cout << "-- ModularFunctionMinimizer::Minimize: Internal parameter space" << std::endl;
+        gc = new ExternalInternalGradientCalculator(fcn, st.Trafo());
+   } else {
+        //        std::cout << "-- ModularFunctionMinimizer::Minimize: External parameter space" << std::endl;
+        gc = new AnalyticalGradientCalculator(fcn, st.Trafo());
+   }
 
    unsigned int npar = st.VariableParameters();
    if (maxfcn == 0)
@@ -158,7 +166,11 @@ FunctionMinimum ModularFunctionMinimizer::Minimize(const FCNGradientBase &fcn, c
    Numerical2PGradientCalculator numgc(mfcn, st.Trafo(), strategy);
    MinimumSeed mnseeds = SeedGenerator()(mfcn, numgc, st, strategy);
 
-   return Minimize(mfcn, gc, mnseeds, strategy, maxfcn, toler);
+   auto minimum = Minimize(mfcn, *gc, mnseeds, strategy, maxfcn, toler);
+    
+   delete gc;
+    
+   return minimum;
 }
 
 FunctionMinimum ModularFunctionMinimizer::Minimize(const MnFcn &mfcn, const GradientCalculator &gc,

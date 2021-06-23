@@ -200,6 +200,7 @@ RooCmdArg EventRange(Int_t nStart, Int_t nStop) ;
 RooCmdArg Extended(Bool_t flag=kTRUE) ;
 RooCmdArg DataError(Int_t) ;
 RooCmdArg NumCPU(Int_t nCPU, Int_t interleave=0) ;
+RooCmdArg CPUAffinity(Bool_t flag=kTRUE);
 RooCmdArg BatchMode(bool flag=true);
 RooCmdArg IntegrateBins(double precision);
 

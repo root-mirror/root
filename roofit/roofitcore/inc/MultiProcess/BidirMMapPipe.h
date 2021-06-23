@@ -4,7 +4,9 @@
  * serves as communications channel between parent and child
  *
  * @author Manuel Schiller <manuel.schiller@nikhef.nl>
- * @date 2013-07-07
+ * @author Patrick Bos <p.bos@esciencecenter.nl>
+ * @author Inti Pelupessy <i.pelupessy@esciencecenter.nl>
+ * @date 2013-2018
  */
 
 #ifndef BIDIRMMAPPIPE_H
@@ -14,6 +16,18 @@
 #include <vector>
 #include <cstring>
 #include <unistd.h>
+#include <chrono>
+#include "RooTaskSpec.h"
+
+// forward declarations
+namespace RooFit {
+  namespace MultiProcessV1 {
+    enum class M2Q;
+    enum class Q2M;
+    enum class W2Q;
+    enum class Q2W;
+  }
+}
 
 #define BEGIN_NAMESPACE_ROOFIT namespace RooFit {
 #define END_NAMESPACE_ROOFIT }
@@ -23,12 +37,37 @@ BEGIN_NAMESPACE_ROOFIT
 /// namespace for implementation details of BidirMMapPipe
 namespace BidirMMapPipe_impl {
     // forward declarations
-    class BidirMMapPipeException;
     class Page;
     class PagePool;
     class Pages;
 
-    /** @brief class representing a chunk of pages
+  /** @brief exception to throw if low-level OS calls go wrong
+  *
+  * @author Manuel Schiller <manuel.schiller@nikhef.nl>
+  * @date 2013-07-07
+  */
+  class BidirMMapPipeException : public std::exception  {
+  private:
+    enum {
+      s_sz = 256 ///< length of buffer
+    };
+    char m_buf[s_sz]; ///< buffer containing the error message
+
+    /// for the POSIX version of strerror_r
+    static int dostrerror_r(int err, char* buf, std::size_t sz,
+                            int (*f)(int, char*, std::size_t));
+    /// for the GNU version of strerror_r
+    static int dostrerror_r(int, char*, std::size_t,
+                            char* (*f)(int, char*, std::size_t));
+  public:
+    /// constructor taking error code, hint on operation (msg)
+    BidirMMapPipeException(const char* msg, int err);
+    /// return a destcription of what went wrong
+    virtual const char* what() const noexcept;
+  };
+
+
+  /** @brief class representing a chunk of pages
      *
      * @author Manuel Schiller <manuel.schiller@nikhef.nl>
      * @date 2013-07-24
@@ -294,7 +333,7 @@ namespace BidirMMapPipe_impl {
  * #include <iostream>
  * #include <cstdlib>
  *
- * #include "BidirMMapPipe.h"
+ * #include <BidirMMapPipe.h>
  *
  * int simplechild(BidirMMapPipe& pipe)
  * {
@@ -403,6 +442,8 @@ class BidirMMapPipe {
          * @param useExceptions read()/write() error reporting also done using
          *                      exceptions
          * @param useSocketpair use a socketpair instead of a pair or pipes
+         * @param keepLocal     deetermines whether existing pipes are retained 
+         *                      at the parent (default) or transferred to children
          *
          * Normally, exceptions are thrown for all serious I/O errors (apart
          * from end of file). Setting useExceptions to false will force the
@@ -416,7 +457,7 @@ class BidirMMapPipe {
          * similar on most platforms, especially if mmap works, since only
          * very little data is sent through the pipe(s)/socketpair.
          */
-        BidirMMapPipe(bool useExceptions = true, bool useSocketpair = false);
+        BidirMMapPipe(bool useExceptions = true, bool useSocketpair = false, bool keepLocal = true);
 
         /** @brief destructor
          *
@@ -575,7 +616,7 @@ class BidirMMapPipe {
          * #include <sstream>
          * #include <iostream>
          *
-         * #include "BidirMMapPipe.h"
+         * #include <BidirMMapPipe.h>
          *
          * // what to execute in the child
          * int randomchild(BidirMMapPipe& pipe)
@@ -812,7 +853,7 @@ class BidirMMapPipe {
          * @returns pipe written to
          */
         template<class T> BidirMMapPipe& operator<<(const T* tptr)
-        { write(&tptr, sizeof(tptr)); return *this; }
+	  {   write(&tptr, sizeof(tptr)); return *this; }
 
         /** @brief read raw pointer to T from other side
          *
@@ -855,6 +896,8 @@ class BidirMMapPipe {
         static BidirMMapPipe& flush(BidirMMapPipe& pipe) { pipe.flush(); return pipe; }
         /// for usage a la "pipe << purge;"
         static BidirMMapPipe& purge(BidirMMapPipe& pipe) { pipe.purge(); return pipe; }
+
+        static int wait_for_child(pid_t child_pid, bool may_throw);
 
     private:
         /// copy-construction forbidden
@@ -905,6 +948,8 @@ class BidirMMapPipe {
         int m_flags; ///< flags (e.g. end of file)
         pid_t m_childPid; ///< pid of the child (zero if we're child)
         pid_t m_parentPid; ///< pid of the parent
+        bool kept_local;
+
 
         /// cleanup routine - at exit, we want our children to get a SIGTERM...
         static void teardownall(void);

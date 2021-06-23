@@ -988,6 +988,7 @@ RooAbsReal* RooAbsPdf::createNLL(RooAbsData& data, const RooLinkedList& cmdList)
   pc.defineInt("ext","Extended",0,2) ;
   pc.defineInt("numcpu","NumCPU",0,1) ;
   pc.defineInt("interleave","NumCPU",1,0) ;
+  pc.defineInt("cpuAffinity","CPUAffinity",0,1);
   pc.defineInt("verbose","Verbose",0,0) ;
   pc.defineInt("optConst","Optimize",0,0) ;
   pc.defineInt("cloneData","CloneData", 0, 2);
@@ -1023,6 +1024,7 @@ RooAbsReal* RooAbsPdf::createNLL(RooAbsData& data, const RooLinkedList& cmdList)
      numcpu_strategy = 0;
   }
   RooFit::MPSplit interl = (RooFit::MPSplit) numcpu_strategy;
+  Bool_t cpuAffinity = static_cast<Bool_t>(pc.getInt("cpuAffinity"));
 
   Int_t splitr   = pc.getInt("splitRange") ;
   Bool_t verbose = pc.getInt("verbose") ;
@@ -1110,6 +1112,7 @@ RooAbsReal* RooAbsPdf::createNLL(RooAbsData& data, const RooLinkedList& cmdList)
   cfg.addCoefRangeName = addCoefRangeName ? addCoefRangeName : "";
   cfg.nCPU = numcpu;
   cfg.interleave = interl;
+  cfg.CPUAffinity = cpuAffinity;
   cfg.verbose = verbose;
   cfg.splitCutRange = static_cast<bool>(splitr);
   cfg.cloneInputData = static_cast<bool>(cloneData);
@@ -1512,7 +1515,7 @@ RooFitResult* RooAbsPdf::fitTo(RooAbsData& data, const RooLinkedList& cmdList)
 
   RooLinkedList fitCmdList(cmdList) ;
   RooLinkedList nllCmdList = pc.filterCmdList(fitCmdList,"ProjectedObservables,Extended,Range,"
-      "RangeWithName,SumCoefRange,NumCPU,SplitRange,Constrained,Constrain,ExternalConstraints,"
+      "RangeWithName,SumCoefRange,NumCPU,CPUAffinity,SplitRange,Constrained,Constrain,ExternalConstraints,"
       "CloneData,GlobalObservables,GlobalObservablesTag,OffsetLikelihood,BatchMode,IntegrateBins");
 
   pc.defineDouble("prefit", "Prefit",0,0);
@@ -1529,6 +1532,7 @@ RooFitResult* RooAbsPdf::fitTo(RooAbsData& data, const RooLinkedList& cmdList)
   pc.defineInt("minos","Minos",0,0) ;
   pc.defineInt("ext","Extended",0,2) ;
   pc.defineInt("numcpu","NumCPU",0,1) ;
+  pc.defineInt("cpuAffinity","CPUAffinity",0,1) ;
   pc.defineInt("numee","PrintEvalErrors",0,10) ;
   pc.defineInt("doEEWall","EvalErrorWall",0,1) ;
   pc.defineInt("doWarn","Warnings",0,1) ;
@@ -1873,7 +1877,7 @@ RooFitResult* RooAbsPdf::chi2FitTo(RooDataHist& data, const RooLinkedList& cmdLi
 
   // Pull arguments to be passed to chi2 construction from list
   RooLinkedList fitCmdList(cmdList) ;
-  RooLinkedList chi2CmdList = pc.filterCmdList(fitCmdList,"Range,RangeWithName,NumCPU,Optimize,ProjectedObservables,AddCoefRange,SplitRange,DataError,Extended,IntegrateBins") ;
+  RooLinkedList chi2CmdList = pc.filterCmdList(fitCmdList,"Range,RangeWithName,NumCPU,CPUAffinity,Optimize,ProjectedObservables,AddCoefRange,SplitRange,DataError,Extended,IntegrateBins") ;
 
   RooAbsReal* chi2 = createChi2(data,chi2CmdList) ;
   RooFitResult* ret = chi2FitDriver(*chi2,fitCmdList) ;
@@ -3719,4 +3723,14 @@ void RooAbsPdf::setNormRangeOverride(const char* rangeName)
     _normMgr.sterilize() ;
     _norm = 0 ;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Bool_t RooAbsPdf::num_int_timing_flag() const {
+  return getAttribute("num_int_timing_on");
+}
+
+void RooAbsPdf::set_num_int_timing_flag(Bool_t flag) {
+  setAttribute("num_int_timing_on", flag);
 }

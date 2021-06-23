@@ -75,6 +75,7 @@ namespace {
     cfg.rangeName = RooCmdConfig::decodeStringOnTheFly("RooChi2Var::RooChi2Var","RangeWithName",0,"",args...);
     cfg.nCPU = RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","NumCPU",0,1,args...);
     cfg.interleave = RooFit::Interleave;
+    cfg.CPUAffinity = static_cast<bool>(RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","CPUAffinity",0,1,args...));
     cfg.verbose = static_cast<bool>(RooCmdConfig::decodeIntOnTheFly("RooChi2Var::RooChi2Var","Verbose",0,1,args...));
     cfg.cloneInputData = false;
     cfg.integrateOverBinsPrecision = RooCmdConfig::decodeDoubleOnTheFly("RooChi2Var::RooChi2Var", "IntegrateBins", 0, -1., {args...});
@@ -109,6 +110,8 @@ RooArgSet RooChi2Var::_emptySet ;
 ///  DataError()  <td> Choose between Poisson errors and Sum-of-weights errors
 ///  <tr><td>
 ///  NumCPU()     <td> Activate parallel processing feature
+///  <tr><td>
+///  CPUAffinity() <td> Set CPU affinity to pin parallel processes to their own CPU cores
 ///  <tr><td>
 ///  Range()      <td> Fit only selected region
 ///  <tr><td>
@@ -163,6 +166,8 @@ RooChi2Var::RooChi2Var(const char *name, const char* title, RooAbsReal& func, Ro
 ///  DataError()  <td> Choose between Poisson errors and Sum-of-weights errors
 ///  <tr><td>
 ///  NumCPU()     <td> Activate parallel processing feature
+///  <tr><td>
+///  CPUAffinity() <td> Set CPU affinity to pin parallel processes to their own CPU cores
 ///  <tr><td>
 ///  Range()      <td> Fit only selected region
 ///  <tr><td>

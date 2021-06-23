@@ -17,9 +17,9 @@
 #include "RooSetProxy.h"
 #include <map>
 #include <string>
+#include <RooMinimizer.h>
 
-class RooMinimizer ;
-class RooMinuit ; 
+class RooMinuit ;
 
 #define MINIMIZER RooMinimizer
 

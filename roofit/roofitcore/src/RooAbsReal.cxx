@@ -1619,6 +1619,8 @@ void RooAbsReal::plotOnCompSelect(RooArgSet* selNodes) const
 ///
 /// <tr><td> `NumCPU(Int_t ncpu)`              <td> Number of CPUs to use simultaneously to calculate data-weighted projections (only in combination with ProjWData)
 ///
+/// CPUAffinity(Bool_t flag)        -- Set CPU affinity to fix multi core processes to their own CPU cores
+///
 ///
 /// <tr><th><th> Misc content control
 /// <tr><td> `PrintEvalErrors(Int_t numErr)`   <td> Control number of p.d.f evaluation errors printed per curve. A negative
@@ -1785,6 +1787,7 @@ RooPlot* RooAbsReal::plotOn(RooPlot* frame, RooLinkedList& argList) const
   pc.defineInt("showProg","ShowProgress",0,0) ;
   pc.defineInt("numCPU","NumCPU",0,1) ;
   pc.defineInt("interleave","NumCPU",1,0) ;
+  pc.defineInt("cpuAffinity","CPUAffinity",0,1) ;
   pc.defineString("addToCurveName","AddTo",0,"") ;
   pc.defineDouble("addToWgtSelf","AddTo",0,1.) ;
   pc.defineDouble("addToWgtOther","AddTo",1,1.) ;
@@ -1824,6 +1827,7 @@ RooPlot* RooAbsReal::plotOn(RooPlot* frame, RooLinkedList& argList) const
   o.projDataSet = (const RooArgSet*) pc.getObject("projDataSet") ;
   o.numCPU = pc.getInt("numCPU") ;
   o.interleave = (RooFit::MPSplit) pc.getInt("interleave") ;
+  o.CPUAffinity = static_cast<Bool_t>(pc.getInt("cpuAffinity"));
   o.eeval      = pc.getDouble("evalErrorVal") ;
   o.doeeval   = pc.getInt("doEvalError") ;
 
@@ -2201,6 +2205,7 @@ RooPlot* RooAbsReal::plotOn(RooPlot *frame, PlotOpt o) const
     RooAbsTestStatistic::Configuration cfg;
     cfg.nCPU = o.numCPU;
     cfg.interleave = o.interleave;
+    cfg.CPUAffinity=o.CPUAffinity;
     RooDataWeightedAverage dwa(Form("%sDataWgtAvg",GetName()),"Data Weighted average",*projection,*projDataSel,RooArgSet()/**projDataSel->get()*/,
             std::move(cfg), true) ;
     //RooDataWeightedAverage dwa(Form("%sDataWgtAvg",GetName()),"Data Weighted average",*projection,*projDataSel,*projDataSel->get(),o.numCPU,o.interleave,kTRUE) ;
@@ -2575,6 +2580,7 @@ RooPlot* RooAbsReal::plotAsymOn(RooPlot *frame, const RooAbsCategoryLValue& asym
     RooAbsTestStatistic::Configuration cfg;
     cfg.nCPU = o.numCPU;
     cfg.interleave = o.interleave;
+    cfg.CPUAffinity=o.CPUAffinity;
     RooDataWeightedAverage dwa(Form("%sDataWgtAvg",GetName()),"Data Weighted average",*funcAsym,*projDataSel,RooArgSet()/**projDataSel->get()*/,
             std::move(cfg),true) ;
     //RooDataWeightedAverage dwa(Form("%sDataWgtAvg",GetName()),"Data Weighted average",*funcAsym,*projDataSel,*projDataSel->get(),o.numCPU,o.interleave,kTRUE) ;
@@ -4361,6 +4367,7 @@ RooMultiGenFunction* RooAbsReal::iGenFunction(const RooArgSet& observables, cons
 /// <tr><td> `Range(const char* name)`         <td> Fit only data inside range with given name
 /// <tr><td> `Range(Double_t lo, Double_t hi)` <td> Fit only data inside given range. A range named "fit" is created on the fly on all observables.
 ///                                               Multiple comma separated range names can be specified.
+/// <tr><td> `CPUAffinity(Bool_t)`             <td> Set CPU affinity to fix multi core processes to their own CPU cores
 /// <tr><td> `NumCPU(int num)`                 <td> Parallelize NLL calculation on num CPUs
 /// <tr><td> `Optimize(Bool_t flag)`           <td> Activate constant term optimization (on by default)
 /// <tr><td> `IntegrateBins()`                 <td> Integrate PDF within each bin. This sets the desired precision.
@@ -4412,7 +4419,7 @@ RooFitResult* RooAbsReal::chi2FitTo(RooDataHist& data, const RooLinkedList& cmdL
 
   // Pull arguments to be passed to chi2 construction from list
   RooLinkedList fitCmdList(cmdList) ;
-  RooLinkedList chi2CmdList = pc.filterCmdList(fitCmdList,"Range,RangeWithName,NumCPU,Optimize,IntegrateBins") ;
+  RooLinkedList chi2CmdList = pc.filterCmdList(fitCmdList,"Range,RangeWithName,NumCPU,CPUAffinity,Optimize,IntegrateBins") ;
 
   RooAbsReal* chi2 = createChi2(data,chi2CmdList) ;
   RooFitResult* ret = chi2FitDriver(*chi2,fitCmdList) ;
@@ -4434,6 +4441,7 @@ RooFitResult* RooAbsReal::chi2FitTo(RooDataHist& data, const RooLinkedList& cmdL
 ///  |-|-----------------------------------------
 ///  | `DataError(RooAbsData::ErrorType)`  | Choose between Poisson errors and Sum-of-weights errors
 ///  | `NumCPU(Int_t)`                     | Activate parallel processing feature on N processes
+///  | `CPUAffinity(Bool_t)`               | Set CPU affinity to fix multi core processes to their own CPU cores
 ///  | `Range()`                           | Calculate \f$ \chi^2 \f$ only in selected region
 ///  | `IntegrateBins()` | Integrate PDF within each bin. This sets the desired precision.
 ///

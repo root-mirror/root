@@ -291,7 +291,7 @@ if(cxxmodules)
   # including <cassert> still manages to respect NDEBUG properly.
   CHECK_CXX_SOURCE_COMPILES("#undef NDEBUG
                              #include <cassert>
-                             #define NDEBUG
+                             #define NEBUG
                              #include <cassert>
                              int main() { assert(this code is not compiled); }"
                              CXX_SUPPORTS_MODULES)

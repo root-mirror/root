@@ -59,6 +59,7 @@ namespace {
     cfg.addCoefRangeName = RooCmdConfig::decodeStringOnTheFly("RooNLLVar::RooNLLVar","AddCoefRange",0,"",args...);
     cfg.nCPU = RooCmdConfig::decodeIntOnTheFly("RooNLLVar::RooNLLVar","NumCPU",0,1,args...);
     cfg.interleave = RooFit::BulkPartition;
+    cfg.CPUAffinity = static_cast<bool>(RooCmdConfig::decodeIntOnTheFly("RooNLLVar::RooNLLVar","CPUAffinity",0,1,args...));
     cfg.verbose = static_cast<bool>(RooCmdConfig::decodeIntOnTheFly("RooNLLVar::RooNLLVar","Verbose",0,1,args...));
     cfg.splitCutRange = static_cast<bool>(RooCmdConfig::decodeIntOnTheFly("RooNLLVar::RooNLLVar","SplitRange",0,0,args...));
     cfg.cloneInputData = static_cast<bool>(RooCmdConfig::decodeIntOnTheFly("RooNLLVar::RooNLLVar","CloneData",0,1,args...));

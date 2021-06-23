@@ -1,5 +1,5 @@
 // @(#)root/minuit2:$Id$
-// Authors: M. Winkler, F. James, L. Moneta, A. Zsenei   2003-2005
+// Authors: M. Winkler, F. James, L. Moneta, A. Zsenei, E.G.P. Bos   2003-2017
 
 /**********************************************************************
  *                                                                    *
@@ -14,26 +14,28 @@ namespace ROOT {
 
 namespace Minuit2 {
 
-class MnMachinePrecision;
+    class MnMachinePrecision;
 
 /**
    class for the transformation for double-limited parameter
    Using a sin function one goes from a double-limited parameter range to
    an unlimited one
  */
-class SinParameterTransformation {
+    class SinParameterTransformation {
 
-public:
-   SinParameterTransformation() {}
+    public:
 
-   ~SinParameterTransformation() {}
+      SinParameterTransformation() {}
 
-   double Int2ext(double Value, double Upper, double Lower) const;
-   double Ext2int(double Value, double Upper, double Lower, const MnMachinePrecision &) const;
-   double DInt2Ext(double Value, double Upper, double Lower) const;
+      ~SinParameterTransformation() {}
 
-private:
-};
+      long double Int2ext(long double Value, long double Upper, long double Lower) const;
+      long double Ext2int(long double Value, long double Upper, long double Lower,
+                     const MnMachinePrecision&) const;
+      long double DInt2Ext(long double Value, long double Upper, long double Lower) const;
+
+    private:
+    };
 
 } // namespace Minuit2
 

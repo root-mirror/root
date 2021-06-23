@@ -1,5 +1,5 @@
 // @(#)root/minuit2:$Id$
-// Authors: M. Winkler, F. James, L. Moneta, A. Zsenei   2003-2005
+// Authors: M. Winkler, F. James, L. Moneta, A. Zsenei, E.G.P. Bos   2003-2017
 
 /**********************************************************************
  *                                                                    *
@@ -94,10 +94,10 @@ operator()(const MnFcn &fcn, const GradientCalculator &gc, const MnUserParameter
 
       print.Info("run Hesse - new state:", tmp);
 
-      return MinimumSeed(tmp, st.Trafo());
+     return MinimumSeed(tmp, st.Trafo());
    }
 
-   return MinimumSeed(state, st.Trafo());
+  return MinimumSeed(state, st.Trafo());
 }
 
 MinimumSeed MnSeedGenerator::operator()(const MnFcn &fcn, const AnalyticalGradientCalculator &gc,
@@ -109,17 +109,17 @@ MinimumSeed MnSeedGenerator::operator()(const MnFcn &fcn, const AnalyticalGradie
    unsigned int n = st.VariableParameters();
    const MnMachinePrecision &prec = st.Precision();
 
-   // initial starting values
+  // initial starting values
    MnAlgebraicVector x(n);
    for (unsigned int i = 0; i < n; i++)
       x(i) = st.IntParameters()[i];
    double fcnmin = fcn(x);
    MinimumParameters pa(x, fcnmin);
 
-   InitialGradientCalculator igc(fcn, st.Trafo(), stra);
-   FunctionGradient tmp = igc(pa);
    FunctionGradient grd = gc(pa);
-   FunctionGradient dgrad(grd.Grad(), tmp.G2(), tmp.Gstep());
+
+//   FunctionGradient dgrad(grd.Grad(), tmp.G2(), tmp.Gstep());
+   FunctionGradient dgrad(grd.Grad(), grd.G2(), grd.Gstep());
 
    if (gc.CheckGradient()) {
       bool good = true;
@@ -159,7 +159,7 @@ MinimumSeed MnSeedGenerator::operator()(const MnFcn &fcn, const AnalyticalGradie
    MinimumState state(pa, err, dgrad, edm, fcn.NumOfCalls());
 
    NegativeG2LineSearch ng2ls;
-   if (ng2ls.HasNegativeG2(dgrad, prec)) {
+   if(ng2ls.HasNegativeG2(dgrad, prec)) {
       Numerical2PGradientCalculator ngc(fcn, st.Trafo(), stra);
       state = ng2ls(fcn, state, ngc, prec);
    }

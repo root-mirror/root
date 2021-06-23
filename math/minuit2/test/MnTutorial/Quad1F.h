@@ -22,7 +22,7 @@ public:
 
    ~Quad1F() {}
 
-   double operator()(const std::vector<double> &par) const
+   double operator()(const std::vector<double> &par) const override
    {
 
       double x = par[0];
@@ -30,7 +30,7 @@ public:
       return (x * x);
    }
 
-   std::vector<double> Gradient(const std::vector<double> &par) const
+   std::vector<double> Gradient(const std::vector<double> &par) const override
    {
 
       double x = par[0];
@@ -38,9 +38,9 @@ public:
       return (std::vector<double>(1, 2. * x));
    }
 
-   void SetErrorDef(double up) { fErrorDef = up; }
+   void SetErrorDef(double up) override { fErrorDef = up; }
 
-   double Up() const { return fErrorDef; }
+   double Up() const override { return fErrorDef; }
 
    const FCNBase *Base() const { return this; }
 

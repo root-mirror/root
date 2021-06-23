@@ -176,6 +176,8 @@ namespace RooFit {
   RooCmdArg Extended(Bool_t flag) { return RooCmdArg("Extended",flag,0,0,0,0,0,0,0) ; }
   RooCmdArg DataError(Int_t etype) { return RooCmdArg("DataError",(Int_t)etype,0,0,0,0,0,0,0) ; }
   RooCmdArg NumCPU(Int_t nCPU, Int_t interleave)   { return RooCmdArg("NumCPU",nCPU,interleave,0,0,0,0,0,0) ; }
+  RooCmdArg CPUAffinity(Bool_t flag) { return RooCmdArg("CPUAffinity",flag,0,0,0,0,0,0,0); }
+
   RooCmdArg BatchMode(bool flag) { return RooCmdArg("BatchMode", flag); }
   /// Integrate the PDF over bins. Improves accuracy for binned fits. Switch off using `0.` as argument. \see RooAbsPdf::fitTo().
   RooCmdArg IntegrateBins(double precision) { return RooCmdArg("IntegrateBins", 0, 0, precision); }

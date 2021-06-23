@@ -254,10 +254,15 @@ RooSpan<const double> RooRealVar::getValues(RooBatchCompute::RunContext& inputDa
 /// Set value of variable to 'value'. If 'value' is outside
 /// range of object, clip value into range
 
+#include <unistd.h> // getpid, pid_t
+
+
 void RooRealVar::setVal(Double_t value)
 {
   Double_t clipValue ;
   inRange(value,0,&clipValue) ;
+
+//  printf("setVal: %s %p on PID %d\n", GetName(), this, getpid());
 
   if (clipValue != _value) {
     setValueDirty() ;
