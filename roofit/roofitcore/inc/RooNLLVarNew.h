@@ -34,7 +34,7 @@ public:
 protected:
   RooTemplateProxy<RooAbsPdf> _pdf;
   RooArgSet const* _observables = nullptr;
-  std::unique_ptr<RooTemplateProxy<RooAbsReal>> _weight;
+  std::unique_ptr<RooTemplateProxy<RooAbsReal>> _weight = nullptr;
   RooAbsReal const* _constraints = nullptr;
   mutable double _sumWeight = 0.0; //!
   bool _isExtended;

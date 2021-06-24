@@ -15,11 +15,11 @@ RooNLLVarNew::RooNLLVarNew(const char *name, const char *title,
     _observables{&observables},
     _isExtended{isExtended}
 {
-   if(weight)
-       _weight = std::make_unique<RooTemplateProxy<RooAbsReal>>("_weight", "_weight", this, weight);
+   if(weight) {
+       _weight = std::make_unique<RooTemplateProxy<RooAbsReal>>("_weight", "_weight", this, *weight);
+    }
    if(constraints) {
-      std::cout << "RooNLLVarNew got constraints!" << std::endl;
-      _constraints = constraints;
+       _constraints = constraints;
    }
 }
 
@@ -31,13 +31,15 @@ RooNLLVarNew::RooNLLVarNew(const RooNLLVarNew &other, const char *name)
     if(other._weight)
         _weight = std::make_unique<RooTemplateProxy<RooAbsReal>>("_weight", this, *other._weight);
     if(other._constraints)
-      _constraints = other._constraints;
+        _constraints = other._constraints;
 }
 
 void RooNLLVarNew::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const 
 {
   rbc::VarVector vars = {&*_pdf};
-  if (_weight) vars.push_back(&**_weight);
+  if (_weight) {
+      vars.push_back(&**_weight);
+  }
   rbc::ArgVector args = {static_cast<double>(vars.size()-1)};
   rbc::dispatch->compute(rbc::NegativeLogarithms, output, nEvents, dataMap, vars, args);
 
@@ -56,7 +58,6 @@ double RooNLLVarNew::reduce(const double* input, size_t nEvents) const
 {
   double nll = rbc::dispatch->sumReduce(input, nEvents);
   if (_constraints) {
-    std::cout << "adding constraint value " << _constraints->getVal() << std::endl;
     nll += _constraints->getVal();
   }
   if (_isExtended) {
