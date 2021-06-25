@@ -13,6 +13,10 @@ if(NOT root7)
   return()
 endif()
 
+if (davix OR builtin_davix)
+  list(APPEND ROOTNTuple_EXTRA_DEPS RDAVIX)
+endif()
+
 ROOT_STANDARD_LIBRARY_PACKAGE(ROOTNTuple
 HEADERS
   ROOT/RCluster.hxx
@@ -70,6 +74,7 @@ DEPENDENCIES
   Imt
   RIO
   ROOTVecOps
+  ${ROOTNTuple_EXTRA_DEPS}
 )
 
 # Enable RNTuple support for Intel DAOS
@@ -87,6 +92,16 @@ if(daos OR daos_mock)
     target_include_directories(ROOTNTuple PRIVATE ${DAOS_INCLUDE_DIRS})
     target_link_libraries(ROOTNTuple PRIVATE ${DAOS_LIBRARIES})
   endif()
+endif()
+
+# Enable RNTuple support for S3 backend through Davix
+if(davix OR builtin_davix)
+  set(ROOTNTuple_EXTRA_HEADERS ${ROOTNTuple_EXTRA_HEADERS} ROOT/RPageStorageS3.hxx)
+  target_sources(ROOTNTuple PRIVATE v7/src/RPageStorageS3.cxx)
+  target_compile_definitions(ROOTNTuple PRIVATE R__ENABLE_DAVIX)
+
+  target_include_directories(ROOTNTuple PRIVATE ${DAVIX_INCLUDE_DIR})
+  target_link_libraries(ROOTNTuple PRIVATE ${DAVIX_LIBRARY})
 endif()
 
 if(MSVC)

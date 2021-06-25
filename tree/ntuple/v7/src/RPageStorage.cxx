@@ -27,6 +27,9 @@
 #ifdef R__ENABLE_DAOS
 # include <ROOT/RPageStorageDaos.hxx>
 #endif
+#ifdef R__ENABLE_DAVIX
+#include <ROOT/RPageStorageS3.hxx>
+#endif
 
 #include <Compression.h>
 #include <TError.h>
@@ -70,7 +73,13 @@ std::unique_ptr<ROOT::Experimental::Detail::RPageSource> ROOT::Experimental::Det
 #else
       throw RException(R__FAIL("This RNTuple build does not support DAOS."));
 #endif
-
+   if (location.find("s3://") == 0) {
+#ifdef R__ENABLE_DAVIX
+      return std::make_unique<RPageSourceS3>(ntupleName, location, options);
+#else
+      throw RException(R__FAIL("This RNTuple build does not support S3."));
+#endif
+   }
    return std::make_unique<RPageSourceFile>(ntupleName, location, options);
 }
 
@@ -258,6 +267,12 @@ std::unique_ptr<ROOT::Experimental::Detail::RPageSink> ROOT::Experimental::Detai
       realSink = std::make_unique<RPageSinkDaos>(ntupleName, location, options);
 #else
       throw RException(R__FAIL("This RNTuple build does not support DAOS."));
+#endif
+   } else if (location.find("s3://") == 0) {
+#ifdef R__ENABLE_DAVIX
+      return std::make_unique<RPageSinkS3>(ntupleName, location, options);
+#else
+      throw RException(R__FAIL("This RNTuple build does not support S3."));
 #endif
    } else {
       realSink = std::make_unique<RPageSinkFile>(ntupleName, location, options);
