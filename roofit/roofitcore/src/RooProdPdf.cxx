@@ -141,15 +141,13 @@ RooProdPdf::RooProdPdf(const char *name, const char *title,
   _selfNorm(kTRUE)
 {
   _pdfList.add(pdf1) ;
-  RooArgSet* nset1 = new RooArgSet("nset") ;
-  _pdfNSetList.Add(nset1) ;
+  _pdfNSetList.emplace_back("nset") ;
   if (pdf1.canBeExtended()) {
     _extendedIndex = _pdfList.index(&pdf1) ;
   }
 
   _pdfList.add(pdf2) ;
-  RooArgSet* nset2 = new RooArgSet("nset") ;
-  _pdfNSetList.Add(nset2) ;
+  _pdfNSetList.emplace_back("nset") ;
 
   if (pdf2.canBeExtended()) {
     if (_extendedIndex>=0) {
@@ -207,8 +205,7 @@ RooProdPdf::RooProdPdf(const char* name, const char* title, const RooArgList& in
     }
     _pdfList.add(*pdf) ;
 
-    RooArgSet* nset = new RooArgSet("nset") ;
-    _pdfNSetList.Add(nset) ;
+    _pdfNSetList.emplace_back("nset") ;
 
     if (pdf->canBeExtended()) {
       _extendedIndex = _pdfList.index(pdf) ;
@@ -355,12 +352,9 @@ RooProdPdf::RooProdPdf(const RooProdPdf& other, const char* name) :
   _defNormSet(other._defNormSet)
 {
   // Clone contents of normalizarion set list
-  RooFIter iter = other._pdfNSetList.fwdIterator();
-  RooArgSet* nset ;
-  while((nset=(RooArgSet*)iter.next())) {
-    RooArgSet* tmp = (RooArgSet*) nset->snapshot() ;
-    tmp->setName(nset->GetName()) ;
-    _pdfNSetList.Add(tmp) ;
+  for(auto const& nset : other._pdfNSetList) {
+    _pdfNSetList.emplace_back(nset.GetName());
+    nset.snapshot(_pdfNSetList.back());
   }
   TRACE_CREATE
 }
@@ -380,8 +374,7 @@ void RooProdPdf::initializeFromCmdArgList(const RooArgSet& fullPdfSet, const Roo
   RooAbsPdf* pdf ;
   while((pdf=(RooAbsPdf*)siter.next())) {
     _pdfList.add(*pdf) ;
-    RooArgSet* nset1 = new RooArgSet("nset") ;
-    _pdfNSetList.Add(nset1) ;
+    _pdfNSetList.emplace_back("nset") ;
 
     if (pdf->canBeExtended()) {
       _extendedIndex = _pdfList.index(pdf) ;
@@ -404,16 +397,15 @@ void RooProdPdf::initializeFromCmdArgList(const RooArgSet& fullPdfSet, const Roo
       RooFIter siter2 = pdfSet->fwdIterator() ;
       RooAbsPdf* thePdf ;
       while ((thePdf=(RooAbsPdf*)siter2.next())) {
-	_pdfList.add(*thePdf) ;
+        _pdfList.add(*thePdf) ;
 
-	RooArgSet* tmp = (RooArgSet*) normSet->snapshot() ;
-	tmp->setName(0 == argType ? "nset" : "cset") ;
-	_pdfNSetList.Add(tmp) ;
+        _pdfNSetList.emplace_back(0 == argType ? "nset" : "cset");
+        normSet->snapshot(_pdfNSetList.back());
 
-	if (thePdf->canBeExtended()) {
-	  _extendedIndex = _pdfList.index(thePdf) ;
-	  numExtended++ ;
-	}
+        if (thePdf->canBeExtended()) {
+          _extendedIndex = _pdfList.index(thePdf) ;
+          numExtended++ ;
+        }
 
       }
 
@@ -440,7 +432,6 @@ void RooProdPdf::initializeFromCmdArgList(const RooArgSet& fullPdfSet, const Roo
 
 RooProdPdf::~RooProdPdf()
 {
-  _pdfNSetList.Delete() ;
   TRACE_DESTROY
 }
 
@@ -618,12 +609,10 @@ void RooProdPdf::factorizeProduct(const RooArgSet& normSet, const RooArgSet& int
   std::vector<RooAbsArg*> pdfAllDeps; // All dependents of this PDF
 
   // Loop over the PDFs
-  RooAbsPdf* pdf;
-  RooArgSet* pdfNSetOrig;
-  for (RooLinkedListIter pdfIter = _pdfList.iterator(),
-      nIter = _pdfNSetList.iterator();
-      (pdfNSetOrig = static_cast<RooArgSet*>(nIter.Next()),
-       pdf = static_cast<RooAbsPdf*>(pdfIter.Next())); ) {
+  for(std::size_t iPdf = 0; iPdf < _pdfList.size(); ++iPdf) {
+    RooAbsPdf& pdf = static_cast<RooAbsPdf&>(_pdfList[iPdf]);
+    RooArgSet& pdfNSetOrig = _pdfNSetList[iPdf];
+
     pdfNSet.clear();
     pdfCSet.clear();
 
@@ -632,7 +621,7 @@ void RooProdPdf::factorizeProduct(const RooArgSet& normSet, const RooArgSet& int
     // RooAbsArg::treeNodeServer list is relatively expensive, so we only do it
     // once and use it in a lambda function.
     RooArgSet pdfLeafList("leafNodeServerList") ;
-    pdf->treeNodeServerList(&pdfLeafList,0,kFALSE,kTRUE,true) ;
+    pdf.treeNodeServerList(&pdfLeafList,0,false,true,true) ;
     auto getObservablesOfCurrentPdf = [&pdfLeafList](
             std::vector<RooAbsArg*> & out,
             const RooArgSet& dataList) {
@@ -644,15 +633,15 @@ void RooProdPdf::factorizeProduct(const RooArgSet& normSet, const RooArgSet& int
     };
 
     // Reduce pdfNSet to actual dependents
-    if (0 == strcmp("nset", pdfNSetOrig->GetName())) {
-      getObservablesOfCurrentPdf(pdfNSet, *pdfNSetOrig);
-    } else if (0 == strcmp("cset", pdfNSetOrig->GetName())) {
+    if (0 == strcmp("nset", pdfNSetOrig.GetName())) {
+      getObservablesOfCurrentPdf(pdfNSet, pdfNSetOrig);
+    } else if (0 == strcmp("cset", pdfNSetOrig.GetName())) {
       getObservablesOfCurrentPdf(pdfNSet, normSet);
-      removeCommon(pdfNSet, pdfNSetOrig->get());
-      pdfCSet = pdfNSetOrig->get();
+      removeCommon(pdfNSet, pdfNSetOrig.get());
+      pdfCSet = pdfNSetOrig.get();
     } else {
       // Legacy mode. Interpret at NSet for backward compatibility
-      getObservablesOfCurrentPdf(pdfNSet, *pdfNSetOrig);
+      getObservablesOfCurrentPdf(pdfNSet, pdfNSetOrig);
     }
 
 
@@ -710,7 +699,7 @@ void RooProdPdf::factorizeProduct(const RooArgSet& normSet, const RooArgSet& int
       if (normOverlap) {
 //  	cout << GetName() << ": this term overlaps with term " << (*term) << " in normalization observables" << endl;
 
-	term->add(*pdf);
+	term->add(pdf);
 	termNormDeps->add(pdfNormDeps.begin(), pdfNormDeps.end(), false);
 	depAllList[j].add(pdfAllDeps.begin(), pdfAllDeps.end(), false);
 	if (termIntDeps) {
@@ -736,7 +725,7 @@ void RooProdPdf::factorizeProduct(const RooArgSet& normSet, const RooArgSet& int
 	depIntNoNormList.emplace_back(pdfIntNoNormDeps.begin(), pdfIntNoNormDeps.end(), "termIntNoNormDeps");
 	termIntNoNormDeps = &depIntNoNormList.back();
 
-	term->add(*pdf);
+	term->add(pdf);
 	termNormDeps->add(pdfNormDeps.begin(), pdfNormDeps.end(), false);
 
 	termList.Add(term);
@@ -2045,7 +2034,7 @@ RooArgSet* RooProdPdf::findPdfNSet(RooAbsPdf& pdf) const
 {
   Int_t idx = _pdfList.index(&pdf) ;
   if (idx<0) return 0 ;
-  return (RooArgSet*) _pdfNSetList.At(idx) ;
+  return &_pdfNSetList[idx] ;
 }
 
 
@@ -2283,10 +2272,9 @@ void RooProdPdf::setCacheAndTrackHints(RooArgSet& trackNodes)
 
 void RooProdPdf::printMetaArgs(ostream& os) const
 {
-  RooFIter niter = _pdfNSetList.fwdIterator() ;
   for (int i=0 ; i<_pdfList.getSize() ; i++) {
     if (i>0) os << " * " ;
-    RooArgSet* ncset = (RooArgSet*) niter.next() ;
+    RooArgSet* ncset = &_pdfNSetList[i] ;
     os << _pdfList.at(i)->GetName() ;
     if (ncset->getSize()>0) {
       if (string("nset")==ncset->GetName()) {
@@ -2324,9 +2312,8 @@ Bool_t RooProdPdf::redirectServersHook(const RooAbsCollection& /*newServerList*/
     // Remove node from _pdfList proxy and remove corresponding entry from normset list
     RooAbsArg* pdfDel = _pdfList.find("REMOVAL_DUMMY") ;
 
-    TObject* setDel = _pdfNSetList.At(_pdfList.index("REMOVAL_DUMMY")) ;
+    _pdfNSetList.erase(_pdfNSetList.begin() + _pdfList.index("REMOVAL_DUMMY")) ;
     _pdfList.remove(*pdfDel) ;
-    _pdfNSetList.Remove(setDel) ;
 
     // Clear caches
     _cacheMgr.reset() ;
