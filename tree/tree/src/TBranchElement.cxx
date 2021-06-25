@@ -2058,14 +2058,31 @@ static void GatherArtificialElements(const TObjArray &branches, TStreamerInfoAct
          // nextinfo_version = ....
          auto search = be ? be->GetListOfBranches() : &branches;
          TVirtualArray *onfileObject = nullptr;
-         for(auto subbe : TRangeDynCast<TBranchElement>( *search )) {
 
-            if (elementClass == subbe->GetInfo()->GetClass() && subbe->GetOnfileObject()) { // Use GetInfo to provoke its creation.
+         // Note: This is duplicated, please move.
+         TString subprefix;
+         if (prefix.Length() && nextel->IsA() == TStreamerBase::Class()) {
+            // We skip the name of the base class if there is already a prefix.
+            // See TBranchElement::Unroll
+            subprefix = prefix;
+         } else {
+            subprefix = ename + ".";
+         }
+         auto nbranches = search->GetEntriesFast();
+         for (Int_t bi = 0; bi < nbranches; ++bi) {
+            TBranchElement* subbe = (TBranchElement*)search->At(bi);
+            if (elementClass == subbe->GetInfo()->GetClass() // Use GetInfo to provoke its creation.
+               && subbe->GetOnfileObject())
+            if (elementClass == subbe->GetInfo()->GetClass() // Use GetInfo to provoke its creation.
+               && subbe->GetOnfileObject()
+               && strncmp(subbe->GetName(), subprefix.Data(), subprefix.Length()) == 0)
+            {
                nextinfo = subbe->GetInfo();
                onfileObject = subbe->GetOnfileObject();
                break;
             }
          }
+
          if (!nextinfo) {
             nextinfo = (TStreamerInfo *)elementClass->GetStreamerInfo();
             if (elementClass->GetCollectionProxy() && elementClass->GetCollectionProxy()->GetValueClass()) {
@@ -2078,14 +2095,6 @@ static void GatherArtificialElements(const TObjArray &branches, TStreamerInfoAct
             ids.back().fNestedIDs->fOwnOnfileObject = kTRUE;
          }
          ids.back().fNestedIDs->fOnfileObject = onfileObject;
-         TString subprefix;
-         if (prefix.Length() && nextel->IsA() == TStreamerBase::Class()) {
-             // We skip the name of the base class if there is already a prefix.
-             // See TBranchElement::Unroll
-             subprefix = prefix;
-         } else {
-             subprefix = ename + ".";
-         }
          GatherArtificialElements(branches, ids.back().fNestedIDs->fIDs, subprefix, nextinfo, offset + nextel->GetOffset());
          if (ids.back().fNestedIDs->fIDs.empty())
             ids.pop_back();
@@ -2248,7 +2257,33 @@ void TBranchElement::InitInfo()
                currentVersion = info->GetClassVersion();
             }
 
-            for (Int_t i = 0; i < nbranches; ++i) {
+            // First find the first branch of corresponding to the same class as 'this'
+            // branch
+            Int_t index = branches->IndexOf(this);
+            Int_t firstindex = -1;
+            TLeafElement *leaf = dynamic_cast<TLeafElement*>(this->GetListOfLeaves()->At(0));
+            auto currentid = leaf ? leaf->GetID() : GetID();
+            Int_t firstid = currentid;
+            if (index > 0) {
+               firstindex = index;
+               for(Int_t i = index - 1; i >= 0; --i) {
+                  TBranchElement* subbranch = (TBranchElement*)branches->At(i);
+                  if (!subbranch->fInfo)
+                     subbranch->SetupInfo();
+                  TLeafElement *subleaf = dynamic_cast<TLeafElement*>(subbranch->GetListOfLeaves()->At(0));
+                  auto branchid = subleaf ? subleaf->GetID() : subbranch->GetID();
+                  if (subbranch->fInfo == info && branchid >= currentid) {
+                     // We moved to another data member (of the enclosing class) of the same
+                     // type
+                     break;
+                  }
+                  firstindex = i;
+                  firstid = branchid;
+               }
+            } else {
+               firstindex = 0;
+            }
+            for (Int_t i = firstindex; i < nbranches; ++i) {
                TBranchElement* subbranch = (TBranchElement*)branches->At(i);
                Bool_t match = kFALSE;
                if (this != subbranch) {
@@ -2272,6 +2307,11 @@ void TBranchElement::InitInfo()
                   }
                }
                if (match) {
+                  TLeafElement *subleaf = dynamic_cast<TLeafElement*>(subbranch->GetListOfLeaves()->At(0));
+                  auto branchid = subleaf ? subleaf->GetID() : subbranch->GetID();
+                  if (i != firstindex && branchid <= firstid) {
+                     break;
+                  }
                   if (subbranch->fOnfileObject && subbranch->fOnfileObject != fOnfileObject) {
                      if (seenExisting) {
                         Error("SetOnfileObject (lambda)", "2 distincts fOnfileObject are in the hierarchy of %s for type %s",
@@ -2417,6 +2457,16 @@ void TBranchElement::InitInfo()
             }
 
             TString prefix(GetName());
+            if (fType == 2 && fID >= 0) {
+               auto start = prefix.Length();
+               if (prefix[prefix.Length()-1] == '.')
+                  --start;
+               std::string_view view(prefix.Data(), start);
+               auto cutoff = view.find_last_of('.');
+               if (cutoff != std::string::npos) {
+                  prefix.Remove(cutoff + 1);
+               }
+            }
             if (prefix[prefix.Length()-1] != '.') {
                if (fType == 3 || fType == 4 || prefix.Index('.') != TString::kNPOS) {
                   prefix += ".";
