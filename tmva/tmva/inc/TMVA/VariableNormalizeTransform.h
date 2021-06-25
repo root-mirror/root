@@ -51,7 +51,7 @@ namespace TMVA {
 
       typedef std::vector<Float_t>       FloatVector;
       typedef std::vector< FloatVector > VectorOfFloatVectors;
-      VariableNormalizeTransform( DataSetInfo& dsi );
+      VariableNormalizeTransform( DataSetInfo& dsi, TString strcor=""  );
       virtual ~VariableNormalizeTransform( void );
 
       void   Initialize();
@@ -76,6 +76,8 @@ namespace TMVA {
       std::vector<TString>* GetTransformationStrings( Int_t cls ) const;
 
    private:
+
+      Bool_t           fNoOffset;
 
       void CalcNormalizationParams( const std::vector< Event*>& events);
 

@@ -13,16 +13,17 @@ weight files of the MVA method. The preprocessing methods normalisation and prin
 decomposition are available for input and target variables, gaussianization, uniformization and decorrelation 
 discussed below can only be used for input variables. 
 
-Apart from five variable transformation methods mentioned above, an unsupervised variable selection method Variance Threshold is also implemented in TMVA. It follows a completely different processing pipeline. It is discussed in detail in section \ref{sec:varianceThreshold}. 
+Apart from six variable transformation methods mentioned above, an unsupervised variable selection method Variance Threshold is also implemented in TMVA. It follows a completely different processing pipeline. It is discussed in detail in section \ref{sec:varianceThreshold}. 
 
 \subsection{Transforming input variables}
 \label{sec:variableTransform}
 
-Currently five preprocessing\index{Discriminating variables!preprocessing of}  
+Currently six preprocessing\index{Discriminating variables!preprocessing of}  
 transformations\index{Discriminating variables!transformation of}
 are implemented in TMVA:
 \begin{itemize}
 \item variable normalisation;
+\item variable scaling;
 \item decorrelation via the square-root of the covariance matrix ;
 \item decorrelation via a principal component decomposition;
 \item transformation of the variables into Uniform distributions (``Uniformization'').
@@ -99,6 +100,17 @@ Such a transformation is useful to allow direct comparisons between the MVA weig
 assigned to the variables, where large absolute weights may indicate strong separation power. 
 Normalisation may also render minimisation processes, such as the adjustment of 
 neural network weights, more effective. 
+
+\subsubsection{Variable scaling\index{Discriminating variables!scaling of}}
+\label{sec:scaling}
+
+The larger absolute value of the minimum and maximum values is determined from the training events 
+and used to scale the dataset to lie within $[-1,1]$. There is no offset added and thus the original 
+sign of the input is maintained. E.g Input data with a range $[x,y]$ where $|y|>|x|$ will transform 
+to the range $[x/|y|,1]$. 
+As with Normalisation, this may also render minimisation processes, such as the adjustment of 
+neural network weights, more effective especially if you are using sign sensitive activation 
+functions such as the a rectified linear unit ( ReLU ).
 
 \subsubsection{Variable decorrelation\index{Discriminating variables!decorrelation of}}
 \label{sec:decorrelation}
@@ -225,10 +237,10 @@ performance of likelihood methods (see next section).
 Variable transformations to be applied prior to the MVA training (and application) 
 can be defined independently for each MVA method with the booking option 
 {\tt VarTransform=<type>}, where {\tt <type>} denotes the desired transformation 
-(or chain of transformations). The available transformation types are normalisation, 
+(or chain of transformations). The available transformation types are normalisation, scaling, 
 decorrelation, principal component analysis and Gaussianisation, which are labelled by 
-\code{Norm}, \code{Deco}, \code{PCA}, \code{Uniform}, \code{Gauss}, respectively, or, equivalently, 
-by the short-hand notations \code{N}, \code{D}, \code{P}, \code{U} , \code{G}.
+\code{Norm}, \code{Scale}, \code{Deco}, \code{PCA}, \code{Uniform}, \code{Gauss}, respectively, or, equivalently, 
+by the short-hand notations \code{N}, \code{S}, \code{D}, \code{P}, \code{U} , \code{G}.
 
 Transformations can be {\em chained} allowing the consecutive application of all defined 
 transformations to the variables for each event.
@@ -326,7 +338,7 @@ where $N$ is the total number of events in a dataset, ${\bf x}(i)=(x_1(i),\dots,
 \label{eq:meanecalculation}
 \mu_j = \frac{\sum_{i=1}^N w_i x_{j}(i)}{\sum_{i=1}^N w_i}
 \eeq
-Unlike above five variable transformation method, this Variance Threshold method is implemented in DataLoader class. After loading dataset in the DataLoader object, we can apply this method. It returns a new DataLoader with the selected variables which have variance strictly greater than the threshold value passed by user. Default value of threshold is zero i.e. remove the variables which have same value in all the events. 
+Unlike above six variable transformation method, this Variance Threshold method is implemented in DataLoader class. After loading dataset in the DataLoader object, we can apply this method. It returns a new DataLoader with the selected variables which have variance strictly greater than the threshold value passed by user. Default value of threshold is zero i.e. remove the variables which have same value in all the events. 
 
 \begin{codeexample}
 \begin{tmvacode}

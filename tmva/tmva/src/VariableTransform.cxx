@@ -159,6 +159,10 @@ void CreateVariableTransforms(const TString& trafoDefinitionIn,
          if (variables.Length() == 0) variables = "_V_,_T_";
          transformation = new VariableNormalizeTransform(dataInfo);
       }
+      else if (trName == "S" || trName == "Scale" || trName == "ScaleNorm" ) {
+         if (variables.Length() == 0) variables = "_V_,_T_";
+         transformation = new VariableNormalizeTransform(dataInfo,"Scale");
+      }
       else
          log << kFATAL << Form("Dataset[%s] : ",dataInfo.GetName())
              << "<ProcessOptions> Variable transform '"

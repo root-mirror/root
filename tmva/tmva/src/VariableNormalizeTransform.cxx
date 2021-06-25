@@ -55,9 +55,13 @@ ClassImp(TMVA::VariableNormalizeTransform);
 ////////////////////////////////////////////////////////////////////////////////
 /// constructor
 
-TMVA::VariableNormalizeTransform::VariableNormalizeTransform( DataSetInfo& dsi )
-: VariableTransformBase( dsi, Types::kNormalized, "Norm" )
+TMVA::VariableNormalizeTransform::VariableNormalizeTransform( DataSetInfo& dsi, TString strcor )
+: VariableTransformBase( dsi, Types::kNormalized, "Norm" ),
+   fNoOffset(kFALSE)
 {
+   if (strcor=="Scale") {fNoOffset = kTRUE;
+      SetName("Scale");
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -144,10 +148,16 @@ const TMVA::Event* TMVA::VariableNormalizeTransform::Transform( const TMVA::Even
 
       min = minVector.at(iidx);
       max = maxVector.at(iidx);
-      Float_t offset = min;
-      Float_t scale  = 1.0/(max-min);
 
-      Float_t valnorm = (val-offset)*scale * 2 - 1;
+      Float_t valnorm;
+      if (!fNoOffset) {
+         Float_t offset = min;
+         Float_t scale  = 1.0/(max-min);
+         valnorm        = (val-offset)*scale * 2 - 1;
+      } else {
+         fabs(max)>fabs(min) ? valnorm=val/fabs(max) : valnorm=val/fabs(min);
+      }
+
       output.push_back( valnorm );
 
       ++iidx;
@@ -189,10 +199,16 @@ const TMVA::Event* TMVA::VariableNormalizeTransform::InverseTransform(const TMVA
 
       min = minVector.at(iidx);
       max = maxVector.at(iidx);
-      Float_t offset = min;
-      Float_t scale  = 1.0/(max-min);
 
-      Float_t valnorm = offset+((val+1)/(scale * 2));
+      Float_t valnorm;
+      if (!fNoOffset) {
+         Float_t offset = min;
+         Float_t scale  = 1.0/(max-min);
+         valnorm = offset+((val+1)/(scale * 2));
+      } else {
+         fabs(max)>fabs(min) ? valnorm=val*fabs(max) : valnorm=val*fabs(min);
+      }
+
       output.push_back( valnorm );
 
       ++iidx;
@@ -283,8 +299,15 @@ std::vector<TString>* TMVA::VariableNormalizeTransform::GetTransformationStrings
 
       Char_t type = (*itGet).first;
       UInt_t idx  = (*itGet).second;
-      Float_t offset = min;
-      Float_t scale  = 1.0/(max-min);
+      Float_t offset;
+      Float_t scale;
+      if (!fNoOffset) {
+         offset = min;
+         scale  = 1.0/(max-min);
+      } else {
+         offset = 0.;
+         fabs(max)>fabs(min) ? scale=.5/fabs(max) : scale=.5/fabs(min);
+      }
       TString str("");
       VariableInfo& varInfo = (type=='v'?fDsi.GetVariableInfo(idx):(type=='t'?fDsi.GetTargetInfo(idx):fDsi.GetSpectatorInfo(idx)));
 
@@ -330,6 +353,7 @@ void TMVA::VariableNormalizeTransform::AttachXMLTo(void* parent)
 {
    void* trfxml = gTools().AddChild(parent, "Transform");
    gTools().AddAttr(trfxml, "Name", "Normalize");
+   gTools().AddAttr(trfxml, "UseOffsetOrNot", (fNoOffset?"NoOffset":"UseOffset") );
    VariableTransformBase::AttachXMLTo( trfxml );
 
    Int_t numC = (GetNClasses()<= 1)?1:GetNClasses()+1;
@@ -354,6 +378,13 @@ void TMVA::VariableNormalizeTransform::AttachXMLTo(void* parent)
 
 void TMVA::VariableNormalizeTransform::ReadFromXML( void* trfnode )
 {
+   TString UseOffsetOrNot;
+
+   gTools().ReadAttr(trfnode, "UseOffsetOrNot", UseOffsetOrNot );
+
+   if (UseOffsetOrNot == "NoOffset") fNoOffset = kTRUE;
+   else                              fNoOffset = kFALSE;
+
    Bool_t newFormat = kFALSE;
 
    void* inpnode = NULL;
