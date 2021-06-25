@@ -112,7 +112,7 @@ MnUserParameterState::MnUserParameterState(const MnUserParameters &par, const Mn
 //
 //
 MnUserParameterState::MnUserParameterState(const MinimumState &st, double up, const MnUserTransformation &trafo)
-   : fValid(st.IsValid()), fCovarianceValid(false), fGCCValid(false), fCovStatus(-1), fFVal(st.Fval()), fEDM(st.Edm()),
+   : fValid(false), fCovarianceValid(false), fGCCValid(false), fCovStatus(-1), fFVal(st.Fval()), fEDM(st.Edm()),
      fNFcn(st.NFcn()), fParameters(MnUserParameters()), fCovariance(MnUserCovariance()),
      fGlobalCC(MnGlobalCorrelationCoeff()), fIntParameters(std::vector<double>()), fIntCovariance(MnUserCovariance())
 {

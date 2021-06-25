@@ -106,12 +106,10 @@ FunctionMinimum VariableMetricBuilder::Minimum(const MnFcn &fcn, const GradientC
    int maxfcn_eff = maxfcn;
    int ipass = 0;
    bool iterate = false;
-   bool hessianComputed = false;
 
    do {
 
       iterate = false;
-      hessianComputed = false;
 
       print.Debug(ipass > 0 ? "Continue" : "Start", "iterating...");
 
@@ -140,8 +138,6 @@ FunctionMinimum VariableMetricBuilder::Minimum(const MnFcn &fcn, const GradientC
          print.Debug("MnMigrad will verify convergence and Error matrix; dcov =", min.Error().Dcovar());
 
          MinimumState st = MnHesse(strategy)(fcn, min.State(), min.Seed().Trafo(), maxfcn);
-
-         hessianComputed = true;
 
          print.Info("After Hessian");
 
@@ -185,17 +181,20 @@ FunctionMinimum VariableMetricBuilder::Minimum(const MnFcn &fcn, const GradientC
    } while (iterate);
 
    // Add latest state (Hessian calculation)
-   // and check edm (add a factor of 10 in tolerance )
+   const MinimumState &latest = result.back();
+
+   // check edm (add a factor of 10 in tolerance )
    if (edm > 10 * edmval) {
-      min.Add(result.back(), FunctionMinimum::MnAboveMaxEdm);
+      min.Add(latest, FunctionMinimum::MnAboveMaxEdm);
       print.Warn("No convergence; Edm", edm, "is above tolerance", 10 * edmval);
-   } else {
-      // check if minimum has edm above max before
-      if (min.IsAboveMaxEdm()) {
+   } else if (latest.Error().HasReachedCallLimit()) {
+      // communicate to user that call limit was reached in MnHesse
+      min.Add(latest, FunctionMinimum::MnReachedCallLimit);
+   } else if (latest.Error().IsAvailable()) {
+      // check if minimum had edm above max before
+      if (min.IsAboveMaxEdm())
          print.Info("Edm has been re-computed after Hesse; Edm", edm, "is now within tolerance");
-      }
-      if (hessianComputed)
-         min.Add(result.back());
+      min.Add(latest);
    }
 
    print.Debug("Minimum found", min);

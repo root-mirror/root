@@ -218,8 +218,8 @@ MinimumState MnHesse::operator()(const MnFcn &mfcn, const MinimumState &st, cons
             vhmat(j, j) = tmp < prec.Eps2() ? 1. : tmp;
          }
 
-         return MinimumState(st.Parameters(), MinimumError(vhmat, MinimumError::MnHesseFailed), st.Gradient(), st.Edm(),
-                             mfcn.NumOfCalls());
+         return MinimumState(st.Parameters(), MinimumError(vhmat, MinimumError::MnReachedCallLimit), st.Gradient(),
+                             st.Edm(), mfcn.NumOfCalls());
       }
    }
 
