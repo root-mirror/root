@@ -61,6 +61,7 @@ class CppCompleter(object):
     TH1F
     TH1I
     TH1K
+    TH1L
     TH1S
     >>> for suggestion in comp._completeImpl("TProfile"):
     ...     print(suggestion)

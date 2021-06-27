@@ -68,7 +68,7 @@ TEST(TTabComTests, CompleteTH1)
       // FIXME: See ROOT-10989
       " TH1DModel"
 #endif
-      " TH1Editor TH1F TH1I TH1K TH1S";
+      " TH1Editor TH1F TH1I TH1K TH1L TH1S";
 
    ASSERT_STREQ(expected.c_str(), GetCompletions("TH1").c_str());
 }

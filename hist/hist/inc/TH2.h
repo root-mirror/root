@@ -242,9 +242,46 @@ protected:
    virtual Double_t RetrieveBinContent(Int_t bin) const { return Double_t (fArray[bin]); }
    virtual void     UpdateBinContent(Int_t bin, Double_t content) { fArray[bin] = Int_t (content); }
 
-   ClassDef(TH2I,4)  //2-Dim histograms (one 32 bits integer per channel)
+   ClassDef(TH2I,4)  //2-Dim histograms (one 32 bit integer per channel)
 };
 
+//______________________________________________________________________________
+
+class TH2L : public TH2, public TArrayL64 {
+
+public:
+   TH2L();
+   TH2L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
+                                          ,Int_t nbinsy,Double_t ylow,Double_t yup);
+   TH2L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
+                                          ,Int_t nbinsy,Double_t ylow,Double_t yup);
+   TH2L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
+                                          ,Int_t nbinsy,const Double_t *ybins);
+   TH2L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
+                                          ,Int_t nbinsy,const Double_t *ybins);
+   TH2L(const char *name,const char *title,Int_t nbinsx,const Float_t  *xbins
+                                          ,Int_t nbinsy,const Float_t  *ybins);
+   TH2L(const TH2L &h2i);
+   virtual ~TH2L();
+   virtual void     AddBinContent(Int_t bin);
+   virtual void     AddBinContent(Int_t bin, Double_t w);
+   virtual void     Copy(TObject &hnew) const;
+   virtual void     Reset(Option_t *option="");
+   virtual void     SetBinsLength(Int_t n=-1);
+           TH2L&    operator=(const TH2L &h1);
+   friend  TH2L     operator*(Float_t c1, TH2L &h1);
+   friend  TH2L     operator*(TH2L &h1, Float_t c1) {return operator*(c1,h1);}
+   friend  TH2L     operator+(TH2L &h1, TH2L &h2);
+   friend  TH2L     operator-(TH2L &h1, TH2L &h2);
+   friend  TH2L     operator*(TH2L &h1, TH2L &h2);
+   friend  TH2L     operator/(TH2L &h1, TH2L &h2);
+
+protected:
+   virtual Double_t RetrieveBinContent(Int_t bin) const { return Double_t (fArray[bin]); }
+   virtual void     UpdateBinContent(Int_t bin, Double_t content) { fArray[bin] = Int_t (content); }
+
+   ClassDef(TH2L,0)  //2-Dim histograms (one 64 bit integer per channel)
+};
 
 //______________________________________________________________________________
 

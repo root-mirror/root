@@ -32,6 +32,7 @@
 #include "TArrayC.h"
 #include "TArrayS.h"
 #include "TArrayI.h"
+#include "TArrayL64.h"
 #include "TArrayF.h"
 #include "TArrayD.h"
 #include "Foption.h"
@@ -548,7 +549,7 @@ public:
    virtual void     Reset(Option_t *option="");
    virtual void     SetBinsLength(Int_t n=-1);
 
-   ClassDef(TH1I,3)  //1-Dim histograms (one 32 bits integer per channel)
+   ClassDef(TH1I,3)  //1-Dim histograms (one 32 bit integer per channel)
 
    friend  TH1I     operator*(Double_t c1, const TH1I &h1);
    friend  TH1I     operator*(const TH1I &h1, Double_t c1);
@@ -569,6 +570,47 @@ TH1I operator+(const TH1I &h1, const TH1I &h2);
 TH1I operator-(const TH1I &h1, const TH1I &h2);
 TH1I operator*(const TH1I &h1, const TH1I &h2);
 TH1I operator/(const TH1I &h1, const TH1I &h2);
+
+//________________________________________________________________________
+
+class TH1L: public TH1, public TArrayL64 {
+
+public:
+   TH1L();
+   TH1L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup);
+   TH1L(const char *name,const char *title,Int_t nbinsx,const Float_t  *xbins);
+   TH1L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins);
+   TH1L(const TH1L &h1i);
+   TH1L& operator=(const TH1L &h1);
+   virtual ~TH1L();
+
+   virtual void     AddBinContent(Int_t bin);
+   virtual void     AddBinContent(Int_t bin, Double_t w);
+   virtual void     Copy(TObject &hnew) const;
+   virtual void     Reset(Option_t *option="");
+   virtual void     SetBinsLength(Int_t n=-1);
+
+   ClassDef(TH1L,0)  //1-Dim histograms (one 64 bit integer per channel)
+
+   friend  TH1L     operator*(Double_t c1, const TH1L &h1);
+   friend  TH1L     operator*(const TH1L &h1, Double_t c1);
+   friend  TH1L     operator+(const TH1L &h1, const TH1L &h2);
+   friend  TH1L     operator-(const TH1L &h1, const TH1L &h2);
+   friend  TH1L     operator*(const TH1L &h1, const TH1L &h2);
+   friend  TH1L     operator/(const TH1L &h1, const TH1L &h2);
+
+protected:
+   virtual Double_t RetrieveBinContent(Int_t bin) const { return Double_t (fArray[bin]); }
+   virtual void     UpdateBinContent(Int_t bin, Double_t content) { fArray[bin] = Int_t (content); }
+};
+
+TH1L operator*(Double_t c1, const TH1L &h1);
+inline
+TH1L operator*(const TH1L &h1, Double_t c1) {return operator*(c1,h1);}
+TH1L operator+(const TH1L &h1, const TH1L &h2);
+TH1L operator-(const TH1L &h1, const TH1L &h2);
+TH1L operator*(const TH1L &h1, const TH1L &h2);
+TH1L operator/(const TH1L &h1, const TH1L &h2);
 
 //________________________________________________________________________
 

@@ -35,6 +35,8 @@ ClassImp(TH3);
 \brief 3-D histogram with a short per channel (see TH1 documentation)
 \class TH3I
 \brief 3-D histogram with an int per channel (see TH1 documentation)}
+\class TH3L
+\brief 3-D histogram with a long per channel (see TH1 documentation)}
 \class TH3F
 \brief 3-D histogram with a float per channel (see TH1 documentation)}
 \class TH3D
@@ -52,7 +54,8 @@ cell content.
 
 -   TH3C a 3-D histogram with one byte per cell (char)
 -   TH3S a 3-D histogram with two bytes per cell (short integer)
--   TH3I a 3-D histogram with four bytes per cell (32 bits integer)
+-   TH3I a 3-D histogram with four bytes per cell (32 bit integer)
+-   TH3L a 3-D histogram with eight bytes per cell (64 bit integer)
 -   TH3F a 3-D histogram with four bytes per cell (float)
 -   TH3D a 3-D histogram with eight bytes per cell (double)
 */
@@ -4056,6 +4059,205 @@ TH3I operator*(TH3I &h1, TH3I &h2)
 TH3I operator/(TH3I &h1, TH3I &h2)
 {
    TH3I hnew = h1;
+   hnew.Divide(&h2);
+   hnew.SetDirectory(0);
+   return hnew;
+}
+
+
+//______________________________________________________________________________
+//                     TH3L methods
+//  TH3L a 3-D histogram with four bytes per cell (32 bits integer)
+//______________________________________________________________________________
+
+ClassImp(TH3L);
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Constructor.
+
+TH3L::TH3L(): TH3(), TArrayL64()
+{
+   SetBinsLength(27);
+   if (fgDefaultSumw2) Sumw2();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Destructor.
+
+TH3L::~TH3L()
+{
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Normal constructor for fix bin size 3-D histograms.
+
+TH3L::TH3L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
+           ,Int_t nbinsy,Double_t ylow,Double_t yup
+           ,Int_t nbinsz,Double_t zlow,Double_t zup)
+           :TH3(name,title,nbinsx,xlow,xup,nbinsy,ylow,yup,nbinsz,zlow,zup)
+{
+   TH3L::Set(fNcells);
+   if (fgDefaultSumw2) Sumw2();
+
+   if (xlow >= xup || ylow >= yup || zlow >= zup) SetBuffer(fgBufferSize);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Normal constructor for variable bin size 3-D histograms.
+
+TH3L::TH3L(const char *name,const char *title,Int_t nbinsx,const Float_t *xbins
+           ,Int_t nbinsy,const Float_t *ybins
+           ,Int_t nbinsz,const Float_t *zbins)
+           :TH3(name,title,nbinsx,xbins,nbinsy,ybins,nbinsz,zbins)
+{
+   TArrayL64::Set(fNcells);
+   if (fgDefaultSumw2) Sumw2();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Normal constructor for variable bin size 3-D histograms.
+
+TH3L::TH3L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
+           ,Int_t nbinsy,const Double_t *ybins
+           ,Int_t nbinsz,const Double_t *zbins)
+           :TH3(name,title,nbinsx,xbins,nbinsy,ybins,nbinsz,zbins)
+{
+   TArrayL64::Set(fNcells);
+   if (fgDefaultSumw2) Sumw2();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Copy constructor.
+
+TH3L::TH3L(const TH3L &h3i) : TH3(), TArrayL64()
+{
+   ((TH3L&)h3i).Copy(*this);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Increment bin content by 1.
+
+void TH3L::AddBinContent(Int_t bin)
+{
+   if (fArray[bin] < LLONG_MAX) fArray[bin]++;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Increment bin content by w.
+
+void TH3L::AddBinContent(Int_t bin, Double_t w)
+{
+   Long64_t newval = fArray[bin] + Long64_t(w);
+   if (newval > -LLONG_MAX && newval < LLONG_MAX) {fArray[bin] = Int_t(newval); return;}
+   if (newval < -LLONG_MAX) fArray[bin] = -LLONG_MAX;
+   if (newval >  LLONG_MAX) fArray[bin] =  LLONG_MAX;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Copy this 3-D histogram structure to newth3.
+
+void TH3L::Copy(TObject &newth3) const
+{
+   TH3::Copy((TH3L&)newth3);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Reset this histogram: contents, errors, etc.
+
+void TH3L::Reset(Option_t *option)
+{
+   TH3::Reset(option);
+   TArrayL64::Reset();
+   // should also reset statistics once statistics are implemented for TH3
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Set total number of bins including under/overflow
+/// Reallocate bin contents array
+
+void TH3L::SetBinsLength(Int_t n)
+{
+   if (n < 0) n = (fXaxis.GetNbins()+2)*(fYaxis.GetNbins()+2)*(fZaxis.GetNbins()+2);
+   fNcells = n;
+   TArrayL64::Set(n);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Operator =
+
+TH3L& TH3L::operator=(const TH3L &h1)
+{
+   if (this != &h1)  ((TH3L&)h1).Copy(*this);
+   return *this;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Operator *
+
+TH3L operator*(Float_t c1, TH3L &h1)
+{
+   TH3L hnew = h1;
+   hnew.Scale(c1);
+   hnew.SetDirectory(0);
+   return hnew;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Operator +
+
+TH3L operator+(TH3L &h1, TH3L &h2)
+{
+   TH3L hnew = h1;
+   hnew.Add(&h2,1);
+   hnew.SetDirectory(0);
+   return hnew;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Operator _
+
+TH3L operator-(TH3L &h1, TH3L &h2)
+{
+   TH3L hnew = h1;
+   hnew.Add(&h2,-1);
+   hnew.SetDirectory(0);
+   return hnew;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Operator *
+
+TH3L operator*(TH3L &h1, TH3L &h2)
+{
+   TH3L hnew = h1;
+   hnew.Multiply(&h2);
+   hnew.SetDirectory(0);
+   return hnew;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Operator /
+
+TH3L operator/(TH3L &h1, TH3L &h2)
+{
+   TH3L hnew = h1;
    hnew.Divide(&h2);
    hnew.SetDirectory(0);
    return hnew;
