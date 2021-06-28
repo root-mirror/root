@@ -9,8 +9,8 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#ifndef ROOT_TH3L
-#define ROOT_TH3L
+#ifndef ROOT_TH3L64
+#define ROOT_TH3L64
 
 
 //////////////////////////////////////////////////////////////////////////

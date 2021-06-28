@@ -3455,7 +3455,7 @@ TH2I operator/(TH2I &h1, TH2I &h2)
 
 //______________________________________________________________________________
 //                     TH2L64 methods
-//  TH2L64 a 2-D histogram with four bytes per cell (64 bit integer)
+//  TH2L64 a 2-D histogram with eight bytes per cell (64 bit integer)
 //______________________________________________________________________________
 
 ClassImp(TH2L64);

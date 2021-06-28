@@ -9867,7 +9867,7 @@ TH1L64::TH1L64(): TH1(), TArrayL64()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Create a 1-Dim histogram with fix bins of type integer
+/// Create a 1-Dim histogram with fix bins of type long64
 /// (see TH1::TH1 for explanation of parameters)
 
 TH1L64::TH1L64(const char *name,const char *title,Int_t nbins,Double_t xlow,Double_t xup)
@@ -9881,7 +9881,7 @@ TH1L64::TH1L64(const char *name,const char *title,Int_t nbins,Double_t xlow,Doub
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Create a 1-Dim histogram with variable bins of type integer
+/// Create a 1-Dim histogram with variable bins of type long64
 /// (see TH1::TH1 for explanation of parameters)
 
 TH1L64::TH1L64(const char *name,const char *title,Int_t nbins,const Float_t *xbins)
@@ -9893,7 +9893,7 @@ TH1L64::TH1L64(const char *name,const char *title,Int_t nbins,const Float_t *xbi
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Create a 1-Dim histogram with variable bins of type integer
+/// Create a 1-Dim histogram with variable bins of type long64
 /// (see TH1::TH1 for explanation of parameters)
 
 TH1L64::TH1L64(const char *name,const char *title,Int_t nbins,const Double_t *xbins)

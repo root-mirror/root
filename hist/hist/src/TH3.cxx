@@ -3868,7 +3868,7 @@ TH3S operator/(TH3S &h1, TH3S &h2)
 
 //______________________________________________________________________________
 //                     TH3I methods
-//  TH3I a 3-D histogram with four bytes per cell (32 bits integer)
+//  TH3I a 3-D histogram with four bytes per cell (32 bit integer)
 //______________________________________________________________________________
 
 ClassImp(TH3I);
@@ -4067,7 +4067,7 @@ TH3I operator/(TH3I &h1, TH3I &h2)
 
 //______________________________________________________________________________
 //                     TH3L64 methods
-//  TH3L64 a 3-D histogram with four bytes per cell (32 bits integer)
+//  TH3L64 a 3-D histogram with eight bytes per cell (64 bit integer)
 //______________________________________________________________________________
 
 ClassImp(TH3L64);
