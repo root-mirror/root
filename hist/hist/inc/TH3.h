@@ -265,38 +265,38 @@ protected:
 
 //________________________________________________________________________
 
-class TH3L : public TH3, public TArrayL64 {
+class TH3L64 : public TH3, public TArrayL64 {
 public:
-   TH3L();
-   TH3L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
+   TH3L64();
+   TH3L64(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
                                   ,Int_t nbinsy,Double_t ylow,Double_t yup
                                   ,Int_t nbinsz,Double_t zlow,Double_t zup);
-   TH3L(const char *name,const char *title,Int_t nbinsx,const Float_t *xbins
+   TH3L64(const char *name,const char *title,Int_t nbinsx,const Float_t *xbins
                                           ,Int_t nbinsy,const Float_t *ybins
                                           ,Int_t nbinsz,const Float_t *zbins);
-   TH3L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
+   TH3L64(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
                                           ,Int_t nbinsy,const Double_t *ybins
                                           ,Int_t nbinsz,const Double_t *zbins);
-   TH3L(const TH3L &h3i);
-   virtual ~TH3L();
+   TH3L64(const TH3L64 &h3i);
+   virtual ~TH3L64();
    virtual void      AddBinContent(Int_t bin);
    virtual void      AddBinContent(Int_t bin, Double_t w);
    virtual void      Copy(TObject &hnew) const;
    virtual void      Reset(Option_t *option="");
    virtual void      SetBinsLength(Int_t n=-1);
-           TH3L&     operator=(const TH3L &h1);
-   friend  TH3L      operator*(Float_t c1, TH3L &h1);
-   friend  TH3L      operator*(TH3L &h1, Float_t c1) {return operator*(c1,h1);}
-   friend  TH3L      operator+(TH3L &h1, TH3L &h2);
-   friend  TH3L      operator-(TH3L &h1, TH3L &h2);
-   friend  TH3L      operator*(TH3L &h1, TH3L &h2);
-   friend  TH3L      operator/(TH3L &h1, TH3L &h2);
+           TH3L64&     operator=(const TH3L64 &h1);
+   friend  TH3L64      operator*(Float_t c1, TH3L64 &h1);
+   friend  TH3L64      operator*(TH3L64 &h1, Float_t c1) {return operator*(c1,h1);}
+   friend  TH3L64      operator+(TH3L64 &h1, TH3L64 &h2);
+   friend  TH3L64      operator-(TH3L64 &h1, TH3L64 &h2);
+   friend  TH3L64      operator*(TH3L64 &h1, TH3L64 &h2);
+   friend  TH3L64      operator/(TH3L64 &h1, TH3L64 &h2);
 
 protected:
    virtual Double_t RetrieveBinContent(Int_t bin) const { return Double_t (fArray[bin]); }
    virtual void     UpdateBinContent(Int_t bin, Double_t content) { fArray[bin] = Int_t (content); }
 
-   ClassDef(TH3L,0)  //3-Dim histograms (one 64 bit integer per channel)
+   ClassDef(TH3L64,0)  //3-Dim histograms (one 64 bit integer per channel)
 };
 
 

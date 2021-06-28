@@ -61,8 +61,8 @@
 \brief 1-D histogram with a short per channel (see TH1 documentation)
 \class TH1I
 \brief 1-D histogram with an int per channel (see TH1 documentation)}
-\class TH1L
-\brief 1-D histogram with a long per channel (see TH1 documentation)}
+\class TH1L64
+\brief 1-D histogram with a long64 per channel (see TH1 documentation)}
 \class TH1F
 \brief 1-D histogram with a float per channel (see TH1 documentation)}
 \class TH1D
@@ -106,21 +106,21 @@ ROOT supports the following histogram types:
       - TH1C : histograms with one byte per channel.   Maximum bin content = 127
       - TH1S : histograms with one short per channel.  Maximum bin content = 32767
       - TH1I : histograms with one int per channel.    Maximum bin content = INT_MAX (\ref intmax "*")
-      - TH1L : histograms with one long per channel.   Maximum bin content = LLONG_MAX (\ref llongmax "*")
+      - TH1L64 : histograms with one long64 per channel.   Maximum bin content = LLONG_MAX (\ref llongmax "*")
       - TH1F : histograms with one float per channel.  Maximum precision 7 digits
       - TH1D : histograms with one double per channel. Maximum precision 14 digits
   - 2-D histograms:
       - TH2C : histograms with one byte per channel.   Maximum bin content = 127
       - TH2S : histograms with one short per channel.  Maximum bin content = 32767
       - TH2I : histograms with one int per channel.    Maximum bin content = INT_MAX (\ref intmax "*")
-      - TH2L : histograms with one long per channel.   Maximum bin content = LLONG_MAX (\ref llongmax "*")
+      - TH2L64 : histograms with one long64 per channel.   Maximum bin content = LLONG_MAX (\ref llongmax "*")
       - TH2F : histograms with one float per channel.  Maximum precision 7 digits
       - TH2D : histograms with one double per channel. Maximum precision 14 digits
   - 3-D histograms:
       - TH3C : histograms with one byte per channel.   Maximum bin content = 127
       - TH3S : histograms with one short per channel.  Maximum bin content = 32767
       - TH3I : histograms with one int per channel.    Maximum bin content = INT_MAX (\ref intmax "*")
-      - TH3L : histograms with one long per channel.   Maximum bin content = LLONG_MAX (\ref llongmax "*")
+      - TH3L64 : histograms with one long64 per channel.   Maximum bin content = LLONG_MAX (\ref llongmax "*")
       - TH3F : histograms with one float per channel.  Maximum precision 7 digits
       - TH3D : histograms with one double per channel. Maximum precision 14 digits
   - Profile histograms: See classes  TProfile, TProfile2D and TProfile3D.
@@ -134,7 +134,7 @@ ROOT supports the following histogram types:
 
 <sup>
 \anchor intmax (*) INT_MAX = 2147483647 is the [maximum value for a variable of type int.](https://docs.microsoft.com/en-us/cpp/c-language/cpp-integer-limits)
-\anchor llongmax (*) LLONG_MAX = 9223372036854775807 is the [maximum value for a variable of type long long.](https://docs.microsoft.com/en-us/cpp/c-language/cpp-integer-limits)
+\anchor llongmax (*) LLONG_MAX = 9223372036854775807 is the [maximum value for a variable of type long64.](https://docs.microsoft.com/en-us/cpp/c-language/cpp-integer-limits)
 </sup>
 
 The inheritance hierarchy looks as follows:
@@ -9849,17 +9849,17 @@ TH1I operator/(const TH1I &h1, const TH1I &h2)
 }
 
 //______________________________________________________________________________
-//                     TH1L methods
-// TH1L : histograms with one long per channel.    Maximum bin content = 9223372036854775807
+//                     TH1L64 methods
+// TH1L64 : histograms with one long64 per channel.    Maximum bin content = 9223372036854775807
 // 9223372036854775807 = LLONG_MAX
 //______________________________________________________________________________
 
-ClassImp(TH1L);
+ClassImp(TH1L64);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TH1L::TH1L(): TH1(), TArrayL64()
+TH1L64::TH1L64(): TH1(), TArrayL64()
 {
    fDimension = 1;
    SetBinsLength(3);
@@ -9870,7 +9870,7 @@ TH1L::TH1L(): TH1(), TArrayL64()
 /// Create a 1-Dim histogram with fix bins of type integer
 /// (see TH1::TH1 for explanation of parameters)
 
-TH1L::TH1L(const char *name,const char *title,Int_t nbins,Double_t xlow,Double_t xup)
+TH1L64::TH1L64(const char *name,const char *title,Int_t nbins,Double_t xlow,Double_t xup)
 : TH1(name,title,nbins,xlow,xup)
 {
    fDimension = 1;
@@ -9884,7 +9884,7 @@ TH1L::TH1L(const char *name,const char *title,Int_t nbins,Double_t xlow,Double_t
 /// Create a 1-Dim histogram with variable bins of type integer
 /// (see TH1::TH1 for explanation of parameters)
 
-TH1L::TH1L(const char *name,const char *title,Int_t nbins,const Float_t *xbins)
+TH1L64::TH1L64(const char *name,const char *title,Int_t nbins,const Float_t *xbins)
 : TH1(name,title,nbins,xbins)
 {
    fDimension = 1;
@@ -9896,7 +9896,7 @@ TH1L::TH1L(const char *name,const char *title,Int_t nbins,const Float_t *xbins)
 /// Create a 1-Dim histogram with variable bins of type integer
 /// (see TH1::TH1 for explanation of parameters)
 
-TH1L::TH1L(const char *name,const char *title,Int_t nbins,const Double_t *xbins)
+TH1L64::TH1L64(const char *name,const char *title,Int_t nbins,const Double_t *xbins)
 : TH1(name,title,nbins,xbins)
 {
    fDimension = 1;
@@ -9907,22 +9907,22 @@ TH1L::TH1L(const char *name,const char *title,Int_t nbins,const Double_t *xbins)
 ////////////////////////////////////////////////////////////////////////////////
 /// Destructor.
 
-TH1L::~TH1L()
+TH1L64::~TH1L64()
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Copy constructor.
 
-TH1L::TH1L(const TH1L &h1i) : TH1(), TArrayL64()
+TH1L64::TH1L64(const TH1L64 &h1i) : TH1(), TArrayL64()
 {
-   ((TH1L&)h1i).Copy(*this);
+   ((TH1L64&)h1i).Copy(*this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Increment bin content by 1.
 
-void TH1L::AddBinContent(Int_t bin)
+void TH1L64::AddBinContent(Int_t bin)
 {
    if (fArray[bin] < LLONG_MAX) fArray[bin]++;
 }
@@ -9930,7 +9930,7 @@ void TH1L::AddBinContent(Int_t bin)
 ////////////////////////////////////////////////////////////////////////////////
 /// Increment bin content by w
 
-void TH1L::AddBinContent(Int_t bin, Double_t w)
+void TH1L64::AddBinContent(Int_t bin, Double_t w)
 {
    Long64_t newval = fArray[bin] + Long64_t(w);
    if (newval > -LLONG_MAX && newval < LLONG_MAX) {fArray[bin] = newval; return;}
@@ -9941,7 +9941,7 @@ void TH1L::AddBinContent(Int_t bin, Double_t w)
 ////////////////////////////////////////////////////////////////////////////////
 /// Copy this to newth1
 
-void TH1L::Copy(TObject &newth1) const
+void TH1L64::Copy(TObject &newth1) const
 {
    TH1::Copy(newth1);
 }
@@ -9949,7 +9949,7 @@ void TH1L::Copy(TObject &newth1) const
 ////////////////////////////////////////////////////////////////////////////////
 /// Reset.
 
-void TH1L::Reset(Option_t *option)
+void TH1L64::Reset(Option_t *option)
 {
    TH1::Reset(option);
    TArrayL64::Reset();
@@ -9959,7 +9959,7 @@ void TH1L::Reset(Option_t *option)
 /// Set total number of bins including under/overflow
 /// Reallocate bin contents array
 
-void TH1L::SetBinsLength(Int_t n)
+void TH1L64::SetBinsLength(Int_t n)
 {
    if (n < 0) n = fXaxis.GetNbins() + 2;
    fNcells = n;
@@ -9969,9 +9969,9 @@ void TH1L::SetBinsLength(Int_t n)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator =
 
-TH1L& TH1L::operator=(const TH1L &h1)
+TH1L64& TH1L64::operator=(const TH1L64 &h1)
 {
-   if (this != &h1)  ((TH1L&)h1).Copy(*this);
+   if (this != &h1)  ((TH1L64&)h1).Copy(*this);
    return *this;
 }
 
@@ -9979,9 +9979,9 @@ TH1L& TH1L::operator=(const TH1L &h1)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator *
 
-TH1L operator*(Double_t c1, const TH1L &h1)
+TH1L64 operator*(Double_t c1, const TH1L64 &h1)
 {
-   TH1L hnew = h1;
+   TH1L64 hnew = h1;
    hnew.Scale(c1);
    hnew.SetDirectory(0);
    return hnew;
@@ -9990,9 +9990,9 @@ TH1L operator*(Double_t c1, const TH1L &h1)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator +
 
-TH1L operator+(const TH1L &h1, const TH1L &h2)
+TH1L64 operator+(const TH1L64 &h1, const TH1L64 &h2)
 {
-   TH1L hnew = h1;
+   TH1L64 hnew = h1;
    hnew.Add(&h2,1);
    hnew.SetDirectory(0);
    return hnew;
@@ -10001,9 +10001,9 @@ TH1L operator+(const TH1L &h1, const TH1L &h2)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator -
 
-TH1L operator-(const TH1L &h1, const TH1L &h2)
+TH1L64 operator-(const TH1L64 &h1, const TH1L64 &h2)
 {
-   TH1L hnew = h1;
+   TH1L64 hnew = h1;
    hnew.Add(&h2,-1);
    hnew.SetDirectory(0);
    return hnew;
@@ -10012,9 +10012,9 @@ TH1L operator-(const TH1L &h1, const TH1L &h2)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator *
 
-TH1L operator*(const TH1L &h1, const TH1L &h2)
+TH1L64 operator*(const TH1L64 &h1, const TH1L64 &h2)
 {
-   TH1L hnew = h1;
+   TH1L64 hnew = h1;
    hnew.Multiply(&h2);
    hnew.SetDirectory(0);
    return hnew;
@@ -10023,9 +10023,9 @@ TH1L operator*(const TH1L &h1, const TH1L &h2)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator /
 
-TH1L operator/(const TH1L &h1, const TH1L &h2)
+TH1L64 operator/(const TH1L64 &h1, const TH1L64 &h2)
 {
-   TH1L hnew = h1;
+   TH1L64 hnew = h1;
    hnew.Divide(&h2);
    hnew.SetDirectory(0);
    return hnew;

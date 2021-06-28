@@ -27,7 +27,7 @@ further categories, depending on the set of possible bin values:
 -   **`TH1I, TH2I and TH3I`** contain one integer (four bytes) per bin
     (maximum bin content = 2 147 483 647).
     
--   **`TH1L, TH2L and TH3L`** contain one long (eight bytes) per bin
+-   **`TH1L64, TH2L64 and TH3L64`** contain one long64 (eight bytes) per bin
     (maximum bin content = 9 223 372 036 854 775 807).
 
 -   **`TH1F, TH2F and TH3F`** contain one float (four bytes) per bin

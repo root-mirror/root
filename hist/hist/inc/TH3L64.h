@@ -1,5 +1,5 @@
 // @(#)root/hist:$Id$
-// Author: Rene Brun   08/09/2003
+// Author: Rene Brun   18/05/2002
 
 /*************************************************************************
  * Copyright (C) 1995-2000, Rene Brun and Fons Rademakers.               *
@@ -9,18 +9,18 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#ifndef ROOT_TH1L
-#define ROOT_TH1L
+#ifndef ROOT_TH3L
+#define ROOT_TH3L
 
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// TH1L                                                                 //
+// TH3L64                                                               //
 //                                                                      //
-// 1-Dim histogram with a 64 bit integer per channel                    //
+// 3-Dim histogram with a 64 bit integer per channel                    //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TH1.h"
+#include "TH3.h"
 
 #endif

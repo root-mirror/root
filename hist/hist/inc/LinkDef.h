@@ -61,7 +61,7 @@
 #pragma link C++ class TH1S+;
 #pragma link C++ class TH1I+;
 #pragma link C++ class TH1K+;
-#pragma link C++ class TH1L+;
+#pragma link C++ class TH1L64+;
 #pragma link C++ class TH2-;
 #pragma link C++ class TH2C-;
 #pragma link C++ class TH2D-;
@@ -74,14 +74,14 @@
 #pragma link C++ class TProfile2PolyBin+;
 #pragma link C++ class TH2S-;
 #pragma link C++ class TH2I+;
-#pragma link C++ class TH2L+;
+#pragma link C++ class TH2L64+;
 #pragma link C++ class TH3-;
 #pragma link C++ class TH3C-;
 #pragma link C++ class TH3D-;
 #pragma link C++ class TH3F-;
 #pragma link C++ class TH3S-;
 #pragma link C++ class TH3I+;
-#pragma link C++ class TH3L+;
+#pragma link C++ class TH3L64+;
 #pragma link C++ class THLimitsFinder+;
 #pragma link C++ class THnBase+;
 #pragma link C++ class THnIter+;
@@ -232,12 +232,12 @@
 #pragma link C++ function operator*(TH1I&, TH1I&);
 #pragma link C++ function operator/(TH1I&, TH1I&);
 
-#pragma link C++ function operator*(Float_t,TH1L&);
-#pragma link C++ function operator*(TH1L&, Float_t);
-#pragma link C++ function operator+(TH1L&, TH1L&);
-#pragma link C++ function operator-(TH1L&, TH1L&);
-#pragma link C++ function operator*(TH1L&, TH1L&);
-#pragma link C++ function operator/(TH1L&, TH1L&);
+#pragma link C++ function operator*(Float_t,TH1L64&);
+#pragma link C++ function operator*(TH1L64&, Float_t);
+#pragma link C++ function operator+(TH1L64&, TH1L64&);
+#pragma link C++ function operator-(TH1L64&, TH1L64&);
+#pragma link C++ function operator*(TH1L64&, TH1L64&);
+#pragma link C++ function operator/(TH1L64&, TH1L64&);
 
 #pragma link C++ function operator*(Float_t,TH1F&);
 #pragma link C++ function operator*(TH1F&, Float_t);
@@ -274,12 +274,12 @@
 #pragma link C++ function operator*(TH2I&, TH2I&);
 #pragma link C++ function operator/(TH2I&, TH2I&);
 
-#pragma link C++ function operator*(Float_t,TH2L&);
-#pragma link C++ function operator*(TH2L&, Float_t);
-#pragma link C++ function operator+(TH2L&, TH2L&);
-#pragma link C++ function operator-(TH2L&, TH2L&);
-#pragma link C++ function operator*(TH2L&, TH2L&);
-#pragma link C++ function operator/(TH2L&, TH2L&);
+#pragma link C++ function operator*(Float_t,TH2L64&);
+#pragma link C++ function operator*(TH2L64&, Float_t);
+#pragma link C++ function operator+(TH2L64&, TH2L64&);
+#pragma link C++ function operator-(TH2L64&, TH2L64&);
+#pragma link C++ function operator*(TH2L64&, TH2L64&);
+#pragma link C++ function operator/(TH2L64&, TH2L64&);
 
 #pragma link C++ function operator*(Float_t,TH2F&);
 #pragma link C++ function operator*(TH2F&, Float_t);
@@ -316,12 +316,12 @@
 #pragma link C++ function operator*(TH3I&, TH3I&);
 #pragma link C++ function operator/(TH3I&, TH3I&);
 
-#pragma link C++ function operator*(Float_t,TH3L&);
-#pragma link C++ function operator*(TH3L&, Float_t);
-#pragma link C++ function operator+(TH3L&, TH3L&);
-#pragma link C++ function operator-(TH3L&, TH3L&);
-#pragma link C++ function operator*(TH3L&, TH3L&);
-#pragma link C++ function operator/(TH3L&, TH3L&);
+#pragma link C++ function operator*(Float_t,TH3L64&);
+#pragma link C++ function operator*(TH3L64&, Float_t);
+#pragma link C++ function operator+(TH3L64&, TH3L64&);
+#pragma link C++ function operator-(TH3L64&, TH3L64&);
+#pragma link C++ function operator*(TH3L64&, TH3L64&);
+#pragma link C++ function operator/(TH3L64&, TH3L64&);
 
 #pragma link C++ function operator*(Float_t,TH3F&);
 #pragma link C++ function operator*(TH3F&, Float_t);

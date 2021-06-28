@@ -7800,7 +7800,7 @@ bool testConversion1D()
    TH1 *h1c = new TH1C("h1c", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
    TH1 *h1s = new TH1S("h1s", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
    TH1 *h1i = new TH1I("h1i", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
-   TH1 *h1l = new TH1L("h1l", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
+   TH1 *h1l = new TH1L64("h1l", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
    TH1 *h1f = new TH1F("h1f", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
    TH1 *h1d = new TH1D("h1d", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
 
@@ -7887,7 +7887,7 @@ bool testConversion2D()
    TH2 *h2i = new TH2I("h2i", "h2-title",
                        nbins[0], minRangeArray[0], maxRangeArray[0],
                        nbins[1], minRangeArray[1], maxRangeArray[1]);
-   TH2 *h2l = new TH2L("h2l", "h2-title",
+   TH2 *h2l = new TH2L64("h2l", "h2-title",
                        nbins[0], minRangeArray[0], maxRangeArray[0],
                        nbins[1], minRangeArray[1], maxRangeArray[1]);
    TH2 *h2f = new TH2F("h2f", "h2-title",
@@ -7985,7 +7985,7 @@ bool testConversion3D()
                        nbins[0], minRangeArray[0], maxRangeArray[0],
                        nbins[1], minRangeArray[1], maxRangeArray[1],
                        nbins[2], minRangeArray[2], maxRangeArray[2]);
-   TH3 *h3l = new TH3L("h3i", "h3-title",
+   TH3 *h3l = new TH3L64("h3i", "h3-title",
                        nbins[0], minRangeArray[0], maxRangeArray[0],
                        nbins[1], minRangeArray[1], maxRangeArray[1],
                        nbins[2], minRangeArray[2], maxRangeArray[2]);

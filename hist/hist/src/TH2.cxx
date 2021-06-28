@@ -38,8 +38,8 @@ ClassImp(TH2);
 \brief 2-D histogram with a short per channel (see TH1 documentation)
 \class TH2I
 \brief 2-D histogram with an int per channel (see TH1 documentation)}
-\class TH2L
-\brief 2-D histogram with a long per channel (see TH1 documentation)}
+\class TH2L64
+\brief 2-D histogram with a long64 per channel (see TH1 documentation)}
 \class TH2F
 \brief 2-D histogram with a float per channel (see TH1 documentation)}
 \class TH2D
@@ -53,7 +53,7 @@ ClassImp(TH2);
 - TH2C a 2-D histogram with one byte per cell (char)
 - TH2S a 2-D histogram with two bytes per cell (short integer)
 - TH2I a 2-D histogram with four bytes per cell (32 bit integer)
-- TH2L a 2-D histogram with eight bytes per cell (64 bit integer)
+- TH2L64 a 2-D histogram with eight bytes per cell (64 bit integer)
 - TH2F a 2-D histogram with four bytes per cell (float)
 - TH2D a 2-D histogram with eight bytes per cell (double)
 */
@@ -3454,17 +3454,17 @@ TH2I operator/(TH2I &h1, TH2I &h2)
 
 
 //______________________________________________________________________________
-//                     TH2L methods
-//  TH2L a 2-D histogram with four bytes per cell (64 bit integer)
+//                     TH2L64 methods
+//  TH2L64 a 2-D histogram with four bytes per cell (64 bit integer)
 //______________________________________________________________________________
 
-ClassImp(TH2L);
+ClassImp(TH2L64);
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TH2L::TH2L(): TH2(), TArrayL64()
+TH2L64::TH2L64(): TH2(), TArrayL64()
 {
    SetBinsLength(9);
    if (fgDefaultSumw2) Sumw2();
@@ -3474,7 +3474,7 @@ TH2L::TH2L(): TH2(), TArrayL64()
 ////////////////////////////////////////////////////////////////////////////////
 /// Destructor.
 
-TH2L::~TH2L()
+TH2L64::~TH2L64()
 {
 }
 
@@ -3482,7 +3482,7 @@ TH2L::~TH2L()
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
+TH2L64::TH2L64(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
            ,Int_t nbinsy,Double_t ylow,Double_t yup)
            :TH2(name,title,nbinsx,xlow,xup,nbinsy,ylow,yup)
 {
@@ -3496,7 +3496,7 @@ TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
+TH2L64::TH2L64(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
            ,Int_t nbinsy,Double_t ylow,Double_t yup)
            :TH2(name,title,nbinsx,xbins,nbinsy,ylow,yup)
 {
@@ -3508,7 +3508,7 @@ TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
+TH2L64::TH2L64(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_t xup
            ,Int_t nbinsy,const Double_t *ybins)
            :TH2(name,title,nbinsx,xlow,xup,nbinsy,ybins)
 {
@@ -3520,7 +3520,7 @@ TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,Double_t xlow,Double_
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
+TH2L64::TH2L64(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
            ,Int_t nbinsy,const Double_t *ybins)
            :TH2(name,title,nbinsx,xbins,nbinsy,ybins)
 {
@@ -3532,7 +3532,7 @@ TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,const Double_t *xbins
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,const Float_t *xbins
+TH2L64::TH2L64(const char *name,const char *title,Int_t nbinsx,const Float_t *xbins
            ,Int_t nbinsy,const Float_t *ybins)
            :TH2(name,title,nbinsx,xbins,nbinsy,ybins)
 {
@@ -3544,16 +3544,16 @@ TH2L::TH2L(const char *name,const char *title,Int_t nbinsx,const Float_t *xbins
 ////////////////////////////////////////////////////////////////////////////////
 /// Copy constructor.
 
-TH2L::TH2L(const TH2L &h2i) : TH2(), TArrayL64()
+TH2L64::TH2L64(const TH2L64 &h2i) : TH2(), TArrayL64()
 {
-   ((TH2L&)h2i).Copy(*this);
+   ((TH2L64&)h2i).Copy(*this);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Increment bin content by 1.
 
-void TH2L::AddBinContent(Int_t bin)
+void TH2L64::AddBinContent(Int_t bin)
 {
    if (fArray[bin] < LLONG_MAX) fArray[bin]++;
 }
@@ -3562,7 +3562,7 @@ void TH2L::AddBinContent(Int_t bin)
 ////////////////////////////////////////////////////////////////////////////////
 /// Increment bin content by w.
 
-void TH2L::AddBinContent(Int_t bin, Double_t w)
+void TH2L64::AddBinContent(Int_t bin, Double_t w)
 {
    Long64_t newval = fArray[bin] + Long64_t(w);
    if (newval > -LLONG_MAX && newval < LLONG_MAX) {fArray[bin] = Int_t(newval); return;}
@@ -3574,16 +3574,16 @@ void TH2L::AddBinContent(Int_t bin, Double_t w)
 ////////////////////////////////////////////////////////////////////////////////
 /// Copy.
 
-void TH2L::Copy(TObject &newth2) const
+void TH2L64::Copy(TObject &newth2) const
 {
-   TH2::Copy((TH2L&)newth2);
+   TH2::Copy((TH2L64&)newth2);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Reset this histogram: contents, errors, etc.
 
-void TH2L::Reset(Option_t *option)
+void TH2L64::Reset(Option_t *option)
 {
    TH2::Reset(option);
    TArrayL64::Reset();
@@ -3594,7 +3594,7 @@ void TH2L::Reset(Option_t *option)
 /// Set total number of bins including under/overflow
 /// Reallocate bin contents array
 
-void TH2L::SetBinsLength(Int_t n)
+void TH2L64::SetBinsLength(Int_t n)
 {
    if (n < 0) n = (fXaxis.GetNbins()+2)*(fYaxis.GetNbins()+2);
    fNcells = n;
@@ -3605,9 +3605,9 @@ void TH2L::SetBinsLength(Int_t n)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator =
 
-TH2L& TH2L::operator=(const TH2L &h1)
+TH2L64& TH2L64::operator=(const TH2L64 &h1)
 {
-   if (this != &h1)  ((TH2L&)h1).Copy(*this);
+   if (this != &h1)  ((TH2L64&)h1).Copy(*this);
    return *this;
 }
 
@@ -3615,9 +3615,9 @@ TH2L& TH2L::operator=(const TH2L &h1)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator *
 
-TH2L operator*(Float_t c1, TH2L &h1)
+TH2L64 operator*(Float_t c1, TH2L64 &h1)
 {
-   TH2L hnew = h1;
+   TH2L64 hnew = h1;
    hnew.Scale(c1);
    hnew.SetDirectory(0);
    return hnew;
@@ -3627,9 +3627,9 @@ TH2L operator*(Float_t c1, TH2L &h1)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator +
 
-TH2L operator+(TH2L &h1, TH2L &h2)
+TH2L64 operator+(TH2L64 &h1, TH2L64 &h2)
 {
-   TH2L hnew = h1;
+   TH2L64 hnew = h1;
    hnew.Add(&h2,1);
    hnew.SetDirectory(0);
    return hnew;
@@ -3639,9 +3639,9 @@ TH2L operator+(TH2L &h1, TH2L &h2)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator -
 
-TH2L operator-(TH2L &h1, TH2L &h2)
+TH2L64 operator-(TH2L64 &h1, TH2L64 &h2)
 {
-   TH2L hnew = h1;
+   TH2L64 hnew = h1;
    hnew.Add(&h2,-1);
    hnew.SetDirectory(0);
    return hnew;
@@ -3651,9 +3651,9 @@ TH2L operator-(TH2L &h1, TH2L &h2)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator *
 
-TH2L operator*(TH2L &h1, TH2L &h2)
+TH2L64 operator*(TH2L64 &h1, TH2L64 &h2)
 {
-   TH2L hnew = h1;
+   TH2L64 hnew = h1;
    hnew.Multiply(&h2);
    hnew.SetDirectory(0);
    return hnew;
@@ -3663,9 +3663,9 @@ TH2L operator*(TH2L &h1, TH2L &h2)
 ////////////////////////////////////////////////////////////////////////////////
 /// Operator /
 
-TH2L operator/(TH2L &h1, TH2L &h2)
+TH2L64 operator/(TH2L64 &h1, TH2L64 &h2)
 {
-   TH2L hnew = h1;
+   TH2L64 hnew = h1;
    hnew.Divide(&h2);
    hnew.SetDirectory(0);
    return hnew;

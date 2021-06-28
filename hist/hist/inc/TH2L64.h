@@ -9,18 +9,18 @@
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
 
-#ifndef ROOT_TH3L
-#define ROOT_TH3L
+#ifndef ROOT_TH2L
+#define ROOT_TH2L
 
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// TH3L                                                                 //
+// TH2L64                                                               //
 //                                                                      //
-// 3-Dim histogram with a 64 bit integer per channel                    //
+// 2-Dim histogram with a 64 bit integer per channel                    //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TH3.h"
+#include "TH2.h"
 
 #endif
