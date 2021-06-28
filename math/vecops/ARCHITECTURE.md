@@ -77,6 +77,7 @@ Compared to LLVM's SmallVectors:
   `SmallVectorTemplateCommon::getFirstEl`
 - `SmallVectorStorage`: properly aligned "small buffer" storage. It's a separate type so that it can be specialized to
   be properly aligned also for the case of small buffer size = 0
+- `RVecInlineStorageSize`: calculates the size of the small buffer in `RVec`.
 
 ## Memory adoption
 

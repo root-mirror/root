@@ -524,9 +524,24 @@ template <typename T>
 struct alignas(T) SmallVectorStorage<T, 0> {
 };
 
+/// The size of the inline storage of an RVec.
+/// Our policy is to allocate at least 8 elements (or more if they all fit into one cacheline)
+/// unless the size of the buffer with 8 elements would be over a certain maximum size.
 template <typename T>
 struct RVecInlineStorageSize {
-   static constexpr unsigned int value = 8;
+private:
+#ifdef R__HAS_HARDWARE_INTERFERENCE_SIZE
+   constexpr std::size_t cacheLineSize = std::hardware_destructive_interference_size;
+#else
+   // safe bet: assume the typical 64 bytes
+   static constexpr std::size_t cacheLineSize = 64;
+#endif
+   static constexpr unsigned elementsPerCacheLine = (cacheLineSize - sizeof(SmallVectorBase)) / sizeof(T);
+   static constexpr unsigned maxInlineByteSize = 1024;
+
+public:
+   static constexpr unsigned value =
+      elementsPerCacheLine >= 8 ? elementsPerCacheLine : (sizeof(T) * 8 > maxInlineByteSize ? 0 : 8);
 };
 
 } // namespace VecOps
