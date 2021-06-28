@@ -63,10 +63,13 @@ Compared to LLVM's SmallVectors:
    the small buffer size, to limit the amount of code generated and provide a way to slice the small buffer
    size when passing around `RVec` objects.
 
-`RVec<T, N = SensibleDefaultBufferSize<T>>`
+`RVecN<T, N>`
    It aggregates `RVecImpl` and `SmallVectorStorage` (see below) through public inheritance.
-   `N` is the small buffer size and defaults to a sensible value that depends on `sizeof(T)`.
-   We expect most users to use the default and only rarely tweak the small buffer size.
+   `N` is the small buffer size.
+
+`RVec<T>`
+   Inherits from `RVecN` and fixes the small buffer size `N` to a reasonable default.
+   We expect most users to use this type and only very rarely switch to `RVecN` to tweak the small buffer size.
 
 ### Helper types
 
