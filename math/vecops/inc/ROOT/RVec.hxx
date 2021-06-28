@@ -70,6 +70,17 @@ template<typename T>
 class RVec;
 }
 
+namespace Internal {
+namespace VecOps {
+
+constexpr unsigned FirstOf(unsigned N0, ...)
+{
+   return N0;
+}
+
+} // namespace VecOps
+} // namespace Internal
+
 namespace Detail {
 namespace VecOps {
 
@@ -511,6 +522,11 @@ struct SmallVectorStorage {
 /// well-defined.
 template <typename T>
 struct alignas(T) SmallVectorStorage<T, 0> {
+};
+
+template <typename T>
+struct RVecInlineStorageSize {
+   static constexpr unsigned int value = 8;
 };
 
 } // namespace VecOps
@@ -1093,6 +1109,166 @@ namespace VecOps {
   * @{
 */
 
+// From the original SmallVector code:
+// This is a 'vector' (really, a variable-sized array), optimized
+// for the case when the array is small.  It contains some number of elements
+// in-place, which allows it to avoid heap allocation when the actual number of
+// elements is below that threshold.  This allows normal "small" cases to be
+// fast without losing generality for large inputs.
+//
+// Note that this does not attempt to be exception safe.
+
+template <typename T, unsigned int N>
+class RVecN : public Detail::VecOps::RVecImpl<T>, Internal::VecOps::SmallVectorStorage<T, N> {
+public:
+   RVecN() : Detail::VecOps::RVecImpl<T>(N) {}
+
+   ~RVecN()
+   {
+      if (this->Owns()) {
+         // Destroy the constructed elements in the vector.
+         this->destroy_range(this->begin(), this->end());
+      }
+   }
+
+   explicit RVecN(size_t Size, const T &Value = T()) : Detail::VecOps::RVecImpl<T>(N)
+   {
+      this->assign(Size, Value);
+   }
+
+   template <typename ItTy,
+             typename = typename std::enable_if<std::is_convertible<
+                typename std::iterator_traits<ItTy>::iterator_category, std::input_iterator_tag>::value>::type>
+   RVecN(ItTy S, ItTy E) : Detail::VecOps::RVecImpl<T>(N)
+   {
+      this->append(S, E);
+   }
+
+   RVecN(std::initializer_list<T> IL) : Detail::VecOps::RVecImpl<T>(N) { this->assign(IL); }
+
+   RVecN(const RVecN &RHS) : Detail::VecOps::RVecImpl<T>(N)
+   {
+      if (!RHS.empty())
+         Detail::VecOps::RVecImpl<T>::operator=(RHS);
+   }
+
+   RVecN &operator=(const RVecN &RHS)
+   {
+      Detail::VecOps::RVecImpl<T>::operator=(RHS);
+      return *this;
+   }
+
+   RVecN(RVecN &&RHS) : Detail::VecOps::RVecImpl<T>(N)
+   {
+      if (!RHS.empty())
+         Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
+   }
+
+   RVecN(Detail::VecOps::RVecImpl<T> &&RHS) : Detail::VecOps::RVecImpl<T>(N)
+   {
+      if (!RHS.empty())
+         Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
+   }
+
+   RVecN(const std::vector<T> &RHS) : RVecN(RHS.begin(), RHS.end()) {}
+
+   RVecN &operator=(RVecN &&RHS)
+   {
+      Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
+      return *this;
+   }
+
+   RVecN(T* p, size_t n) : Detail::VecOps::RVecImpl<T>(N)
+   {
+      this->fBeginX = p;
+      this->fSize = n;
+      this->fCapacity = -1;
+   }
+
+   RVecN &operator=(Detail::VecOps::RVecImpl<T> &&RHS)
+   {
+      Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
+      return *this;
+   }
+
+   RVecN &operator=(std::initializer_list<T> IL)
+   {
+      this->assign(IL);
+      return *this;
+   }
+
+   using reference = typename Internal::VecOps::SmallVectorTemplateCommon<T>::reference;
+   using const_reference = typename Internal::VecOps::SmallVectorTemplateCommon<T>::const_reference;
+   using size_type = typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type;
+   using value_type = typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type;
+   using Internal::VecOps::SmallVectorTemplateCommon<T>::begin;
+   using Internal::VecOps::SmallVectorTemplateCommon<T>::size;
+
+   reference operator[](size_type idx)
+   {
+      R__ASSERT(idx < size());
+      return begin()[idx];
+   }
+   const_reference operator[](size_type idx) const
+   {
+      R__ASSERT(idx < size());
+      return begin()[idx];
+   }
+
+   template <typename V, unsigned M, typename = std::enable_if<std::is_convertible<V, bool>::value>>
+   RVecN operator[](const RVecN<V, M> &conds) const
+   {
+      const auto n = conds.size();
+
+      if (n != this->size())
+         throw std::runtime_error("Cannot index RVecN with condition vector of different size");
+
+      RVecN ret;
+      ret.reserve(n);
+      for (auto i = 0u; i < n; ++i)
+         if (conds[i])
+            ret.emplace_back(this->operator[](i));
+      return ret;
+   }
+
+   // conversion
+   template <typename U, unsigned M, typename = std::enable_if<std::is_convertible<T, U>::value>>
+   operator RVecN<U, M>() const
+   {
+      return RVecN<U, M>(this->begin(), this->end());
+   }
+
+   reference at(size_type pos)
+   {
+      if (pos >= size_type(this->fSize))
+         throw std::out_of_range("RVecN");
+      return this->operator[](pos);
+   }
+
+   const_reference at(size_type pos) const
+   {
+      if (pos >= size_type(this->fSize))
+         throw std::out_of_range("RVecN");
+      return this->operator[](pos);
+   }
+
+   /// No exception thrown. The user specifies the desired value in case the RVecN is shorter than `pos`.
+   value_type at(size_type pos, value_type fallback)
+   {
+      if (pos >= size_type(this->fSize))
+         return fallback;
+      return this->operator[](pos);
+   }
+
+   /// No exception thrown. The user specifies the desired value in case the RVecN is shorter than `pos`.
+   value_type at(size_type pos, value_type fallback) const
+   {
+      if (pos >= size_type(this->fSize))
+         return fallback;
+      return this->operator[](pos);
+   }
+};
+
 // clang-format off
 /**
 \class ROOT::VecOps::RVec
@@ -1244,130 +1420,57 @@ hpt->Draw();
 **/
 // clang-format on
 
-
-
-// From the original SmallVector code:
-// This is a 'vector' (really, a variable-sized array), optimized
-// for the case when the array is small.  It contains some number of elements
-// in-place, which allows it to avoid heap allocation when the actual number of
-// elements is below that threshold.  This allows normal "small" cases to be
-// fast without losing generality for large inputs.
-//
-// Note that this does not attempt to be exception safe.
-
 template <typename T>
-class RVec : public Detail::VecOps::RVecImpl<T>, Internal::VecOps::SmallVectorStorage<T, 8> {
+class RVec : public RVecN<T, Internal::VecOps::RVecInlineStorageSize<T>::value> {
+   using SuperClass = RVecN<T, Internal::VecOps::RVecInlineStorageSize<T>::value>;
 public:
-   static constexpr unsigned N = 8;
-   RVec() : Detail::VecOps::RVecImpl<T>(N) {}
+   using reference = typename SuperClass::reference;
+   using const_reference = typename SuperClass::const_reference;
+   using size_type = typename SuperClass::size_type;
+   using value_type = typename SuperClass::value_type;
+   using SuperClass::begin;
+   using SuperClass::size;
 
-   ~RVec()
-   {
-      if (this->Owns()) {
-         // Destroy the constructed elements in the vector.
-         this->destroy_range(this->begin(), this->end());
-      }
-   }
+   RVec() {}
 
-   explicit RVec(size_t Size, const T &Value = T()) : Detail::VecOps::RVecImpl<T>(N)
-   {
-      this->assign(Size, Value);
-   }
+   explicit RVec(size_t Size, const T &Value = T()) : SuperClass(Size, Value) {}
 
    template <typename ItTy,
              typename = typename std::enable_if<std::is_convertible<
                 typename std::iterator_traits<ItTy>::iterator_category, std::input_iterator_tag>::value>::type>
-   RVec(ItTy S, ItTy E) : Detail::VecOps::RVecImpl<T>(N)
+   RVec(ItTy S, ItTy E) : SuperClass(S, E)
    {
-      this->append(S, E);
    }
 
-   RVec(std::initializer_list<T> IL) : Detail::VecOps::RVecImpl<T>(N) { this->assign(IL); }
+   RVec(std::initializer_list<T> IL) : SuperClass(IL) {}
 
-   RVec(const RVec &RHS) : Detail::VecOps::RVecImpl<T>(N)
-   {
-      if (!RHS.empty())
-         Detail::VecOps::RVecImpl<T>::operator=(RHS);
-   }
+   RVec(const RVec &RHS) : SuperClass(RHS) {}
 
    RVec &operator=(const RVec &RHS)
    {
-      Detail::VecOps::RVecImpl<T>::operator=(RHS);
+      SuperClass::operator=(RHS);
       return *this;
    }
 
-   RVec(RVec &&RHS) : Detail::VecOps::RVecImpl<T>(N)
-   {
-      if (!RHS.empty())
-         Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
-   }
-
-   RVec(Detail::VecOps::RVecImpl<T> &&RHS) : Detail::VecOps::RVecImpl<T>(N)
-   {
-      if (!RHS.empty())
-         Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
-   }
-
-   RVec(const std::vector<T> &RHS) : RVec(RHS.begin(), RHS.end()) {}
+   RVec(RVec &&RHS) : SuperClass(std::move(RHS)) {}
 
    RVec &operator=(RVec &&RHS)
    {
-      Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
+      SuperClass::operator=(std::move(RHS));
       return *this;
    }
 
-   RVec(T* p, size_t n) : Detail::VecOps::RVecImpl<T>(N)
-   {
-      this->fBeginX = p;
-      this->fSize = n;
-      this->fCapacity = -1;
-   }
+   RVec(Detail::VecOps::RVecImpl<T> &&RHS) : SuperClass(std::move(RHS)) {}
 
-   RVec &operator=(Detail::VecOps::RVecImpl<T> &&RHS)
-   {
-      Detail::VecOps::RVecImpl<T>::operator=(::std::move(RHS));
-      return *this;
-   }
+   template <unsigned N>
+   RVec(RVecN<T, N> &&RHS) : SuperClass(std::move(RHS)) {}
 
-   RVec &operator=(std::initializer_list<T> IL)
-   {
-      this->assign(IL);
-      return *this;
-   }
+   template <unsigned N>
+   RVec(const RVecN<T, N> &RHS) : SuperClass(RHS) {}
 
-   using reference = typename Internal::VecOps::SmallVectorTemplateCommon<T>::reference;
-   using const_reference = typename Internal::VecOps::SmallVectorTemplateCommon<T>::const_reference;
-   using size_type = typename Internal::VecOps::SmallVectorTemplateCommon<T>::size_type;
-   using value_type = typename Internal::VecOps::SmallVectorTemplateCommon<T>::value_type;
-   using Internal::VecOps::SmallVectorTemplateCommon<T>::begin;
-   using Internal::VecOps::SmallVectorTemplateCommon<T>::size;
+   RVec(const std::vector<T> &RHS) : SuperClass(RHS) {}
 
-   reference operator[](size_type idx)
-   {
-      R__ASSERT(idx < size());
-      return begin()[idx];
-   }
-   const_reference operator[](size_type idx) const
-   {
-      R__ASSERT(idx < size());
-      return begin()[idx];
-   }
-
-   template <typename V, typename = std::enable_if<std::is_convertible<V, bool>::value>>
-   RVec operator[](const RVec<V> &conds) const
-   {
-      const auto n = conds.size();
-
-      if (n != this->size())
-         throw std::runtime_error("Cannot index RVec with condition vector of different size");
-
-      RVec<T> ret;
-      ret.reserve(n);
-      for (auto i = 0u; i < n; ++i)
-         if (conds[i])
-            ret.emplace_back(this->operator[](i));
-      return ret;
-   }
+   RVec(T* p, size_t n) : SuperClass(p, n) {}
 
    // conversion
    template <typename U, typename = std::enable_if<std::is_convertible<T, U>::value>>
@@ -1376,39 +1479,19 @@ public:
       return RVec<U>(this->begin(), this->end());
    }
 
-   reference at(size_type pos)
+   using SuperClass::operator[];
+
+   template <typename V, typename = std::enable_if<std::is_convertible<V, bool>::value>>
+   RVec operator[](const RVec<V> &conds) const
    {
-      if (pos >= size_type(this->fSize))
-         throw std::out_of_range("RVec");
-      return this->operator[](pos);
+      return RVec(SuperClass::operator[](conds));
    }
 
-   const_reference at(size_type pos) const
-   {
-      if (pos >= size_type(this->fSize))
-         throw std::out_of_range("RVec");
-      return this->operator[](pos);
-   }
-
-   /// No exception thrown. The user specifies the desired value in case the RVec is shorter than `pos`.
-   value_type at(size_type pos, value_type fallback)
-   {
-      if (pos >= size_type(this->fSize))
-         return fallback;
-      return this->operator[](pos);
-   }
-
-   /// No exception thrown. The user specifies the desired value in case the RVec is shorter than `pos`.
-   value_type at(size_type pos, value_type fallback) const
-   {
-      if (pos >= size_type(this->fSize))
-         return fallback;
-      return this->operator[](pos);
-   }
+   using SuperClass::at;
 };
 
-template <typename T>
-inline size_t capacity_in_bytes(const RVec<T> &X)
+template <typename T, unsigned N>
+inline size_t capacity_in_bytes(const RVecN<T, N> &X)
 {
    return X.capacity_in_bytes();
 }
