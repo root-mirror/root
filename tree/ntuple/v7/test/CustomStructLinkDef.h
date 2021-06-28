@@ -5,5 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class CustomStruct+;
+#pragma link C++ class DerivedA+;
+#pragma link C++ class DerivedB+;
 
 #endif

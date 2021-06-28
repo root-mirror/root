@@ -6,6 +6,8 @@ TEST(RNTuple, TypeName) {
                 ROOT::Experimental::RField<std::vector<std::string>>::TypeName().c_str());
    EXPECT_STREQ("CustomStruct",
                 ROOT::Experimental::RField<CustomStruct>::TypeName().c_str());
+   EXPECT_STREQ("DerivedB",
+                ROOT::Experimental::RField<DerivedB>::TypeName().c_str());
 }
 
 
