@@ -162,8 +162,12 @@ if [ -n "${ROOTSYS}" ] ; then
    old_rootsys=${ROOTSYS}
 fi
 
+if [ "x${BASH_ARGV}" = "x" ]; then
+   SOURCE="$(readlink -f "$0")"
+else
+   SOURCE="$(readlink -f "${BASH_ARGV[0]}")"
+fi
 
-SOURCE=${BASH_ARGV[0]}
 if [ "x$SOURCE" = "x" ]; then
    SOURCE=${(%):-%N} # for zsh
 fi
