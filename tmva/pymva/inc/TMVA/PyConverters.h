@@ -30,7 +30,7 @@
 #include <numpy/arrayobject.h>
 
 #include "TMVA/RModel.hxx"
-#include "TMVA/RModelParser_Keras.hxx"
+#include "TMVA/RModelParser_Keras.h"
 #include "Rtypes.h"
 #include "TString.h"
 #include <vector>

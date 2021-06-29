@@ -10,7 +10,7 @@
 
 
 #include "TMVA/RModel.hxx"
-#include "TMVA/RModelParser_Keras.hxx"
+#include "TMVA/RModelParser_Keras.h"
 
 
 namespace TMVA{

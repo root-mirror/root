@@ -1,4 +1,4 @@
-// @(#)root/tmva/sofie $Id$
+// @(#)root/tmva/pymva $Id$
 // Author: Sanjiban Sengupta, 2021
 
 /**********************************************************************************
@@ -32,8 +32,8 @@
 #include <numpy/arrayobject.h>
 
 
-#include "SOFIE_common.hxx"
-#include "OperatorList.hxx"
+#include "TMVA/SOFIE_common.hxx"
+#include "TMVA/OperatorList.hxx"
 
 #include "TMVA/RModel.hxx"
 #include "Rtypes.h"
@@ -64,4 +64,4 @@ namespace PyKeras{
 }
 }
 
-#endif //TMVA_SOFIE_RMODELPARSER_KERAS
+#endif //TMVA_PYMVA_RMODELPARSER_KERAS
