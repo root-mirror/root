@@ -103,10 +103,7 @@ std::string UTILITY::Clean_name(std::string input_tensor_name){
 template float* UTILITY::Unidirectional_broadcast(const float* original_data, const std::vector<size_t> original_shape, const std::vector<size_t> target_shape);
 
 
-std::string toLower(std::string name){
-          transform(name.begin(), name.end(), name.begin(), ::tolower);
-          return name;
-   }
+
 
 
 }//SOFIE

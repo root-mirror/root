@@ -14,9 +14,10 @@
 
 #include "TMVA/RModel.hxx"
 #include "TMVA/SOFIE_common.hxx"
-
+#include<algorithm>
 
 namespace TMVA{
+
 static PyObject *fPyReturn = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,6 +82,12 @@ const char* PyString_AsString(PyObject* str){
 #endif
 return name;
 }
+
+std::string toLower(std::string name){
+          std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+          return name;
+   }
+
 }
 
 #endif //TMVA_PYMVA_RMODELPARSER_COMMON
