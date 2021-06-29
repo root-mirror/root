@@ -210,7 +210,10 @@ public:
     return getNorm(&nset) ; 
   }
   virtual Double_t getNorm(const RooArgSet* set=0) const ;
-  inline const RooAbsReal* getIntegral() const { return _norm; }
+  inline const RooAbsReal* getIntegral(RooArgSet const& set) const {
+    if(!_norm) getVal(&set);
+    return _norm;
+  }
 
 
   virtual void resetErrorCounters(Int_t resetValue=10) ;
