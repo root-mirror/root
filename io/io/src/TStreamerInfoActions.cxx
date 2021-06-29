@@ -4197,6 +4197,7 @@ void TStreamerInfoActions::TActionSequence::AddToOffset(Int_t delta)
        iter != end;
        ++iter)
    {
+      // (fElemId == -1) indications that the action is a Push or Pop DataCache.
       if (iter->fConfiguration->fElemId != (UInt_t)-1 &&
           !iter->fConfiguration->fInfo->GetElements()->At(iter->fConfiguration->fElemId)->TestBit(TStreamerElement::kCache))
          iter->fConfiguration->AddToOffset(delta);
