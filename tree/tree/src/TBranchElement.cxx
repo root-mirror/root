@@ -3591,7 +3591,8 @@ void TBranchElement::InitializeOffsets()
             // to remove it's name to get the correct real data offsets
             ////////////////////////////////////////////////////////////////////
 
-            if( dynamic_cast<TBranchSTL*>(fParent) && stlParentName.Length() )
+            const bool isToplevelCollection = (this == GetMother() && (fType == 3 || fType == 4));
+            if( (dynamic_cast<TBranchSTL*>(fParent) || isToplevelCollection) && stlParentName.Length() )
             {
                if( !strncmp( stlParentName.Data(), dataName.Data(), stlParentName.Length()-1 )
                   && dataName[ stlParentName.Length() ] == '.' )
