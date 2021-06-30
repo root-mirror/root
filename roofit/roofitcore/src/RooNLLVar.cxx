@@ -363,58 +363,7 @@ Double_t RooNLLVar::evaluatePartition(std::size_t firstEvent, std::size_t lastEv
 
     // include the extended maximum likelihood term, if requested
     if(_extended && _setNum==_extSet) {
-      if (_weightSq) {
-
-
-        // Calculate sum of weights-squared here for extended term
-        Double_t sumW2;
-        if (_batchEvaluations) {
-          const RooSpan<const double> eventWeights = _dataClone->getWeightBatch(0, _nEvents);
-          if (eventWeights.empty()) {
-            sumW2 = (lastEvent - firstEvent) * _dataClone->weightSquared();
-          } else {
-            ROOT::Math::KahanSum<double, 4u> kahanWeight;
-            for (std::size_t i = 0; i < eventWeights.size(); ++i) {
-              kahanWeight.AddIndexed(eventWeights[i] * eventWeights[i], i);
-            }
-            sumW2 = kahanWeight.Sum();
-          }
-        } else { // scalar mode
-          ROOT::Math::KahanSum<double> sumW2KahanSum;
-          for (decltype(_dataClone->numEntries()) i = 0; i < _dataClone->numEntries() ; i++) {
-            _dataClone->get(i);
-            sumW2KahanSum += _dataClone->weightSquared();
-          }
-          sumW2 = sumW2KahanSum.Sum();
-        }
-
-        Double_t expected= pdfClone->expectedEvents(_dataClone->get());
-
-        // Adjust calculation of extended term with W^2 weighting: adjust poisson such that
-        // estimate of Nexpected stays at the same value, but has a different variance, rescale
-        // both the observed and expected count of the Poisson with a factor sum[w] / sum[w^2] which is
-        // the effective weight of the Poisson term.
-        // i.e. change Poisson(Nobs = sum[w]| Nexp ) --> Poisson( sum[w] * sum[w] / sum[w^2] | Nexp * sum[w] / sum[w^2] )
-        // weighted by the effective weight  sum[w^2]/ sum[w] in the likelihood.
-        // Since here we compute the likelihood with the weight square we need to multiply by the
-        // square of the effective weight
-        // expectedW = expected * sum[w] / sum[w^2]   : effective expected entries
-        // observedW =  sum[w]  * sum[w] / sum[w^2]   : effective observed entries
-        // The extended term for the likelihood weighted by the square of the weight will be then:
-        //  (sum[w^2]/ sum[w] )^2 * expectedW -  (sum[w^2]/ sum[w] )^2 * observedW * log (expectedW)  and this is
-        //  using the previous expressions for expectedW and observedW
-        //  sum[w^2] / sum[w] * expected - sum[w^2] * log (expectedW)
-        //  and since the weights are constants in the likelihood we can use log(expected) instead of log(expectedW)
-
-        Double_t expectedW2 = expected * sumW2 / _dataClone->sumEntries() ;
-        Double_t extra= expectedW2 - sumW2*log(expected );
-
-        // Double_t extra = pdfClone->extendedTerm(sumW2, _dataClone->get());
-
-        result += extra;
-      } else {
-        result += pdfClone->extendedTerm(_dataClone->sumEntries(), _dataClone->get());
-      }
+      result += pdfClone->extendedTerm(*_dataClone, _weightSq);
     }
   } //unbinned PDF
 

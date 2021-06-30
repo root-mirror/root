@@ -258,7 +258,8 @@ public:
   static void verboseEval(Int_t stat) ;
   static int verboseEval() ;
 
-  virtual Double_t extendedTerm(Double_t observedEvents, const RooArgSet* nset=0) const ;
+  double extendedTerm(double observedEvents, const RooArgSet* nset=0) const;
+  double extendedTerm(RooAbsData const& data, bool weightSquared) const;
 
   void setNormRange(const char* rangeName) ;
   const char* normRange() const { 
