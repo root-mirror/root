@@ -3,6 +3,8 @@
 #include "RooBatchCompute.h"
 #include "Batches.h"
 
+#include "ROOT/TExecutor.hxx"
+
 #include <cstdlib>
 
 namespace RooBatchCompute {
@@ -24,16 +26,34 @@ class RooBatchComputeClass : public RooBatchComputeInterface {
     void compute(Computer computer, RestrictArr output, size_t nEvents, const DataMap& varData, const VarVector& vars, const ArgVector& extraArgs) override  
     {
       double buffer[maxParams][bufferSize];
-      Batches batches(output, nEvents, varData, vars, extraArgs, buffer);
-      batches.setNEvents(bufferSize);
-      while (nEvents > bufferSize)
+      ROOT::Internal::TExecutor ex;
+      unsigned int nThreads = ROOT::IsImplicitMTEnabled() ? ex.GetPoolSize() : 1u;
+
+      // Fill a std::vector<Batches> with the same object and with ~nEvents/nThreads
+      // Then advance every object but the first to split the work between threads
+      std::vector<Batches> batches(nThreads, Batches(output, nEvents/nThreads +(nEvents%nThreads>0), varData, vars, extraArgs, buffer));
+      for (unsigned int i=1; i<nThreads; i++)
+        batches[i].advance( batches[0].getNEvents()*i );
+
+      // Set the number of events of the last Btches object as the remaining events
+      if (nThreads>1)
+        batches.back().setNEvents( nEvents -(nThreads-1)*batches[0].getNEvents() );
+
+      auto task = [this, computer](Batches _batches) -> int
       {
-        computeFunctions[computer](batches);
-        batches.advance();
-        nEvents -= bufferSize;
-      }
-      batches.setNEvents(nEvents);
-      computeFunctions[computer](batches);
+          int _events = _batches.getNEvents();
+          _batches.setNEvents(bufferSize);
+          while (_events > bufferSize)
+          {
+            computeFunctions[computer](_batches);
+            _batches.advance(bufferSize);
+            _events -= bufferSize;
+          }
+          _batches.setNEvents(_events);
+          computeFunctions[computer](_batches);
+          return 0;
+      };
+      ex.Map(task, batches);
     }
 
     double sumReduce(InputArr input, size_t n) override

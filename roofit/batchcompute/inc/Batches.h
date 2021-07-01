@@ -34,7 +34,7 @@ class Batch {
       array = _array;
       isVector = _isVector;
     }
-    inline void advance() { array += isVector*bufferSize; }
+    inline void advance(size_t _nEvents) { array += isVector*_nEvents; }
 #ifdef __CUDACC__
     __device__ constexpr double operator[](size_t i) noexcept { return isVector ? array[i] : scalar; }
 #else
@@ -56,15 +56,15 @@ class Batches {
     RestrictArr output=nullptr;
     
     Batches(RestrictArr output, size_t nEvents, const DataMap& varData, const VarVector& vars, const ArgVector& extraArgs={}, double stackArr[maxParams][bufferSize]=nullptr);
-    __device__ constexpr size_t getNEvents() { return nEvents; }
-    __device__ constexpr uint8_t getNExtraArgs() { return nExtraArgs; }
-    __device__ constexpr double extraArg(uint8_t i) { return extraArgs[i]; }
-    __device__ constexpr Batch operator[] (int batchIdx) { return arrays[batchIdx]; }
+    __device__ constexpr size_t getNEvents() const { return nEvents; }
+    __device__ constexpr uint8_t getNExtraArgs() const { return nExtraArgs; }
+    __device__ constexpr double extraArg(uint8_t i) const { return extraArgs[i]; }
+    __device__ constexpr Batch operator[] (int batchIdx) const { return arrays[batchIdx]; }
     inline void setNEvents(size_t n=bufferSize) { nEvents = n; }
-    inline void advance()
+    inline void advance(size_t _nEvents)
     {
-      for (int i=0; i<nBatches; i++) arrays[i].advance();
-      output += bufferSize;
+      for (int i=0; i<nBatches; i++) arrays[i].advance(_nEvents);
+      output += _nEvents;
     }
 }; //end class Batches
 } // End namespace RF_ARCH
