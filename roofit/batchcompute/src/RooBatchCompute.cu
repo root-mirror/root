@@ -15,10 +15,10 @@ std::vector<void(*)(Batches)> getFunctions();
 
 class RooBatchComputeClass : public RooBatchComputeInterface {
   private:
-    const std::vector<void(*)(Batches)> computeFunctions;
+    const std::vector<void(*)(Batches)> _computeFunctions;
   public:
     RooBatchComputeClass()
-      : computeFunctions(getFunctions())
+      : _computeFunctions(getFunctions())
     {
       dispatch_gpu = this; // Set the dispatch pointer to this instance of the library upon loading
     }
@@ -37,7 +37,7 @@ class RooBatchComputeClass : public RooBatchComputeInterface {
     void compute(Computer computer, RestrictArr output, size_t nEvents, const DataMap& varData, const VarVector& vars, const ArgVector& extraArgs) override  
     {
       Batches batches(output, nEvents, varData, vars, extraArgs);
-      computeFunctions[computer]<<<256,64>>>(batches);
+      _computeFunctions[computer]<<<128,512>>>(batches);
     }
 
     double sumReduce(InputArr input, size_t n) override
@@ -77,17 +77,17 @@ class RooBatchComputeClass : public RooBatchComputeInterface {
 static RooBatchComputeClass computeObj;
 
 
-Batches::Batches(RestrictArr _output, size_t _nEvents, const DataMap& varData, const VarVector& vars, const ArgVector& _extraArgs, double[maxParams][bufferSize])
-  : nEvents(_nEvents), nBatches(vars.size()), nExtraArgs(_extraArgs.size()), output(_output)
+Batches::Batches(RestrictArr output, size_t nEvents, const DataMap& varData, const VarVector& vars, const ArgVector& extraArgs, double[maxParams][bufferSize])
+  : _nEvents(nEvents), _nBatches(vars.size()), _nExtraArgs(extraArgs.size()), _output(output)
 {  
   for (int i=0; i<vars.size(); i++)
   {
     const RooSpan<const double>& span = varData.at(vars[i]);
     size_t size = span.size();
-    if (size==1) arrays[i].set(span[0], nullptr, false);
-    else arrays[i].set(0.0, span.data(), true);
+    if (size==1) _arrays[i].set(span[0], nullptr, false);
+    else _arrays[i].set(0.0, span.data(), true);
   }
-  std::copy(_extraArgs.cbegin(), _extraArgs.cend(), extraArgs);
+  std::copy(extraArgs.cbegin(), extraArgs.cend(), _extraArgs);
 }
 
 } // End namespace RF_ARCH

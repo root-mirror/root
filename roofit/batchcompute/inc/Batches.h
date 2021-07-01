@@ -17,28 +17,28 @@ namespace RF_ARCH {
 
 class Batch {
   private:
-    double scalar=0;
-    const double* __restrict array=nullptr;
-    bool isVector=false;
+    double _scalar=0;
+    const double* __restrict _array=nullptr;
+    bool _isVector=false;
 
   public:
     Batch() = default;
-    inline Batch(InputArr _array, bool _isVector)
-      : scalar{_array[0]}, array{_array}, isVector{_isVector}
+    inline Batch(InputArr array, bool isVector)
+      : _scalar{array[0]}, _array{array}, _isVector{isVector}
     {}
     
-    __device__ constexpr bool isItVector() { return isVector; }
-    inline void set(double _scalar, InputArr _array, bool _isVector)
+    __device__ constexpr bool isItVector() const { return _isVector; }
+    inline void set(double scalar, InputArr array, bool isVector)
     {
-      scalar = _scalar;
-      array = _array;
-      isVector = _isVector;
+      _scalar = scalar;
+      _array = array;
+      _isVector = isVector;
     }
-    inline void advance(size_t _nEvents) { array += isVector*_nEvents; }
+    inline void advance(size_t _nEvents) { _array += _isVector*_nEvents; }
 #ifdef __CUDACC__
-    __device__ constexpr double operator[](size_t i) noexcept { return isVector ? array[i] : scalar; }
+    __device__ constexpr double operator[](size_t i) const noexcept { return _isVector ? _array[i] : _scalar; }
 #else
-    constexpr double operator[](size_t i) noexcept { return array[i]; }
+    constexpr double operator[](size_t i) const noexcept { return _array[i]; }
 #endif // #ifdef __CUDACC__
 }; //end class Batch
 
@@ -46,25 +46,25 @@ class Batch {
 
 class Batches {
   private:
-    Batch arrays[maxParams];
-    size_t nEvents=0;
-    double extraArgs[maxExtraArgs];
-    uint8_t nBatches=0;
-    uint8_t nExtraArgs;
+    Batch _arrays[maxParams];
+    size_t _nEvents=0;
+    double _extraArgs[maxExtraArgs];
+    uint8_t _nBatches=0;
+    uint8_t _nExtraArgs;
 
   public:
-    RestrictArr output=nullptr;
+    RestrictArr _output=nullptr;
     
     Batches(RestrictArr output, size_t nEvents, const DataMap& varData, const VarVector& vars, const ArgVector& extraArgs={}, double stackArr[maxParams][bufferSize]=nullptr);
-    __device__ constexpr size_t getNEvents() const { return nEvents; }
-    __device__ constexpr uint8_t getNExtraArgs() const { return nExtraArgs; }
-    __device__ constexpr double extraArg(uint8_t i) const { return extraArgs[i]; }
-    __device__ constexpr Batch operator[] (int batchIdx) const { return arrays[batchIdx]; }
-    inline void setNEvents(size_t n=bufferSize) { nEvents = n; }
-    inline void advance(size_t _nEvents)
+    __device__ constexpr size_t getNEvents() const { return _nEvents; }
+    __device__ constexpr uint8_t getNExtraArgs() const { return _nExtraArgs; }
+    __device__ constexpr double extraArg(uint8_t i) const { return _extraArgs[i]; }
+    __device__ constexpr Batch operator[] (int batchIdx) const { return _arrays[batchIdx]; }
+    inline void setNEvents(size_t n=bufferSize) { _nEvents = n; }
+    inline void advance(size_t nEvents)
     {
-      for (int i=0; i<nBatches; i++) arrays[i].advance(_nEvents);
-      output += _nEvents;
+      for (int i=0; i<_nBatches; i++) _arrays[i].advance(nEvents);
+      _output += nEvents;
     }
 }; //end class Batches
 } // End namespace RF_ARCH

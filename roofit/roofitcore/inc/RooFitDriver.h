@@ -16,9 +16,8 @@ class RooFitDriver {
   public:
      RooFitDriver(const RooAbsData& data, const RooNLLVarNew& topNode, int batchMode);
      ~RooFitDriver();
-     //~  inline RooAbsReal* getTopNode() { return initialQueue.back(); }
      double getVal();
-     RooArgSet* getParameters();
+     RooArgSet* getParameters() const;
      
     struct NodeInfo {
         int nServers = 0;
@@ -28,24 +27,21 @@ class RooFitDriver {
     };
 
   private:
-
     double* getAvailableBuffer();
 
-    const int batchMode=0;
-    double* cudaMemDataset=nullptr;
+    const int _batchMode=0;
+    double* _cudaMemDataset=nullptr;
+
     // used for preserving static info about the computation graph
-    rbc::DataMap dataMap;
-    const RooNLLVarNew& topNode;
-    size_t nEvents;
-
+    rbc::DataMap _dataMap;
+    const RooNLLVarNew& _topNode;
+    size_t _nEvents;
     RooAbsData const* _data = nullptr;
-
-    std::queue<const RooAbsReal*> initialQueue;
-
+    std::queue<const RooAbsReal*> _initialQueue;
     std::unordered_map<const RooAbsArg*,NodeInfo> _nodeInfos;
-    // used for dynamically scheduling each step's computations
-    std::queue<const RooAbsReal*> computeQueue;
 
+    // used for dynamically scheduling each step's computations
+    std::queue<const RooAbsReal*> _computeQueue;
     std::queue<double*> _vectorBuffers;
 };
 

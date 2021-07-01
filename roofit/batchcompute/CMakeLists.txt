@@ -55,7 +55,7 @@ endif() # vector versions of library
 
 if (cuda)
   ROOT_LINKER_LIBRARY(RooBatchCompute_CUDA  src/RooBatchCompute.cu src/ComputeFunctions.cu TYPE SHARED DEPENDENCIES RooBatchCompute)
-  target_compile_options(RooBatchCompute_CUDA  PRIVATE -DRF_ARCH=CUDA -G --expt-relaxed-constexpr)
+  target_compile_options(RooBatchCompute_CUDA  PRIVATE -DRF_ARCH=CUDA -lineinfo --expt-relaxed-constexpr)
 endif()
 
 ROOT_INSTALL_HEADERS()
