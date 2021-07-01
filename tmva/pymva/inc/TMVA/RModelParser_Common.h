@@ -69,7 +69,7 @@ namespace Experimental{
          }
          }
 
-const char* PyString_AsString(PyObject* str){
+const char* PyStringAsString(PyObject* str){
    #if PY_MAJOR_VERSION < 3   // for Python2
       const char *stra_name = PyBytes_AsString(str);
       // need to add string delimiter for Python2
