@@ -47,20 +47,21 @@ void PyRunString(TString code, PyObject *fGlobalNS, PyObject *fLocalNS, TString 
 namespace Experimental{
    namespace SOFIE{
       RTensor<float> getArray(PyObject* value){
+      
          //Check and modify the function signature
          PyArrayObject* weightArray = (PyArrayObject*)value;
          std::vector<std::size_t>shape;
          std::vector<std::size_t>strides;
-
+         
          //Preparing the shape vector
-         for(npy_intp* j=PyArray_SHAPE(weightArray); j<PyArray_SHAPE(weightArray)+PyArray_NDIM(weightArray); ++j){
-            shape.push_back((std::size_t)(*j));
-            }
+         for(int j=0; j<PyArray_NDIM(weightArray); ++j){
+             shape.push_back((std::size_t)(PyArray_DIM(weightArray,j)));           
+         }
 
          //Preparing the strides vector
-         for(npy_intp* k=PyArray_STRIDES(weightArray); k<PyArray_STRIDES(weightArray)+PyArray_NDIM(weightArray); ++k){
-            strides.push_back((std::size_t)(*k));
-            }
+         for(int j=0; j<PyArray_NDIM(weightArray); ++j){
+             shape.push_back((std::size_t)(PyArray_STRIDE(weightArray,j)));           
+         }
 
          //Declaring the RTensor object for storing weights values.
          RTensor<float>x((float*)PyArray_DATA(weightArray),shape,strides);

@@ -173,7 +173,10 @@ RModel Parse(std::string filename){
                   
                   if(activation != "'linear'"){
                      rmodel.AddOperator(std::move(INTERNAL::make_ROperator_Gemm(input,name+"_gemm",kernel,bias,dtype)));
-
+                     
+                     if(Type.find(toLower(activation))==Type.end())
+                       throw std::runtime_error("Type error: Layer activation type "+toLower(activation)+" not yet registered in TMVA SOFIE");
+                     
                      switch(Type.find(toLower(activation))->second){
                         case LayerType::RELU: {
                            rmodel.AddOperator(std::move(INTERNAL::make_ROperator_Relu(name+"_gemm",output,dtype)));
@@ -201,10 +204,11 @@ RModel Parse(std::string filename){
          default: throw std::runtime_error("Layer error: TMVA SOFIE does not yet suppport layer type"+dtype);
          }
          }
+         
 
-   Py_DECREF(modelIterator);
-   Py_DECREF(layer);
-   Py_DECREF(pModel);
+   Py_XDECREF(layer);
+   Py_XDECREF(pModel);
+   
 
    //Extracting model's weights
    //For every initialized tensor, weightProp will have its name and dtype in string
@@ -225,11 +229,10 @@ RModel Parse(std::string filename){
       weightTensor  = PyList_GetItem(pWeight, weightIter);
       std::string weightName(PyStringAsString(PyDict_GetItemString(weightTensor,"name")));
       std::string weightType(PyStringAsString(PyDict_GetItemString(weightTensor,"dtype")));
-      weightValue   = PyDict_GetItemString(weightTensor,"weight");
+      weightValue   = PyDict_GetItemString(weightTensor,"value");
 
       //Converting numpy array to RTensor
       RTensor<float> value = getArray(weightValue);
-
 
    if(dType.find(weightType)==dType.end())
       throw std::runtime_error("Type error: Initialized tensor type not yet registered in TMVA SOFIE");
@@ -245,11 +248,12 @@ RModel Parse(std::string filename){
           throw std::runtime_error("Type error: TMVA SOFIE does not yet weight data layer type"+weightType);
       }
      }
+     
+   Py_XDECREF(weightTensor);
+   Py_XDECREF(weightValue);
+   Py_XDECREF(pWeight);  
 
-   Py_DECREF(weightTensor);
-   Py_DECREF(weightValue);
-   Py_DECREF(pWeight);
-
+    
    //Extracting input tensor info
    //For every input tensor inputNames will have their names as string,inputShapes will have their
    //shape as Python Tuple, and inputTypes will have their dtype as string
@@ -262,7 +266,24 @@ RModel Parse(std::string filename){
    PyObject* pInputs   = PyDict_GetItemString(fLocalNS,"inputNames");
    PyObject* pInputShapes  = PyDict_GetItemString(fLocalNS,"inputShapes");
    PyObject* pInputTypes   = PyDict_GetItemString(fLocalNS,"inputTypes");
+  
+   PyObject* inputShapes; 
+   
+   //For single input models, the model.input_shape will return a tuple describing the input tensor shape
+   //For multiple inputs models, the model.input_shape will return a list of tuple, each describing the input tensor shape.
+   if(PyTuple_Check(pInputShapes)){   
+      inputShapes=PyList_New(1);
+      PyList_Append(inputShapes,pInputShapes);   
+   }
+   else{
+       inputShapes=pInputShapes;       
+   }
+   
+
+   
    for(Py_ssize_t inputIter = 0; inputIter < PyList_Size(pInputs);++inputIter){
+      
+      std::string inputName(PyStringAsString(PyList_GetItem(pInputs,inputIter)));
       std::string inputDType(PyStringAsString(PyList_GetItem(pInputTypes,inputIter)));
       if(dType.find(inputDType)==dType.end())
          throw std::runtime_error("Type error: Initialized tensor type not yet registered in TMVA SOFIE");
@@ -271,10 +292,10 @@ RModel Parse(std::string filename){
 
          case ETensorType::FLOAT : {
          std::vector<size_t>inputShape;
-         std::string inputName(PyStringAsString(PyList_GetItem(pInputs,inputIter)));
-         PyObject* shapeTuple=PyList_GetItem(pInputShapes,inputIter);
+         PyObject* shapeTuple=PyList_GetItem(inputShapes,inputIter);
+
          for(Py_ssize_t tupleIter=1;tupleIter<PyTuple_Size(shapeTuple);++tupleIter){
-               inputShape.push_back((size_t)PyLong_AsLong(PyTuple_GetItem(shapeTuple,tupleIter)));
+               inputShape.push_back((size_t)PyLong_AsLong(PyTuple_GetItem(shapeTuple,tupleIter)));      	  
          }
 
          rmodel.AddInputTensorInfo(inputName, ETensorType::FLOAT, inputShape);
@@ -286,10 +307,10 @@ RModel Parse(std::string filename){
 
       }
       }
-
-      Py_DECREF(pInputs);
-      Py_DECREF(pInputShapes);
-      Py_DECREF(pInputTypes);
+      
+      Py_XDECREF(pInputs);
+      Py_XDECREF(pInputShapes);
+      Py_XDECREF(pInputTypes);
 
      Py_Finalize();
      return rmodel;
