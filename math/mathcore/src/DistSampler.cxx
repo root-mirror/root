@@ -109,7 +109,7 @@ bool DistSampler::Generate(unsigned int nevt, ROOT::Fit::UnBinData & data) {
 }
 
 
-   bool DistSampler::Generate(unsigned int nevt, const  int * nbins, ROOT::Fit::BinData & data, bool extend) {
+bool DistSampler::Generate(unsigned int nevt, const  int * nbins, ROOT::Fit::BinData & data, bool extend) {
    // generate a bin data set from given bin center values
    // bin center values must be present in given data set
    //if (!IsInitialized()) {

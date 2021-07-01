@@ -105,10 +105,18 @@ private:
    TUnuran & operator = (const TUnuran & rhs);
 
 public:
-
-
    /**
-      initialize with Unuran string interface
+      Initialize with Unuran string API interface.
+      See  https://statmath.wu.ac.at/unuran/doc/unuran.html#StringAPI
+
+      @param distr   : UNU.RAN distribution string
+      @param  method : UNU.RAN  method string
+
+      Here is an example using the string API:
+      ```
+      Tunuran unr;
+      unr.Init("normal(3.,0.75); domain = (0,inf)", "method = tdr; c = 0");
+      ```
    */
    bool Init(const std::string & distr, const std::string  & method);
 

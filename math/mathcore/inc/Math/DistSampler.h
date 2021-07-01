@@ -92,26 +92,26 @@ public:
 
 
    /**
-      initialize the generators with the given algorithm
-      Implemented by derived classes who needs it
-      (like UnuranSampler)
+      Initialize the sampling generator with the given algorithm.
+      Implemented by the derived classes who needs it
+      (like UnuranSampler).
       If nothing is specified use default algorithm
       from DistSamplerOptions::SetDefaultAlgorithm
    */
    virtual bool Init(const char * =""/* algorithm */) { return true;}
 
    /**
-      initialize the generators with the given option
-      which my include the algorithm but also more if
-      the method is re-impelmented by derived class
-      The default implementation calls the above method
+      Initialize the generators with the given DistSamplerOption object.
+      The string will include the algorithm and in case additional options
+      which can be interpreted by a re-implemented method in the derived class.
+      The default implementation just calls the above method
       passing just the algorithm name
    */
    virtual bool Init(const DistSamplerOptions & opt );
 
 
    /**
-       Set the random engine to be used
+       Set the random engine to be used.
        To be implemented by the derived classes who provides
        random sampling
    */
@@ -119,40 +119,58 @@ public:
 
    /**
        Set the random seed for the TRandom instances used by the sampler
-       classes
+       classes.
        To be implemented by the derived classes who provides random sampling
    */
    virtual void SetSeed(unsigned int /*seed*/ ) {}
 
    /**
-      Get the random engine used by the sampler
+      Get the random engine used by the sampler.
       To be implemented by the derived classes who needs it
       Returns zero by default
     */
    virtual TRandom * GetRandom() { return 0; }
 
-   /// set range in a given dimension
+   /// Set the range in a given dimension.
    void SetRange(double xmin, double xmax, int icoord = 0);
 
-   /// set range for all dimensions
+   /// Set the range for all dimensions.
    void SetRange(const double * xmin, const double * xmax);
 
-   /// set range using DataRange class
+   /// Set the range using the ROOT::Fit::DataRange class.
    void SetRange(const ROOT::Fit::DataRange & range);
 
-   /// set the mode of the distribution (could be useful to some methods)
-   /// implemented by derived classes if needed
+   /// Set the mode of the distribution (1D case).
+   /// It could be useful or needed by some sampling methods.
+   /// It is implemented by derived classes if needed (e.g. TUnuranSampler)
    virtual void SetMode(double  ) {}
 
-   /// set the normalization area of distribution
-   /// implemented by derived classes if needed
+   /// Set the mode of the distribution (Multi-dim case).
+   virtual void SetMode(const std::vector<double> &) {}
+
+   /// Set the normalization area of distribution.
+   /// Implemented by derived classes if needed
    virtual void SetArea(double) {}
 
-   /// get the parent distribution function (must be called after setting the function)
+   /// Use the log of the provided pdf.
+   /// Implemented by the derived classes 
+   virtual void SetUseLogPdf(bool = true) {}
+
+   /// Set usage of Derivative of PDF 
+   /// Can be implemented by derived class 
+   virtual void SetDPdf(const ROOT::Math::IGenFunction & ) {}
+
+   /// Set usage of Cumulative of PDF
+   /// Can be implemented by derived class
+   virtual void SetCdf(const ROOT::Math::IGenFunction &) {}
+
+   /// Get the parent distribution function (must be called after setting the function)
    const ROOT::Math::IMultiGenFunction & ParentPdf() const {
       return *fFunc;
    }
 
+   /// Check if there is a parent distribution defined 
+   bool HasParentPdf() const { return fFunc != nullptr; }
 
    /**
       sample one event in one dimension
@@ -243,17 +261,14 @@ protected:
       return *fRange;
    }
 
-
-
-
 private:
 
    // private methods
 
-   bool fOwnFunc;                         // flag to indicate if the function is owned
-   mutable std::vector<double> fData;     // internal array used to cached the sample data
-   ROOT::Fit::DataRange    *   fRange;    // data range
-   const ROOT::Math::IMultiGenFunction * fFunc; // internal function (ND)
+   bool fOwnFunc;                         /// flag to indicate if the function is owned
+   mutable std::vector<double> fData;     ///! internal array used to cached the sample data
+   ROOT::Fit::DataRange    *   fRange;    /// data range
+   const ROOT::Math::IMultiGenFunction * fFunc; /// internal function (ND)
 
 
 };

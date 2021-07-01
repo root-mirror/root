@@ -34,7 +34,6 @@ TUnuranSampler::TUnuranSampler() : ROOT::Math::DistSampler(),
    fDiscrete(false),
    fHasMode(false), fHasArea(false),
    fMode(0), fArea(0),
-   fFunc1D(0),
    fUnuran(new TUnuran()  )
 {
    fLevel = ROOT::Math::DistSamplerOptions::DefaultPrintLevel();
@@ -98,17 +97,27 @@ bool TUnuranSampler::Init(const ROOT::Math::DistSamplerOptions & opt ) {
 
 
 bool TUnuranSampler::DoInit1D(const char * method) {
-   // initilize for 1D sampling
+   // initialize for 1D sampling
    // need to create 1D interface from Multidim one
    // (to do: use directly 1D functions ??)
+   // to do : add possibility for String API of UNURAN
    fOneDim = true;
    TUnuranContDist * dist = 0;
    if (fFunc1D == 0) {
-      ROOT::Math::OneDimMultiFunctionAdapter<> function(ParentPdf() );
-      dist = new TUnuranContDist(function,0,false,true);
+      if (HasParentPdf()) {
+         ROOT::Math::OneDimMultiFunctionAdapter<> function(ParentPdf() );
+         dist = new TUnuranContDist(&function,fDPDF,fCDF,fUseLogPdf,true);
+      }
+      else {
+         if (!fDPDF && !fCDF) {
+            Error("DoInit1D", "No PDF, CDF or DPDF function has been set");
+            return false;
+         }
+         dist = new TUnuranContDist(nullptr, fDPDF, fCDF, fUseLogPdf, true);
+      }
    }
    else {
-      dist = new TUnuranContDist(*fFunc1D); // no need to copy the function
+      dist = new TUnuranContDist(fFunc1D, fDPDF, fCDF, fUseLogPdf, true); // no need to copy the function
    }
    // set range in distribution (support only one range)
    const ROOT::Fit::DataRange & range = PdfRange();
@@ -128,11 +137,15 @@ bool TUnuranSampler::DoInit1D(const char * method) {
 }
 
 bool TUnuranSampler::DoInitDiscrete1D(const char * method) {
-   // initilize for 1D sampling of discrete distributions
+   // initialize for 1D sampling of discrete distributions
    fOneDim = true;
    fDiscrete = true;
    TUnuranDiscrDist * dist = 0;
    if (fFunc1D == 0) {
+      if (!HasParentPdf()) {
+         Error("DoInitDiscrete1D", "No PMF has been defined");
+         return false;
+      }
       // need to copy the passed function pointer in this case
       ROOT::Math::OneDimMultiFunctionAdapter<> function(ParentPdf() );
       dist = new TUnuranDiscrDist(function,true);
@@ -141,6 +154,8 @@ bool TUnuranSampler::DoInitDiscrete1D(const char * method) {
       // no need to copy the function since fFunc1D is managed outside
       dist = new TUnuranDiscrDist(*fFunc1D, false);
    }
+   // set CDF if available
+   if (fCDF) dist->SetCdf(*fCDF);
    // set range in distribution (support only one range)
    // otherwise 0, inf is assumed
    const ROOT::Fit::DataRange & range = PdfRange();
@@ -163,7 +178,11 @@ bool TUnuranSampler::DoInitDiscrete1D(const char * method) {
 
 
 bool TUnuranSampler::DoInitND(const char * method) {
-   // initilize for 1D sampling
+   // initialize for ND sampling
+   if (!HasParentPdf()) {
+      Error("DoInitND", "No PDF has been defined");
+      return false;
+   }
    TUnuranMultiContDist dist(ParentPdf());
    // set range in distribution (support only one range)
    const ROOT::Fit::DataRange & range = PdfRange();
@@ -179,6 +198,9 @@ bool TUnuranSampler::DoInitND(const char * method) {
 //       std::cout << std::endl;
    }
    fOneDim = false;
+   if (fHasMode && fNDMode.size() == dist.NDim())
+      dist.SetMode(fNDMode.data());
+
    if (method) return fUnuran->Init(dist, method);
    return fUnuran->Init(dist);
 }
@@ -224,4 +246,22 @@ bool TUnuranSampler::SampleBin(double prob, double & value, double *error) {
    value = r->Poisson(prob);
    if (error) *error = std::sqrt(value);
    return true;
+}
+
+void TUnuranSampler::SetMode(const std::vector<double> &mode)
+{
+   // set modes for multidim distribution
+   if (mode.size() == ParentPdf().NDim()) {
+      if (mode.size() == 1)
+         fMode = mode[0];
+      else 
+         fNDMode = mode;
+
+      fHasMode = true;
+   }
+   else {
+      Error("SetMode", "modes vector is not compatible with function dimension of %d", (int)ParentPdf().NDim());
+      fHasMode = false;
+      fNDMode.clear();
+   }
 }
