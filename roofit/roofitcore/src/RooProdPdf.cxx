@@ -509,10 +509,16 @@ Double_t RooProdPdf::calculate(const RooProdPdf::CacheElem& cache, Bool_t /*verb
 void RooProdPdf::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const
 {
   rbc::VarVector pdfs;
-  for (const RooAbsArg* i:_pdfList)
-    pdfs.push_back( static_cast<const RooAbsPdf*>(i) );
+  for (const RooAbsArg* i:_pdfList) {
+    auto pdf = static_cast<const RooAbsPdf*>(i);
+    // If the pdf doesn't depend on any observable (detected by it getting evaluated in scalar mode),
+    // it corresponds to a parameter constraint and should not be evaluated.
+    // These pdfs are evaluated in the RooConstraintSum that gets added to the likelihood in the end.
+    if(dataMap[pdf].size() == 1) continue;
+    pdfs.push_back(pdf);
+  }
+  rbc::ArgVector special{ static_cast<double>(pdfs.size()) };
   pdfs.push_back(&*_norm);
-  rbc::ArgVector special{ static_cast<double>(_pdfList.size()) };    
   rbc::dispatch->compute(rbc::ProdPdf, output, nEvents, dataMap, pdfs, special);
 }
 
