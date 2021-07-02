@@ -126,7 +126,6 @@ class BaseBackend(ABC):
         else:
             # Only other head node type is EmptySourceHeadNode at the moment
             treename = None
-            nentries = headnode.nentries
 
         # Avoid having references to the instance inside the mapper
         initialization = self.initialization
@@ -157,18 +156,25 @@ class BaseBackend(ABC):
             # environment
             initialization()
 
-            # Build rdf
-            start = int(current_range.start)
-            end = int(current_range.end)
-
             if treename is not None:
+                # Build TEntryList for this range:
+                elists = ROOT.TEntryList()
+
                 # Build TChain of files for this range:
                 chain = ROOT.TChain(treename)
-                for f in current_range.filelist:
-                    chain.Add(str(f))
+                for start, end, filename in zip(current_range.localstarts, current_range.localends,
+                                                current_range.filelist):
+                    elist = ROOT.TEntryList("e","e", treename, filename)
+                    for entry in range(start, end):
+                        elist.Enter(entry)
+                    elists.Add(elist)
+                    chain.Add(filename)
 
                 # We assume 'end' is exclusive
-                chain.SetCacheEntryRange(start, end)
+                chain.SetCacheEntryRange(current_range.globalstart, current_range.globalend)
+
+                # Connect the entry list to the chain
+                chain.SetEntryList(elists)
 
                 # Gather information about friend trees. Check that we got an
                 # RFriendInfo struct and that it's not empty
@@ -201,7 +207,7 @@ class BaseBackend(ABC):
                                 friend_chain.Add(str(fullpath))
 
                         # Set cache on the same range as the parent TChain
-                        friend_chain.SetCacheEntryRange(start, end)
+                        friend_chain.SetCacheEntryRange(current_range.globalstart, current_range.globalend)
                         # Finally add friend TChain to the parent (with alias)
                         chain.AddFriend(friend_chain, friend_alias)
 
@@ -209,16 +215,15 @@ class BaseBackend(ABC):
                     rdf = ROOT.RDataFrame(chain, defaultbranches)
                 else:
                     rdf = ROOT.RDataFrame(chain)
+
             else:
                 # Only other head node type is EmptySourceHeadNode at the moment
-                rdf = ROOT.RDataFrame(nentries)
+                # Initialize an RDataFrame with the entries of this range
+                rdf = ROOT.RDataFrame(current_range.end - current_range.start)
 
-            # # TODO : If we want to run multi-threaded in a Spark node in
-            # # the future, use `TEntryList` instead of `Range`
-            # rdf_range = rdf.Range(current_range.start, current_range.end)
 
             # Output of the callable
-            resultptr_list = computation_graph_callable(rdf, current_range.id, rdf_range=current_range)
+            resultptr_list = computation_graph_callable(rdf, current_range.id)
 
             mergeables = [
                 resultptr  # Here resultptr is already the result value
