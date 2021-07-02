@@ -77,6 +77,14 @@ RooFitDriver::RooFitDriver(const RooAbsData& data, const RooNLLVarNew& _topNode,
     }
     else //this node needs evaluation, mark it's clients
     {
+      RooArgSet observablesForNode;
+      pAbsReal->getObservables(_data->get(), observablesForNode);
+      _nodeInfos[pAbsReal].dependsOnObservables = !observablesForNode.empty();
+
+      // If the node doesn't depend on any observables, there is no need to
+      // loop over events and we don't need to use the batched evaluation.
+      _nodeInfos[pAbsReal].computeInScalarMode = observablesForNode.empty() || !pAbsReal->isDerived();
+
       computeQueue.push(pAbsReal);
       auto clients = pAbsReal->valueClients();
       for (auto* client:clients) {
@@ -119,10 +127,12 @@ double RooFitDriver::getVal()
   while (!computeQueue.empty())
   {
     auto node = computeQueue.front();
+    auto const& nodeInfo = _nodeInfos[node];
+
     computeQueue.pop();
 
-    if(!node->isDerived()) {
-      nonDerivedValues.push_back(node->getVal());
+    if(nodeInfo.computeInScalarMode) {
+      nonDerivedValues.push_back(node->getVal(_data->get()));
       dataMap[node] = RooSpan<const double>(&nonDerivedValues.back(),1);
     }
     else {
@@ -159,7 +169,7 @@ double RooFitDriver::getVal()
     // check for nodes whose _vectorBuffers can now be recycled.
     for (auto* server : node->servers())
     {
-      if (--remaining[server].nClients == 0 && server->isDerived())
+      if (--remaining[server].nClients == 0 && !remaining[server].computeInScalarMode)
         _vectorBuffers.push(const_cast<double*>( dataMap[static_cast<RooAbsReal*>(server)].data() ));
     }
   }

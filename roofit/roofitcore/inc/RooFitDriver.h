@@ -23,6 +23,8 @@ class RooFitDriver {
     struct NodeInfo {
         int nServers = 0;
         int nClients = 0;
+        bool dependsOnObservables = true;
+        bool computeInScalarMode = false;
     };
 
   private:
