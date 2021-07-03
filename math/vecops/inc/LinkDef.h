@@ -11,6 +11,8 @@
 
 #pragma link C++ namespace ROOT::VecOps;
 
+#pragma link C++ class ROOT::Internal::VecOps::SmallVectorBase-;
+
 #pragma link C++ class ROOT::VecOps::RVec<bool>-;
 
 #pragma link C++ class ROOT::VecOps::RVec<float>-;
