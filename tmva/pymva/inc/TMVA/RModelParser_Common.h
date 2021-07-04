@@ -47,24 +47,21 @@ void PyRunString(TString code, PyObject *fGlobalNS, PyObject *fLocalNS, TString 
 namespace Experimental{
    namespace SOFIE{
       RTensor<float> getArray(PyObject* value){
-      
+
          //Check and modify the function signature
          PyArrayObject* weightArray = (PyArrayObject*)value;
-         std::vector<std::size_t>shape;
+         std::vector<std::size_t>shapes;
          std::vector<std::size_t>strides;
-         
-         //Preparing the shape vector
-         for(int j=0; j<PyArray_NDIM(weightArray); ++j){
-             shape.push_back((std::size_t)(PyArray_DIM(weightArray,j)));           
-         }
 
-         //Preparing the strides vector
+         //Preparing the shapes and strides vector
          for(int j=0; j<PyArray_NDIM(weightArray); ++j){
-             shape.push_back((std::size_t)(PyArray_STRIDE(weightArray,j)));           
+            shapes.push_back((std::size_t)(PyArray_DIM(weightArray,j)));
+            strides.push_back((std::size_t)(PyArray_STRIDE(weightArray,j)));
+
          }
 
          //Declaring the RTensor object for storing weights values.
-         RTensor<float>x((float*)PyArray_DATA(weightArray),shape,strides);
+         RTensor<float>x((float*)PyArray_DATA(weightArray),shapes,strides);
          return x;
          }
          }
@@ -88,6 +85,15 @@ std::string toLower(std::string name){
           std::transform(name.begin(), name.end(), name.begin(), ::tolower);
           return name;
    }
+
+std::vector<size_t> getShape(PyObject* shapeTuple){
+
+   std::vector<size_t>inputShape;
+   for(Py_ssize_t tupleIter=0;tupleIter<PyTuple_Size(shapeTuple);++tupleIter){
+               inputShape.push_back((size_t)PyLong_AsLong(PyTuple_GetItem(shapeTuple,tupleIter)));
+         }
+   return inputShape;
+}
 
 }
 
