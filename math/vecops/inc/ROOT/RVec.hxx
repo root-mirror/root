@@ -41,7 +41,6 @@
    #define _VECOPS_USE_EXTERN_TEMPLATES true
 #endif
 
-#include <ROOT/RAdoptAllocator.hxx>
 #include <ROOT/RStringView.hxx>
 #include <TError.h> // R__ASSERT
 #include <ROOT/TypeTraits.hxx>
