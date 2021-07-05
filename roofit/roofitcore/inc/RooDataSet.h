@@ -26,7 +26,26 @@ class RooDataHist;
 #include <list>
 
 
-#define USEMEMPOOLFORDATASET
+//#define USEMEMPOOLFORDATASET
+
+// In the past, a custom memory pool was used for RooDataSet objects on the
+// heap. This memoy pool guaranteed that no memory addresses were reused for
+// different RooDataSets, making it possible to uniquely identify manually
+// allocated RooDataSets by their memory address.
+//
+// However, the memoy pool for RooArgSets caused unexpected memory usage
+// increases, even if no memory leaks were present [1]. It was suspected that
+// the memory allocation pattern with the memory pool might cause some heap
+// fragmentation, which did not happen when the standard allocator was used.
+//
+// To solve that problem, the memory pool was disabled. It is not clear what
+// RooFit code actually relied on the unique memory addresses, but an
+// alternative mechanism to uniquely identify RooDataSet objects was
+// implemented for these usecases (see RooAbsData::uniqueId()) [2].
+//
+// [1] https://github.com/root-project/root/issues/8323
+// [2] https://github.com/root-project/root/pull/8324
+
 template <class RooSet_t, size_t>
 class MemPoolForRooSets;
 

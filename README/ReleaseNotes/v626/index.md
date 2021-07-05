@@ -92,6 +92,12 @@ The definition of such multi-range likelihoods for non-extended fits changes in 
 Previously, the individual likelihoods were normalized separately in each range, which meant that the relative number of events in each sub-range was not used to estimate the PDF parameters.
 From now on, the likelihoods are normalized by the sum of integrals in each range. This implies that the likelihood takes into account all inter-range and intra-range information.
 
+### Uniquely identifying RooDataSet objects
+
+Before v6.26, it was ensured that no RooDataSet objects on the heap were located at an address that had already been used for a RooDataSet before.
+With v6.26, this is not guaranteed anymore.
+Hence, if your code uses pointer comparisons to uniquely identify RooDataSet instances, please consider using the new `RooAbsData::uniqueId()`.
+
 ## 2D Graphics Libraries
 
 - Implement the option `X+` and `Y+` for reverse axis on TGraph.

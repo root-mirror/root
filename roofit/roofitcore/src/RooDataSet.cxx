@@ -71,6 +71,15 @@ For the inverse conversion, see `RooAbsData::convertToVectorStore()`.
 ### Creating a dataset using RDataFrame
 \see RooAbsDataHelper, rf408_RDataFrameToRooFit.C
 
+### Uniquely identifying RooDataSet objects
+
+\warning Before v6.26, it was ensured that no RooDataSet objects on the heap
+were located at an address that had already been used for a RooDataSet before.
+With v6.26, this is not guaranteed anymore. Hence, if your code uses pointer
+comparisons to uniquely identify RooDataSet instances, please consider using
+the new `RooAbsData::uniqueId()`.
+
+
 **/
 
 #include "RooDataSet.h"
