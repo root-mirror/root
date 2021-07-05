@@ -17,10 +17,13 @@
 #define ROOT7_RAxis
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <limits>
+#include <ostream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "ROOT/RAxisConfig.hxx"
@@ -89,33 +92,345 @@ protected:
       return (int)rawbin;
    }
 
-   /// Check if two axis have the same bin borders
+   /// Placeholder bin width to be used in ComparePosToBinBorder when there is
+   /// no bin or the width of that bin is irrelevant.
+   constexpr static const double kNoBinWidth = -1.;
+
+   /// Compare an axis position with an axis bin border
    ///
-   /// Default implementation should work for any RAxis type, but is quite
-   /// inefficient as it does virtual GetBinFrom calls in a loop. RAxis
-   /// implementations are encouraged to provide optimized overrides for common
-   /// axis binning comparison scenarios.
-   virtual bool HasSameBinBordersAs(const RAxisBase& other) const {
-      // Axis growability (and thus under/overflow bin existence) must match
-      if (CanGrow() != other.CanGrow())
-         return false;
+   /// Given a position of interest on the axis, a bin border position, and the
+   /// bin width on both sides of said bin border, tell if the position of
+   /// interest should be considered to be located before (-1), at the same
+   /// position (0), or after (+1) the bin border of interest.
+   ///
+   /// If there is no bin on one side of the target axis bin border, if it is an
+   /// under/overflow bin, or if you do not care if the result is zero or
+   /// nonzero on that side of the target bin border, please set the
+   /// corresponding bin width to kNoBinWidth.
+   ///
+   static int ComparePosToBinBorder(double x,
+                                    double binBorder,
+                                    double leftBinWidth,
+                                    double rightBinWidth) {
+      // Current tolerance policy when there is no bin width on one side is to
+      // treat the unknown bin width as a bin width of 1.
+      if (leftBinWidth == kNoBinWidth) leftBinWidth = 1.;
+      if (rightBinWidth == kNoBinWidth) rightBinWidth = 1.;
 
-      // Number of normal bins must match
-      if (GetNBinsNoOver() != other.GetNBinsNoOver())
-         return false;
-
-      // Left borders of normal bins must match
-      for (int bin: *this)
-         if (GetBinFrom(bin) != other.GetBinFrom(bin))
-            return false;
-
-      // Right border of the last normal bin (aka maximum) must also match
-      if (GetMaximum() != other.GetMaximum())
-         return false;
-
-      // If all of these checks passed, the two axes have the same bin borders
-      return true;
+      // Perform an approximate bin border comparison
+      const double offset = x - binBorder;
+      const double tolerance = 1e-6;
+      if (offset < 0.) {
+         return -static_cast<int>(offset < -leftBinWidth*tolerance);
+      } else {
+         return static_cast<int>(offset > rightBinWidth*tolerance);
+      }
    }
+
+   /// Enum for specifying a side of an axis bin
+   enum class BinSide {
+      /// Left side of a bin
+      kFrom,
+
+      /// Right side of a bin
+      kTo,
+   };
+
+   /// Compare an axis position with a bin border of this axis
+   ///
+   /// Given a position of interest, a bin number, and a BinSide indicating
+   /// which side of the bin we're talking about, tell if the position of
+   /// interest is located strictly before (-1), at about the same position (0)
+   /// or strictly after (+1) the bin border of interest.
+   ///
+   /// This is a higher-level alternative to the static method above.
+   ///
+   int ComparePosToBinBorder(double x, int bin, BinSide side) const noexcept {
+      // Handle underflow bin edge case
+      if (bin == kUnderflowBin) {
+         assert(!CanGrow());
+         switch (side) {
+            case BinSide::kFrom:
+               // Everything is after the underflow bin's "left edge"
+               return 1;
+            case BinSide::kTo:
+               return ComparePosToBinBorder(x, GetFirstBin(), BinSide::kFrom);
+         }
+      }
+
+      // Handle overflow bin edge case
+      if (bin == kOverflowBin) {
+         assert(!CanGrow());
+         switch (side) {
+            case BinSide::kFrom:
+               return ComparePosToBinBorder(x, GetLastBin(), BinSide::kTo);
+            case BinSide::kTo:
+               // Everything is before the overflow bin's "right edge"
+               return -1;
+         }
+      }
+
+      // Get regular bin border comparison parameters
+      double borderPos = 0., leftBinWidth = 0., rightBinWidth = 0.;
+      switch (side) {
+         case BinSide::kFrom:
+            borderPos = GetBinFrom(bin);
+            leftBinWidth =
+               (bin > GetFirstBin()) ? (borderPos - GetBinFrom(bin-1))
+                                     : kNoBinWidth;
+            rightBinWidth = GetBinTo(bin) - borderPos;
+            break;
+         case BinSide::kTo:
+            borderPos = GetBinTo(bin);
+            leftBinWidth = borderPos - GetBinFrom(bin);
+            rightBinWidth =
+               (bin < GetLastBin()) ? (GetBinTo(bin+1) - borderPos)
+                                    : kNoBinWidth;
+      }
+
+      // Perform an approximate bin border comparison
+      return ComparePosToBinBorder(x, borderPos, leftBinWidth, rightBinWidth);
+   }
+
+public:
+   /// Result of comparing two axes with numerical bin borders for histogram
+   /// merging
+   class NumericBinningCompatibility {
+   public:
+      /// Flags representing various properties that can emerge from the
+      /// comparison of two numerical axes (see methods for a full description)
+      enum Flags {
+         // The mapping from source to target regular bin indices is trivial
+         kTrivialRegularBinMapping = 1 << 0,
+
+         // The mapping between source and target regular bins is bijective
+         kRegularBinBijection = 1 << 1,
+
+         // The mapping between all source and target bins is bijective
+         kFullBinBijection = 1 << 2,
+
+         // Some bins from the source map to target bins that span extra range
+         kMergingIsLossy = 1 << 3,
+
+         // Some regular bins from the source axis map to multiple target bins
+         kRegularBinAliasing = 1 << 4,
+
+         // The source underflow bin must be empty to allow histogram merging
+         kNeedEmptyUnderflow = 1 << 5,
+
+         // The source overflow bin must be empty to allow histogram merging
+         kNeedEmptyOverflow = 1 << 6,
+
+         // The target axis must grow in order to span the full source range
+         kTargetMustGrow = 1 << 7,
+      };
+
+      /// Build a numerical binning comparison result
+      ///
+      /// See the methods of this class for a more detailed description of what
+      /// each of these flags mean.
+      ///
+      NumericBinningCompatibility(Flags flags)
+         : fFlags(flags)
+      {}
+
+      // Check against another comparison result
+      bool operator==(const NumericBinningCompatibility& other) const {
+         return fFlags == other.fFlags;
+      }
+
+      /// Truth that there is a trivial mapping from the indices of the source
+      /// axis's regular bins to those of the target axis
+      ///
+      /// If this property is true, then every regular source axis bin maps into
+      /// a target axis bin which has the same bin index.
+      ///
+      /// For source axis bins which map into multiple target axis bins (see
+      /// `HasRegularBinAliasing()`), the target bin which has the same index as
+      /// the source bin must be the _first_ matching bin in target axis order.
+      ///
+      // NOTE: This property can be leveraged to avoid local bin index
+      //       conversions in an histogram merging implementation.
+      //
+      bool HasTrivialRegularBinMapping() const {
+         return fFlags & kTrivialRegularBinMapping;
+      }
+
+      /// Truth that there is a bijective mapping between the regular bins
+      /// of the source and target axis
+      ///
+      /// This property, which implies `HasTrivialRegularBinMapping()`,
+      /// indicates that every regular source axis bin maps into a regular
+      /// target axis bin with the same index and vice versa.
+      ///
+      /// If this property (or its `!TargetWillHaveExtraBins()` cousin for
+      /// labeled axes) is true for every dimension of a source and target
+      /// histogram, then every regular source histogram bin maps into a target
+      /// histogram bin with the same global bin index.
+      ///
+      // NOTE: This property can be leveraged to avoid local<->global regular
+      //       bin index conversions in the histogram merging implementation.
+      //
+      bool HasRegularBinBijection() const {
+         if (fFlags & kRegularBinBijection)
+            assert(HasTrivialRegularBinMapping());
+         return fFlags & kRegularBinBijection;
+      }
+
+      /// Truth that there is a bijective mapping between all bins of the source
+      /// and target axis, both regular and under/overflow
+      ///
+      /// This property, which implies `HasBijectiveRegularBinMapping()`,
+      /// indicates that every bin of the source axis, regular or
+      /// under/overflow, maps into a target axis bin with the same index and
+      /// vice versa.
+      ///
+      /// The mapping of the source overflow bin to the target overflow bin
+      /// differs from the definition of `HasTrivialRegularBinMapping()` in that
+      /// the target overflow bin is guaranteed to be the _last_ target axis bin
+      /// which the source overflow bin maps into, not the first.
+      ///
+      /// If this property (or its `!TargetWillHaveExtraBins()` cousin for
+      /// labeled axes) is true for every dimension of a source and target
+      /// histogram, then every source histogram bin, whether regular or
+      /// under/overflow, maps into a target histogram bin with the same global
+      /// bin index.
+      ///
+      // NOTE: This property allows applying the same sort of histogram merging
+      //       optimizations as RegularBinBijection(), but for overflow bins
+      //       too in addition to regular bins.
+      //
+      //       Regular bin bijection is treated as a prerequisite of overflow
+      //       bin bijection because in a multi-dimensional histogram, regular
+      //       bins of one axis will be part of the under/overflow hyperplane of
+      //       other axes. That condition is slightly more pessimistic than what
+      //       we actually need, but easier to check and good enough for the
+      //       common case of merging two histograms with identical axis config.
+      //
+      bool HasFullBinBijection() const {
+         if (fFlags & kFullBinBijection)
+            assert(HasRegularBinBijection());
+         return fFlags & kFullBinBijection;
+      }
+
+      /// Truth that some bins from the source axis map into target axis bins
+      /// that span some extra axis range
+      ///
+      /// From the perspective of histogram merging, this property means that
+      /// some information about the location of previous histogram fills may be
+      /// lost in the histogram merging process.
+      ///
+      /// If that happens, the histogram merge is irreversible: trying to merge
+      /// data back from the target histogram to another histogram which has the
+      /// same binning as the source histogram will lead to bin aliasing issues
+      /// (see below).
+      ///
+      // NOTE: This property does not affect the histogram merging
+      //       implementation, but should be reported as a warning to its user.
+      //
+      // NOTE: This does _not_ imply that the target bins are bigger, for a
+      //       counter-example this flag would be set in the example below:
+      //
+      //           Source axis bins:   |---|
+      //           Target axis bins: |---|---|
+      //
+      bool MergingIsLossy() const {
+         return fFlags & kMergingIsLossy;
+      }
+
+      /// Truth that some regular bins from the source axis map into multiple
+      /// bins (regular or under/overflow) on the target axis
+      ///
+      /// These bins must be empty for histogram merging to be possible, because
+      /// if they had some content, no automated histogram merging routine would
+      /// be able to correctly split this content across matching target
+      /// histogram bins. The required information about how fills were
+      /// distributed inside of the source bins simply isn't there.
+      ///
+      // NOTE: If this property is true, then for each source axis bin, the
+      //       histogram merging implementation must locate a matching target
+      //       axis bin (possibly using the optimizations permitted by
+      //       `HasTrivialRegularBinMapping()` and `HasRegularBinBijection()`),
+      //       and check if its borders match those of the source. If not, the
+      //       source bin in question must be empty or else the histogram
+      //       merging implementation will have to error out.
+      //
+      bool HasRegularBinAliasing() const {
+         return fFlags & kRegularBinAliasing;
+      }
+
+      /// Truth that the source axis' underflow bin(s) must be empty for
+      /// histogram merging to be possible
+      ///
+      /// This property may only be true if the source axis has underflow bins.
+      ///
+      bool MergingNeedsEmptyUnderflow() const {
+         return fFlags & kNeedEmptyUnderflow;
+      }
+
+      /// Truth that the source axis' overflow bin(s) must be empty for
+      /// histogram merging to be possible
+      ///
+      /// This property may only be true if the source axis has overflow bins.
+      ///
+      bool MergingNeedsEmptyOverflow() const {
+         return fFlags & kNeedEmptyOverflow;
+      }
+
+      /// Truth that the target axis must grow to span the source axis range
+      ///
+      /// This property may only be true if the target axis is growable.
+      ///
+      /// All other properties are computed under the assumption that such
+      /// growth has indeed occurred.
+      ///
+      // NOTE: Such growth may not actually be necessary if the source axis bins
+      //       which are not covered by the target axis are empty. However,
+      //       figuring this out requires a scan of the source histogram bins,
+      //       so it's dubious whether it's a good idea to check for it from a
+      //       performance point of view.
+      //
+      bool MergingNeedsTargetGrowth() const {
+         return fFlags & kTargetMustGrow;
+      }
+
+   private:
+      Flags fFlags;
+   };
+
+protected:
+   /// Compare the numerical bin borders of one axis with that of another for
+   /// the purpose of evaluating an histogram merging scenario
+   ///
+   /// Since histogram merging has asymmetric properties, this axis is the
+   /// target axis, and the other axis is the source axis.
+   ///
+   /// Growable RAxis subclasses **must** override this method in a manner which
+   /// evaluates possible axis growth scenarios, before calling back
+   /// `CheckFixedNumericalBinningCompat()`, which implements the actual
+   /// binning comparison, on a simulated grown axis.
+   ///
+   // FIXME: As of 2020-05-27, every RAxis type is considered to have numerical
+   //        bin borders, but that doesn't make sense for RAxisLabels. This will
+   //        be fixed by adding a lower-level base class which doesn't assume
+   //        the existence of floating-point bin borders, which will also lay
+   //        out the groundwork for supporting boolean/integer bin borders.
+   //
+   virtual NumericBinningCompatibility
+   CheckNumericBinningCompat(const RAxisBase& source) const {
+      assert(!CanGrow());
+      return CheckFixedNumericBinningCompat(source, false);
+   }
+
+   /// Callback of `CheckNumericalBinningCompat()` containing the actual bin
+   /// border comparison logic, to be invoked after simulating any required axis
+   /// growth scenarios, on the grown target axis.
+   ///
+   /// This method can be overriden for performance optimization purposes.
+   ///
+   virtual NumericBinningCompatibility
+   CheckFixedNumericBinningCompat(const RAxisBase& source,
+                                  bool growthOccured) const;
 
 public:
    /**
@@ -313,17 +628,300 @@ public:
    /// Get the high end of the axis range.
    double GetMaximum() const { return GetBinTo(GetLastBin()); }
 
-   /// Check if two axes use the same binning convention, i.e.
-   ///
-   /// - Either they are both growable or neither of them is growable.
-   /// - Minimum, maximum, and all bin borders in the middle are the same.
-   /// - Bin labels must match (exactly including order, for now).
-   bool HasSameBinningAs(const RAxisBase& other) const;
-
    /// If the coordinate `x` is within 10 ULPs of a bin low edge coordinate,
    /// return the bin for which this is a low edge. If it's not a bin edge,
    /// return `kInvalidBin`.
    virtual int GetBinIndexForLowEdge(double x) const noexcept = 0;
+
+   /// Result of comparing two labeled axis for histogram merging
+   class LabeledBinningCompatibility {
+   public:
+      /// Flags representing various properties that can emerge from the
+      /// comparison of two labeled axes (see methods for a full description)
+      enum Flags {
+         // The target axis must grow to cover all source axis labels w/ bins
+         kTargetMustGrow = 1 << 0,
+
+         // Need target bin reordering or an order-insensitive merge algorithm
+         kLabelOrderDiffers = 1 << 1,
+
+         // After growing, the target axis will have more bins than the source
+         kExtraTargetBins = 1 << 2,
+      };
+
+      /// Build a labeled axis comparison result
+      ///
+      /// See the methods of this class for a more detailed description of what
+      /// each of these flags mean.
+      ///
+      LabeledBinningCompatibility(Flags flags,
+                                  std::vector<std::string_view>&& sourceOnlyLabels)
+         : fFlags(flags)
+         , fSourceOnlyLabels(std::move(sourceOnlyLabels))
+      {}
+
+      // Check against another comparison result
+      bool operator==(const LabeledBinningCompatibility& other) const {
+         return (fFlags == other.fFlags)
+                && (fSourceOnlyLabels == other.fSourceOnlyLabels);
+      }
+
+      /// List of source axis labels which the target axis does not have
+      ///
+      /// These labels will need to be added to the target axis before histogram
+      /// data merging becomes possible.
+      ///
+      /// Labels are listed in the order in which they appear in the source
+      /// axis, and should be added to the target axis in this order, both for
+      /// good user experience and for other `LabeledBinningCompatibility`
+      /// properties to be usable.
+      ///
+      /// Labels with have no associated bins are not accounted for, since they
+      /// contain no useful data to be transferred to the target axis.
+      ///
+      /// This property implies `TargetMustGrow()`.
+      ///
+      const std::vector<std::string_view>& SourceOnlyLabels() const {
+         if (!fSourceOnlyLabels.empty()) {
+            assert(TargetMustGrow());
+         }
+         return fSourceOnlyLabels;
+      }
+
+      /// The target axis must grow to encompass all source bins
+      ///
+      /// This can happen either because more source labels need to be added
+      /// to the target axis (see above) or because the target axis already has
+      /// the proper labels, but they don't have associated bins yet.
+      ///
+      /// Target axis growth should be carried out after adding missing labels.
+      ///
+      bool TargetMustGrow() const {
+         return fFlags & kTargetMustGrow;
+      }
+
+      /// Source and target labels are not (or won't be) in the same order
+      ///
+      /// After adding any missing bins and labels to the target axis, the
+      /// histogram merging algorithm will need to either reorder the target
+      /// axis' labels (and associated histogram bins) or support merge
+      /// scenarios in which source->target bin correspondence is nontrivial.
+      ///
+      /// If needed, bin reordering must be carried out after adding any missing
+      /// labels and growing the target axis.
+      ///
+      bool LabelOrderDiffers() const {
+         return fFlags & kLabelOrderDiffers;
+      }
+
+      /// After growing, the target axis will have more bins than the source
+      ///
+      /// This means that even if `LabelOrderDiffers()` is false or bin
+      /// reordering is applied, global bin indices will not match between the
+      /// source and target histogram, and local<->global bin index conversions
+      /// will be necessary during histogram merging.
+      ///
+      /// This is the moral equivalent of
+      /// `NumericalBinCompatibility::FullBinBijection()` for labeled axes.
+      ///
+      // NOTE: Although this technically applies to regular bins only, there is
+      //       no need for a regular/full bin bijection distinction here because
+      //       labeled axes may only be successfully compared with other labeled
+      //       axes, and therefore the number of under/overflow bins is
+      //       guaranteed to be the same on both sides.
+      //
+      bool TargetWillHaveExtraBins() const {
+         return fFlags & kExtraTargetBins;
+      }
+
+   private:
+      Flags fFlags;
+      std::vector<std::string_view> fSourceOnlyLabels;
+   };
+
+   /// Result of comparing two axes for histogram merging
+   //
+   // TODO: Replace with std::variant once RHist goes C++17
+   //
+   class BinningCompatibility {
+   public:
+      /// Case where two axes of incompatible types were compared
+      BinningCompatibility()
+         : fKind(CompatKind::kIncompatible)
+      {}
+
+      /// Case where two axes using numerical bin borders were compared
+      ///
+      /// See the methods of this class for a more detailed description of what
+      /// each of these flags mean.
+      ///
+      explicit BinningCompatibility(NumericBinningCompatibility numeric)
+         : fKind(CompatKind::kNumeric)
+         , fNumeric(numeric)
+      {}
+
+      /// Case where two RAxisLabels were compared
+      ///
+      /// See the methods of this class for a more detailed description of what
+      /// each of these flags mean.
+      ///
+      explicit BinningCompatibility(LabeledBinningCompatibility labeled)
+         : fKind(CompatKind::kLabeled)
+         , fLabeled(labeled)
+      {}
+
+      // Handle copies and moves
+      BinningCompatibility(const BinningCompatibility& other) {
+         *this = other;
+      }
+      BinningCompatibility(BinningCompatibility&& other) {
+         *this = std::move(other);
+      }
+      BinningCompatibility& operator=(const BinningCompatibility& other) {
+         switch (other.fKind) {
+            case CompatKind::kIncompatible:
+               rebuild();
+               break;
+
+            case CompatKind::kNumeric:
+               rebuild(other.fNumeric);
+               break;
+
+            case CompatKind::kLabeled:
+               rebuild(other.fLabeled);
+               break;
+         }
+         return *this;
+      }
+      BinningCompatibility& operator=(BinningCompatibility&& other) {
+         switch (other.fKind) {
+            case CompatKind::kIncompatible:
+               rebuild();
+               break;
+
+            case CompatKind::kNumeric:
+               rebuild(std::move(other.fNumeric));
+               break;
+
+            case CompatKind::kLabeled:
+               rebuild(std::move(other.fLabeled));
+               break;
+         }
+         return *this;
+      }
+
+      /// Destroy any inner data on destruction
+      ~BinningCompatibility() {
+         switch (fKind) {
+            case CompatKind::kIncompatible:
+               // No inner data to be destroyed
+               break;
+
+            case CompatKind::kNumeric:
+               fNumeric.~NumericBinningCompatibility();
+               break;
+
+            case CompatKind::kLabeled:
+               fLabeled.~LabeledBinningCompatibility();
+               break;
+         }
+      }
+
+      /// Check if two comparisons led to the same result
+      bool operator==(const BinningCompatibility& other) const {
+         if (other.fKind != fKind) return false;
+         switch (fKind) {
+            case CompatKind::kIncompatible:
+               return true;
+
+            case CompatKind::kNumeric:
+               return fNumeric == other.fNumeric;
+
+            case CompatKind::kLabeled:
+               return fLabeled == other.fLabeled;
+         }
+         return false;
+      }
+
+      /// Broad classification of possible axis comparisons
+      enum class CompatKind {
+         /// Two axes using a fundamentally incompatible binning scheme (e.g.
+         /// `RAxisIrregular` vs `RAxisLabels`) were compared
+         ///
+         /// It is impossible to automatically merge two histograms when the
+         /// axis types for some dimension differ so much.
+         ///
+         kIncompatible,
+
+         /// Two axes using numerical bin borders (e.g. `RAxisIrregular` vs
+         /// `RAxisEquidistant`) were compared
+         ///
+         /// In this case, bin borders are compared up to a certain tolerance,
+         /// and differences are only reported when the source axis bin borders
+         /// are not within that tolerance of the closest target bin border.
+         ///
+         /// The ability to automatically merge two histograms with numerical
+         /// bin borders depends on many factors, and may not decidable without
+         /// looking at the details of the source histogram's bin contents.
+         ///
+         kNumeric,
+
+         /// Two `RAxisLabels` were compared
+         ///
+         /// It is always possible to automatically merge two histograms if all
+         /// of their axes use labeled bins.
+         ///
+         kLabeled,
+      };
+
+      /// Kind of axis comparison that was carried out
+      CompatKind Kind() const noexcept { return fKind; }
+
+      /// Get the detailed result of a numerical axis comparison
+      const NumericBinningCompatibility& GetNumeric() const {
+         CheckKind(CompatKind::kNumeric);
+         return fNumeric;
+      }
+
+      /// Get the detailed result of a labeled axis comparison
+      const LabeledBinningCompatibility& GetLabeled() const {
+         CheckKind(CompatKind::kLabeled);
+         return fLabeled;
+      }
+
+   private:
+      /// Kind of axis comparison that was carried out
+      CompatKind fKind;
+
+      /// Check that the axis comparison kind is correct in preparation to
+      /// querying a binning property which is specific to that axis kind
+      void CheckKind(CompatKind expectedKind) const;
+
+      /// Details of the axis comparison results
+      union {
+         // Valid if fKind is CompatKind::kNumeric
+         NumericBinningCompatibility fNumeric;
+
+         // Valid if fKind is CompatKind::kLabeled
+         LabeledBinningCompatibility fLabeled;
+      };
+
+      /// Replace with another instance of BinningCompatibility, constructed
+      /// using the provided arguments.
+      template <typename... Args>
+      void rebuild(Args&&... args) {
+         this->~BinningCompatibility();
+         new(this) BinningCompatibility(std::forward<Args>(args)...);
+      }
+   };
+
+   /// Compare the binning of this axis with that of another axis for the
+   /// purpose of evaluating an histogram merging scenario
+   ///
+   /// Since histogram merging has asymmetric properties, this axis is the
+   /// target axis, and the other axis is the source axis.
+   ///
+   BinningCompatibility CheckBinningCompat(const RAxisBase& source) const;
 
 private:
    std::string fTitle;    ///< Title of this axis, used for graphics / text.
@@ -395,9 +993,6 @@ protected:
    {
       return nbinsNoOver / std::fabs(highOrLow - lowOrHigh);
    }
-
-   /// See RAxisBase::HasSameBinBordersAs
-   bool HasSameBinBordersAs(const RAxisBase& other) const override;
 
    /// Find the raw bin index (not adjusted) for the given coordinate.
    /// The resulting raw bin is 0-based.
@@ -503,6 +1098,8 @@ struct AxisConfigToType<RAxisConfig::kEquidistant> {
  */
 class RAxisGrow: public RAxisEquidistant {
 public:
+   RAxisGrow() = default;
+
    /// Initialize a RAxisGrow.
    /// \param[in] title - axis title used for graphics and text representation.
    /// \param nbins - number of bins in the axis, excluding under- and overflow
@@ -559,6 +1156,10 @@ public:
 
    /// This axis kind can increase its range.
    bool CanGrow() const noexcept final override { return true; }
+
+   /// CheckNumericalBinningCompat must be overriden to handle axis growth
+   NumericBinningCompatibility
+   CheckNumericBinningCompat(const RAxisBase& source) const final override;
 };
 
 namespace Internal {
@@ -593,9 +1194,6 @@ private:
    std::vector<double> fBinBorders;
 
 protected:
-   /// See RAxisBase::HasSameBinBordersAs
-   bool HasSameBinBordersAs(const RAxisBase& other) const override;
-
    /// Find the raw bin index (not adjusted) for the given coordinate `x`.
    /// The resulting raw bin is 1-based.
    /// \note Passing a bin border coordinate can either return the bin above or
@@ -793,48 +1391,88 @@ public:
       return vec;
    }
 
-   /// Result of an RAxisLabels label set comparison
-   enum LabelsCmpFlags {
-      /// Both axes have the same labels, mapping to the same bins
-      kLabelsCmpSame = 0,
+   /// Compare the labels of this axis with those of another axis for the
+   /// purpose of investigating a histogram merging scenario
+   LabeledBinningCompatibility
+   CheckLabeledBinningCompat(const RAxisLabels& source) const noexcept {
+      // For each axis, we must carefully distinguish the number of bins from
+      // the number of labels. An RAxisLabels may have more bin labels than it
+      // has bins if a label has been queried (which automatically allocates a
+      // bin index) but the corresponding bin never registered any fill.
+      const int numSourceBins = source.GetNBinsNoOver();
+      const int numTargetLabels = fLabelsIndex.size();
+      const int numTargetBins = GetNBinsNoOver();
 
-      /// The other axis doesn't have some labels from this axis
-      kLabelsCmpSubset = 0b1,
+      // Collect the set of source bin labels in the order where the user sees
+      // them. Ignore uncommitted source labels: no bin = no data to be merged.
+      std::vector<std::string_view> sourceLabels = source.GetBinLabels();
+      sourceLabels.resize(numSourceBins);
 
-      /// The other axis has some labels which this axis doesn't have
-      kLabelsCmpSuperset = 0b10,
+      // Check how source _bins_ map into target bins and labels, simulating
+      // label and bin creation as necessary.
+      int newTargetLabelIdx = numTargetLabels;
+      int numBinsAfterGrowth = numTargetBins;
+      bool labelOrderDiffers = false;
+      for (int sourceLabelIdx = 0; sourceLabelIdx < numSourceBins; ++sourceLabelIdx) {
+         // Look for the the source bin's label in the target axis' label set
+         //
+         // FIXME: Remove string allocation once ROOT goes C++20 and
+         //        unordered_map supports searching a hashmap without
+         //        materializing an owned key...
+         //
+         auto iter = fLabelsIndex.find(std::string(sourceLabels[sourceLabelIdx]));
 
-      /// The labels shared by both axes do not map into the same bins
-      kLabelsCmpDisordered = 0b100,
-   };
-
-   /// Compare the labels of this axis with those of another axis
-   LabelsCmpFlags CompareBinLabels(const RAxisLabels& other) const noexcept {
-      // This will eventually contain the results of the labels comparison
-      LabelsCmpFlags result = kLabelsCmpSame;
-      size_t missing_in_other = 0;
-
-      // First, check how this axis' labels map into the other axis
-      for (const auto &kv: fLabelsIndex) {
-         auto iter = other.fLabelsIndex.find(kv.first);
-         if (iter == other.fLabelsIndex.cend()) {
-            ++missing_in_other;
-         } else if (iter->second != kv.second) {
-            result = LabelsCmpFlags(result | kLabelsCmpDisordered);
+         // Use the bin index of any existing target label, or simulate creating
+         // a new label in the target axis.
+         //
+         // Along the way, keep track of which labels only exist in the source
+         // axis, and thus need to be added to the target axis, by clearing out
+         // the labels which _do_ exist in the target axis within the list of
+         // source labels. Obviously, the source label must not be used after
+         // this operation has been performed.
+         //
+         int targetLabelIdx;
+         if (iter != fLabelsIndex.cend()) {
+            targetLabelIdx = iter->second;
+            sourceLabels[sourceLabelIdx] = std::string_view();
+         } else {
+            targetLabelIdx = newTargetLabelIdx++;
          }
+
+         // If the target label has no associated bin yet, simulate growing
+         // the target axis to materialize that bin
+         numBinsAfterGrowth = std::max(numBinsAfterGrowth, targetLabelIdx+1);
+
+         // Check if label order is consistent in the source and target axes
+         labelOrderDiffers |= (targetLabelIdx != sourceLabelIdx);
       }
-      if (missing_in_other > 0)
-         result = LabelsCmpFlags(result | kLabelsCmpSubset);
 
-      // If this covered all labels in the other axis, we're done
-      if (fLabelsIndex.size() == other.fLabelsIndex.size() + missing_in_other)
-         return result;
+      // At this point, sourceLabels contains non-empty string views for labels
+      // which are unique to the source axis, and empty string views for labels
+      // which exist in both the source and target axis. From this, we can
+      // easily get a list of labels which only exist in the source axis.
+      const auto sourceOnlyEnd =
+         std::remove(sourceLabels.begin(), sourceLabels.end(), std::string_view());
+      sourceLabels.resize(std::distance(sourceLabels.begin(), sourceOnlyEnd));
+      // From this point on, the sourceLabels vectors contains the set of labels
+      // which only exists in the source axis, and not on the target axis.
 
-      // Otherwise, we must check the labels of the other axis too
-      for (const auto &kv: other.fLabelsIndex)
-         if (fLabelsIndex.find(kv.first) == fLabelsIndex.cend())
-            return LabelsCmpFlags(result | kLabelsCmpSuperset);
-      return result;
+      // Figure if after performing any missing source label addition, the
+      // histogram merging implementation will need to grow the target axis.
+      const bool targetMustGrow = (numBinsAfterGrowth > numTargetBins);
+
+      // Figure out if after growing the target axis as needed, it will feature
+      // some labels which the source axis doesn't have.
+      bool extraTargetBins = (numBinsAfterGrowth > numSourceBins);
+
+      // Produce the results of the comparison
+      using Flags = LabeledBinningCompatibility::Flags;
+      return LabeledBinningCompatibility(
+         Flags(targetMustGrow * Flags::kTargetMustGrow
+               + labelOrderDiffers * Flags::kLabelOrderDiffers
+               + extraTargetBins * Flags::kExtraTargetBins),
+         std::move(sourceLabels)
+      );
    }
 };
 
@@ -849,30 +1487,21 @@ struct AxisConfigToType<RAxisConfig::kLabels> {
 
 } // namespace Internal
 
-///\name Axis Compatibility
-///\{
-enum class EAxisCompatibility {
-   kIdentical, ///< Source and target axes are identical
-
-   kContains, ///< The source is a subset of bins of the target axis
-
-   /// The bins of the source axis have finer granularity, but the bin borders
-   /// are compatible. Example:
-   /// source: 0., 1., 2., 3., 4., 5., 6.; target: 0., 2., 5., 6.
-   /// Note that this is *not* a symmetrical property: only one of
-   /// CanMerge(source, target), CanMap(target, source) can return kContains.
-   kSampling,
-
-   /// The source axis and target axis have different binning. Example:
-   /// source: 0., 1., 2., 3., 4., target: 0., 0.1, 0.2, 0.3, 0.4
-   kIncompatible
-};
-
-/// Whether (and how) the source axis can be merged into the target axis.
-EAxisCompatibility CanMap(const RAxisEquidistant &target, const RAxisEquidistant &source) noexcept;
-///\}
-
 } // namespace Experimental
 } // namespace ROOT
+
+// Display operator for nicer test assertion errors
+std::ostream& operator<<(
+   std::ostream&,
+   const ROOT::Experimental::RAxisBase::NumericBinningCompatibility&
+);
+std::ostream& operator<<(
+   std::ostream&,
+   const ROOT::Experimental::RAxisBase::LabeledBinningCompatibility&
+);
+std::ostream& operator<<(
+   std::ostream&,
+   const ROOT::Experimental::RAxisBase::BinningCompatibility&
+);
 
 #endif // ROOT7_RAxis header guard
