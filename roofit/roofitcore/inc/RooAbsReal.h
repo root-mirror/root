@@ -388,7 +388,10 @@ protected:
   const RooAbsReal* createPlotProjection(const RooArgSet& depVars, const RooArgSet& projVars, RooArgSet*& cloneSet) const ;
   const RooAbsReal *createPlotProjection(const RooArgSet &dependentVars, const RooArgSet *projectedVars,
 				         RooArgSet *&cloneSet, const char* rangeName=0, const RooArgSet* condObs=0) const;
-  virtual void computeBatch(double*, size_t, rbc::DataMap&) const {throw std::runtime_error("computeBatch not implemented in this derived class"); }
+  virtual void computeBatch(double*, size_t, rbc::DataMap&) const
+  {
+    throw std::runtime_error("computeBatch not implemented in class " + std::string(ClassName()) );
+  }
 
  protected:
 

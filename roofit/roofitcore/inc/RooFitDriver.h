@@ -20,10 +20,9 @@ class RooFitDriver {
      RooArgSet* getParameters() const;
      
     struct NodeInfo {
-        int nServers = 0;
-        int nClients = 0;
-        bool dependsOnObservables = true;
-        bool computeInScalarMode = false;
+      int nServers = 0;
+      int nClients = 0;
+      bool computeInScalarMode = false;
     };
 
   private:

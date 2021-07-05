@@ -61,6 +61,7 @@ Check the tutorial rf506_msgservice.C for details.
 #include "RooFit.h"
 #include "RooMsgService.h"
 #include "RunContext.h"
+#include "RooBatchCompute.h"
 
 #include "ROOT/RMakeUnique.hxx"
 #include "TObjString.h"
@@ -406,6 +407,21 @@ RooSpan<double> RooFormula::evaluateSpan(const RooAbsReal* dataOwner, RooBatchCo
   }
 
   return output;
+}
+
+void RooFormula::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const
+{
+  const int nPars=_origList.size();
+  std::vector<RooSpan<const double>> inputSpans(nPars);
+  for (int i=0; i<nPars; i++)
+    inputSpans[i] = dataMap.at( static_cast<const RooAbsReal*>(&_origList[i]) );
+
+  std::vector<double> pars(nPars);
+  for (size_t i=0; i<nEvents; i++)
+  {
+    for (int j=0; j<nPars; j++) pars[j] = inputSpans[j].size()>1 ? inputSpans[j][i] : inputSpans[j][0];
+    output[i] = _tFormula->EvalPar( pars.data() );
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

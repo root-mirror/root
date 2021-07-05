@@ -79,7 +79,6 @@ RooFitDriver::RooFitDriver(const RooAbsData& data, const RooNLLVarNew& topNode, 
     {
       RooArgSet observablesForNode;
       pAbsReal->getObservables(_data->get(), observablesForNode);
-      _nodeInfos[pAbsReal].dependsOnObservables = !observablesForNode.empty();
 
       // If the node doesn't depend on any observables, there is no need to
       // loop over events and we don't need to use the batched evaluation.
