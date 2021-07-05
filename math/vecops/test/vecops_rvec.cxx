@@ -1088,14 +1088,51 @@ TEST(VecOps, Construct)
    EXPECT_TRUE(fourVects[2] == ref2);
 }
 
+bool IsSmall(const RVec<int> &v)
+{
+   // the first array element is right after the 3 data members of SmallVectorBase
+   return reinterpret_cast<std::uintptr_t>(v.begin()) - reinterpret_cast<std::uintptr_t>(&v) == 16u;
+}
+
 // this is a regression test for https://github.com/root-project/root/issues/6796
 TEST(VecOps, MemoryAdoptionAndClear)
 {
    ROOT::RVec<int> v{1, 2, 3};
+   EXPECT_TRUE(IsSmall(v));
    ROOT::RVec<int> v2(v.data(), v.size());
    v2[0] = 0;
    v2.clear();
    EXPECT_TRUE(All(v == RVec<int>{0, 2, 3}));
    v2.push_back(42);
+   EXPECT_FALSE(IsSmall(v2)); // currently RVec does not go back to a small state after `clear()`
    EXPECT_TRUE(All(v2 == RVec<int>{42}));
+}
+
+// interaction between small buffer optimization and memory adoption
+TEST(VecOps, MemoryAdoptionAndSBO)
+{
+   int *values = new int[3]{1, 2, 3};
+   ROOT::RVec<int> v(values, 3);
+   auto check = [](const RVec<int> &mv) {
+      EXPECT_EQ(mv.size(), 3u);
+      EXPECT_EQ(mv[0], 1);
+      EXPECT_EQ(mv[1], 2);
+      EXPECT_EQ(mv[2], 3);
+   };
+   check(v);
+   EXPECT_FALSE(IsSmall(v));
+   ROOT::RVec<int> v2 = std::move(v);
+   EXPECT_TRUE(v.empty());
+   check(v2);
+   // this changes the RVec from memory adoption mode to "long" mode, even if the size is small
+   // currently we don't allow going from memory adoption to small buffer mode directly, it could be future optimization
+   v2.push_back(4);
+   EXPECT_FALSE(IsSmall(v2));
+   v2.clear();
+   v2.push_back(1);
+   v2.push_back(2);
+   v2.push_back(3);
+   check(v2);
+   delete[] values;
+   check(v2);
 }
