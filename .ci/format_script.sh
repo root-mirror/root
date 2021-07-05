@@ -2,7 +2,6 @@
 
 set -ex
 
-BASE_COMMIT=$(git rev-parse $TRAVIS_BRANCH)
 echo "Running clang-format against branch $TRAVIS_BRANCH, with hash $BASE_COMMIT"
 COMMIT_FILES=$(git diff --name-only $BASE_COMMIT | grep -i -v LinkDef)
 RESULT_OUTPUT="$(git-clang-format --commit $BASE_COMMIT --diff --binary `which clang-format` $COMMIT_FILES)"

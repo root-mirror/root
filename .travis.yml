@@ -23,7 +23,11 @@ matrix:
   include:
     - env: TOOL=clang-format
       script: &format_script
-        - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then .ci/format_script.sh; fi
+        - |
+          if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+            export BASE_COMMIT=$(git rev-parse $TRAVIS_BRANCH)
+            .ci/format_script.sh
+          fi
 
     - env: TOOL=clang-tidy-analyzer
       before_script: &copy_headers
