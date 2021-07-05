@@ -19,8 +19,9 @@
 #include "RooPrintable.h"
 #include "RooArgList.h"
 #include "RooArgSet.h"
+
+#include "rbc.h"
 #include "TFormula.h"
-#include "RooSpan.h"
 
 #include <memory>
 #include <vector>
@@ -60,6 +61,7 @@ public:
   /// Evalute all parameters/observables, and then evaluate formula.
   Double_t eval(const RooArgSet* nset=0) const;
   RooSpan<double> evaluateSpan(const RooAbsReal* dataOwner, RooBatchCompute::RunContext& inputData, const RooArgSet* nset = nullptr) const;
+  void computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const;
 
   /// DEBUG: Dump state information
   void dump() const;

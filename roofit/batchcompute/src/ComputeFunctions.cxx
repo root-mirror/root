@@ -309,11 +309,6 @@ __global__ void computeGamma (Batches batches)
     batches._output[i] /= normVal[i];
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///Actual computations for the batch evaluation of the Gaussian.
-///May vectorise over x, mean, sigma, depending on the types of the inputs.
-///\note The output and input spans are assumed to be non-overlapping. If they
-///overlap, results will likely be garbage.
 __global__ void computeGaussian(Batches batches) 
 {
   auto x=batches[0], mean=batches[1], sigma=batches[2], normVal=batches[3];
