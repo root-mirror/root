@@ -46,12 +46,16 @@ struct RunContext {
   RooSpan<double> makeBatch(const RooAbsReal* owner, std::size_t size);
 
   /// Clear all computation results without freeing memory.
-  void clear() { spans.clear(); rangeName = nullptr; }
+  void clear();
 
   /// Once an object has computed its value(s), the span pointing to the results is registered here.
   std::unordered_map<const RooAbsReal*, RooSpan<const double>> spans;
+  std::unordered_map<const RooAbsReal*, const double*> spansCuda;
+
   /// Memory owned by this struct. It is associated to nodes in the computation graph using their pointers.
   std::unordered_map<const RooAbsReal*, std::vector<double>> ownedMemory;
+  std::unordered_map<const RooAbsReal*, double*> ownedMemoryCuda;
+
   const char* rangeName{nullptr}; /// If evaluation should only occur in a range, the range name can be passed here.
   std::vector<double> logProbabilities; /// Possibility to register log probabilities.
 };

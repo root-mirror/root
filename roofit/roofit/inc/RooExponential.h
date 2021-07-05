@@ -39,7 +39,7 @@ protected:
   RooRealProxy c;
 
   Double_t evaluate() const override;
-  RooSpan<double> evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const override;
+  void computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const override;
   
 private:
   ClassDefOverride(RooExponential,1) // Exponential PDF

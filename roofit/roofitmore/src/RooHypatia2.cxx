@@ -90,9 +90,10 @@
  */
 
 #include "RooHypatia2.h"
-#include "RooBatchCompute.h"
+#include "BracketAdapters.h"
 #include "RooAbsReal.h"
 #include "RooHelpers.h"
+#include "RunContext.h"
 
 #include "TMath.h"
 #include "Math/SpecFunc.h"

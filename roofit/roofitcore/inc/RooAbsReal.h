@@ -23,7 +23,7 @@
 #include "RooArgList.h"
 #include "RooGlobalFunc.h"
 #include "RooSpan.h"
-#include <map>
+#include "rbc.h"
 
 class RooArgList ;
 class RooDataSet ;
@@ -42,10 +42,6 @@ class RooFitResult ;
 class RooAbsMoment ;
 class RooDerivative ;
 class RooVectorDataStore ;
-namespace RooBatchCompute{
-class BatchInterfaceAccessor;
-struct RunContext;
-}
 struct TreeReadBuffer; /// A space to attach TBranches
 
 class TH1;
@@ -53,9 +49,10 @@ class TH1F;
 class TH2F;
 class TH3F;
 
-#include <list>
-#include <string>
 #include <iostream>
+#include <list>
+#include <map>
+#include <string>
 #include <sstream>
 
 class RooAbsReal : public RooAbsArg {
@@ -391,6 +388,11 @@ protected:
   const RooAbsReal* createPlotProjection(const RooArgSet& depVars, const RooArgSet& projVars, RooArgSet*& cloneSet) const ;
   const RooAbsReal *createPlotProjection(const RooArgSet &dependentVars, const RooArgSet *projectedVars,
 				         RooArgSet *&cloneSet, const char* rangeName=0, const RooArgSet* condObs=0) const;
+  virtual void computeBatch(double*, size_t, rbc::DataMap&) const
+  {
+    throw std::runtime_error("computeBatch not implemented in class " + std::string(ClassName()) );
+  }
+
  protected:
 
   RooFitResult* chi2FitDriver(RooAbsReal& fcn, RooLinkedList& cmdList) ;

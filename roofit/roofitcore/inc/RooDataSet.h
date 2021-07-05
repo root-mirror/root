@@ -111,6 +111,7 @@ public:
   void getBatches(RooBatchCompute::RunContext& evalData,
       std::size_t first = 0, std::size_t len = std::numeric_limits<std::size_t>::max()) const override;
   virtual RooSpan<const double> getWeightBatch(std::size_t first, std::size_t len) const override;
+  virtual std::string getWeightVarName() const override;
 
   // Add one ore more rows of data
   virtual void add(const RooArgSet& row, Double_t weight=1.0, Double_t weightError=0) override;

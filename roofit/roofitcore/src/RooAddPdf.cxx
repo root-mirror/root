@@ -65,16 +65,16 @@ An (enforced) condition for this assumption is that each \f$ \mathrm{PDF}_i \f$ 
 
 #include "RooAddPdf.h"
 
+#include "RooAddGenContext.h"
+#include "RooBatchCompute.h"
 #include "RooDataSet.h"
+#include "RooGlobalFunc.h"
+#include "RooNaNPacker.h"
 #include "RooRealProxy.h"
 #include "RooRealVar.h"
-#include "RooAddGenContext.h"
 #include "RooRealConstant.h"
-#include "RooRecursiveFraction.h"
-#include "RooGlobalFunc.h"
 #include "RooRealIntegral.h"
-#include "RooNaNPacker.h"
-#include "RooBatchCompute.h"
+#include "RooRecursiveFraction.h"
 
 #include "ROOT/RMakeUnique.hxx"
 
@@ -864,35 +864,22 @@ Double_t RooAddPdf::evaluate() const
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Compute addition of PDFs in batches.
-RooSpan<double> RooAddPdf::evaluateSpan(RooBatchCompute::RunContext& evalData, const RooArgSet* normSet) const {
-  auto normAndCache = getNormAndCache(normSet);
-  const RooArgSet* nset = normAndCache.first;
-  CacheElem* cache = normAndCache.second;
-
-  RooSpan<double> output;
-
-  for (unsigned int pdfNo = 0; pdfNo < _pdfList.size(); ++pdfNo) {
-    const auto& pdf = static_cast<RooAbsPdf&>(_pdfList[pdfNo]);
-    auto pdfOutputs = pdf.getValues(evalData, nset);
-    if (output.empty() || (output.size() == 1 && pdfOutputs.size() > 1)) {
-      const double init = output.empty() ? 0. : output[0];
-      output = evalData.makeBatch(this, pdfOutputs.size());
-      std::fill(output.begin(), output.end(), init);
-    }
-    assert(output.size() == pdfOutputs.size());
-
-    const double coef = _coefCache[pdfNo] / (cache->_needSupNorm ?
-        static_cast<RooAbsReal*>(cache->_suppNormList.at(pdfNo))->getVal() :
-        1.);
-
-    if (pdf.isSelectedComp()) {
-      for (std::size_t i = 0; i < output.size(); ++i) { //CHECK_VECTORISE
-        output[i] += pdfOutputs[i] * coef;
-      }
+void RooAddPdf::computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const
+{
+  rbc::VarVector pdfs;
+  rbc::ArgVector coefs;
+  CacheElem* cache = getNormAndCache().second;
+  for (unsigned int pdfNo = 0; pdfNo < _pdfList.size(); ++pdfNo)
+  {
+    auto pdf = static_cast<RooAbsPdf*>(&_pdfList[pdfNo]);
+    if (pdf->isSelectedComp())
+    {
+      pdfs.push_back(pdf);
+      coefs.push_back(_coefCache[pdfNo] / (cache->_needSupNorm ?
+        static_cast<RooAbsReal*>(cache->_suppNormList.at(pdfNo))->getVal() : 1) );
     }
   }
-
-  return output;
+  rbc::dispatch->compute(rbc::AddPdf, output, nEvents, dataMap, pdfs, coefs);
 }
 
 

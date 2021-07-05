@@ -20,7 +20,6 @@
 ///
 
 #include "RooMinimizerFcn.h"
-
 #include "RooAbsArg.h"
 #include "RooAbsPdf.h"
 #include "RooArgSet.h"
@@ -29,6 +28,7 @@
 #include "RooMsgService.h"
 #include "RooMinimizer.h"
 #include "RooNaNPacker.h"
+#include "RooFitDriver.h"
 
 #include "TClass.h"
 #include "TMatrixDSym.h"
@@ -38,9 +38,8 @@
 
 using namespace std;
 
-RooMinimizerFcn::RooMinimizerFcn(RooAbsReal *funct, RooMinimizer* context,
-			   bool verbose) :
-  _funct(funct), _context(context),
+RooMinimizerFcn::RooMinimizerFcn(RooAbsReal *funct, RooMinimizer* context, bool verbose, RooFitDriver* driver) :
+  _funct(funct), _driver(driver), _context(context),
   // Reset the *largest* negative log-likelihood value we have seen so far
   _maxFCN(-std::numeric_limits<double>::infinity()), _numBadNLL(0),
   _printEvalErrors(10),
@@ -49,7 +48,7 @@ RooMinimizerFcn::RooMinimizerFcn(RooAbsReal *funct, RooMinimizer* context,
 {
 
   // Examine parameter list
-  RooArgSet* paramSet = _funct->getParameters(RooArgSet());
+  RooArgSet* paramSet = !_driver ? _funct->getParameters(RooArgSet()) : _driver->getParameters();
   RooArgList paramList(*paramSet);
   delete paramSet;
 
@@ -89,6 +88,7 @@ RooMinimizerFcn::RooMinimizerFcn(RooAbsReal *funct, RooMinimizer* context,
 
 RooMinimizerFcn::RooMinimizerFcn(const RooMinimizerFcn& other) : ROOT::Math::IBaseFunctionMultiDim(other),
   _funct(other._funct),
+  _driver(other._driver),
   _context(other._context),
   _maxFCN(other._maxFCN),
   _funcOffset(other._funcOffset),
@@ -504,7 +504,7 @@ double RooMinimizerFcn::DoEval(const double *x) const {
 
   // Calculate the function for these parameters
   RooAbsReal::setHideOffset(kFALSE) ;
-  double fvalue = _funct->getVal();
+  double fvalue = !_driver ? _funct->getVal() : _driver->getVal();
   RooAbsReal::setHideOffset(kTRUE) ;
 
   if (!std::isfinite(fvalue) || RooAbsReal::numEvalErrors() > 0 || fvalue > 1e30) {

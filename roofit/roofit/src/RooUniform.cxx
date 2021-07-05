@@ -20,11 +20,12 @@
 Flat p.d.f. in N dimensions
 **/
 
-#include "RooUniform.h"
-#include "RooBatchCompute.h"
 #include "RooAbsReal.h"
-#include "RooRealVar.h"
 #include "RooArgSet.h"
+#include "RooRealVar.h"
+#include "RooUniform.h"
+#include "RunContext.h"
+
 
 ClassImp(RooUniform);
 

@@ -34,7 +34,7 @@
 
 class RooUnitTest : public TNamed {
 public:
-  RooUnitTest(const char* name, TFile* refFile, Bool_t writeRef, Int_t verbose) ;
+  RooUnitTest(const char* name, TFile* refFile, Bool_t writeRef, Int_t verbose, int batchMode=0) ;
   ~RooUnitTest() ;
   
   void setDebug(Bool_t flag) { _debug = flag ; }
@@ -74,6 +74,7 @@ protected:
   Bool_t _debug ;
   Bool_t _write ;
   Int_t _verb ;
+  int _batchMode=0;
    std::list<std::pair<RooPlot*, std::string> > _regPlots ;
    std::list<std::pair<RooFitResult*, std::string> > _regResults ;
    std::list<std::pair<Double_t, std::string> > _regValues ;
@@ -81,6 +82,6 @@ protected:
    std::list<std::pair<RooWorkspace*,std::string> > _regWS ;
    std::list<std::pair<TH1*,std::string> > _regTH ;
 
-  ClassDef(RooUnitTest,0) ; // Abstract base class for RooFit/RooStats unit regression tests
+  ClassDef(RooUnitTest,1) ; // Abstract base class for RooFit/RooStats unit regression tests
 } ;
 #endif
