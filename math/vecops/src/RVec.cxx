@@ -58,7 +58,7 @@ void ROOT::Internal::VecOps::SmallVectorBase::grow_pod(void *FirstEl, size_t Min
    NewCapacity = std::min(std::max(NewCapacity, MinSize), SizeTypeMax());
 
    void *NewElts;
-   if (fBeginX == FirstEl) {
+   if (fBeginX == FirstEl || !this->Owns()) {
       NewElts = malloc(NewCapacity * TSize);
 
       // Copy the elements over.  No need to run dtors on PODs.
