@@ -181,6 +181,9 @@ public:
   void print(raw_ostream &Out, const ASTContext &Context,
              const PrintingPolicy &Policy, bool OmitTemplateKW = false) const;
 
+  static bool shouldIncludeTypeForArgument(const TemplateParameterList *TPL,
+                                           unsigned Idx);
+
 public:
   // FIXME: workaround for MSVC 2013; remove when no longer needed
   using FixedSizeStorageOwner = TrailingObjects::FixedSizeStorageOwner;

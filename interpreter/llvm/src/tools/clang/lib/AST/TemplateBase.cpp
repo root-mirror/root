@@ -49,8 +49,11 @@ using namespace clang;
 /// \param Out the raw_ostream instance to use for printing.
 ///
 /// \param Policy the printing policy for EnumConstantDecl printing.
-static void printIntegral(const TemplateArgument &TemplArg,
-                          raw_ostream &Out, const PrintingPolicy& Policy) {
+///
+/// \param IncludeType If set, ensure that the type of the expression printed
+/// matches the type of the template argument.
+static void printIntegral(const TemplateArgument &TemplArg, raw_ostream &Out,
+                          const PrintingPolicy &Policy, bool IncludeType) {
   const Type *T = TemplArg.getIntegralType().getTypePtr();
   const llvm::APSInt &Val = TemplArg.getAsIntegral();
 
@@ -67,22 +70,66 @@ static void printIntegral(const TemplateArgument &TemplArg,
     }
   }
 
-  if (T->isBooleanType() && !Policy.MSVCFormatting) {
-    Out << (Val.getBoolValue() ? "true" : "false");
+  if (Policy.MSVCFormatting)
+    IncludeType = false;
+
+  if (T->isBooleanType()) {
+    if (!Policy.MSVCFormatting)
+      Out << (Val.getBoolValue() ? "true" : "false");
+    else
+      Out << Val;
   } else if (T->isCharType()) {
-    const char Ch = Val.getZExtValue();
-    Out << ((Ch == '\'') ? "'\\" : "'");
-    Out.write_escaped(StringRef(&Ch, 1), /*UseHexEscapes=*/ true);
-    Out << "'";
-  } else {
-    Out << Val;
-    // Handle cases where the value is too large to fit into the underlying type
-    // i.e. where the unsignedness matters.
-    if (T->isBuiltinType()) {
-      if (Val.isUnsigned() && Val.getBitWidth() == 64 && Val.countLeadingOnes())
-        Out << "ull";
+    if (IncludeType) {
+      if (T->isSpecificBuiltinType(BuiltinType::SChar))
+        Out << "(signed char)";
+      else if (T->isSpecificBuiltinType(BuiltinType::UChar))
+        Out << "(unsigned char)";
     }
-  }
+    CharacterLiteral::print(Val.getZExtValue(), CharacterLiteral::Ascii, Out);
+  } else if (T->isAnyCharacterType() && !Policy.MSVCFormatting) {
+    CharacterLiteral::CharacterKind Kind;
+    if (T->isWideCharType())
+      Kind = CharacterLiteral::Wide;
+    else if (T->isChar8Type())
+      Kind = CharacterLiteral::UTF8;
+    else if (T->isChar16Type())
+      Kind = CharacterLiteral::UTF16;
+    else if (T->isChar32Type())
+      Kind = CharacterLiteral::UTF32;
+    else
+      Kind = CharacterLiteral::Ascii;
+    CharacterLiteral::print(Val.getExtValue(), Kind, Out);
+  } else if (IncludeType) {
+    if (const auto *BT = T->getAs<BuiltinType>()) {
+      switch (BT->getKind()) {
+      case BuiltinType::ULongLong:
+        Out << Val << "ULL";
+        break;
+      case BuiltinType::LongLong:
+        Out << Val << "LL";
+        break;
+      case BuiltinType::ULong:
+        Out << Val << "UL";
+        break;
+      case BuiltinType::Long:
+        Out << Val << "L";
+        break;
+      case BuiltinType::UInt:
+        Out << Val << "U";
+        break;
+      case BuiltinType::Int:
+        Out << Val;
+        break;
+      default:
+        Out << "(" << T->getCanonicalTypeInternal().getAsString(Policy) << ")"
+            << Val;
+        break;
+      }
+    } else
+      Out << "(" << T->getCanonicalTypeInternal().getAsString(Policy) << ")"
+          << Val;
+  } else
+    Out << Val;
 }
 
 static unsigned getArrayDepth(QualType type) {
@@ -416,8 +463,8 @@ TemplateArgument TemplateArgument::getPackExpansionPattern() const {
   llvm_unreachable("Invalid TemplateArgument Kind!");
 }
 
-void TemplateArgument::print(const PrintingPolicy &Policy,
-                             raw_ostream &Out) const {
+void TemplateArgument::print(const PrintingPolicy &Policy, raw_ostream &Out,
+                             bool IncludeType) const {
   switch (getKind()) {
   case Null:
     Out << "(no value)";
@@ -431,6 +478,7 @@ void TemplateArgument::print(const PrintingPolicy &Policy,
   }
 
   case Declaration: {
+    // FIXME: Include the type if it's not obvious from the context.
     NamedDecl *ND = getAsDecl();
     if (auto *VD = dyn_cast<ValueDecl>(ND)) {
       if (needsAmpersandOnTemplateArg(getParamTypeForDecl(), VD->getType()))
@@ -446,6 +494,7 @@ void TemplateArgument::print(const PrintingPolicy &Policy,
   }
 
   case NullPtr:
+    // FIXME: Include the type if it's not obvious from the context.
     Out << "nullptr";
     break;
 
@@ -459,7 +508,7 @@ void TemplateArgument::print(const PrintingPolicy &Policy,
     break;
 
   case Integral:
-    printIntegral(*this, Out, Policy);
+    printIntegral(*this, Out, Policy, IncludeType);
     break;
 
   case Expression:
@@ -475,7 +524,7 @@ void TemplateArgument::print(const PrintingPolicy &Policy,
       else
         Out << ", ";
 
-      P.print(Policy, Out);
+      P.print(Policy, Out, IncludeType);
     }
     Out << ">";
     break;
@@ -486,7 +535,7 @@ void TemplateArgument::dump(raw_ostream &Out) const {
   LangOptions LO; // FIXME! see also TemplateName::dump().
   LO.CPlusPlus = true;
   LO.Bool = true;
-  print(PrintingPolicy(LO), Out);
+  print(PrintingPolicy(LO), Out, /*IncludeType*/ true);
 }
 
 LLVM_DUMP_METHOD void TemplateArgument::dump() const { dump(llvm::errs()); }
@@ -581,7 +630,7 @@ const DiagnosticBuilder &clang::operator<<(const DiagnosticBuilder &DB,
     LangOptions LangOpts;
     LangOpts.CPlusPlus = true;
     PrintingPolicy Policy(LangOpts);
-    Arg.print(Policy, OS);
+    Arg.print(Policy, OS, /*IncludeType*/ true);
     return DB << OS.str();
   }
   }

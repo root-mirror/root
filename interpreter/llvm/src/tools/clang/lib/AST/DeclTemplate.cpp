@@ -138,6 +138,19 @@ static void AdoptTemplateParameterList(TemplateParameterList *Params,
   }
 }
 
+bool TemplateParameterList::shouldIncludeTypeForArgument(
+    const TemplateParameterList *TPL, unsigned Idx) {
+  if (!TPL || Idx >= TPL->size())
+    return true;
+  const NamedDecl *TemplParam = TPL->getParam(Idx);
+  if (const auto *ParamValueDecl =
+          dyn_cast<NonTypeTemplateParmDecl>(TemplParam))
+    if (ParamValueDecl->getType()->getContainedDeducedType() ||
+        ParamValueDecl->getType()->isDependentType())
+      return true;
+  return false;
+}
+
 namespace clang {
 
 void *allocateDefaultArgStorageChain(const ASTContext &C) {
@@ -814,10 +827,14 @@ void ClassTemplateSpecializationDecl::getNameForDiagnostic(
   const auto *PS = dyn_cast<ClassTemplatePartialSpecializationDecl>(this);
   if (const ASTTemplateArgumentListInfo *ArgsAsWritten =
           PS ? PS->getTemplateArgsAsWritten() : nullptr) {
-    printTemplateArgumentList(OS, ArgsAsWritten->arguments(), Policy);
+    printTemplateArgumentList(
+        OS, ArgsAsWritten->arguments(), Policy,
+        getSpecializedTemplate()->getTemplateParameters());
   } else {
     const TemplateArgumentList &TemplateArgs = getTemplateArgs();
-    printTemplateArgumentList(OS, TemplateArgs.asArray(), Policy);
+    printTemplateArgumentList(
+        OS, TemplateArgs.asArray(), Policy,
+        getSpecializedTemplate()->getTemplateParameters());
   }
 }
 
@@ -1153,10 +1170,14 @@ void VarTemplateSpecializationDecl::getNameForDiagnostic(
   const auto *PS = dyn_cast<VarTemplatePartialSpecializationDecl>(this);
   if (const ASTTemplateArgumentListInfo *ArgsAsWritten =
           PS ? PS->getTemplateArgsAsWritten() : nullptr) {
-    printTemplateArgumentList(OS, ArgsAsWritten->arguments(), Policy);
+    printTemplateArgumentList(
+        OS, ArgsAsWritten->arguments(), Policy,
+        getSpecializedTemplate()->getTemplateParameters());
   } else {
     const TemplateArgumentList &TemplateArgs = getTemplateArgs();
-    printTemplateArgumentList(OS, TemplateArgs.asArray(), Policy);
+    printTemplateArgumentList(
+        OS, TemplateArgs.asArray(), Policy,
+        getSpecializedTemplate()->getTemplateParameters());
   }
 }
 
