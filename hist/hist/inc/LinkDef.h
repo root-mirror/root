@@ -208,6 +208,7 @@
 #pragma link C++ class THnD;
 #pragma link C++ class THnF;
 #pragma link C++ class THnL;
+#pragma link C++ class THnL64;
 #pragma link C++ class THnI;
 #pragma link C++ class THnS;
 #pragma link C++ class THnC;
