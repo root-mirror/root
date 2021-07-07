@@ -7814,7 +7814,7 @@ bool testConversion1D()
    THnSparse* s1c = THnSparse::CreateSparse("s1c", "s1cTitle", h1c);
    THnSparse* s1s = THnSparse::CreateSparse("s1s", "s1sTitle", h1s);
    THnSparse* s1i = THnSparse::CreateSparse("s1i", "s1iTitle", h1i);
-   THnSparse* s1l64 = THnSparse::CreateSparse("s1l64", "s1lTitle", h1l64);
+   THnSparse* s1l64 = THnSparse::CreateSparse("s1l64", "s1l64Title", h1l64);
    THnSparse* s1f = THnSparse::CreateSparse("s1f", "s1fTitle", h1f);
    THnSparse* s1d = THnSparse::CreateSparse("s1d", "s1dTitle", h1d);
 
@@ -7888,7 +7888,7 @@ bool testConversion2D()
    TH2 *h2i = new TH2I("h2i", "h2-title",
                        nbins[0], minRangeArray[0], maxRangeArray[0],
                        nbins[1], minRangeArray[1], maxRangeArray[1]);
-   TH2 *h2l = new TH2L64("h2l", "h2-title",
+   TH2 *h2l64 = new TH2L64("h2l64", "h2-title",
                        nbins[0], minRangeArray[0], maxRangeArray[0],
                        nbins[1], minRangeArray[1], maxRangeArray[1]);
    TH2 *h2f = new TH2F("h2f", "h2-title",
@@ -7901,21 +7901,21 @@ bool testConversion2D()
    h2c->FillRandom("gaus2D", nevents);
    h2s->FillRandom("gaus2D", nevents);
    h2i->FillRandom("gaus2D", nevents);
-   h2l->FillRandom("gaus2D", nevents);
+   h2l64->FillRandom("gaus2D", nevents);
    h2f->FillRandom("gaus2D", nevents);
    h2d->FillRandom("gaus2D", nevents);
 
    THnSparse* s2c = THnSparse::CreateSparse("s2c", "s2cTitle", h2c);
    THnSparse* s2s = THnSparse::CreateSparse("s2s", "s2sTitle", h2s);
    THnSparse* s2i = THnSparse::CreateSparse("s2i", "s2iTitle", h2i);
-   THnSparse* s2l = THnSparse::CreateSparse("s2l", "s2iTitle", h2l);
+   THnSparse* s2l64 = THnSparse::CreateSparse("s2l64", "s2iTitle", h2l64);
    THnSparse* s2f = THnSparse::CreateSparse("s2f", "s2fTitle", h2f);
    THnSparse* s2d = THnSparse::CreateSparse("s2d", "s2dTitle", h2d);
 
    TH2* h2cn = (TH2*) h2c->Clone("h2cn");
    TH2* h2sn = (TH2*) h2s->Clone("h2sn");
    TH2* h2in = (TH2*) h2i->Clone("h2in");
-   TH2* h2ln = (TH2*) h2l->Clone("h2ln");
+   TH2* h2l64n = (TH2*) h2l64->Clone("h2l64n");
    TH2* h2fn = (TH2*) h2f->Clone("h2fn");
    TH2* h2dn = (TH2*) h2d->Clone("h2dn");
 
@@ -7923,35 +7923,35 @@ bool testConversion2D()
    status += equals("TH2-THnSparseC", s2c, h2c);
    status += equals("TH2-THnSparseS", s2s, h2s);
    status += equals("TH2-THnSparseI", s2i, h2i);
-   status += equals("TH2-THnSparseL", s2l, h2l);
+   status += equals("TH2-THnSparseL64", s2l64, h2l64);
    status += equals("TH2-THnSparseF", s2f, h2f);
    status += equals("TH2-THnSparseD", s2d, h2d);
 
    delete s2c;
    delete s2s;
    delete s2i;
-   delete s2l;
+   delete s2l64;
    delete s2f;
    delete s2d;
 
    THn* n2c = THn::CreateHn("n2c", "n2cTitle", h2cn);
    THn* n2s = THn::CreateHn("n2s", "n2sTitle", h2sn);
    THn* n2i = THn::CreateHn("n2i", "n2iTitle", h2in);
-   THn* n2l = THn::CreateHn("n2l", "n2lTitle", h2ln);
+   THn* n2l64 = THn::CreateHn("n2l64", "n2l64Title", h2l64n);
    THn* n2f = THn::CreateHn("n2f", "n2fTitle", h2fn);
    THn* n2d = THn::CreateHn("n2d", "n2dTitle", h2dn);
 
    status += equals("TH2-THnC", n2c, h2cn);
    status += equals("TH2-THnS", n2s, h2sn);
    status += equals("TH2-THnI", n2i, h2in);
-   status += equals("TH2-THnL", n2l, h2ln);
+   status += equals("TH2-THnL64", n2l64, h2l64n);
    status += equals("TH2-THnF", n2f, h2fn);
    status += equals("TH2-THnD", n2d, h2dn);
 
    delete n2c;
    delete n2s;
    delete n2i;
-   delete n2l;
+   delete n2l64;
    delete n2f;
    delete n2d;
 
