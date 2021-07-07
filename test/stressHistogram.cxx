@@ -8009,7 +8009,7 @@ bool testConversion3D()
    THnSparse* s3c = THnSparse::CreateSparse("s3c", "s3cTitle", h3c);
    THnSparse* s3s = THnSparse::CreateSparse("s3s", "s3sTitle", h3s);
    THnSparse* s3i = THnSparse::CreateSparse("s3i", "s3iTitle", h3i);
-   THnSparse* s3l64 = THnSparse::CreateSparse("s3l", "s3l64Title", h3l64);
+   THnSparse* s3l64 = THnSparse::CreateSparse("s3l64", "s3l64Title", h3l64);
    THnSparse* s3f = THnSparse::CreateSparse("s3f", "s3fTitle", h3f);
    THnSparse* s3d = THnSparse::CreateSparse("s3d", "s3dTitle", h3d);
 
