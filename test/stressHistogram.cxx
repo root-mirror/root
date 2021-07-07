@@ -7800,28 +7800,28 @@ bool testConversion1D()
    TH1 *h1c = new TH1C("h1c", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
    TH1 *h1s = new TH1S("h1s", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
    TH1 *h1i = new TH1I("h1i", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
-   TH1 *h1l = new TH1L64("h1l", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
+   TH1 *h1l64 = new TH1L64("h1l64", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
    TH1 *h1f = new TH1F("h1f", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
    TH1 *h1d = new TH1D("h1d", "h1-title", nbins[0], minRangeArray[0], maxRangeArray[0]);
 
    h1c->FillRandom("gaus1D", nevents);
    h1s->FillRandom("gaus1D", nevents);
    h1i->FillRandom("gaus1D", nevents);
-   h1l->FillRandom("gaus1D", nevents);
+   h1l64->FillRandom("gaus1D", nevents);
    h1f->FillRandom("gaus1D", nevents);
    h1d->FillRandom("gaus1D", nevents);
 
    THnSparse* s1c = THnSparse::CreateSparse("s1c", "s1cTitle", h1c);
    THnSparse* s1s = THnSparse::CreateSparse("s1s", "s1sTitle", h1s);
    THnSparse* s1i = THnSparse::CreateSparse("s1i", "s1iTitle", h1i);
-   THnSparse* s1l = THnSparse::CreateSparse("s1l", "s1lTitle", h1l);
+   THnSparse* s1l64 = THnSparse::CreateSparse("s1l64", "s1lTitle", h1l64);
    THnSparse* s1f = THnSparse::CreateSparse("s1f", "s1fTitle", h1f);
    THnSparse* s1d = THnSparse::CreateSparse("s1d", "s1dTitle", h1d);
 
    TH1* h1cn = (TH1*) h1c->Clone("h1cn");
    TH1* h1sn = (TH1*) h1s->Clone("h1sn");
    TH1* h1in = (TH1*) h1i->Clone("h1in");
-   TH1* h1ln = (TH1*) h1l->Clone("h1ln");
+   TH1* h1l64n = (TH1*) h1l64->Clone("h1l64n");
    TH1* h1fn = (TH1*) h1f->Clone("h1fn");
    TH1* h1dn = (TH1*) h1s->Clone("h1dn");
 
@@ -7829,34 +7829,35 @@ bool testConversion1D()
    status += equals("TH1-THnSparseC", s1c, h1c);
    status += equals("TH1-THnSparseS", s1s, h1s);
    status += equals("TH1-THnSparseI", s1i, h1i);
-   status += equals("TH1-THnSparseL", s1l, h1l);
+   status += equals("TH1-THnSparseL64", s1l64, h1l64);
    status += equals("TH1-THnSparseF", s1f, h1f);
    status += equals("TH1-THnSparseD", s1d, h1d);
 
    delete s1c;
    delete s1s;
    delete s1i;
-   delete s1l;
+   delete s1l64;
    delete s1f;
    delete s1d;
 
    THn* n1c = THn::CreateHn("n1c", "n1cTitle", h1cn);
    THn* n1s = THn::CreateHn("n1s", "n1sTitle", h1sn);
    THn* n1i = THn::CreateHn("n1i", "n1iTitle", h1in);
-   THn* n1l = THn::CreateHn("n1l", "n1lTitle", h1ln);
+   THn* n1l64 = THn::CreateHn("n1l64", "n1l64Title", h1l64n);
    THn* n1f = THn::CreateHn("n1f", "n1fTitle", h1fn);
    THn* n1d = THn::CreateHn("n1d", "n1dTitle", h1dn);
 
    status += equals("TH1-THnC", n1c, h1cn);
    status += equals("TH1-THnS", n1s, h1sn);
    status += equals("TH1-THnI", n1i, h1in);
-   status += equals("TH1-THnL", n1l, h1ln);
+   status += equals("TH1-THnL64", n1l64, h1l64n);
    status += equals("TH1-THnF", n1f, h1fn);
    status += equals("TH1-THnD", n1d, h1dn);
 
    delete n1c;
    delete n1s;
    delete n1i;
+   delete n1l64;
    delete n1f;
    delete n1d;
 
