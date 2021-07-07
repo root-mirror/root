@@ -271,36 +271,34 @@ THnBase* THnBase::CreateHnAny(const char* name, const char* title,
    if (hn->InheritsFrom(THnSparse::Class())) {
       if (sparse) type = hn->IsA();
       else {
-         char bintype;
-         if (hn->InheritsFrom(THnSparseD::Class())) bintype = 'D';
-         else if (hn->InheritsFrom(THnSparseF::Class())) bintype = 'F';
-         else if (hn->InheritsFrom(THnSparseL::Class())) bintype = 'L';
-         else if (hn->InheritsFrom(THnSparseI::Class())) bintype = 'I';
-         else if (hn->InheritsFrom(THnSparseS::Class())) bintype = 'S';
-         else if (hn->InheritsFrom(THnSparseC::Class())) bintype = 'C';
+         TString bintype;
+         if (hn->InheritsFrom(THnSparseD::Class())) bintype = "D";
+         else if (hn->InheritsFrom(THnSparseF::Class())) bintype = "F";
+         else if (hn->InheritsFrom(THnSparseL::Class())) bintype = "L";
+          else if (hn->InheritsFrom(THnSparseL64::Class())) bintype = "L64";
+         else if (hn->InheritsFrom(THnSparseI::Class())) bintype = "I";
+         else if (hn->InheritsFrom(THnSparseS::Class())) bintype = "S";
+         else if (hn->InheritsFrom(THnSparseC::Class())) bintype = "C";
          else {
             hn->Error("CreateHnAny", "Type %s not implemented; please inform the ROOT team!",
                       hn->IsA()->GetName());
             return 0;
          }
-         type = TClass::GetClass(TString::Format("THn%c", bintype));
+         type = TClass::GetClass(TString::Format("THn%s", bintype));
       }
    } else if (hn->InheritsFrom(THn::Class())) {
       if (!sparse) type = hn->IsA();
       else {
-         char bintype = 0;
-         if (hn->InheritsFrom(THnD::Class())) bintype = 'D';
-         else if (hn->InheritsFrom(THnF::Class())) bintype = 'F';
-         else if (hn->InheritsFrom(THnC::Class())) bintype = 'C';
-         else if (hn->InheritsFrom(THnS::Class())) bintype = 'S';
-         else if (hn->InheritsFrom(THnI::Class())) bintype = 'I';
-         else if (hn->InheritsFrom(THnL::Class())) bintype = 'L';
-         else if (hn->InheritsFrom(THnL64::Class())) {
-            hn->Error("CreateHnAny", "Type THnSparse with Long64_t bins is not available!");
-            return 0;
-         }
-         if (bintype) {
-            type = TClass::GetClass(TString::Format("THnSparse%c", bintype));
+         TString bintype;
+         if (hn->InheritsFrom(THnD::Class())) bintype = "D";
+         else if (hn->InheritsFrom(THnF::Class())) bintype = "F";
+         else if (hn->InheritsFrom(THnC::Class())) bintype = "C";
+         else if (hn->InheritsFrom(THnS::Class())) bintype = "S";
+         else if (hn->InheritsFrom(THnI::Class())) bintype = "I";
+         else if (hn->InheritsFrom(THnL::Class())) bintype = "L";
+         else if (hn->InheritsFrom(THnL64::Class())) bintype = "L64";
+         if (bintype.Length()) {
+            type = TClass::GetClass(TString::Format("THnSparse%s", bintype));
          }
       }
    } else {
