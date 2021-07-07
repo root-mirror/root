@@ -10,6 +10,6 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Dall=On -Dtesting=On -Dx11=Off -Dalien
 # We need to prebuild a minimal set of targets which are responsible for header copy
 # or generation.
 make -j4 move_headers intrinsics_gen clang-tablegen-targets ClangDriverOptions \
-         googletest Dictgen BaseTROOT
+         googletest Dictgen BaseTROOT BUILTIN_cppzmq
 ln -s $PWD/compile_commands.json $PWD/../root/
 
