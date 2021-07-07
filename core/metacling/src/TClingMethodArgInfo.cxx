@@ -29,6 +29,7 @@ the Clang C++ compiler, not CINT.
 #include "cling/Interpreter/Interpreter.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
+#include "clang/AST/DeclTemplate.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/ExprCXX.h"
 #include "clang/AST/PrettyPrinter.h"
@@ -148,6 +149,10 @@ const char *TClingMethodArgInfo::TypeName() const
    if (!IsValid()) {
       return 0;
    }
-   return Type()->Name();
+   
+   const clang::ClassTemplateSpecializationDecl *spec = nullptr;
+   if (const auto FD = llvm::cast_or_null<clang::FunctionDecl>(TClingDeclInfo::GetDecl()))
+      spec = llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(FD->getDeclContext());
+   return Type()->Name(spec);
 }
 

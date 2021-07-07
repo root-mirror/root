@@ -111,7 +111,9 @@ namespace cling {
   }
 
   void ForwardDeclPrinter::Visit(clang::QualType QT) {
-    QT = utils::TypeName::GetFullyQualifiedType(QT, m_Ctx);
+    QT = utils::TypeName::GetFullyQualifiedType(QT, m_Ctx,
+                                            m_SpecContextStack.empty() ? nullptr
+                                                : m_SpecContextStack.top());
     Visit(QT.getTypePtr());
   }
 
@@ -936,7 +938,9 @@ namespace cling {
         }
         if (!ArgQT.isNull()) {
           QualType ArgFQQT
-            = utils::TypeName::GetFullyQualifiedType(ArgQT, m_Ctx);
+            = utils::TypeName::GetFullyQualifiedType(ArgQT, m_Ctx,
+                                            m_SpecContextStack.empty() ? nullptr
+                                                    : m_SpecContextStack.top());
           Visit(ArgFQQT);
           if (m_SkipFlag) {
             skipDecl(0, "type template param default failed");
@@ -1091,6 +1095,19 @@ namespace cling {
 //      skipDecl();
 //      return;
 //    }
+
+    struct PopStackRAII{
+      std::stack<ClassTemplateSpecializationDecl*> &m_Stk;
+      PopStackRAII(std::stack<ClassTemplateSpecializationDecl*> &stk,
+                   ClassTemplateSpecializationDecl* D):
+      m_Stk(stk)
+      {
+        m_Stk.push(D);
+      }
+      ~PopStackRAII() {
+        m_Stk.pop();
+      }
+    } popStackRAII(m_SpecContextStack, D);
 
     const TemplateArgumentList& iargs = D->getTemplateInstantiationArgs();
     for (const TemplateArgument& TA: iargs.asArray()) {

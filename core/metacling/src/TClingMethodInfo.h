@@ -165,6 +165,7 @@ public:
    const char                                  *GetPrototype();
    const char                                  *Name() const override;
    const char                                  *TypeName() const;
+   std::string                                  NormalizedName(ROOT::TMetaUtils::TNormalizedCtxt &ctx) const;
    const char                                  *Title();
 };
 

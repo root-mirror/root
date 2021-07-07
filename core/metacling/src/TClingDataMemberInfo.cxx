@@ -36,6 +36,7 @@ from the Clang C++ compiler, not CINT.
 #include "clang/AST/Attr.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
+#include "clang/AST/DeclTemplate.h"
 #include "clang/AST/GlobalDecl.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/ExprCXX.h"
@@ -580,7 +581,8 @@ const char *TClingDataMemberInfo::TypeName() const
    // if (we_need_to_do_the_subst_because_the_class_is_a_template_instance_of_double32_t)
    vdType = ROOT::TMetaUtils::ReSubstTemplateArg(vdType, GetClassAsType() );
 
-   ROOT::TMetaUtils::GetFullyQualifiedTypeName(buf, vdType, *fInterp);
+   auto CTSD = llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(vd->getDeclContext());
+   ROOT::TMetaUtils::GetFullyQualifiedTypeName(buf, vdType, *fInterp, CTSD);
 
    return buf.c_str();
 }

@@ -576,12 +576,14 @@ void GetCppName(std::string &output, const char *input);
 //______________________________________________________________________________
 // Return the type with all parts fully qualified (most typedefs),
 // including template arguments, appended to name.
-void GetFullyQualifiedTypeName(std::string &name, const clang::QualType &type, const cling::Interpreter &interpreter);
+void GetFullyQualifiedTypeName(std::string &name, const clang::QualType &type, const cling::Interpreter &interpreter,
+                               const clang::ClassTemplateSpecializationDecl *Spec = nullptr);
 
 //______________________________________________________________________________
 // Return the type with all parts fully qualified (most typedefs),
 // including template arguments, appended to name, without using the interpreter
-void GetFullyQualifiedTypeName(std::string &name, const clang::QualType &type, const clang::ASTContext &);
+void GetFullyQualifiedTypeName(std::string &name, const clang::QualType &type, const clang::ASTContext &,
+                               const clang::ClassTemplateSpecializationDecl *Spec = nullptr);
 
 //______________________________________________________________________________
 // Return the type normalized for ROOT,
