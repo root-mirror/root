@@ -188,6 +188,7 @@
 #pragma link C++ typedef THnD;
 #pragma link C++ typedef THnF;
 #pragma link C++ typedef THnL;
+#pragma link C++ typedef THnL64;
 #pragma link C++ typedef THnI;
 #pragma link C++ typedef THnS;
 #pragma link C++ typedef THnC;
