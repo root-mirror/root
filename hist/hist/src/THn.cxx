@@ -139,6 +139,7 @@ classes:
     THnD (typedef for THnT<Double_t>): bin content held by a Double_t,
     THnF (typedef for THnT<Float_t>): bin content held by a Float_t,
     THnL (typedef for THnT<Long_t>): bin content held by a Long_t,
+    THnL64 (typedef for THnT<Long64_t>): bin content held by a Long64_t,
     THnI (typedef for THnT<Int_t>): bin content held by an Int_t,
     THnS (typedef for THnT<Short_t>): bin content held by a Short_t,
     THnC (typedef for THnT<Char_t>): bin content held by a Char_t,
