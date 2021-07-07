@@ -1275,6 +1275,16 @@ function(ROOT_STANDARD_LIBRARY_PACKAGE libname)
     endif()
   endif()
 
+  foreach (h ${ARG_HEADERS})
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/inc/${h}")
+      list(APPEND ARG_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/inc/${h}")
+    elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/v7/inc/${h}")
+      list(APPEND ARG_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/v7/inc/${h}")
+    else()
+      message("Could not find directory of header file: ${h}")
+    endif()
+  endforeach()
+
   if (ARG_OBJECT_LIBRARY)
     ROOT_OBJECT_LIBRARY(${libname}Objs ${ARG_SOURCES}
                         $<$<BOOL:${ARG_NO_SOURCES}>:dummy.cxx>)
