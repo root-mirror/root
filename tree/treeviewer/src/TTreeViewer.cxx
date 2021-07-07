@@ -330,7 +330,7 @@ TTreeViewer::TTreeViewer(const char* treeName) :
                        TFile *tv__tree_file = 0;\n\
                        #define GTV_DEFINED\n\
                        #endif");
-   snprintf(command,128, "gTV = (TTreeViewer*)0x%lx", (ULong_t)this);
+   snprintf(command,128, "gTV = (TTreeViewer*)0x%zx", (size_t)this);
    gROOT->ProcessLine(command);
    fTreeList = new TList;
    gROOT->ProcessLine("tv__tree_list = new TList;");
@@ -360,7 +360,7 @@ TTreeViewer::TTreeViewer(const TTree *tree) :
                        TFile *tv__tree_file = 0;\n\
                        #define GTV_DEFINED\n\
                        #endif");
-   snprintf(command,128, "gTV = (TTreeViewer*)0x%lx", (ULong_t)this);
+   snprintf(command,128, "gTV = (TTreeViewer*)0x%zx", (size_t)this);
    gROOT->ProcessLine(command);
    if (!tree) return;
    fTreeList = new TList;
@@ -420,7 +420,7 @@ void TTreeViewer::AppendTree(TTree *tree)
       char command[100];
       command[0] = 0;
       // define a global "tree" variable for the same tree
-      snprintf(command,100, "tv__tree = (TTree *)0x%lx;", (ULong_t)tree);
+      snprintf(command,100, "tv__tree = (TTree *)0x%zx;", (size_t)tree);
       ExecuteCommand(command);
    }
    //--- add the tree to the list if it is not already in
@@ -484,7 +484,7 @@ void TTreeViewer::SetTree(TTree *tree)
       fTree = tree;
       // load the tree via the interpreter
       // define a global "tree" variable for the same tree
-      TString command = TString::Format("tv__tree = (TTree *)0x%lx;", (ULong_t)tree);
+      TString command = TString::Format("tv__tree = (TTree *)0x%zx;", (size_t)tree);
       ExecuteCommand(command.Data());
    }
    //--- add the tree to the list if it is not already in
@@ -1789,7 +1789,7 @@ Bool_t TTreeViewer::HandleTimer(TTimer *timer)
 ////////////////////////////////////////////////////////////////////////////////
 /// Handle menu and other commands generated.
 
-Bool_t TTreeViewer::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
+Bool_t TTreeViewer::ProcessMessage(Longptr_t msg, Longptr_t parm1, Longptr_t parm2)
 {
    TRootHelpDialog *hd;
    TTVRecord *record;
@@ -2029,7 +2029,7 @@ Bool_t TTreeViewer::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
                         if (!gInterpreter->IsLoaded(info.fFilename)) gInterpreter->LoadMacro(info.fFilename);
                         char command[1024];
                         command[0] = 0;
-                        snprintf(command,1024,"open_session((void*)0x%lx);", (Long_t)this);
+                        snprintf(command,1024,"open_session((void*)0x%zx);", (size_t)this);
                         ExecuteCommand(command);
                      }
                      break;

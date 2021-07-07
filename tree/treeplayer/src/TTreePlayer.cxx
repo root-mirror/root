@@ -522,12 +522,12 @@ Long64_t TTreePlayer::DrawSelect(const char *varexp0, const char *selection, Opt
          TObject* para = fSelector->GetObject();
          fTree->Draw(">>enlist",selection,"entrylist",nentries,firstentry);
          TObject *enlist = gDirectory->FindObject("enlist");
-         gROOT->ProcessLine(Form("TParallelCoord::SetEntryList((TParallelCoord*)0x%lx,(TEntryList*)0x%lx)",
-                                     (ULong_t)para, (ULong_t)enlist));
+         gROOT->ProcessLine(Form("TParallelCoord::SetEntryList((TParallelCoord*)0x%zx,(TEntryList*)0x%zx)",
+                                     (size_t)para, (size_t)enlist));
       }
    //*-*- 5d with gl
    } else if (fDimension == 5 && optgl5d) {
-      gROOT->ProcessLineFast(Form("(new TGL5DDataSet((TTree *)0x%lx))->Draw(\"%s\");", (ULong_t)fTree, opt.Data()));
+      gROOT->ProcessLineFast(Form("(new TGL5DDataSet((TTree *)0x%zx))->Draw(\"%s\");", (size_t)fTree, opt.Data()));
       gStyle->SetCanvasPreferGL(pgl);
    }
 

@@ -230,7 +230,7 @@ public:
    void          NewExpression();                                // *MENU*
    void          PrintEntries();
    Long64_t      Process(const char* filename, Option_t *option="", Long64_t nentries=TTree::kMaxEntries, Long64_t firstentry=0); // *MENU*
-   Bool_t        ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
+   Bool_t        ProcessMessage(Longptr_t msg, Longptr_t parm1, Longptr_t parm2);
    void          RemoveItem();
    void          RemoveLastRecord();                             // *MENU*
    void          SaveSource(const char* filename="", Option_t *option="");            // *MENU*

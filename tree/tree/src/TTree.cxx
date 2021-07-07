@@ -2776,7 +2776,7 @@ TFile* TTree::ChangeFile(TFile* file)
       file->Remove(obj);
       // Histogram: just change the directory.
       if (obj->InheritsFrom("TH1")) {
-         gROOT->ProcessLine(TString::Format("((%s*)0x%lx)->SetDirectory((TDirectory*)0x%lx);", obj->ClassName(), (Long_t) obj, (Long_t) newfile));
+         gROOT->ProcessLine(TString::Format("((%s*)0x%zx)->SetDirectory((TDirectory*)0x%zx);", obj->ClassName(), (size_t) obj, (size_t) newfile));
          continue;
       }
       // Tree: must save all trees in the old file, reset them.

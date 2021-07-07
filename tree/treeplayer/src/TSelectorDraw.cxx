@@ -1519,8 +1519,8 @@ void TSelectorDraw::TakeAction()
       Bool_t candle = (fAction == 7);
       // Using CINT to avoid a dependency in TParallelCoord
       if (!fOption.Contains("goff"))
-         gROOT->ProcessLine(TString::Format("TParallelCoord::BuildParallelCoord((TSelectorDraw*)0x%lx,0x%lx)",
-                                (ULong_t)this, (ULong_t)candle));
+         gROOT->ProcessLine(TString::Format("TParallelCoord::BuildParallelCoord((TSelectorDraw*)0x%zx,0x%zx)",
+                                (size_t)this, (size_t)candle));
    } else if (fAction == 8) {
       //gROOT->ProcessLineFast(TString::Format("(new TGL5DDataSet((TTree *)0x%1x))->Draw(\"%s\");", fTree, fOption.Data()));
    }

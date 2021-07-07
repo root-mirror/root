@@ -127,7 +127,7 @@ Bool_t TLeafObject::Notify()
 
 void TLeafObject::PrintValue(Int_t) const
 {
-   printf("%lx\n",(Long_t)GetValuePointer());
+   printf("%zx\n",(size_t)GetValuePointer());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

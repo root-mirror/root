@@ -832,7 +832,7 @@ void TGSelectBox::InsertText(const char* text)
 ////////////////////////////////////////////////////////////////////////////////
 /// Message interpreter
 
-Bool_t TGSelectBox::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
+Bool_t TGSelectBox::ProcessMessage(Longptr_t msg, Longptr_t parm1, Longptr_t parm2)
 {
    switch (GET_MSG(msg)) {
       case kC_TEXTENTRY:

@@ -4497,7 +4497,7 @@ Double_t TTreeFormula::GetValueFromMethod(Int_t i, TLeaf* leaf) const
    TMethodCall::EReturnType r = m->ReturnType();
 
    if (r == TMethodCall::kLong) {
-      Long_t l = 0;
+      Longptr_t l = 0;
       m->Execute(thisobj, l);
       return (Double_t) l;
    }
@@ -4557,7 +4557,7 @@ void* TTreeFormula::GetValuePointerFromMethod(Int_t i, TLeaf* leaf) const
    TMethodCall::EReturnType r = m->ReturnType();
 
    if (r == TMethodCall::kLong) {
-      Long_t l = 0;
+      Longptr_t l = 0;
       m->Execute(thisobj, l);
       return 0;
    }

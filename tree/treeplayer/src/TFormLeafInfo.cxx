@@ -71,7 +71,7 @@ The following method are available from the TFormLeafInfo interface:
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TFormLeafInfo::TFormLeafInfo(TClass* classptr, Long_t offset,
+TFormLeafInfo::TFormLeafInfo(TClass* classptr, Longptr_t offset,
                              TStreamerElement* element) :
      fClass(classptr),fOffset(offset),fElement(element),
      fCounter(0), fNext(0),fMultiplicity(0)
@@ -1114,7 +1114,7 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TFormLeafInfoClones::TFormLeafInfoClones(TClass* classptr, Long_t offset) :
+TFormLeafInfoClones::TFormLeafInfoClones(TClass* classptr, Longptr_t offset) :
    TFormLeafInfo(classptr,offset,R__GetFakeClonesElem()),fTop(kFALSE)
 {
 }
@@ -1122,7 +1122,7 @@ TFormLeafInfoClones::TFormLeafInfoClones(TClass* classptr, Long_t offset) :
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TFormLeafInfoClones::TFormLeafInfoClones(TClass* classptr, Long_t offset,
+TFormLeafInfoClones::TFormLeafInfoClones(TClass* classptr, Longptr_t offset,
                                          Bool_t top) :
    TFormLeafInfo(classptr,offset,R__GetFakeClonesElem()),fTop(top)
 {
@@ -1131,7 +1131,7 @@ TFormLeafInfoClones::TFormLeafInfoClones(TClass* classptr, Long_t offset,
 ////////////////////////////////////////////////////////////////////////////////
 /// Constructor.
 
-TFormLeafInfoClones::TFormLeafInfoClones(TClass* classptr, Long_t offset,
+TFormLeafInfoClones::TFormLeafInfoClones(TClass* classptr, Longptr_t offset,
                                          TStreamerElement* element,
                                          Bool_t top) :
    TFormLeafInfo(classptr,offset,element),fTop(top)
@@ -1454,7 +1454,7 @@ void * TFormLeafInfoCollectionObject::GetValuePointer(char *where, Int_t instanc
 /// Constructor.
 
 TFormLeafInfoCollection::TFormLeafInfoCollection(TClass* classptr,
-                                                 Long_t offset,
+                                                 Longptr_t offset,
                                                  TStreamerElement* element,
                                                  Bool_t top) :
    TFormLeafInfo(classptr,offset,element),
@@ -1481,7 +1481,7 @@ TFormLeafInfoCollection::TFormLeafInfoCollection(TClass* classptr,
 /// Constructor.
 
 TFormLeafInfoCollection::TFormLeafInfoCollection(TClass* motherclassptr,
-                                                 Long_t offset,
+                                                 Longptr_t offset,
                                                  TClass* elementclassptr,
                                                  Bool_t top) :
    TFormLeafInfo(motherclassptr,offset,
@@ -1831,7 +1831,7 @@ TFormLeafInfoCollectionSize::TFormLeafInfoCollectionSize(TClass* classptr) :
 /// Constructor.
 
 TFormLeafInfoCollectionSize::TFormLeafInfoCollectionSize(
-   TClass* classptr,Long_t offset,TStreamerElement* element) :
+   TClass* classptr,Longptr_t offset,TStreamerElement* element) :
    TFormLeafInfo(classptr,offset,element), fCollClass(element->GetClassPointer()), fCollProxy(0)
 {
    if (fCollClass
@@ -1976,7 +1976,7 @@ Double_t  TFormLeafInfoCollectionSize::ReadValue(char *where, Int_t /* instance 
 /// Constructor.
 
 TFormLeafInfoPointer::TFormLeafInfoPointer(TClass* classptr,
-                                           Long_t offset,
+                                           Longptr_t offset,
                                            TStreamerElement* element) :
    TFormLeafInfo(classptr,offset,element)
 {
@@ -2100,11 +2100,11 @@ TFormLeafInfoMethod::TFormLeafInfoMethod( TClass* classptr,
             fCopyFormat += rtype;
             fCopyFormat += "(*(";
             fCopyFormat += rtype;
-            fCopyFormat += "*)0x%lx)";
+            fCopyFormat += "*)0x%zx)";
 
             fDeleteFormat  = "delete (";
             fDeleteFormat += rtype;
-            fDeleteFormat += "*)0x%lx";
+            fDeleteFormat += "*)0x%zx";
 
             fIsByValue = kTRUE;
          }
@@ -2283,7 +2283,7 @@ void *TFormLeafInfoMethod::GetLocalValuePointer(char *from,
    fResult = 0;
 
    if (r == TMethodCall::kLong) {
-      Long_t l = 0;
+      Longptr_t l = 0;
       fMethod->Execute(thisobj, l);
       fResult = (Double_t) l;
       // Get rid of temporary return object.
@@ -2337,7 +2337,7 @@ T TFormLeafInfoMethod::ReadValueImpl(char *where, Int_t instance)
    T result = 0;
 
    if (r == TMethodCall::kLong) {
-      Long_t l = 0;
+      Longptr_t l = 0;
       fMethod->Execute(thisobj, l);
       result = (T) l;
 
@@ -2349,7 +2349,7 @@ T TFormLeafInfoMethod::ReadValueImpl(char *where, Int_t instance)
    } else if (r == TMethodCall::kString) {
       char *returntext = 0;
       fMethod->Execute(thisobj,&returntext);
-      result = T((Long_t) returntext);
+      result = T((Longptr_t) returntext);
 
    } else if (fNext) {
       char * char_result = 0;
@@ -2376,7 +2376,7 @@ INSTANTIATE_READVAL(TFormLeafInfoMethod);
 /// Constructor.
 
 TFormLeafInfoMultiVarDim::TFormLeafInfoMultiVarDim( TClass* classptr,
-                                                    Long_t offset,
+                                                    Longptr_t offset,
                                                     TStreamerElement* element,
                                                     TFormLeafInfo* parent) :
    TFormLeafInfo(classptr,offset,element),fNsize(0),fCounter2(0),fSumOfSizes(0),
@@ -2651,7 +2651,7 @@ Double_t TFormLeafInfoMultiVarDimDirect::ReadValue(char * /*where*/, Int_t /*ins
 
 TFormLeafInfoMultiVarDimCollection::TFormLeafInfoMultiVarDimCollection(
    TClass* motherclassptr,
-   Long_t offset,
+   Longptr_t offset,
    TClass* elementclassptr,
    TFormLeafInfo *parent) :
    TFormLeafInfoMultiVarDim(motherclassptr,offset,
@@ -2679,7 +2679,7 @@ TFormLeafInfoMultiVarDimCollection::TFormLeafInfoMultiVarDimCollection(
 
 TFormLeafInfoMultiVarDimCollection::TFormLeafInfoMultiVarDimCollection(
    TClass* motherclassptr,
-   Long_t offset,
+   Longptr_t offset,
    TStreamerElement* element,
    TFormLeafInfo *parent) :
    TFormLeafInfoMultiVarDim(motherclassptr,offset,element)
@@ -2761,7 +2761,7 @@ INSTANTIATE_READVAL(TFormLeafInfoMultiVarDimCollection);
 
 TFormLeafInfoMultiVarDimClones::TFormLeafInfoMultiVarDimClones(
    TClass* motherclassptr,
-   Long_t offset,
+   Longptr_t offset,
    TClass* elementclassptr,
    TFormLeafInfo *parent) :
    TFormLeafInfoMultiVarDim(motherclassptr,offset,
@@ -2789,7 +2789,7 @@ TFormLeafInfoMultiVarDimClones::TFormLeafInfoMultiVarDimClones(
 
 TFormLeafInfoMultiVarDimClones::TFormLeafInfoMultiVarDimClones(
    TClass* motherclassptr,
-   Long_t offset,
+   Longptr_t offset,
    TStreamerElement* element,
    TFormLeafInfo *parent) :
    TFormLeafInfoMultiVarDim(motherclassptr,offset,element)
