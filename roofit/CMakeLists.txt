@@ -5,6 +5,10 @@
 # For the list of contributors see $ROOTSYS/README/CREDITS.
 
 add_subdirectory(batchcompute)
+if (builtin_zeromq)
+  add_subdirectory(roofitZMQ)
+  add_subdirectory(multiprocess)
+endif(builtin_zeromq)
 add_subdirectory(roofitcore)
 add_subdirectory(roofit)
 if(mathmore)

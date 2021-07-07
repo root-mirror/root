@@ -1791,6 +1791,13 @@ if (mpi)
   endif()
 endif()
 
+#---Check for ZeroMQ-----------------------------------------------------------
+
+if(builtin_zeromq)
+  list(APPEND ROOT_BUILTINS ZeroMQ)
+  add_subdirectory(builtins/zeromq)
+endif()
+
 #---Download googletest--------------------------------------------------------------
 if (testing)
   # FIXME: Remove our version of gtest in roottest. We can reuse this one.
