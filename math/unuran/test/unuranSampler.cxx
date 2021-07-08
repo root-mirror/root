@@ -9,8 +9,6 @@
 #include "TH1.h"
 #include "TH2.h"
 
-#include "ROOT/RMakeUnique.hxx"
-
 using namespace ROOT::Math; 
 
 std::unique_ptr<TH1D> FillHisto1D( DistSampler & s) {
