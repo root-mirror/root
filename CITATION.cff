@@ -1,0 +1,77 @@
+cff-version: 1.1.0
+message: "If you use ROOT, please cite it as below."
+authors:
+  - family-names: An
+    given-names: Sitong
+    orcid: https://orcid.org/0000-0002-9740-1622
+  - family-names: Bellenot
+    given-names: Bertrand
+  - family-names: Bendavid
+    given-names: Josh
+  - family-names: Blomer
+    given-names: Jakob
+    orcid: https://orcid.org/0000-0001-9750-6224
+  - family-names: Brun
+    given-names: Rene
+  - family-names: Buttinger
+    given-names: Will
+    orcid: https://orcid.org/0000-0002-5116-1897
+  - family-names: Canal
+    given-names: Philippe
+    orcid: https://orcid.org/0000-0002-7748-7887
+  - family-names: Couet
+    given-names: Olivier
+    orcid: https://orcid.org/0000-0002-7182-2621
+  - family-names: Ganis
+    given-names: Gerardo
+    orcid: https://orcid.org/0000-0002-1175-206X
+  - family-names: Gheata
+    given-names: Andrei
+    orcid: https://orcid.org/0000-0002-5449-8719
+  - family-names: Guiraud
+    given-names: Enrico
+  - family-names: Hageboeck
+    given-names: Stephan
+    orcid: https://orcid.org/0000-0001-9359-2196
+  - family-names: Hahnfeld
+    given-names: Jonas
+    orcid: https://orcid.org/0000-0001-7325-2485
+  - family-names: Linev
+    given-names: Sergey
+  - family-names: Mato
+    given-names: Pere
+    orcid: https://orcid.org/0000-0002-3009-8948
+  - family-names: Moneta
+    given-names: Lorenzo
+  - family-names: Mrak Tadel
+    given-names: Alja
+    orcid: https://orcid.org/0000-0002-3392-8345
+  - family-names: Naumann
+    given-names: Axel
+    orcid: https://orcid.org/0000-0002-4725-0766
+  - family-names: Piparo
+    given-names: Danilo
+  - family-names: Rademakers
+    given-names: Fons
+    orcid: https://orcid.org/0000-0002-3571-9635
+  - family-names: Rembser
+    given-names: Jonas
+    orcid: https://orcid.org/0000-0002-0632-2970
+  - family-names: Tejedor Saavedra
+    given-names: Enric
+  - family-names: Shadura
+    given-names: Oksana
+    orcid: https://orcid.org/0000-0001-5356-2494
+  - family-names: Tadel
+    given-names: Matevz
+    orcid: https://orcid.org/0000-0001-8800-0045
+  - family-names: Vassilev
+    given-names: Vassil
+  - family-names: Verkerke
+    given-names: Wouter
+    orcid: https://orcid.org/0000-0001-5468-2025
+title: "ROOT: analyzing, storing and visualizing big data, scientifically"
+version: 6.25/01
+doi: 10.5281/zenodo.848818
+date-released: 2021-07-08
+

@@ -22,6 +22,7 @@ The following people have contributed to this new version:
  Sergey Linev, GSI,\
  Pere Mato, CERN/SFT,\
  Lorenzo Moneta, CERN/SFT,\
+ Alja Mrak Tadel, UCSD/CMS,\
  Axel Naumann, CERN/SFT,\
  Danilo Piparo, CERN/SFT,\
  Fons Rademakers, CERN/SFT,\
