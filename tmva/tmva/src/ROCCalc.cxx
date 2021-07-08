@@ -39,27 +39,11 @@ using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TMVA::ROCCalc::ROCCalc(TH1* mvaS, TH1* mvaB) :
-   fMaxIter(100),
-   fAbsTol(0.0),
-   fStatus(kTRUE),
-   fmvaS(0),
-   fmvaB(0),
-   fmvaSpdf(0),
-   fmvaBpdf(0),
-   fSplS(0),
-   fSplB(0),
-   fSplmvaCumS(0),
-   fSplmvaCumB(0),
-   fSpleffBvsS(0),
-   fnStot(0),
-   fnBtot(0),
-   fSignificance(0),
-   fPurity(0),
-   effBvsS(0),
-   rejBvsS(0),
-   inveffBvsS(0),
-   fLogger ( new TMVA::MsgLogger("ROCCalc") )
+TMVA::ROCCalc::ROCCalc(TH1 *mvaS, TH1 *mvaB)
+   : fMaxIter(100), fAbsTol(0.0), fStatus(kTRUE), fmvaS(nullptr), fmvaB(nullptr), fmvaSpdf(nullptr), fmvaBpdf(nullptr),
+     fSplS(nullptr), fSplB(nullptr), fSplmvaCumS(nullptr), fSplmvaCumB(nullptr), fSpleffBvsS(nullptr), fmvaScumul(nullptr),
+     fmvaBcumul(nullptr), fnStot(0), fnBtot(0), fSignificance(nullptr), fPurity(nullptr),
+     effBvsS(nullptr), rejBvsS(nullptr), inveffBvsS(nullptr), fLogger(new TMVA::MsgLogger("ROCCalc"))
 {
    fUseSplines = kTRUE;
    fNbins      = 100;
@@ -85,6 +69,7 @@ TMVA::ROCCalc::ROCCalc(TH1* mvaS, TH1* mvaB) :
    //    std::cout<<"mvaB->GetNbinsX()"<<mvaB->GetNbinsX()<<std::endl;
    //the output of mvaS->GetNbinsX() is about 40 and if we divide it by 100 the results is 0
    //the I will divide it by 10 anyway doing some tests ROC integral is the same
+   // rebin creates a clone of the histogram
    fmvaSpdf = mvaS->RebinX(mvaS->GetNbinsX()/10,"MVA Signal PDF");
    fmvaBpdf = mvaB->RebinX(mvaB->GetNbinsX()/10,"MVA Backgr PDF");
    if(fmvaSpdf==0||fmvaBpdf==0)
@@ -159,6 +144,7 @@ void TMVA::ROCCalc::ApplySignalAndBackgroundStyle( TH1* sig, TH1* bkg, TH1* any 
 
 TMVA::ROCCalc::~ROCCalc() {
    // delete Splines and all histograms that were created only for internal use
+   // but do not delete the histograms returned to the user !
    if (fSplS)            { delete fSplS; fSplS = 0; }
    if (fSplB)            { delete fSplB; fSplB = 0; }
    if (fSpleffBvsS)      { delete fSpleffBvsS; fSpleffBvsS = 0; }
@@ -167,9 +153,28 @@ TMVA::ROCCalc::~ROCCalc() {
    if (fmvaScumul)       { delete fmvaScumul; }
    if (fmvaBcumul)       { delete fmvaBcumul; }
    if (effBvsS)          { delete effBvsS; }
-   if (rejBvsS)          { delete rejBvsS; }
    if (inveffBvsS)       { delete inveffBvsS; }
+   if (fPurity)          { delete fPurity; }
+   if (fSignificance)    { delete fSignificance;}
+   if (fmvaSpdf)         { delete fmvaSpdf; }
+   if (fmvaBpdf)         { delete fmvaBpdf; }
+
    delete fLogger;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Get the signal Pdf as an histogram. A new histogram is created and return
+
+TH1* TMVA::ROCCalc::GetMvaSpdf()
+{
+   return (TH1 *)fmvaSpdf->Clone();
+}
+////////////////////////////////////////////////////////////////////////////////
+/// Get the background  Pdf as a histogram. A new histogram is created and return
+
+TH1 *TMVA::ROCCalc::GetMvaBpdf()
+{
+   return (TH1 *)fmvaBpdf->Clone();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +204,7 @@ TH1D* TMVA::ROCCalc::GetROC(){
    effBvsS->SetYTitle( "Backgr eff" );
 
    // background rejection (=1-eff.) versus signal efficiency
+   // should I create a new one here ?
    if(rejBvsS==0) rejBvsS = new TH1D( "rejBvsS", "ROC-Curve", fNbins, 0, 1 );
    rejBvsS->SetXTitle( "Signal eff" );
    rejBvsS->SetYTitle( "Backgr rejection (1-eff)" );
@@ -425,6 +431,7 @@ Double_t TMVA::ROCCalc::Root( Double_t refValue  )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Compute Purity. The return histogram is managed by the user
 
 TH1* TMVA::ROCCalc::GetPurity( Int_t nStot, Int_t nBtot)
 {
@@ -433,13 +440,15 @@ TH1* TMVA::ROCCalc::GetPurity( Int_t nStot, Int_t nBtot)
       fnStot=nStot;
       fnBtot=nBtot;
    }
-   return fPurity;
+   R__ASSERT(fPurity != nullptr);
+   return (TH1 *)fPurity->Clone();
 }
 ////////////////////////////////////////////////////////////////////////////////
+/// Compute Significance. The return histogram is managed by the user
 
-TH1* TMVA::ROCCalc::GetSignificance( Int_t nStot, Int_t nBtot)
+TH1 *  TMVA::ROCCalc::GetSignificance(Int_t nStot, Int_t nBtot)
 {
-   if (fnStot==nStot && fnBtot==nBtot && !fSignificance) return fSignificance;
+   if (fnStot==nStot && fnBtot==nBtot && fSignificance) return (TH1*) fSignificance->Clone();
    fnStot=nStot; fnBtot=nBtot;
 
    fSignificance = (TH1*) fmvaScumul->Clone("Significance"); fSignificance->SetTitle("Significance");
@@ -491,6 +500,6 @@ TH1* TMVA::ROCCalc::GetSignificance( Int_t nStot, Int_t nBtot)
         maxSig,
         fSignificance->GetXaxis()->GetBinCenter(maxbin)) );
    */
-   return fSignificance;
+   return (TH1 *)fSignificance->Clone();
 
 }
