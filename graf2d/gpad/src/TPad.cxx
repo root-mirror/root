@@ -6200,7 +6200,7 @@ void TPad::ShowGuidelines(TObject *object, const Int_t event, const char mode, c
    // is off we do show guide lines.
    if ((event == kArrowKeyRelease) || (event == kArrowKeyPress) ||
        !gEnv->GetValue("Canvas.ShowGuideLines", 0)) return;
-
+   R__LOCKGUARD(gROOTMutex);
    std::vector<dField> curDist;
    std::vector<dField> otherDist;
    Int_t pMX, pMY;
