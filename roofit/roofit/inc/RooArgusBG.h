@@ -41,6 +41,8 @@ protected:
 
   Double_t evaluate() const ;
   void computeBatch(double* output, size_t size, rbc::DataMap& dataMap) const;
+  inline bool canComputeBatchWithCuda() const { return true; }
+
 
 //   void initGenerator();
 

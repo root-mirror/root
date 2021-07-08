@@ -593,7 +593,7 @@ std::vector<void(*)(Batches)> getFunctions()
 {
   return {computeAddPdf, computeArgusBG, computeBernstein, computeBifurGauss, computeBreitWigner,
           computeBukin, computeCBShape, computeChebychev, computeChiSquare, computeDstD0BG, 
-          computeExponential, computeGaussian, computeGamma, computeJohnson, computeLandau,
+          computeExponential, computeGamma, computeGaussian, computeJohnson, computeLandau,
           computeLognormal, computeNegativeLogarithms, computeNovosibirsk, computePoisson, 
           computePolynomial, computeProdPdf, computeVoigtian};
 }

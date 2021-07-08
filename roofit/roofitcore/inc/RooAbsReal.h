@@ -392,6 +392,7 @@ protected:
   {
     throw std::runtime_error("computeBatch not implemented in class " + std::string(ClassName()) );
   }
+  virtual bool canComputeBatchWithCuda() const { return false; }
 
  protected:
 

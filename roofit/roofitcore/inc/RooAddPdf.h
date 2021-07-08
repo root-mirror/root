@@ -130,6 +130,7 @@ protected:
 
   Double_t evaluate() const;
   void computeBatch(double* output, size_t nEvents, rbc::DataMap& dataMap) const;
+  inline bool canComputeBatchWithCuda() const { return true; }
 
 
   mutable RooAICRegistry _codeReg ;  //! Registry of component analytical integration codes

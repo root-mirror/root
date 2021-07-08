@@ -29,7 +29,7 @@ namespace rbc = RooBatchCompute;
 namespace RooBatchCompute {
 
 enum Computer{AddPdf, ArgusBG, Bernstein, BifurGauss, BreitWigner, Bukin, CBShape, Chebychev,
-              ChiSquare, DstD0BG, Exponential, Gaussian, Gamma, Johnson, Landau, Lognormal,
+              ChiSquare, DstD0BG, Exponential, Gamma, Gaussian, Johnson, Landau, Lognormal,
               NegativeLogarithms, Novosibirsk, Poisson, Polynomial, ProdPdf, Voigtian};
 
 /**
