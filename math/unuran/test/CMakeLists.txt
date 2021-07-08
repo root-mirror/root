@@ -29,3 +29,6 @@ foreach(file ${TestUnuranSource})
   ROOT_EXECUTABLE(${testname} ${file} LIBRARIES ${Libraries})
   ROOT_ADD_TEST(unuran-${testname} COMMAND ${testname} LABELS ${${testname}_LABELS})
 endforeach()
+
+# google tests
+ROOT_ADD_GTEST(testUnuranSampler unuranSampler.cxx LIBRARIES ${Libraries} )

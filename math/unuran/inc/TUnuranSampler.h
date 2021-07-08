@@ -72,10 +72,10 @@ public:
    void SetFunction(TF1 * pdf);
 
    /// set the cumulative distribution function of the PDF used for random sampling (one dim case)
-   void SetCdf(const ROOT::Math::IGenFunction &cdf) { fCDF = &cdf; }
+   void SetCdf(const ROOT::Math::IGenFunction &cdf);
 
    /// set the Derivative of the PDF used for random sampling (one dim continous case)
-   void SetDPdf(const ROOT::Math::IGenFunction &dpdf) { fDPDF = &dpdf; }
+   void SetDPdf(const ROOT::Math::IGenFunction &dpdf);
 
    /**
       initialize the generators with the given algorithm

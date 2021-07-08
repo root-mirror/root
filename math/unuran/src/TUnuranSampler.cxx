@@ -17,6 +17,7 @@
 #include "TUnuran.h"
 #include "Math/OneDimFunctionAdapter.h"
 #include "Math/DistSamplerOptions.h"
+#include "Math/GenAlgoOptions.h"
 #include "Fit/DataRange.h"
 //#include "Math/WrappedTF1.h"
 
@@ -47,9 +48,23 @@ TUnuranSampler::~TUnuranSampler() {
 bool TUnuranSampler::Init(const char * algo) {
    // initialize unuran classes using the given algorithm
    assert (fUnuran != 0 );
+   bool ret = false;
+   //case distribution has not been set
+   // Maybe we are using the Unuran string API which contains also distribution string
+   // try to initialize Unuran
    if (NDim() == 0)  {
-      Error("TUnuranSampler::Init","Distribution function has not been set ! Need to call SetFunction first.");
-      return false;
+      ret = fUnuran->Init(algo,"");
+      if (!ret) { 
+         Error("TUnuranSampler::Init",
+         "Unuran initialization string is invalid or the Distribution function has not been set and one needs to call SetFunction first.");
+         return false;
+      }
+      int ndim = fUnuran->GetDimension();
+      assert(ndim > 0);
+      fOneDim = (ndim == 1);
+      fDiscrete = fUnuran->IsDistDiscrete(); 
+      DoSetDimension(ndim);
+      return true;
    }
 
    if (fLevel < 0) fLevel =  ROOT::Math::DistSamplerOptions::DefaultPrintLevel();
@@ -61,7 +76,6 @@ bool TUnuranSampler::Init(const char * algo) {
    }
    method.ToUpper();
 
-   bool ret = false;
    if (NDim() == 1) {
        // check if distribution is discrete by
       // using first string in the method name is "D"
@@ -83,7 +97,7 @@ bool TUnuranSampler::Init(const char * algo) {
       //fUnuran->SetLogLevel(fLevel); ( seems not to work  disable for the time being)
       if (ret) Info("TUnuranSampler::Init","Successfully initailized Unuran with method %s",method.Data() );
       else Error("TUnuranSampler::Init","Failed to  initailize Unuran with method %s",method.Data() );
-      // seems not to work in UNURAN (cll only when level > 0 )
+      // seems not to work in UNURAN (call only when level > 0 )
    }
    return ret;
 }
@@ -92,7 +106,37 @@ bool TUnuranSampler::Init(const char * algo) {
 bool TUnuranSampler::Init(const ROOT::Math::DistSamplerOptions & opt ) {
    // default initialization with algorithm name
    SetPrintLevel(opt.PrintLevel() );
-   return Init(opt.Algorithm().c_str() );
+   // check if there are extra options
+   std::string optionStr = opt.Algorithm();
+   auto extraOpts = opt.ExtraOptions();
+   if (extraOpts) {
+      ROOT::Math::GenAlgoOptions * opts = dynamic_cast<ROOT::Math::GenAlgoOptions*>(extraOpts);
+      auto appendOption = [&](const std::string & key, const std::string & val) {
+         optionStr += "; ";
+         optionStr += key;
+         if (!val.empty()) {
+            optionStr += "=";
+            optionStr += val;
+         }
+      };
+      auto names = opts->GetAllNamedKeys();
+      for ( auto & name : names) {
+         std::string value = opts->NamedValue(name.c_str());
+         appendOption(name,value);
+      } 
+      names = opts->GetAllIntKeys();
+      for ( auto & name : names) {
+         std::string value = ROOT::Math::Util::ToString(opts->IValue(name.c_str()));
+         appendOption(name,value);
+      } 
+      names = opts->GetAllRealKeys();
+      for ( auto & name : names) {
+         std::string value = ROOT::Math::Util::ToString(opts->RValue(name.c_str()));
+         appendOption(name,value);
+      } 
+   }
+   Info("Init","Initialize UNU.RAN with Method option string: %s",optionStr.c_str());
+   return Init(optionStr.c_str() );
 }
 
 
@@ -240,11 +284,10 @@ bool TUnuranSampler::Sample(double * x) {
 
 bool TUnuranSampler::SampleBin(double prob, double & value, double *error) {
    // sample a bin according to Poisson statistics
-
    TRandom * r = fUnuran->GetRandom();
    if (!r) return false;
    value = r->Poisson(prob);
-   if (error) *error = std::sqrt(value);
+   if (error) *error = std::sqrt(prob);
    return true;
 }
 
@@ -264,4 +307,16 @@ void TUnuranSampler::SetMode(const std::vector<double> &mode)
       fHasMode = false;
       fNDMode.clear();
    }
+}
+
+void TUnuranSampler::SetCdf(const ROOT::Math::IGenFunction &cdf) {
+   fCDF = &cdf;
+   // in case dimension has not been defined ( a pdf is not provided)
+   if (NDim() == 0) DoSetDimension(1);
+}
+
+void TUnuranSampler::SetDPdf(const ROOT::Math::IGenFunction &dpdf) { 
+   fDPDF = &dpdf;
+   // in case dimension has not been defined ( a pdf is not provided)
+   if (NDim() == 0) DoSetDimension(1);
 }
