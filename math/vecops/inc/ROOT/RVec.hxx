@@ -1236,14 +1236,14 @@ public:
    template <typename V, unsigned M, typename = std::enable_if<std::is_convertible<V, bool>::value>>
    RVecN operator[](const RVecN<V, M> &conds) const
    {
-      const auto n = conds.size();
+      const size_type n = conds.size();
 
       if (n != this->size())
          throw std::runtime_error("Cannot index RVecN with condition vector of different size");
 
       RVecN ret;
       ret.reserve(n);
-      for (auto i = 0u; i < n; ++i)
+      for (size_type i = 0u; i < n; ++i)
          if (conds[i])
             ret.emplace_back(this->operator[](i));
       return ret;
