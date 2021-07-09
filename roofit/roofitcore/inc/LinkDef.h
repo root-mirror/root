@@ -251,6 +251,13 @@
 #pragma link C++ class RooResolutionModel+ ;
 #pragma link C++ class RooTruthModel+ ;
 #pragma link C++ class RooProdPdf+ ;
+#pragma read sourceClass="RooProdPdf" targetClass="RooProdPdf" version="[4]" \
+  source="RooLinkedList _pdfNSetList" target="_pdfNSetList"                  \
+  code="{RooFIter iter = onfile._pdfNSetList.fwdIterator();                  \
+         while(auto nset = (RooArgSet*)iter.next()) {                        \
+           _pdfNSetList.emplace_back(*nset);                                 \
+         }                                                                   \
+         }";
 #pragma link C++ class RooSimPdfBuilder+ ;
 #pragma link C++ class RooMCStudy+ ;
 #pragma link C++ class RooMsgService+ ;

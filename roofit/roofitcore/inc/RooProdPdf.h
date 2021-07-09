@@ -170,7 +170,7 @@ private:
 
   Double_t _cutOff ;       //  Cutoff parameter for running product
   RooListProxy _pdfList ;  //  List of PDF components
-  RooLinkedList _pdfNSetList ; // List of PDF component normalization sets
+  mutable std::vector<RooArgSet> _pdfNSetList ; // List of PDF component normalization sets
   Int_t _extendedIndex ;   //  Index of extended PDF (if any) 
 
   void useDefaultGen(Bool_t flag=kTRUE) { _useDefaultGen = flag ; }
@@ -183,7 +183,7 @@ private:
   
 private:
 
-  ClassDef(RooProdPdf,4) // PDF representing a product of PDFs
+  ClassDef(RooProdPdf,5) // PDF representing a product of PDFs
 };
 
 
