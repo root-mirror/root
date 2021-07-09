@@ -513,7 +513,7 @@ public:
 /// to avoid allocating unnecessary storage.
 template <typename T, unsigned N>
 struct SmallVectorStorage {
-   alignas(T) char InlineElts[N * sizeof(T)];
+   alignas(T) char InlineElts[N * sizeof(T)]{};
 };
 
 /// We need the storage to be properly aligned even for small-size of 0 so that
