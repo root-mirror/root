@@ -3273,42 +3273,6 @@ ROOT::Double_v TFormula::EvalParVec(const ROOT::Double_v *x, const Double_t *par
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Sets first 4  variables (e.g. x, y, z, t) and evaluate formula.
-
-Double_t TFormula::Eval(Double_t x, Double_t y, Double_t z, Double_t t) const
-{
-   double xxx[4] = {x,y,z,t};
-   return EvalPar(xxx, nullptr); // takes care of case where formula is vectorized
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Sets first 3  variables (e.g. x, y, z) and evaluate formula.
-
-Double_t TFormula::Eval(Double_t x, Double_t y , Double_t z) const
-{
-   double xxx[3] = {x,y,z};
-   return EvalPar(xxx, nullptr);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Sets first 2  variables (e.g. x and y) and evaluate formula.
-
-Double_t TFormula::Eval(Double_t x, Double_t y) const
-{
-   double xxx[2] = {x,y};
-   return EvalPar(xxx, nullptr);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Sets first variable (e.g. x) and evaluate formula.
-
-Double_t TFormula::Eval(Double_t x) const
-{
-   double * xxx = &x;
-   return EvalPar(xxx, nullptr);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Evaluate formula.
 /// If formula is not ready to execute(missing parameters/variables),
 /// print these which are not known.
