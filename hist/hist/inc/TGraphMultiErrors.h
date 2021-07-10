@@ -166,6 +166,7 @@ public:
 
    virtual void Print(Option_t *chopt = "") const;
    virtual void SavePrimitive(std::ostream &out, Option_t *option = "");
+   virtual void Scale(Double_t c1=1., Option_t *option="y"); // *MENU*
 
    virtual void SetPointError(Double_t exL, Double_t exH, Double_t eyL1, Double_t eyH1, Double_t eyL2 = 0.,
                               Double_t eyH2 = 0., Double_t eyL3 = 0., Double_t eyH3 = 0.); // *MENU*

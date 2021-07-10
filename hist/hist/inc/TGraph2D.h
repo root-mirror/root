@@ -143,6 +143,7 @@ public:
    TH1                  *Project(Option_t *option="x") const; // *MENU*
    Int_t                 RemovePoint(Int_t ipoint); // *MENU*
    virtual void          SavePrimitive(std::ostream &out, Option_t *option = "");
+   virtual void          Scale(Double_t c1=1., Option_t *option="z"); // *MENU*
    virtual void          Set(Int_t n);
    virtual void          SetDirectory(TDirectory *dir);
    virtual void          SetHistogram(TH2 *h);

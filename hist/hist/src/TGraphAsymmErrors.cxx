@@ -1317,6 +1317,35 @@ void TGraphAsymmErrors::SavePrimitive(std::ostream &out, Option_t *option /*= ""
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Multiply the values and errors of a TGraphAsymmErrors by a constant c1.
+///
+/// If option contains "x" the x values and errors are scaled
+/// If option contains "y" the y values and errors are scaled
+/// If option contains "xy" both x and y values and errors are scaled
+
+void TGraphAsymmErrors::Scale(Double_t c1, Option_t *option)
+{
+   TGraph::Scale(c1, option);
+   TString opt = option; opt.ToLower();
+   if (opt.Contains("x") && GetEXlow()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEXlow()[i] *= c1;
+   }
+   if (opt.Contains("x") && GetEXhigh()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEXhigh()[i] *= c1;
+   }
+   if (opt.Contains("y") && GetEYlow()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEYlow()[i] *= c1;
+   }
+   if (opt.Contains("y") && GetEYhigh()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEYhigh()[i] *= c1;
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Set ex and ey values for point pointed by the mouse.
 
 void TGraphAsymmErrors::SetPointError(Double_t exl, Double_t exh, Double_t eyl, Double_t eyh)

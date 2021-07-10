@@ -1757,6 +1757,35 @@ void TGraphMultiErrors::SavePrimitive(std::ostream &out, Option_t *option)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Multiply the values and errors of a TGraphMultiErrors by a constant c1.
+///
+/// If option contains "x" the x values and errors are scaled
+/// If option contains "y" the y values and (multiple) errors are scaled
+/// If option contains "xy" both x and y values and (multiple) errors are scaled
+
+void TGraphMultiErrors::Scale(Double_t c1, Option_t *option)
+{
+   TGraph::Scale(c1, option);
+   TString opt = option; opt.ToLower();
+   if (opt.Contains("x") && GetEXlow()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEXlow()[i] *= c1;
+   }
+   if (opt.Contains("x") && GetEXhigh()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEXhigh()[i] *= c1;
+   }
+   if (opt.Contains("y")) {
+      for (size_t d=0; d<fEyL.size(); d++)
+         for (Int_t i=0; i<fEyL[d].GetSize(); i++)
+            fEyL[d][i] *= c1;
+      for (size_t d=0; d<fEyH.size(); d++)
+         for (Int_t i=0; i<fEyH[d].GetSize(); i++)
+            fEyH[d][i] *= c1;
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Set ex and ey values for point pointed by the mouse.
 ///
 /// Up to 3 y error dimensions possible.

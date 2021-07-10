@@ -1564,6 +1564,30 @@ void TGraph2D::SavePrimitive(std::ostream &out, Option_t *option /*= ""*/)
    out << "   graph2d->Draw(" << quote << option << quote << ");" << std::endl;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Multiply the values of a TGraph2D by a constant c1.
+///
+/// If option contains "x" the x values are scaled
+/// If option contains "y" the y values are scaled
+/// If option contains "z" the z values are scaled
+/// If option contains "xyz" all three x, y and z values are scaled
+
+void TGraph2D::Scale(Double_t c1, Option_t *option)
+{
+   TString opt = option; opt.ToLower();
+   if (opt.Contains("x")) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetX()[i] *= c1;
+   }
+   if (opt.Contains("y")) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetY()[i] *= c1;
+   }
+   if (opt.Contains("z")) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetZ()[i] *= c1;
+   }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Set number of points in the 2D graph.

@@ -75,6 +75,7 @@ public:
    virtual Int_t   Merge(TCollection* list);
    virtual void    Print(Option_t *chopt="") const;
    virtual void    SavePrimitive(std::ostream &out, Option_t *option = "");
+   virtual void    Scale(Double_t c1=1., Option_t *option="y"); // *MENU*
    virtual void    SetPointError(Double_t exl, Double_t exh, Double_t eyl, Double_t eyh); // *MENU*
    virtual void    SetPointError(Int_t i, Double_t exl, Double_t exh, Double_t eyl, Double_t eyh);
    virtual void    SetPointEXlow(Int_t i, Double_t exl);

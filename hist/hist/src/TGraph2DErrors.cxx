@@ -308,6 +308,32 @@ void TGraph2DErrors::Print(Option_t *) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Multiply the values and errors of a TGraph2DErrors by a constant c1.
+///
+/// If option contains "x" the x values and errors are scaled
+/// If option contains "y" the y values and errors are scaled
+/// If option contains "z" the z values and errors are scaled
+/// If option contains "xyz" all three x, y and z values and errors are scaled
+
+void TGraph2DErrors::Scale(Double_t c1, Option_t *option)
+{
+   TGraph2D::Scale(c1, option);
+   TString opt = option; opt.ToLower();
+   if (opt.Contains("x") && GetEX()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEX()[i] *= c1;
+   }
+   if (opt.Contains("y") && GetEY()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEY()[i] *= c1;
+   }
+   if (opt.Contains("z") && GetEZ()) {
+      for (Int_t i=0; i<GetN(); i++)
+         GetEZ()[i] *= c1;
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Set number of points in the 2D graph.
 /// Existing coordinates are preserved.
 /// New coordinates above fNpoints are preset to 0.
