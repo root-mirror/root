@@ -2378,7 +2378,7 @@ void *TBufferFile::ReadObjectAny(const TClass *clCast)
          }
          baseOffset = 0; // For now we do not support requesting from a class that is the base of one of the class for which there is transformation to ....
 
-         Info("ReadObjectAny","Using Converter StreamerInfo from %s to %s",clRef->GetName(),clCast->GetName());
+         clOnfile = clRef;
          clRef = const_cast<TClass*>(clCast);
 
       }
