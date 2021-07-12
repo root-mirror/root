@@ -89,18 +89,23 @@ public:
    void ReleasePage(RPage &page) final;
 };
 
+class RPageCache;
 
 // clang-format off
 /**
 \class ROOT::Experimental::Detail::RPageAllocatorFile
 \ingroup NTuple
-\brief Manages pages read from a the file
+\brief Manages pages read from the file
 */
 // clang-format on
 class RPageAllocatorFile {
+private:
+   std::unique_ptr<RPageCache> fPageCache;
 public:
+   RPageAllocatorFile();
    static RPage NewPage(ColumnId_t columnId, void *mem, std::size_t elementSize, std::size_t nElements);
-   static void DeletePage(const RPage& page);
+   RPage NewPage(ColumnId_t columnId, std::size_t elementSize, std::size_t nElements);
+   void DeletePage(const RPage& page);
 };
 
 

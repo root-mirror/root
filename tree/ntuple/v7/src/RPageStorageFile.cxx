@@ -33,6 +33,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <list>
 #include <utility>
 
 #include <atomic>
@@ -192,6 +193,85 @@ void ROOT::Experimental::Detail::RPageSinkFile::ReleasePage(RPage &page)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+namespace ROOT {
+namespace Experimental {
+namespace Detail {
+
+class RPageCache {
+private:
+   // Doubly linked-list for random-access removal
+   std::list<RPage> fPages;
+
+   /// Clear the page's column id and element size but reuse the sized buffer.
+   RPage RecyclePage(const RPage &page) const {
+      return RPage(
+         kInvalidColumnId, page.GetBuffer(), page.GetCapacity(), 0 /* elementSize */
+      );
+   }
+
+public:
+   RPageCache() = default;
+   RPageCache(const RPageCache&) = delete;
+   RPageCache& operator=(const RPageCache&) = delete;
+   RPageCache(RPageCache&&) = default;
+   RPageCache& operator=(RPageCache&&) = default;
+
+   /// Deallocate the page's memory buffer.
+   void DeletePage(const RPage &page) {
+      delete[] reinterpret_cast<unsigned char *>(page.GetBuffer());
+   }
+
+   /// Return a page to the cache for reuse. Page memory ownership is passed to the cache.
+   /// If the cache is full, the smallest memory buffer is deallocated.
+   void ReturnPage(const RPage &page) {
+      fPages.push_back(RecyclePage(page));
+      if (fPages.size() <= 32) {
+         return;
+      }
+      // If the cache is getting too large, deallocate the smallest page
+      auto min_elt = std::min_element(fPages.begin(), fPages.end(),
+         [](const auto &a, const auto &b) { return a.GetCapacity() < b.GetCapacity(); });
+      DeletePage(*min_elt);
+      fPages.erase(min_elt);
+   }
+
+   /// Request a page from the cache with at least the specified `capacity`. Ownership of the
+   /// page memory is passed to the caller. If there isn't a suitable page in the cache, a
+   /// new allocation is made. The caller is responsible for properly setting the page's
+   /// column id and element size.
+   RPage RequestPage(std::size_t capacity) {
+      auto it = std::find_if(fPages.begin(), fPages.end(), [&](const auto &p) {
+         return p.GetCapacity() >= capacity;
+      });
+      // Cache miss, allocate a new page
+      if (it == fPages.end()) {
+         auto pageBuffer = std::make_unique<unsigned char[]>(capacity);
+         return RPage(kInvalidColumnId, pageBuffer.release(), capacity, 0 /* elementSize */);
+      }
+      // Cache hit, recycle a suitable page
+      RPage page = *it;
+      fPages.erase(it);
+      return page;
+   }
+
+   ~RPageCache() {
+      for (const auto &p : fPages) {
+         DeletePage(p);
+      }
+   }
+};
+
+} // namespace Detail
+} // namespace Experimental
+} // namespace ROOT
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+ROOT::Experimental::Detail::RPageAllocatorFile::RPageAllocatorFile()
+   : fPageCache(std::make_unique<RPageCache>()) {}
+
 ROOT::Experimental::Detail::RPage ROOT::Experimental::Detail::RPageAllocatorFile::NewPage(
    ColumnId_t columnId, void *mem, std::size_t elementSize, std::size_t nElements)
 {
@@ -200,11 +280,20 @@ ROOT::Experimental::Detail::RPage ROOT::Experimental::Detail::RPageAllocatorFile
    return newPage;
 }
 
+ROOT::Experimental::Detail::RPage ROOT::Experimental::Detail::RPageAllocatorFile::NewPage(
+   ColumnId_t columnId, std::size_t elementSize, std::size_t nElements)
+{
+   RPage recycledPage = fPageCache->RequestPage(elementSize * nElements);
+   RPage newPage(columnId, recycledPage.GetBuffer(), recycledPage.GetCapacity(), elementSize);
+   newPage.TryGrow(nElements);
+   return newPage;
+}
+
 void ROOT::Experimental::Detail::RPageAllocatorFile::DeletePage(const RPage& page)
 {
    if (page.IsNull())
       return;
-   delete[] reinterpret_cast<unsigned char *>(page.GetBuffer());
+   fPageCache->ReturnPage(page);
 }
 
 
@@ -309,20 +398,35 @@ ROOT::Experimental::Detail::RPage ROOT::Experimental::Detail::RPageSourceFile::P
       sealedPageBuffer = onDiskPage->GetAddress();
    }
 
-   std::unique_ptr<unsigned char []> pageBuffer;
+   const auto nElts = pageInfo.fNElements;
+   auto newPage = fPageAllocator->NewPage(columnId, elementSize, nElts);
    {
       RNTupleAtomicTimer timer(fCounters->fTimeWallUnzip, fCounters->fTimeCpuUnzip);
-      pageBuffer = UnsealPage({sealedPageBuffer, bytesOnStorage, pageInfo.fNElements}, *element);
+      const auto bytesPacked = element->GetPackedSize(nElts);
+      if (bytesOnStorage != bytesPacked) {
+         fDecompressor->Unzip(sealedPageBuffer, bytesOnStorage, bytesPacked, newPage.GetBuffer());
+      } else {
+         // We cannot simply map the sealed page as we don't know its life time. Specialized page sources
+         // may decide to implement to not use UnsealPage but to custom mapping / decompression code.
+         // Note that usually pages are compressed.
+         memcpy(newPage.GetBuffer(), sealedPageBuffer, bytesPacked);
+      }
+      if (!element->IsMappable()) {
+         auto tmp = fPageAllocator->NewPage(columnId, elementSize, nElts);
+         element->Unpack(tmp.GetBuffer(), newPage.GetBuffer(), nElts);
+         fPageAllocator->DeletePage(newPage);
+         newPage = tmp;
+      }
       fCounters->fSzUnzip.Add(elementSize * pageInfo.fNElements);
    }
 
    const auto indexOffset = clusterDescriptor.GetColumnRange(columnId).fFirstElementIndex;
-   auto newPage = fPageAllocator->NewPage(columnId, pageBuffer.release(), elementSize, pageInfo.fNElements);
    newPage.SetWindow(indexOffset + pageInfo.fFirstInPage, RPage::RClusterInfo(clusterId, indexOffset));
+   // Thread safety (fPageAllocator->DeletePage): fPagePool operations are protected by a mutex.
    fPagePool->RegisterPage(newPage,
-      RPageDeleter([](const RPage &page, void * /*userData*/)
+      RPageDeleter([&](const RPage &page, void * /*userData*/)
       {
-         RPageAllocatorFile::DeletePage(page);
+         fPageAllocator->DeletePage(page);
       }, nullptr));
    fCounters->fNPagePopulated.Inc();
    return newPage;
@@ -528,6 +632,7 @@ void ROOT::Experimental::Detail::RPageSourceFile::UnzipClusterImpl(RCluster *clu
          auto onDiskPage = cluster->GetOnDiskPage(key);
          R__ASSERT(onDiskPage && (onDiskPage->GetSize() == pi.fLocator.fBytesOnStorage));
 
+         // todo: use RPageCache guarded by mutex
          auto taskFunc =
             [this, columnId, clusterId, firstInPage, onDiskPage,
              element = allElements.back().get(),
@@ -540,9 +645,11 @@ void ROOT::Experimental::Detail::RPageSourceFile::UnzipClusterImpl(RCluster *clu
                auto newPage = fPageAllocator->NewPage(columnId, pageBuffer.release(), element->GetSize(), nElements);
                newPage.SetWindow(indexOffset + firstInPage, RPage::RClusterInfo(clusterId, indexOffset));
                fPagePool->PreloadPage(newPage,
-                  RPageDeleter([](const RPage &page, void * /*userData*/)
+                  // Thread safety (fPageAllocator->DeletePage):
+                  // fPagePool operations are protected by a mutex.
+                  RPageDeleter([&](const RPage &page, void * /*userData*/)
                   {
-                     RPageAllocatorFile::DeletePage(page);
+                     fPageAllocator->DeletePage(page);
                   }, nullptr));
             };
 
