@@ -25,6 +25,9 @@
 // ROOT-10668: Asympt. correct errors don't work when title and name differ
 TEST(RooAbsPdf, AsymptoticallyCorrectErrors)
 {
+  auto& msg = RooMsgService::instance();
+  msg.setGlobalKillBelow(RooFit::WARNING);
+
   RooRealVar x("x", "xxx", 0, 0, 10);
   RooRealVar a("a", "aaa", 2, 0, 10);
   // Cannot play with RooAbsPdf, since abstract.
@@ -42,10 +45,10 @@ TEST(RooAbsPdf, AsymptoticallyCorrectErrors)
   ASSERT_NE(weightedData.weight(), 1);
 
   a = 1.2;
-  auto result = pdf.fitTo(weightedData, RooFit::Save(), RooFit::AsymptoticError(true));
+  auto result = pdf.fitTo(weightedData, RooFit::Save(), RooFit::AsymptoticError(true), RooFit::PrintLevel(-1));
   const double aError = a.getError();
   a = 1.2;
-  auto result2 = pdf.fitTo(weightedData, RooFit::Save());
+  auto result2 = pdf.fitTo(weightedData, RooFit::Save(), RooFit::PrintLevel(-1));
 
   EXPECT_TRUE(result->isIdentical(*result2)) << "Fit results should be very similar.";
   EXPECT_GT(aError, a.getError()*2.) << "Asymptotically correct errors should be significantly larger.";
@@ -68,6 +71,9 @@ TEST(RooAbsPdf, AsymptoticallyCorrectErrors)
 TEST(RooAbsPdf, ConditionalFitBatchMode)
 {
   using namespace RooFit;
+  constexpr bool verbose = false;
+  auto& msg = RooMsgService::instance();
+  msg.getStream(1).removeTopic(RooFit::Minimization);
 
   auto makeFakeDataXY = []() {
     RooRealVar x("x", "x", 0, 10);
@@ -119,11 +125,11 @@ TEST(RooAbsPdf, ConditionalFitBatchMode)
               PrintLevel(-1),
               BatchMode(batchMode)
          ));
-      fitResults.back()->Print();
+      if (verbose) fitResults.back()->Print();
     }
 
     EXPECT_TRUE(fitResults[1]->isIdentical(*fitResults[0]));
-    EXPECT_TRUE(hijack.str().empty() != expectFastEvaluationsWarnings[iMean]);
+    EXPECT_TRUE(hijack.str().empty() != expectFastEvaluationsWarnings[iMean]) << "Stream contents: " << hijack.str();
     ++iMean;
   }
 }
@@ -132,6 +138,8 @@ TEST(RooAbsPdf, ConditionalFitBatchMode)
 TEST(RooAbsPdf, MultiRangeFit)
 {
   using namespace RooFit;
+  auto& msg = RooMsgService::instance();
+  msg.setGlobalKillBelow(RooFit::WARNING);
 
   RooRealVar x("x","x",-10,10);
 
