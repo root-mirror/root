@@ -1293,6 +1293,9 @@ Its storage is contiguous in memory and its interface is designed such to resemb
 of the stl vector. In addition the interface features methods and external functions to ease
 the manipulation and analysis of the data in the RVec.
 
+\note RVec does not attempt to be exception safe. Exceptions thrown by element constructors during insertions, swaps or
+other operations will be propagated potentially leaving the RVec object in an invalid state.
+
 \htmlonly
 <a href="https://doi.org/10.5281/zenodo.1253756"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.1253756.svg" alt="DOI"></a>
 \endhtmlonly
