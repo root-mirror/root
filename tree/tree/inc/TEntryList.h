@@ -62,6 +62,7 @@ class TEntryList: public TNamed
    virtual ~TEntryList();
 
    virtual void        Add(const TEntryList *elist);
+   void                AddSubList(TEntryList *elist);
    virtual Int_t       Contains(Long64_t entry, TTree *tree = 0);
    virtual void        DirectoryAutoAdd(TDirectory *);
    virtual Bool_t      Enter(Long64_t entry, TTree *tree = 0);

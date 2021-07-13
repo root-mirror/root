@@ -2652,7 +2652,7 @@ void TChain::SetDirectory(TDirectory* dir)
 /// the file names of the TEntryList sublists are expanded to full path name.
 /// If opt = "ne", the file names are taken as they are and not expanded
 
-void TChain::SetEntryList(TEntryList *elist, Option_t *opt)
+void TChain::SetEntryList(TEntryList *elist)
 {
    if (fEntryList){
       //check, if the chain is the owner of the previous entry list
@@ -2696,7 +2696,10 @@ void TChain::SetEntryList(TEntryList *elist, Option_t *opt)
       auto chainElement = (TChainElement*)fFiles->UncheckedAt(ie);
       treename = chainElement->GetName();
       filename = chainElement->GetTitle();
-      templist = elist->GetEntryList(treename, filename, opt);
+      // templist = elist->GetEntryList(treename, filename, opt);
+      // TODO: Add checks that the sub TEntryList is referring to the
+      // correct, current, tree in the TChain.
+      templist = static_cast<TEntryList *>(elist->GetLists()->At(ie));
       if (templist) {
          listfound++;
          templist->SetTreeNumber(ie);

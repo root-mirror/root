@@ -513,6 +513,28 @@ void TEntryList::Add(const TEntryList *elist)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Add a sub entry list to the current list.
+void TEntryList::AddSubList(TEntryList *elist){
+
+   // This was the only way I could find to avoid errors like
+   // Error in <TList::Delete>: A list is accessing an object (0x7ffc67ad3540) already deleted (list name = TList)
+   // at runtime. Preferrably we wouldn't need to copy the argument elist into
+   // a new TEntryList inside this function
+   auto elistcopy = new TEntryList{*elist};
+   elistcopy->fLastIndexQueried = -1;
+   elistcopy->fLastIndexReturned = 0;
+   elistcopy->fCurrent = nullptr;
+
+   if (!fLists){
+      fLists = new TList();
+   }
+
+   fLists->Add(elistcopy);
+
+   fN += elistcopy->fN;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// - When tree = 0, returns from the current list
 /// - When tree != 0, finds the list, corresponding to this tree
 /// - When tree is a chain, the entry is assumed to be global index and the local
