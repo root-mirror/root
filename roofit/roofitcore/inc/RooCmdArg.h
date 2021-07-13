@@ -21,10 +21,9 @@
 #include "RooLinkedList.h"
 #include <string>
 
-class RooAbsData ;
 class RooArgSet ;
 
-class RooCmdArg : public TNamed {
+class RooCmdArg final : public TNamed {
 public:
 
   RooCmdArg();
@@ -43,10 +42,11 @@ public:
     _prefixSubArgs = prefix ;
   }
 
-  RooLinkedList& subArgs() { 
-    // Return list of sub-arguments in this RooCmdArg
-    return _argList ; 
-  }
+  /// Return list of sub-arguments in this RooCmdArg
+  RooLinkedList const& subArgs() const { return _argList ; }
+
+  /// Return list of sub-arguments in this RooCmdArg
+  RooLinkedList& subArgs() { return _argList ; }
 
   virtual TObject* Clone(const char* newName=0) const {
     RooCmdArg* newarg = new RooCmdArg(*this) ;
@@ -104,14 +104,12 @@ public:
     return static_cast<T const&>(*getNextSharedData().back());
   }
 
-protected:
-
-  static const RooCmdArg _none  ; // Static instance of null object
-  friend class RooCmdConfig ;
+  bool procSubArgs() const { return _procSubArgs; }
+  bool prefixSubArgs() const { return _prefixSubArgs; }
 
 private:
 
-  friend class RooAbsCollection ;
+  static const RooCmdArg _none  ; // Static instance of null object
 
   // Payload
   Double_t _d[2] ;       // Payload doubles
@@ -134,5 +132,3 @@ private:
 };
 
 #endif
-
-

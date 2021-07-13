@@ -37,9 +37,8 @@ arguments and dependencies between arguments
 #include "RooStringVar.h"
 #include "RooTObjWrap.h"
 #include "RooAbsData.h"
-#include "TObjString.h"
 #include "RooMsgService.h"
-#include "strlcpy.h"
+#include "RooHelpers.h"
 
 #include <iostream>
 
@@ -58,23 +57,30 @@ RooCmdConfig::RooCmdConfig(const char* methodName) :
   TObject(),
   _name(methodName)
 {
-  _verbose = kFALSE ;
-  _error = kFALSE ;
-  _allowUndefined = kFALSE ;
-
-  _iIter = _iList.MakeIterator() ;
-  _dIter = _dList.MakeIterator() ;
-  _sIter = _sList.MakeIterator() ;
-  _oIter = _oList.MakeIterator() ;
-  _cIter = _cList.MakeIterator() ;
-
-  _rIter = _rList.MakeIterator() ;
-  _fIter = _fList.MakeIterator() ;
-  _mIter = _mList.MakeIterator() ;
-  _yIter = _yList.MakeIterator() ;
-  _pIter = _pList.MakeIterator() ;
+  _iList.SetOwner() ;
+  _dList.SetOwner() ;
+  _sList.SetOwner() ;
+  _cList.SetOwner() ;
+  _oList.SetOwner() ;
+  _rList.SetOwner() ;
+  _fList.SetOwner() ;
+  _mList.SetOwner() ;
+  _yList.SetOwner() ;
+  _pList.SetOwner() ;
 }
 
+
+namespace {
+
+void cloneList(TList const& inList, TList & outList) {
+  outList.SetOwner(true);
+  std::unique_ptr<TIterator> iter{inList.MakeIterator()} ;
+  while(auto elem = iter->Next()) {
+    outList.Add(elem->Clone()) ;
+  }
+}
+
+} // namespace
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,128 +93,17 @@ RooCmdConfig::RooCmdConfig(const RooCmdConfig& other)  : TObject(other)
   _error = other._error ;
   _allowUndefined = other._allowUndefined ;
 
-  _iIter = _iList.MakeIterator() ;
-  _dIter = _dList.MakeIterator() ;
-  _sIter = _sList.MakeIterator() ;
-  _oIter = _oList.MakeIterator() ;
-  _cIter = _cList.MakeIterator() ;
-  _rIter = _rList.MakeIterator() ;
-  _fIter = _fList.MakeIterator() ;
-  _mIter = _mList.MakeIterator() ;
-  _yIter = _yList.MakeIterator() ;
-  _pIter = _pList.MakeIterator() ;
+  cloneList(other._iList, _iList); // Integer list
+  cloneList(other._dList, _dList); // Double list
+  cloneList(other._sList, _sList); // String list
+  cloneList(other._oList, _oList); // Object list
+  cloneList(other._cList, _cList); // RooArgSet list
 
-  other._iIter->Reset() ;
-  RooInt* ri ;
-  while((ri=(RooInt*)other._iIter->Next())) {
-    _iList.Add(ri->Clone()) ;
-  }
-
-  other._dIter->Reset() ;
-  RooDouble* rd ;
-  while((rd=(RooDouble*)other._dIter->Next())) {
-    _dList.Add(rd->Clone()) ;
-  }
-
-  other._sIter->Reset() ;
-  RooStringVar* rs ;
-  while((rs=(RooStringVar*)other._sIter->Next())) {
-    _sList.Add(rs->Clone()) ;
-  }
-
-  other._oIter->Reset() ;
-  RooTObjWrap* os ;
-  while((os=(RooTObjWrap*)other._oIter->Next())) {
-    _oList.Add(os->Clone()) ;
-  }
-
-  other._cIter->Reset() ;
-  RooTObjWrap* cs ;
-  while((cs=(RooTObjWrap*)other._cIter->Next())) {
-    _cList.Add(cs->Clone()) ;
-  }
-
-  other._rIter->Reset() ;
-  TObjString* rr ;
-  while((rr=(TObjString*)other._rIter->Next())) {
-    _rList.Add(rr->Clone()) ;
-  }
-
-  other._fIter->Reset() ;
-  TObjString* ff ;
-  while((ff=(TObjString*)other._fIter->Next())) {
-    _fList.Add(ff->Clone()) ;
-  }
-
-  other._mIter->Reset() ;
-  TObjString* mm ;
-  while((mm=(TObjString*)other._mIter->Next())) {
-    _mList.Add(mm->Clone()) ;
-  }
-
-  other._yIter->Reset() ;
-  TObjString* yy ;
-  while((yy=(TObjString*)other._yIter->Next())) {
-    _yList.Add(yy->Clone()) ;
-  }
-
-  other._pIter->Reset() ;
-  TObjString* pp ;
-  while((pp=(TObjString*)other._pIter->Next())) {
-    _pList.Add(pp->Clone()) ;
-  }
-
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Destructor 
-
-RooCmdConfig::~RooCmdConfig()
-{
-  delete _iIter ;
-  delete _dIter ;
-  delete _sIter ;
-  delete _oIter ;
-  delete _cIter ;
-  delete _rIter ;
-  delete _fIter ;
-  delete _mIter ;
-  delete _yIter ;
-  delete _pIter ;
-
-  _iList.Delete() ;
-  _dList.Delete() ;
-  _sList.Delete() ;
-  _cList.Delete() ;
-  _oList.Delete() ;
-  _rList.Delete() ;
-  _fList.Delete() ;
-  _mList.Delete() ;
-  _yList.Delete() ;
-  _pList.Delete() ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Add condition that any of listed arguments must be processed
-/// for parsing to be declared successful
-
-void RooCmdConfig::defineRequiredArgs(const char* argName1, const char* argName2,
-				      const char* argName3, const char* argName4,
-				      const char* argName5, const char* argName6,
-				      const char* argName7, const char* argName8) 
-{
-  if (argName1) _rList.Add(new TObjString(argName1)) ;
-  if (argName2) _rList.Add(new TObjString(argName2)) ;
-  if (argName3) _rList.Add(new TObjString(argName3)) ;
-  if (argName4) _rList.Add(new TObjString(argName4)) ;
-  if (argName5) _rList.Add(new TObjString(argName5)) ;
-  if (argName6) _rList.Add(new TObjString(argName6)) ;
-  if (argName7) _rList.Add(new TObjString(argName7)) ;
-  if (argName8) _rList.Add(new TObjString(argName8)) ;
+  cloneList(other._rList, _rList); // Required cmd list
+  cloneList(other._fList, _fList); // Forbidden cmd list
+  cloneList(other._mList, _mList); // Mutex cmd list 
+  cloneList(other._yList, _yList); // Dependency cmd list
+  cloneList(other._pList, _pList); // Processed cmd list 
 }
 
 
@@ -217,24 +112,22 @@ void RooCmdConfig::defineRequiredArgs(const char* argName1, const char* argName2
 /// Return string with names of arguments that were required, but not
 /// processed
 
-const char* RooCmdConfig::missingArgs() const 
+std::string RooCmdConfig::missingArgs() const 
 {
-  static TString ret ;
-  ret="" ;
+  std::string ret = "";
 
-  _rIter->Reset() ;
-  TObjString* s ;
-  Bool_t first(kTRUE) ;
-  while((s=(TObjString*)_rIter->Next())) {
+  bool first = true;
+  std::unique_ptr<TIterator> iter{_rList.MakeIterator()};
+  while(auto const& s = iter->Next()) {
     if (first) {
       first=kFALSE ;
     } else {
-      ret.Append(", ") ;
+      ret += ", ";
     }
-    ret.Append(s->String()) ;
+    ret += static_cast<TObjString*>(s)->String();
   }
 
-  return ret.Length() ? ret.Data() : 0 ;
+  return ret;
 }
 
 
@@ -245,66 +138,7 @@ const char* RooCmdConfig::missingArgs() const
 
 void RooCmdConfig::defineDependency(const char* refArgName, const char* neededArgName) 
 {
-  TNamed* dep = new TNamed(refArgName,neededArgName) ;
-  _yList.Add(dep) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Define arguments named argName1 and argName2 mutually exclusive
-
-void RooCmdConfig::defineMutex(const char* argName1, const char* argName2) 
-{
-  TNamed* mutex1 = new TNamed(argName1,argName2) ;
-  TNamed* mutex2 = new TNamed(argName2,argName1) ;
-  _mList.Add(mutex1) ;
-  _mList.Add(mutex2) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Define arguments named argName1,argName2 and argName3 mutually exclusive
-
-void RooCmdConfig::defineMutex(const char* argName1, const char* argName2, const char* argName3) 
-{
-  defineMutex(argName1,argName2) ;
-  defineMutex(argName1,argName3) ;
-  defineMutex(argName2,argName3) ;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Define arguments named argName1,argName2,argName3 and argName4 mutually exclusive
-
-void RooCmdConfig::defineMutex(const char* argName1, const char* argName2, const char* argName3, const char* argName4) 
-{
-  defineMutex(argName1,argName2) ;
-  defineMutex(argName1,argName3) ;
-  defineMutex(argName1,argName4) ;
-  defineMutex(argName2,argName3) ;
-  defineMutex(argName2,argName4) ;
-  defineMutex(argName3,argName4) ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Define arguments named argName1,argName2,argName3 and argName4 mutually exclusive
-
-void RooCmdConfig::defineMutex(const char* argName1, const char* argName2, const char* argName3, const char* argName4, const char* argName5) 
-{
-  defineMutex(argName1,argName2) ;
-  defineMutex(argName1,argName3) ;
-  defineMutex(argName1,argName4) ;
-  defineMutex(argName1,argName4) ;
-  defineMutex(argName2,argName3) ;
-  defineMutex(argName2,argName4) ;
-  defineMutex(argName2,argName4) ;
-  defineMutex(argName3,argName4) ;
-  defineMutex(argName3,argName5) ;
-  defineMutex(argName4,argName5) ;
+  _yList.Add(new TNamed(refArgName,neededArgName)) ;
 }
 
 
@@ -431,36 +265,33 @@ Bool_t RooCmdConfig::defineSet(const char* name, const char* argName, Int_t setN
 ////////////////////////////////////////////////////////////////////////////////
 /// Print configuration of parser
 
-void RooCmdConfig::print()
+void RooCmdConfig::print() const
 {
   // Find registered integer fields for this opcode 
-  _iIter->Reset() ;
-  RooInt* ri ;
-  while((ri=(RooInt*)_iIter->Next())) {
-    cout << ri->GetName() << "[Int_t] = " << *ri << endl ;
+  std::unique_ptr<TIterator> iter{_iList.MakeIterator()};
+  while(auto const& ri = iter->Next()) {
+    cout << ri->GetName() << "[Int_t] = " << static_cast<RooInt const&>(*ri) << endl ;
   }
 
   // Find registered double fields for this opcode 
-  _dIter->Reset() ;
-  RooDouble* rd ;
-  while((rd=(RooDouble*)_dIter->Next())) {
-    cout << rd->GetName() << "[Double_t] = " << *rd << endl ;
+  iter.reset(_dList.MakeIterator());
+  while(auto const& rd = iter->Next()) {
+    cout << rd->GetName() << "[Double_t] = " << static_cast<RooDouble const&>(*rd) << endl ;
   }
 
   // Find registered string fields for this opcode 
-  _sIter->Reset() ;
-  RooStringVar* rs ;
-  while((rs=(RooStringVar*)_sIter->Next())) {
-    cout << rs->GetName() << "[string] = \"" << rs->getVal() << "\"" << endl ;
+  iter.reset(_sList.MakeIterator());
+  while(auto const& rs = iter->Next()) {
+    cout << rs->GetName() << "[string] = \"" << static_cast<RooStringVar const&>(*rs).getVal() << "\"" << endl ;
   }
 
   // Find registered argset fields for this opcode 
-  _oIter->Reset() ;
-  RooTObjWrap* ro ;
-  while((ro=(RooTObjWrap*)_oIter->Next())) {
+  iter.reset(_oList.MakeIterator());
+  while(auto const& ro = iter->Next()) {
     cout << ro->GetName() << "[TObject] = " ; 
-    if (ro->obj()) {
-      cout << ro->obj()->GetName() << endl ;
+    auto const * obj = static_cast<RooTObjWrap const&>(ro).obj();
+    if (obj) {
+      cout << obj->GetName() << endl ;
     } else {
 
       cout << "(null)" << endl ;
@@ -476,47 +307,89 @@ void RooCmdConfig::print()
 Bool_t RooCmdConfig::process(const RooLinkedList& argList) 
 {
   Bool_t ret(kFALSE) ;
-  TIterator* iter = argList.MakeIterator() ;
+  std::unique_ptr<TIterator> iter{argList.MakeIterator()} ;
   RooCmdArg* arg ;
   while((arg=(RooCmdArg*)iter->Next())) {
     ret |= process(*arg) ;
   }
-  delete iter ;
   return ret ;
 }
 
 
+namespace {
 
-////////////////////////////////////////////////////////////////////////////////
-/// Process given RooCmdArgs
+const std::unordered_map<std::string,std::string> originalGlobalFuncNameMap{
+  {"BinningName", "Binning"},
+  {"BinningSpec", "Binning"},
+  {"CutSpec", "Cut"},
+  {"CutVar", "Cut"},
+  {"ImportData", "Import"},
+  {"ImportDataSlice", "Import"},
+  {"ImportHistoSlice", "Import"},
+  {"ImportTree", "Import"},
+  {"IntObs", "IntegratedObservables"},
+  {"LinkDataSlice", "Link"},
+  {"ProjData", "ProjWData"},
+  {"RangeWithName", "Range"},
+  {"SliceCat", "Slice"},
+  {"SliceVars", "Slice"},
+  {"VisualizeErrorData", "VisualizeError"},
+  {"WeightVarName", "WeightVar"}
+};
 
-Bool_t RooCmdConfig::process(const RooCmdArg& arg1, const RooCmdArg& arg2, const RooCmdArg& arg3, const RooCmdArg& arg4,
-			     const RooCmdArg& arg5, const RooCmdArg& arg6, const RooCmdArg& arg7, const RooCmdArg& arg8) 
-{
-  Bool_t ret(kFALSE) ;
-  ret |= process(arg1) ;
-  ret |= process(arg2) ;
-  ret |= process(arg3) ;
-  ret |= process(arg4) ;
-  ret |= process(arg5) ;
-  ret |= process(arg6) ;
-  ret |= process(arg7) ;
-  ret |= process(arg8) ;
-  return ret ;
+// Get the name of the original RooGlobalFunc that created the RooCmdArg (see RooGlobalFunc.cxx).
+// This is used to emit warning messages if a RooCmdArg is repeated that the user can understand.
+std::string originalGlobalFuncName(std::string const& opc) {
+  auto found = originalGlobalFuncNameMap.find(opc);
+  if(found != originalGlobalFuncNameMap.end()) return found->second;
+  return opc;
 }
 
+} // namespace
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Process given RooCmdArg
 
-Bool_t RooCmdConfig::process(const RooCmdArg& arg) 
+bool RooCmdConfig::process(const RooCmdArg& arg, bool warnAboutDuplicates)
 {
   // Retrive command code
   const char* opc = arg.opcode() ;
 
   // Ignore empty commands
   if (!opc) return kFALSE ;
+
+  {
+    const std::string opcString = opc;
+    _processedCmdArgNames[opcString]++;
+    // check if no insertion happened, meaning `opc` was already in the set
+    if(warnAboutDuplicates && _processedCmdArgNames[opcString] == 2) {
+      std::stringstream msg;
+      // Some command arguments are allowed to be passed multiple times in the
+      // C++ interface. However, in pythonized RooFit this is not possible,
+      // because keyword argumencts cannot be repeated. That's why we issue a
+      // warning and recommend the aggregate alternatives even for C++, because
+      // otherwise we risk that C++ an pyROOT code diverges too much.
+      if(opcString == "SliceCat") {
+        msg << _name << " duplicate command: Slice(RooCategory& cat, const char* label)."
+            << "\n     To omit multiple categories from the plot projection,"
+            << " prefer Slice(std::map<RooCategory*, std::string> const&).";
+      } else if(opcString == "ImportDataSlice" || opcString == "ImportHistoSlice") {
+        msg << _name << " duplicate command: Import(const char* state, RooDataSet& data)."
+            << "\n     To specify many imports in one operation,"
+            << " prefer Import(std::map<string,RooDataSet*> const&).";
+      } else if(opcString == "LinkDataSlice") {
+        msg << _name << " duplicate command: Link(const char* state, RooAbsData& data)."
+            << "\n     To specify many links in one operation,"
+            << " prefer Link(std::map<string,RooDataSet*> const&).";
+      } else {
+        // For most command arguments, passing them multiple times is usually a use error,
+        // so we emit a general warning.
+        msg << _name << " duplicate command " << originalGlobalFuncName(opcString) << "().";
+      }
+      coutW(InputArguments) << msg.str() << endl ;
+    }
+  }
 
   // Check if not forbidden
   if (_fList.FindObject(opc)) {
@@ -556,9 +429,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   Bool_t anyField(kFALSE) ;
 
   // Find registered integer fields for this opcode 
-  _iIter->Reset() ;
-  RooInt* ri ;
-  while((ri=(RooInt*)_iIter->Next())) {
+  std::unique_ptr<TIterator> iter{_iList.MakeIterator()};
+  while(auto const& elem = iter->Next()) {
+    auto ri = static_cast<RooInt*>(elem);
     if (!TString(opc).CompareTo(ri->GetTitle())) {
       *ri = arg.getInt(ri->GetUniqueID()) ;
       anyField = kTRUE ;
@@ -569,9 +442,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   }
 
   // Find registered double fields for this opcode 
-  _dIter->Reset() ;
-  RooDouble* rd ;
-  while((rd=(RooDouble*)_dIter->Next())) {
+  iter.reset(_dList.MakeIterator());
+  while(auto const& elem = iter->Next()) {
+    auto rd = static_cast<RooDouble*>(elem);
     if (!TString(opc).CompareTo(rd->GetTitle())) {
       *rd = arg.getDouble(rd->GetUniqueID()) ;
       anyField = kTRUE ;
@@ -582,9 +455,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   }
 
   // Find registered string fields for this opcode 
-  _sIter->Reset() ;
-  RooStringVar* rs ;
-  while((rs=(RooStringVar*)_sIter->Next())) {
+  iter.reset(_sList.MakeIterator());
+  while(auto const& elem = iter->Next()) {
+    auto rs = static_cast<RooStringVar*>(elem);
     if (!TString(opc).CompareTo(rs->GetTitle())) {
       
       const char* oldStr = rs->getVal() ;
@@ -602,9 +475,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   }
 
   // Find registered TObject fields for this opcode 
-  _oIter->Reset() ;
-  RooTObjWrap* os ;
-  while((os=(RooTObjWrap*)_oIter->Next())) {
+  iter.reset(_oList.MakeIterator());
+  while(auto const& elem = iter->Next()) {
+    auto os = static_cast<RooTObjWrap*>(elem);
     if (!TString(opc).CompareTo(os->GetTitle())) {
       os->setObj((TObject*)arg.getObject(os->GetUniqueID())) ;
       anyField = kTRUE ;
@@ -620,9 +493,9 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   }
 
   // Find registered RooArgSet fields for this opcode 
-  _cIter->Reset() ;
-  RooTObjWrap* cs ;
-  while((cs=(RooTObjWrap*)_cIter->Next())) {
+  iter.reset(_cList.MakeIterator());
+  while(auto const& elem = iter->Next()) {
+    auto cs = static_cast<RooTObjWrap*>(elem);
     if (!TString(opc).CompareTo(cs->GetTitle())) {
       cs->setObj((TObject*)arg.getSet(cs->GetUniqueID())) ;
       anyField = kTRUE ;
@@ -655,15 +528,15 @@ Bool_t RooCmdConfig::process(const RooCmdArg& arg)
   _pList.Add(pcmd) ;
 
   Bool_t depRet = kFALSE ;
-  if (arg._procSubArgs) {
-    for (Int_t ia=0 ; ia<arg._argList.GetSize() ; ia++) {
-      RooCmdArg* subArg = static_cast<RooCmdArg*>(arg._argList.At(ia)) ;
+  if (arg.procSubArgs()) {
+    for (Int_t ia=0 ; ia<arg.subArgs().GetSize() ; ia++) {
+      RooCmdArg* subArg = static_cast<RooCmdArg*>(arg.subArgs().At(ia)) ;
       if (strlen(subArg->GetName())>0) {
-	RooCmdArg subArgCopy(*subArg) ;
-	if (arg._prefixSubArgs) {
-	  subArgCopy.SetName(Form("%s::%s",arg.GetName(),subArg->GetName())) ;
-	}
-	depRet |= process(subArgCopy) ;
+        RooCmdArg subArgCopy(*subArg) ;
+        if (arg.prefixSubArgs()) {
+          subArgCopy.SetName(Form("%s::%s",arg.GetName(),subArg->GetName())) ;
+        }
+        depRet |= process(subArgCopy, /* warnAboutDuplicates= */ false) ;
       }
     }
   }
@@ -748,7 +621,7 @@ RooArgSet* RooCmdConfig::getSet(const char* name, RooArgSet* defVal)
 
 const RooLinkedList& RooCmdConfig::getObjectList(const char* name) 
 {
-  static RooLinkedList defaultDummy ;
+  const static RooLinkedList defaultDummy ;
   RooTObjWrap* ro = (RooTObjWrap*) _oList.FindObject(name) ;
   return ro ? ro->objList() : defaultDummy ;
 }
@@ -763,8 +636,8 @@ Bool_t RooCmdConfig::ok(Bool_t verbose) const
   if (_rList.GetSize()==0 && !_error) return kTRUE ;
 
   if (verbose) {
-    const char* margs = missingArgs() ;
-    if (margs) {
+    std::string margs = missingArgs() ;
+    if (!margs.empty()) {
       coutE(InputArguments) << _name << " ERROR: missing arguments: " << margs << endl ;
     } else {
       coutE(InputArguments) << _name << " ERROR: illegal combination of arguments and/or missing arguments" << endl ;
@@ -778,20 +651,16 @@ Bool_t RooCmdConfig::ok(Bool_t verbose) const
 ////////////////////////////////////////////////////////////////////////////////
 /// Utility function that strips command names listed (comma separated) in cmdsToPurge from cmdList
 
-void RooCmdConfig::stripCmdList(RooLinkedList& cmdList, const char* cmdsToPurge) 
+void RooCmdConfig::stripCmdList(RooLinkedList& cmdList, const char* cmdsToPurge) const
 {
   // Sanity check
   if (!cmdsToPurge) return ;
   
   // Copy command list for parsing
-  char buf[1024] ;
-  strlcpy(buf,cmdsToPurge,1024) ;
-  
-  char* name = strtok(buf,",") ;
-  while(name) {
-    TObject* cmd = cmdList.FindObject(name) ;
-    if (cmd) cmdList.Remove(cmd) ;
-    name = strtok(0,",") ;
+  for(auto const& name : RooHelpers::tokenise(cmdsToPurge, ",", false)) {
+    if (TObject* cmd = cmdList.FindObject(name.c_str())) {
+      cmdList.Remove(cmd);
+    }
   }
 
 }
@@ -802,93 +671,23 @@ void RooCmdConfig::stripCmdList(RooLinkedList& cmdList, const char* cmdsToPurge)
 /// Utility function to filter commands listed in cmdNameList from cmdInList. Filtered arguments are put in the returned list.
 /// If removeFromInList is true then these commands are removed from the input list
 
-RooLinkedList RooCmdConfig::filterCmdList(RooLinkedList& cmdInList, const char* cmdNameList, Bool_t removeFromInList) 
+RooLinkedList RooCmdConfig::filterCmdList(RooLinkedList& cmdInList, const char* cmdNameList, bool removeFromInList) const
 {
   RooLinkedList filterList ;
   if (!cmdNameList) return filterList ;
 
   // Copy command list for parsing
-  char buf[1024] ;
-  strlcpy(buf,cmdNameList,1024) ;
-  
-  char* name = strtok(buf,",") ;
-  while(name) {
-    TObject* cmd = cmdInList.FindObject(name) ;
-    if (cmd) {
+  for(auto const& name : RooHelpers::tokenise(cmdNameList, ",", false)) {
+    if (TObject* cmd = cmdInList.FindObject(name.c_str())) {
       if (removeFromInList) {
-	cmdInList.Remove(cmd) ;
+        cmdInList.Remove(cmd) ;
       }
       filterList.Add(cmd) ;
     }
-    name = strtok(0,",") ;
   }
   return filterList ;  
 }
 
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Static decoder function allows to retrieve integer property from set of RooCmdArgs 
-/// For use in base member initializers in constructors
-
-Int_t RooCmdConfig::decodeIntOnTheFly(const char* callerID, const char* cmdArgName, Int_t intIdx, Int_t defVal, const RooCmdArg& arg1, 
-				      const RooCmdArg& arg2, const RooCmdArg& arg3, const RooCmdArg& arg4,
-				      const RooCmdArg& arg5, const RooCmdArg& arg6, const RooCmdArg& arg7,
-				      const RooCmdArg& arg8, const RooCmdArg& arg9) 
-{
-  RooCmdConfig pc(callerID) ;
-  pc.allowUndefined() ;
-  pc.defineInt("theInt",cmdArgName,intIdx,defVal) ;
-  pc.process(arg1) ;  pc.process(arg2) ;  pc.process(arg3) ;
-  pc.process(arg4) ;  pc.process(arg5) ;  pc.process(arg6) ;
-  pc.process(arg7) ;  pc.process(arg8) ;  pc.process(arg9) ;
-  return pc.getInt("theInt") ;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Static decoder function allows to retrieve string property from set of RooCmdArgs 
-/// For use in base member initializers in constructors
-
-std::string RooCmdConfig::decodeStringOnTheFly(const char* callerID, const char* cmdArgName, Int_t strIdx, const char* defVal, const RooCmdArg& arg1,
-					 const RooCmdArg& arg2, const RooCmdArg& arg3, const RooCmdArg& arg4,
-					 const RooCmdArg& arg5, const RooCmdArg& arg6, const RooCmdArg& arg7,
-					 const RooCmdArg& arg8, const RooCmdArg& arg9) 
-{  
-  RooCmdConfig pc(callerID) ;
-  pc.allowUndefined() ;
-  pc.defineString("theString",cmdArgName,strIdx,defVal) ;
-  pc.process(arg1) ;  pc.process(arg2) ;  pc.process(arg3) ;
-  pc.process(arg4) ;  pc.process(arg5) ;  pc.process(arg6) ;
-  pc.process(arg7) ;  pc.process(arg8) ;  pc.process(arg9) ;
-  const char* ret =  pc.getString("theString",0,kTRUE) ;
-
-  if (ret)
-    return std::string(ret);
-
-  return std::string();
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Static decoder function allows to retrieve object property from set of RooCmdArgs 
-/// For use in base member initializers in constructors
-
-TObject* RooCmdConfig::decodeObjOnTheFly(const char* callerID, const char* cmdArgName, Int_t objIdx, TObject* defVal, const RooCmdArg& arg1, 
-					 const RooCmdArg& arg2, const RooCmdArg& arg3, const RooCmdArg& arg4,
-					 const RooCmdArg& arg5, const RooCmdArg& arg6, const RooCmdArg& arg7,
-					 const RooCmdArg& arg8, const RooCmdArg& arg9) 
-{
-  RooCmdConfig pc(callerID) ;
-  pc.allowUndefined() ;
-  pc.defineObject("theObj",cmdArgName,objIdx,defVal) ;
-  pc.process(arg1) ;  pc.process(arg2) ;  pc.process(arg3) ;
-  pc.process(arg4) ;  pc.process(arg5) ;  pc.process(arg6) ;
-  pc.process(arg7) ;  pc.process(arg8) ;  pc.process(arg9) ;
-  return (TObject*) pc.getObject("theObj") ;
-}
 
 
 ////////////////////////////////////////////////////////////////////////////////

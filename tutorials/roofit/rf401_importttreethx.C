@@ -46,17 +46,9 @@ void rf401_importttreethx()
    RooCategory c("c", "c", {{"SampleA",0}, {"SampleB",1}, {"SampleC",2}});
 
    // Create a binned dataset that imports contents of all TH1 mapped by index category c
-   RooDataHist *dh = new RooDataHist("dh", "dh", x, Index(c), Import("SampleA", *hh_1), Import("SampleB", *hh_2),
-                                     Import("SampleC", *hh_3));
+   RooDataHist *dh = new RooDataHist("dh", "dh", x, Index(c),
+                                     Import({{"SampleA", hh_1}, {"SampleB", hh_2}, {"SampleC", hh_3}}));
    dh->Print();
-
-   // Alternative constructor form for importing multiple histograms
-   std::map<std::string, TH1 *> hmap;
-   hmap["SampleA"] = hh_1;
-   hmap["SampleB"] = hh_2;
-   hmap["SampleC"] = hh_3;
-   RooDataHist *dh2 = new RooDataHist("dh", "dh", x, c, hmap);
-   dh2->Print();
 
    // I m p o r t i n g   a   T T r e e   i n t o   a   R o o D a t a S e t   w i t h   c u t s
    // -----------------------------------------------------------------------------------------
@@ -102,8 +94,8 @@ void rf401_importttreethx()
    RooDataSet *dsC = (RooDataSet *)ds2.reduce(RooArgSet(x, y), "z>5");
 
    // Create a dataset that imports contents of all the above datasets mapped by index category c
-   RooDataSet *dsABC = new RooDataSet("dsABC", "dsABC", RooArgSet(x, y), Index(c), Import("SampleA", *dsA),
-                                      Import("SampleB", *dsB), Import("SampleC", *dsC));
+   RooDataSet *dsABC = new RooDataSet("dsABC", "dsABC", RooArgSet(x, y), Index(c),
+                                      Import({{"SampleA", dsA}, {"SampleB", dsB}, {"SampleC", dsC}}));
 
    dsABC->Print();
 }
