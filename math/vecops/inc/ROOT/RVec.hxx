@@ -1238,9 +1238,15 @@ public:
 
       RVecN ret;
       ret.reserve(n);
-      for (size_type i = 0u; i < n; ++i)
-         if (conds[i])
-            ret.emplace_back(this->operator[](i));
+      size_type j = 0u;
+      for (size_type i = 0u; i < n; ++i) {
+         if (conds[i]) {
+            // the begin() is to go around the R__ASSERT in operator[]
+            ret.begin()[j] = this->operator[](i);
+            ++j;
+         }
+      }
+      ret.set_size(j);
       return ret;
    }
 
