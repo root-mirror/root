@@ -27,6 +27,7 @@
 // needed only for template instantiations of THnSparseT:
 #include "TArrayF.h"
 #include "TArrayL.h"
+#include "TArrayL64.h"
 #include "TArrayI.h"
 #include "TArrayS.h"
 #include "TArrayC.h"
