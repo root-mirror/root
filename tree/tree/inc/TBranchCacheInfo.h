@@ -138,16 +138,22 @@ public:
    }
 
    /// Print the info we have for the baskets.
-   void Print(const char *owner, Long64_t *entries) const
+   void Print(const char *owner, Long64_t *entries, Int_t nBaskets, Long64_t nEntries) const
    {
       if (!owner || !entries)
          return;
       auto len = fInfo.GetNbits() / kSize + 1;
-      if (fBasketPedestal >= 0)
+      if ( (fBasketPedestal + len) > (UInt_t)nBaskets)
+         len = nBaskets - fBasketPedestal;
+      if (fBasketPedestal >= 0 && len) {
          for (UInt_t b = 0; b < len; ++b) {
             Printf("Branch %s : basket %d loaded=%d used=%d start entry=%lld", owner, b + fBasketPedestal,
                    (bool)fInfo[kSize * b + kLoaded], (bool)fInfo[kSize * b + kUsed], entries[fBasketPedestal + b]);
          }
+         Printf("Branch %s : entry range: [ %lld, %lld [", owner,
+                entries[fBasketPedestal],
+                (fBasketPedestal + len) >= (UInt_t)nBaskets ? nEntries :  entries[fBasketPedestal + len]);
+      }
    }
 };
 
