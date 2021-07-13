@@ -437,9 +437,15 @@ namespace cling {
         for (llvm::sys::fs::directory_iterator DirIt(DirPath, EC), DirEnd;
              DirIt != DirEnd && !EC; DirIt.increment(EC)) {
 
+          if (DirIt->type() == llvm::sys::fs::file_type::directory_file)
+            continue;
+
           // FIXME: Use a StringRef here!
           std::string FileName = getRealPath(DirIt->path());
           assert(!llvm::sys::fs::is_symlink_file(FileName));
+
+          if (!llvm::sys::fs::is_regular_file(FileName))
+            continue;
 
           if (ShouldPermanentlyIgnore(FileName))
             continue;
