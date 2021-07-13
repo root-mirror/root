@@ -1145,9 +1145,14 @@ public:
       }
    }
 
-   explicit RVecN(size_t Size, const T &Value = T()) : Detail::VecOps::RVecImpl<T>(N)
+   explicit RVecN(size_t Size, const T &Value) : Detail::VecOps::RVecImpl<T>(N) { this->assign(Size, Value); }
+
+   explicit RVecN(size_t Size) : Detail::VecOps::RVecImpl<T>(N)
    {
-      this->assign(Size, Value);
+      if (Size > N)
+         this->grow(Size);
+      this->fSize = Size;
+      std::uninitialized_fill(this->begin(), this->end(), T{});
    }
 
    template <typename ItTy,
@@ -1451,7 +1456,9 @@ public:
 
    RVec() {}
 
-   explicit RVec(size_t Size, const T &Value = T()) : SuperClass(Size, Value) {}
+   explicit RVec(size_t Size, const T &Value) : SuperClass(Size, Value) {}
+
+   explicit RVec(size_t Size) : SuperClass(Size) {}
 
    template <typename ItTy,
              typename = typename std::enable_if<std::is_convertible<
