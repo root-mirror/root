@@ -1,4 +1,5 @@
 // Author: Enrico Guiraud, Enric Tejedor, Danilo Piparo CERN  04/2021
+// See /math/vecops/ARCHITECTURE.md for more information.
 
 /*************************************************************************
  * Copyright (C) 1995-2021, Rene Brun and Fons Rademakers.               *
@@ -7,17 +8,6 @@
  * For the licensing terms see $ROOTSYS/LICENSE.                         *
  * For the list of contributors see $ROOTSYS/README/CREDITS.             *
  *************************************************************************/
-
-/*
- * The implementation of RVec is based on LLVM's SmallVector.
- *
- * Compared to LLVM's SmallVectors, the ability to adopt an existing memory buffer has been added,
- * as well as other minor patches for backward compatibility with
- * the previous implementation of RVec (which did not have a small buffer
- * optimization and was based on std::vector with a custom allocator) and
- * for compatibility with cppyy.
- * RVec also adds a vectorized operator[] and many "numpy-like" helper functions.
- */
 
 #ifndef ROOT_RVEC
 #define ROOT_RVEC
