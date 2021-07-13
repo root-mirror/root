@@ -284,7 +284,7 @@ THnBase* THnBase::CreateHnAny(const char* name, const char* title,
                       hn->IsA()->GetName());
             return 0;
          }
-         type = TClass::GetClass(TString::Format("THn%s", bintype));
+         type = TClass::GetClass(TString::Format("THn%s", bintype.Data()));
       }
    } else if (hn->InheritsFrom(THn::Class())) {
       if (!sparse) type = hn->IsA();
@@ -298,7 +298,7 @@ THnBase* THnBase::CreateHnAny(const char* name, const char* title,
          else if (hn->InheritsFrom(THnL::Class())) bintype = "L";
          else if (hn->InheritsFrom(THnL64::Class())) bintype = "L64";
          if (bintype.Length()) {
-            type = TClass::GetClass(TString::Format("THnSparse%s", bintype));
+            type = TClass::GetClass(TString::Format("THnSparse%s", bintype.Data()));
          }
       }
    } else {
