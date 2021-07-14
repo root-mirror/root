@@ -88,7 +88,7 @@ bool RTrivialDS::SetEntry(unsigned int slot, ULong64_t entry)
 
 void RTrivialDS::SetNSlots(unsigned int nSlots)
 {
-   R__ASSERT(0U == fNSlots && "Setting the number of slots even if the number of slots is different from zero.");
+   R__DEBUG_ASSERT(0U == fNSlots && "Setting the number of slots even if the number of slots is different from zero.");
 
    fNSlots = nSlots;
    fCounter.resize(fNSlots);

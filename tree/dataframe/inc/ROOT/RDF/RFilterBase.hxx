@@ -14,7 +14,7 @@
 #include "ROOT/RDF/RBookedDefines.hxx"
 #include "ROOT/RDF/RNodeBase.hxx"
 #include "RtypesCore.h"
-#include "TError.h" // R_ASSERT
+#include "TError.h" // R__ASSERT, R__DEBUG_ASSERT
 
 #include <string>
 #include <vector>
@@ -58,7 +58,7 @@ public:
    virtual void TriggerChildrenCount() = 0;
    virtual void ResetReportCount()
    {
-      R__ASSERT(!fName.empty()); // this method is to only be called on named filters
+      R__DEBUG_ASSERT(!fName.empty()); // this method is to only be called on named filters
       // fAccepted and fRejected could be different than 0 if this is not the first event-loop run using this filter
       std::fill(fAccepted.begin(), fAccepted.end(), 0);
       std::fill(fRejected.begin(), fRejected.end(), 0);

@@ -194,7 +194,7 @@ static std::unordered_map<std::string, std::string> &GetJittedExprs() {
 static std::string
 BuildLambdaString(const std::string &expr, const ColumnNames_t &vars, const ColumnNames_t &varTypes)
 {
-   R__ASSERT(vars.size() == varTypes.size());
+   R__DEBUG_ASSERT(vars.size() == varTypes.size());
 
    TPRegexp re(R"(\breturn\b)");
    const bool hasReturnStmt = re.MatchB(expr);

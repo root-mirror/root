@@ -115,10 +115,20 @@ extern void Obsolete(const char *function, const char *asOfVers, const char *rem
 R__EXTERN const char *kAssertMsg;
 R__EXTERN const char *kCheckMsg;
 
+/// Check for condition, emit a fatal error if false.
+/// \attention Unlike `assert`, this is *not* compiled away in release builds. Use R__DEBUG_ASSERT for that.
 #define R__ASSERT(e)                                                     \
    do {                                                                  \
       if (!(e)) ::Fatal("", kAssertMsg, _QUOTE_(e), __LINE__, __FILE__); \
    } while (false)
+
+/// A version of R__ASSERT that is only compiled in debug builds.
+#ifdef NDEBUG
+#define R__DEBUG_ASSERT(e) (void)0 // so that R__DEBUG_ASSERT can always be followed by a semi-colon
+#else
+#define R__DEBUG_ASSERT(e) R__ASSERT(e)
+#endif
+
 #define R__CHECK(e)                                                       \
    do {                                                                   \
       if (!(e)) ::Warning("", kCheckMsg, _QUOTE_(e), __LINE__, __FILE__); \

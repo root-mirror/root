@@ -1442,8 +1442,8 @@ public:
 
    void Finalize()
    {
-      R__ASSERT(fOutputTree != nullptr);
-      R__ASSERT(fOutputFile != nullptr);
+      R__DEBUG_ASSERT(fOutputTree != nullptr);
+      R__DEBUG_ASSERT(fOutputFile != nullptr);
 
       // use AutoSave to flush TTree contents because TTree::Write writes in gDirectory, not in fDirectory
       fOutputTree->AutoSave("flushbaskets");
@@ -1605,7 +1605,7 @@ public:
       const bool allNullFiles =
          std::all_of(fOutputFiles.begin(), fOutputFiles.end(),
                      [](const std::shared_ptr<ROOT::TBufferMergerFile> &ptr) { return ptr == nullptr; });
-      R__ASSERT(!allNullFiles);
+      R__DEBUG_ASSERT(!allNullFiles);
 
       auto fileWritten = false;
       for (auto &file : fOutputFiles) {

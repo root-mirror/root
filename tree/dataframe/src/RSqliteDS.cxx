@@ -544,7 +544,7 @@ RDataFrame MakeSqliteDataFrame(std::string_view fileName, std::string_view query
 /// Stores the result of the current active sqlite query row as a C++ value.
 bool RSqliteDS::SetEntry(unsigned int /* slot */, ULong64_t entry)
 {
-   R__ASSERT(entry + 1 == fNRow);
+   R__DEBUG_ASSERT(entry + 1 == fNRow);
    unsigned N = fValues.size();
    for (unsigned i = 0; i < N; ++i) {
       if (!fValues[i].fIsActive)

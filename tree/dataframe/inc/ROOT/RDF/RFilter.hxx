@@ -143,7 +143,7 @@ public:
 
    void TriggerChildrenCount() final
    {
-      R__ASSERT(!fName.empty()); // this method is to only be called on named filters
+      R__DEBUG_ASSERT(!fName.empty()); // this method is to only be called on named filters
       fPrevData.IncrChildrenCount();
    }
 

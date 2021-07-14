@@ -57,7 +57,7 @@ public:
    ~RRDFCardinalityField() = default;
 
    // Field is only used for reading
-   void GenerateColumnsImpl() final { R__ASSERT(false && "Cardinality fields must only be used for reading"); }
+   void GenerateColumnsImpl() final { R__DEBUG_ASSERT(false && "Cardinality fields must only be used for reading"); }
 
    void GenerateColumnsImpl(const RNTupleDescriptor &) final
    {
@@ -321,7 +321,7 @@ void RNTupleDS::SetNSlots(unsigned int nSlots)
 
    for (unsigned int i = 1; i < fNSlots; ++i) {
       fSources.emplace_back(fSources[0]->Clone());
-      R__ASSERT(i == (fSources.size() - 1));
+      R__DEBUG_ASSERT(i == (fSources.size() - 1));
       fSources[i]->Attach();
    }
 }

@@ -25,73 +25,73 @@ void RJittedFilter::SetFilter(std::unique_ptr<RFilterBase> f)
 
 void RJittedFilter::InitSlot(TTreeReader *r, unsigned int slot)
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->InitSlot(r, slot);
 }
 
 bool RJittedFilter::CheckFilters(unsigned int slot, Long64_t entry)
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    return fConcreteFilter->CheckFilters(slot, entry);
 }
 
 void RJittedFilter::Report(ROOT::RDF::RCutFlowReport &cr) const
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->Report(cr);
 }
 
 void RJittedFilter::PartialReport(ROOT::RDF::RCutFlowReport &cr) const
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->PartialReport(cr);
 }
 
 void RJittedFilter::FillReport(ROOT::RDF::RCutFlowReport &cr) const
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->FillReport(cr);
 }
 
 void RJittedFilter::IncrChildrenCount()
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->IncrChildrenCount();
 }
 
 void RJittedFilter::StopProcessing()
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->StopProcessing();
 }
 
 void RJittedFilter::ResetChildrenCount()
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->ResetChildrenCount();
 }
 
 void RJittedFilter::TriggerChildrenCount()
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->TriggerChildrenCount();
 }
 
 void RJittedFilter::ResetReportCount()
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->ResetReportCount();
 }
 
 void RJittedFilter::FinaliseSlot(unsigned int slot)
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->FinaliseSlot(slot);
 }
 
 void RJittedFilter::InitNode()
 {
-   R__ASSERT(fConcreteFilter != nullptr);
+   R__DEBUG_ASSERT(fConcreteFilter != nullptr);
    fConcreteFilter->InitNode();
 }
 

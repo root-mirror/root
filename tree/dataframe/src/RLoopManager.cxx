@@ -483,7 +483,7 @@ void RLoopManager::RunTreeReader()
 /// Run event loop over data accessed through a DataSource, in sequence.
 void RLoopManager::RunDataSource()
 {
-   R__ASSERT(fDataSource != nullptr);
+   R__DEBUG_ASSERT(fDataSource != nullptr);
    fDataSource->Initialise();
    auto ranges = fDataSource->GetEntryRanges();
    while (!ranges.empty() && fNStopsReceived < fNChildren) {
@@ -515,7 +515,7 @@ void RLoopManager::RunDataSource()
 void RLoopManager::RunDataSourceMT()
 {
 #ifdef R__USE_IMT
-   R__ASSERT(fDataSource != nullptr);
+   R__DEBUG_ASSERT(fDataSource != nullptr);
    RSlotStack slotStack(fNSlots);
    ROOT::TThreadExecutor pool;
 
