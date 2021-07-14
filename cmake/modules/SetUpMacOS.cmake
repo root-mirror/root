@@ -7,26 +7,6 @@
 set(ROOT_ARCHITECTURE macosx)
 set(ROOT_PLATFORM macosx)
 
-# https://gitlab.kitware.com/cmake/cmake/issues/19222
-if(CMAKE_VERSION VERSION_LESS 3.14.4)
-  if(CMAKE_GENERATOR STREQUAL "Ninja")
-    find_program(NINJAPROG ninja DOC "looking for Ninja to be used")
-    if (NINJAPROG)
-      execute_process(COMMAND ${NINJAPROG} --version
-        OUTPUT_VARIABLE NINJAVERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        RESULT_VARIABLE NINJAVERSIONRES)
-      if(${NINJAVERSIONRES} EQ 0)
-        if(${NINJAVERSION} VERSION_GREATER 1.8.2)
-          message(WARNING "You have hit https://gitlab.kitware.com/cmake/cmake/issues/19222\n"
-            "Your build will be indeterministic, i.e. unreliable for incremental builds."
-            "To fix this, please install CMake >= 3.14.4!")
-        endif()
-      endif()
-    endif()
-  endif()
-endif()
-
 if (CMAKE_SYSTEM_NAME MATCHES Darwin)
   EXECUTE_PROCESS(COMMAND sw_vers "-productVersion"
                   COMMAND cut -d . -f 1-2

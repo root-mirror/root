@@ -4,15 +4,7 @@
 # For the licensing terms see $ROOTSYS/LICENSE.
 # For the list of contributors see $ROOTSYS/README/CREDITS.
 
-if(MSVC)
-  # required for the following feature & bug fix:
-  # 3.15: Added $<REMOVE_DUPLICATES:list> generator expression
-  # 3.16: Bug fix with CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS: the auto-generated exports
-  #       are now updated only when the object files providing the symbols are updated
-  cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
-else()
-  cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
-endif()
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR
@@ -649,11 +641,7 @@ if(testing)
   endif()
 endif()
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.10.0")
-  cmake_host_system_information(RESULT PROCESSOR QUERY PROCESSOR_DESCRIPTION)
-else()
-  set(PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR})
-endif()
+cmake_host_system_information(RESULT PROCESSOR QUERY PROCESSOR_DESCRIPTION)
 
 message(STATUS "ROOT Configuration \n
 System          ${CMAKE_SYSTEM}
