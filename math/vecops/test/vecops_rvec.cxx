@@ -1091,7 +1091,8 @@ TEST(VecOps, Construct)
 bool IsSmall(const RVec<int> &v)
 {
    // the first array element is right after the 3 data members of SmallVectorBase
-   return reinterpret_cast<std::uintptr_t>(v.begin()) - reinterpret_cast<std::uintptr_t>(&v) == 16u;
+   return reinterpret_cast<std::uintptr_t>(v.begin()) - reinterpret_cast<std::uintptr_t>(&v) ==
+          sizeof(void *) + 2 * sizeof(int);
 }
 
 // this is a regression test for https://github.com/root-project/root/issues/6796
