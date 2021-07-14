@@ -11,6 +11,8 @@ class RooAbsArg;
 class RooAbsReal;
 class RooArgSet;
 class RooNLLVarNew;
+struct cudaStream_t;
+struct cudaEvent_t;
 
 class RooFitDriver {
   public:
@@ -20,28 +22,40 @@ class RooFitDriver {
      RooArgSet* getParameters() const;
      
     struct NodeInfo {
-      int nServers = 0;
       int nClients = 0;
+      int computeStage = 0; // 0=not_processed, 1=computing, 2=copying, 3=finished
       bool computeInScalarMode = false;
+      bool computeInGPU = false;
+      bool copyAfterEvaluation = false;
+      cudaStream_t* stream = nullptr;
+      cudaEvent_t* eventAfterComputation = nullptr;
     };
 
   private:
-    double* getAvailableBuffer();
+    double* getAvailableCPUBuffer();
+    double* getAvailableGPUBuffer();
+    double* getAvailablePinnedBuffer();
+    cudaStream_t* getAvailableCudaStream();
+    void updateMyServers(const RooAbsReal* node, std::unordered_map<const RooAbsReal*, NodeInfo>&);
+    void checkMyClients(const RooAbsReal* node, std::unordered_map<const RooAbsReal*, NodeInfo>&);
 
-    const int _batchMode=0;
-    double* _cudaMemDataset=nullptr;
+    const int _batchMode = 0;
+    double* _cudaMemDataset = nullptr;
 
     // used for preserving static info about the computation graph
-    rbc::DataMap _dataMap;
+    rbc::DataMap _dataMapCPU;
+    rbc::DataMap _dataMapGPU;
     const RooNLLVarNew& _topNode;
-    size_t _nEvents;
-    RooAbsData const* _data = nullptr;
-    std::queue<const RooAbsReal*> _initialQueue;
-    std::unordered_map<const RooAbsArg*,NodeInfo> _nodeInfos;
+    const RooAbsData* const _data = nullptr;
+    const size_t _nEvents;
+    std::vector<const RooAbsReal*> _initialQueue;
+    std::unordered_map<const RooAbsReal*, NodeInfo> _nodeInfos;
 
     // used for dynamically scheduling each step's computations
-    std::queue<const RooAbsReal*> _computeQueue;
-    std::queue<double*> _vectorBuffers;
+    std::queue<double*> _cpuBuffers;
+    std::queue<double*> _gpuBuffers;
+    std::queue<double*> _pinnedBuffers;
+    std::queue<cudaStream_t*> _cudaStreamBuffers;
 };
 
 #endif //ROO_FIT_DRIVER_H
