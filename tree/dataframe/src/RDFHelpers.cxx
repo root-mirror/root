@@ -12,6 +12,8 @@
 #include "TROOT.h"      // IsImplicitMTEnabled
 #include "TError.h"     // Warning
 #include "RConfigure.h" // R__USE_IMT
+#include "TFile.h"
+#include "TTree.h"
 #ifdef R__USE_IMT
 #include "ROOT/TThreadExecutor.hxx"
 #endif // R__USE_IMT
@@ -167,4 +169,15 @@ void ROOT::RDF::ProgressHelper::PrintProgressbar(std::ostream& stream, std::size
   if (fUseShellColours) stream << "\e[33m";
   stream << '|' << std::setfill(' ') << std::setw(fBarWidth) << std::left << bars << "|   ";
   if (fUseShellColours) stream << "\e[0m";
+}
+
+std::size_t ROOT::RDF::CountEvents(const char* treename, const char* fileUrl) {
+  std::unique_ptr<TFile> file( TFile::Open(fileUrl, "READ") );
+  if (!file)
+    return 0u;
+
+  std::unique_ptr<TTree> tree( file->Get<TTree>(treename) );
+  if (tree) return tree->GetEntries();
+
+  return 0u;
 }

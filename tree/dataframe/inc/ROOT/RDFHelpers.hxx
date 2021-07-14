@@ -277,6 +277,17 @@ private:
   const bool fUseShellColours;
 };
 
+
+// clang-format off
+/// Count events in a tree in the file described by `fileUrl`.
+/// \note This will open and close the file, so don't use this in loops.
+///
+/// \param treename Name of the tree.
+/// \param fileUrl Path or URL to a ROOT file.
+/// \return Event counts. Returns 0 in case of errors.
+// clang-format on
+std::size_t CountEvents(const char* treename, const char* fileUrl);
+
 } // namespace RDF
 } // namespace ROOT
 #endif
