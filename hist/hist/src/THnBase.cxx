@@ -213,7 +213,7 @@ THnBase* THnBase::CreateHnAny(const char* name, const char* title,
    // Create the corresponding THnSparse, depending on the storage
    // type of the TH1. The class name will be "TH??\0" where the first
    // ? is 1,2 or 3 and the second ? indicates the storage as C, S,
-   // I, L, F or D.
+   // I, L64, F or D.
    THnBase* s = 0;
    const char* cname( h->ClassName() );
    if (cname[0] == 'T' && cname[1] == 'H'
@@ -233,14 +233,13 @@ break;
          case 'F': R__THNBCASE(F);
          case 'D': R__THNBCASE(D);
          case 'I': R__THNBCASE(I);
-         case 'L': R__THNBCASE(L);
          case 'S': R__THNBCASE(S);
          case 'C': R__THNBCASE(C);
       }
 #undef R__THNBCASE
    }
    else if (cname[0] == 'T' && cname[1] == 'H'
-       && cname[2] >= '1' && cname[2] <= '3' && cname[3] == 'L'  \
+       && cname[2] >= '1' && cname[2] <= '3' && cname[3] == 'L'
        && cname[4] == '6' && cname[5] == '4' && cname[6] == 0) {
 
 #define R__THNBCASE(TAG)                                                \
