@@ -156,7 +156,7 @@ public:
    virtual void      SetBranchStatus(const char *bname, Bool_t status=1, UInt_t *found=0);
    virtual Int_t     SetCacheSize(Long64_t cacheSize = -1);
    virtual void      SetDirectory(TDirectory *dir);
-   virtual void      SetEntryList(TEntryList *elist);
+   virtual void      SetEntryList(TEntryList *elist, Option_t *opt="");
    virtual void      SetEntryListFile(const char *filename="", Option_t *opt="");
    virtual void      SetEventList(TEventList *evlist);
    virtual void      SetMakeClass(Int_t make) { TTree::SetMakeClass(make); if (fTree) fTree->SetMakeClass(make);}
