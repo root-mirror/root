@@ -921,19 +921,6 @@ public:
    RVecImpl &operator=(const RVecImpl &RHS);
 
    RVecImpl &operator=(RVecImpl &&RHS);
-
-   bool operator==(const RVecImpl &RHS) const
-   {
-      if (this->size() != RHS.size())
-         return false;
-      return std::equal(this->begin(), this->end(), RHS.begin());
-   }
-   bool operator!=(const RVecImpl &RHS) const { return !(*this == RHS); }
-
-   bool operator<(const RVecImpl &RHS) const
-   {
-      return std::lexicographical_compare(this->begin(), this->end(), RHS.begin(), RHS.end());
-   }
 };
 
 template <typename T>
