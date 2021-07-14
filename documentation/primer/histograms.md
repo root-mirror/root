@@ -149,4 +149,4 @@ macros shows how it looks for 2D histograms:
 
 ![Two 2D histograms stack on top of each other.\label{f56}][f56]
 
-[^4]: To optimise the memory usage you might go for one byte (TH1C), short (TH1S), integer (TH1I) or double-precision (TH1D) bin-content.
+[^4]: To optimise the memory usage you might go for one byte (TH1C), short (TH1S), integer (TH1I), long64 (TH1L64) or double-precision (TH1D) bin-content.

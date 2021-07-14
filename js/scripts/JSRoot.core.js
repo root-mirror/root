@@ -1534,6 +1534,7 @@
                           fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
             break;
          case 'TH1I':
+         case 'TH1L64':
          case 'TH1F':
          case 'TH1D':
          case 'TH1S':
@@ -1546,6 +1547,7 @@
             extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
             break;
          case 'TH2I':
+         case 'TH2L64':
          case 'TH2F':
          case 'TH2D':
          case 'TH2S':
@@ -1558,6 +1560,7 @@
             extend(obj, { fTsumwy: 0.,  fTsumwy2: 0, fTsumwz: 0.,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
             break;
          case 'TH3I':
+         case 'TH3L64':
          case 'TH3F':
          case 'TH3D':
          case 'TH3S':
