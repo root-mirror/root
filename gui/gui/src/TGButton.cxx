@@ -814,6 +814,8 @@ void TGTextButton::DoRedraw()
 
 Bool_t TGTextButton::HandleKey(Event_t *event)
 {
+   if (fState == kButtonDisabled || !(event->fState & kKeyMod1Mask)) return kFALSE;
+   
    Bool_t click = kFALSE;
    Bool_t was = !IsDown();   // kTRUE if button was off
 
@@ -824,8 +826,6 @@ Bool_t TGTextButton::HandleKey(Event_t *event)
    }
 
    if (fTip && event->fType == kGKeyPress) fTip->Hide();
-
-   if (fState == kButtonDisabled) return kTRUE;
 
    // We don't need to check the key number as GrabKey will only
    // allow fHotchar events if Alt button is pressed (kKeyMod1Mask)
