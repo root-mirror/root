@@ -239,6 +239,22 @@ break;
       }
 #undef R__THNBCASE
    }
+   else if (cname[0] == 'T' && cname[1] == 'H'
+       && cname[2] >= '1' && cname[2] <= '3' && cname[3] == 'L'  \
+       && cname[4] == '6' && cname[5] == '4' && cname[6] == 0) {
+
+#define R__THNBCASE(TAG)                                                \
+if (sparse) {                                                     \
+s = new _NAME2_(THnSparse,TAG)(name, title, ndim, nbins,       \
+minRange, maxRange, chunkSize); \
+} else {                                                          \
+s = new _NAME2_(THn,TAG)(name, title, ndim, nbins,             \
+minRange, maxRange);                  \
+}                      
+                                           \
+      R__THNBCASE(L64);
+#undef R__THNBCASE
+   }
    if (!s) {
       ::Warning("THnSparse::CreateHnAny", "Unknown Type of Histogram");
       return 0;
