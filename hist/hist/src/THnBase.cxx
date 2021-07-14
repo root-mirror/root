@@ -213,7 +213,7 @@ THnBase* THnBase::CreateHnAny(const char* name, const char* title,
    // Create the corresponding THnSparse, depending on the storage
    // type of the TH1. The class name will be "TH??\0" where the first
    // ? is 1,2 or 3 and the second ? indicates the storage as C, S,
-   // I, F or D.
+   // I, L, F or D.
    THnBase* s = 0;
    const char* cname( h->ClassName() );
    if (cname[0] == 'T' && cname[1] == 'H'
@@ -233,6 +233,7 @@ break;
          case 'F': R__THNBCASE(F);
          case 'D': R__THNBCASE(D);
          case 'I': R__THNBCASE(I);
+         case 'L': R__THNBCASE(L);
          case 'S': R__THNBCASE(S);
          case 'C': R__THNBCASE(C);
       }
@@ -275,7 +276,7 @@ THnBase* THnBase::CreateHnAny(const char* name, const char* title,
          if (hn->InheritsFrom(THnSparseD::Class())) bintype = "D";
          else if (hn->InheritsFrom(THnSparseF::Class())) bintype = "F";
          else if (hn->InheritsFrom(THnSparseL::Class())) bintype = "L";
-          else if (hn->InheritsFrom(THnSparseL64::Class())) bintype = "L64";
+         else if (hn->InheritsFrom(THnSparseL64::Class())) bintype = "L64";
          else if (hn->InheritsFrom(THnSparseI::Class())) bintype = "I";
          else if (hn->InheritsFrom(THnSparseS::Class())) bintype = "S";
          else if (hn->InheritsFrom(THnSparseC::Class())) bintype = "C";

@@ -146,6 +146,7 @@
 #pragma link C++ class THnSparseT<TArrayD>+;
 #pragma link C++ class THnSparseT<TArrayF>+;
 #pragma link C++ class THnSparseT<TArrayL>+;
+#pragma link C++ class THnSparseT<TArrayL64>+;
 #pragma link C++ class THnSparseT<TArrayI>+;
 #pragma link C++ class THnSparseT<TArrayS>+;
 #pragma link C++ class THnSparseT<TArrayC>+;
