@@ -62,6 +62,7 @@ private:
    /// Byte offset of the end of the last page of the current cluster
    std::uint64_t fClusterMaxOffset = 0;
    RPageSinkFile(std::string_view ntupleName, const RNTupleWriteOptions &options);
+   int UpdateCompression();
 
    RClusterDescriptor::RLocator WriteSealedPage(const RPageStorage::RSealedPage &sealedPage,
                                                 std::size_t bytesPacked);
@@ -76,8 +77,12 @@ protected:
 
 public:
    RPageSinkFile(std::string_view ntupleName, std::string_view path, const RNTupleWriteOptions &options);
+   /// RNTuples with the default RNTupleWriteOptions compression setting will use the TFile's
+   /// compression setting.
    RPageSinkFile(std::string_view ntupleName, std::string_view path, const RNTupleWriteOptions &options,
                  std::unique_ptr<TFile> &file);
+   /// RNTuples with the default RNTupleWriteOptions compression setting will use the TFile's
+   /// compression setting.
    RPageSinkFile(std::string_view ntupleName, TFile &file, const RNTupleWriteOptions &options);
    RPageSinkFile(const RPageSinkFile&) = delete;
    RPageSinkFile& operator=(const RPageSinkFile&) = delete;

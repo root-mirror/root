@@ -47,6 +47,9 @@ All page sink classes need to support the common options.
 class RNTupleWriteOptions {
    int fCompression{RCompressionSetting::EDefaults::kUseAnalysis};
    ENTupleContainerFormat fContainerFormat{ENTupleContainerFormat::kTFile};
+   /// Whether the user has explicitly set these options, e.g. to override a
+   /// TFile's compression setting.
+   bool fIsCompressionOverride = false;
    NTupleSize_t fNEntriesPerCluster = 64000;
    NTupleSize_t fNElementsPerPage = 10000;
    bool fUseBufferedWrite = true;
@@ -57,10 +60,15 @@ public:
    { return std::make_unique<RNTupleWriteOptions>(*this); }
 
    int GetCompression() const { return fCompression; }
-   void SetCompression(int val) { fCompression = val; }
-   void SetCompression(RCompressionSetting::EAlgorithm algorithm, int compressionLevel) {
-     fCompression = CompressionSettings(algorithm, compressionLevel);
+   void SetCompression(int val) {
+      fIsCompressionOverride = true;
+      fCompression = val;
    }
+   void SetCompression(RCompressionSetting::EAlgorithm algorithm, int compressionLevel) {
+      SetCompression(CompressionSettings(algorithm, compressionLevel));
+   }
+   /// Returns true if the compression settings were explicitly set by the user.
+   bool IsCompressionOverride() const { return fIsCompressionOverride; }
 
    ENTupleContainerFormat GetContainerFormat() const { return fContainerFormat; }
    void SetContainerFormat(ENTupleContainerFormat val) { fContainerFormat = val; }

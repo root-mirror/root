@@ -67,6 +67,9 @@ ROOT::Experimental::Detail::RPageSinkFile::RPageSinkFile(std::string_view ntuple
    const RNTupleWriteOptions &options)
    : RPageSinkFile(ntupleName, options)
 {
+   if (!options.IsCompressionOverride()) {
+      fOptions->SetCompression(RCompressionSetting::ELevel::kInherit);
+   }
    fWriter = std::unique_ptr<Internal::RNTupleFileWriter>(Internal::RNTupleFileWriter::Append(ntupleName, file));
 }
 
@@ -75,6 +78,9 @@ ROOT::Experimental::Detail::RPageSinkFile::RPageSinkFile(std::string_view ntuple
    const RNTupleWriteOptions &options, std::unique_ptr<TFile> &file)
    : RPageSinkFile(ntupleName, options)
 {
+   if (!options.IsCompressionOverride()) {
+      fOptions->SetCompression(RCompressionSetting::ELevel::kInherit);
+   }
    fWriter = std::unique_ptr<Internal::RNTupleFileWriter>(
       Internal::RNTupleFileWriter::Recreate(ntupleName, path, file));
 }
@@ -84,6 +90,20 @@ ROOT::Experimental::Detail::RPageSinkFile::~RPageSinkFile()
 {
 }
 
+int ROOT::Experimental::Detail::RPageSinkFile::UpdateCompression() {
+   if (GetWriteOptions().GetCompression() != RCompressionSetting::ELevel::kInherit) {
+      return GetWriteOptions().GetCompression();
+   }
+   auto compression = fWriter->GetTFileCompression();
+   for (auto &columnRange : RPageSink::fOpenColumnRanges) {
+      // if the compression hasn't changed since last we checked, return
+      if (columnRange.fCompressionSettings == compression) {
+         return compression;
+      }
+      columnRange.fCompressionSettings = compression;
+   }
+   return compression;
+}
 
 void ROOT::Experimental::Detail::RPageSinkFile::CreateImpl(const RNTupleModel & /* model */)
 {
@@ -93,7 +113,7 @@ void ROOT::Experimental::Detail::RPageSinkFile::CreateImpl(const RNTupleModel & 
    descriptor.SerializeHeader(buffer.get());
 
    auto zipBuffer = std::make_unique<unsigned char[]>(szHeader);
-   auto szZipHeader = fCompressor->Zip(buffer.get(), szHeader, GetWriteOptions().GetCompression(),
+   auto szZipHeader = fCompressor->Zip(buffer.get(), szHeader, UpdateCompression(),
       [&zipBuffer](const void *b, size_t n, size_t o){ memcpy(zipBuffer.get() + o, b, n); } );
    fWriter->WriteNTupleHeader(zipBuffer.get(), szZipHeader, szHeader);
 }
@@ -127,7 +147,7 @@ ROOT::Experimental::Detail::RPageSinkFile::CommitPageImpl(ColumnHandle_t columnH
    RPageStorage::RSealedPage sealedPage;
    {
       RNTupleAtomicTimer timer(fCounters->fTimeWallZip, fCounters->fTimeCpuZip);
-      sealedPage = SealPage(page, *element, GetWriteOptions().GetCompression());
+      sealedPage = SealPage(page, *element, UpdateCompression());
    }
 
    fCounters->fSzZip.Add(page.GetSize());
@@ -167,7 +187,7 @@ void ROOT::Experimental::Detail::RPageSinkFile::CommitDatasetImpl()
    descriptor.SerializeFooter(buffer.get());
 
    auto zipBuffer = std::make_unique<unsigned char []>(szFooter);
-   auto szZipFooter = fCompressor->Zip(buffer.get(), szFooter, GetWriteOptions().GetCompression(),
+   auto szZipFooter = fCompressor->Zip(buffer.get(), szFooter, UpdateCompression(),
       [&zipBuffer](const void *b, size_t n, size_t o){ memcpy(zipBuffer.get() + o, b, n); } );
    fWriter->WriteNTupleFooter(zipBuffer.get(), szZipFooter, szFooter);
    fWriter->Commit();

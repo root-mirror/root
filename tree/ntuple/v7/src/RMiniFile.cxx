@@ -1226,6 +1226,10 @@ void ROOT::Experimental::Internal::RNTupleFileWriter::Commit()
    fflush(fFileSimple.fFile);
 }
 
+int ROOT::Experimental::Internal::RNTupleFileWriter::GetTFileCompression() const {
+   R__ASSERT(fFileProper && "Internal error: called GetTFileCompression on a bare file");
+   return fFileProper.fFile->GetCompressionSettings();
+}
 
 std::uint64_t ROOT::Experimental::Internal::RNTupleFileWriter::WriteBlob(const void *data, size_t nbytes, size_t len)
 {

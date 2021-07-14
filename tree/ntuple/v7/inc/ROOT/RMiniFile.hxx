@@ -217,6 +217,10 @@ public:
    RNTupleFileWriter &operator =(RNTupleFileWriter &&other) = delete;
    ~RNTupleFileWriter();
 
+   /// Get the TFile's compression setting, if any. Calling this method on a bare file writer
+   /// is an error.
+   int GetTFileCompression() const;
+
    /// Writes the compressed header and registeres its location; lenHeader is the size of the uncompressed header.
    std::uint64_t WriteNTupleHeader(const void *data, size_t nbytes, size_t lenHeader);
    /// Writes the compressed footer and registeres its location; lenFooter is the size of the uncompressed footer.
