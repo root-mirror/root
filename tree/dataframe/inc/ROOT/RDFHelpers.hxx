@@ -26,6 +26,9 @@
 #include <type_traits>
 #include <utility> // std::index_sequence
 #include <vector>
+#include <mutex>
+#include <chrono>
+#include <array>
 
 namespace ROOT {
 namespace Internal {
@@ -180,6 +183,99 @@ RNode AsRNode(NodeType node)
 /// ~~~
 // clang-format on
 void RunGraphs(std::vector<RResultHandle> handles);
+
+
+// clang-format off
+/// RDF progress helper.
+/// This class provides callback functions to RDataFrame, which record event statistics
+/// and print them to the terminal every second.
+/// ProgressHelper::operator()(unsigned int, T&) is thread safe, and can be used as callback in MT mode.
+// clang-format on
+class ProgressHelper {
+public:
+
+  /// Create a progress helper.
+  /// \param increment RDF callbacks are called every `n` events. Pass this `n` here.
+  /// \param maxEvent If known, pass the number of events in the dataset. This will allow for computing completion
+  /// statistics.
+  /// \param progressBarWidth Number of characters the progress bar will occupy.
+  /// \param useShellColours Use shell colour codes to colour the output.
+  ProgressHelper(std::size_t increment,
+      std::size_t maxEvent,
+      unsigned int progressBarWidth = 40,
+      bool useShellColours = true) :
+  fMaxEvents{maxEvent},
+  fIncrement{increment},
+  fBarWidth{progressBarWidth},
+  fUseShellColours{useShellColours}
+  { }
+
+  ~ProgressHelper() = default;
+
+  // clang-format off
+  /// Thread-safe callback for RDataFrame.
+  /// It will record elapsed times and event statistics, and print a progress bar every second.
+  /// \param slot Ignored.
+  /// \param value Ignored.
+  // clang-format on
+  template<typename T>
+  void operator()(unsigned int /*slot*/, T& value) { operator()(value); }
+
+  // clang-format off
+  /// Thread-safe callback for RDataFrame.
+  /// It will record elapsed times and event statistics, and print a progress bar every second.
+  /// \param value Ignored.
+  // clang-format on
+  template<typename T>
+  void operator()(T& /*value*/) {
+    using namespace std::chrono;
+    // ***************************************************
+    // Warning: Here, everything needs to be thread safe:
+    // ***************************************************
+    fProcessedEvents += fIncrement;
+
+    // We only print every 1s, and only one thread does it. Try to take the lock:
+    if (duration_cast<seconds>(system_clock::now() - fLastPrintTime).count() == 0 || !fPrintMutex.try_lock())
+      return;
+
+    // ***************************************************
+    // Protected by lock from here:
+    // ***************************************************
+    std::lock_guard<std::mutex> lockGuard(fPrintMutex, std::adopt_lock_t{});
+
+    std::size_t eventCount;
+    seconds elapsedSeconds;
+    std::tie(eventCount, elapsedSeconds) = RecordEvtCountAndTime();
+
+    std::cout << "\r";
+    PrintProgressbar(std::cout, eventCount);
+    PrintStats(std::cout, eventCount, elapsedSeconds);
+    std::cout << std::flush;
+  }
+
+
+private:
+  double EvtPerSec() const;
+  std::pair<std::size_t, std::chrono::seconds> RecordEvtCountAndTime();
+  void PrintStats(std::ostream& stream, std::size_t currentEventCount, std::chrono::seconds totalElapsedSeconds) const;
+  void PrintProgressbar(std::ostream& stream, std::size_t currentEventCount) const;
+
+  const std::chrono::time_point<std::chrono::system_clock> fBeginTime = std::chrono::system_clock::now();
+  std::chrono::time_point<std::chrono::system_clock> fLastPrintTime = fBeginTime;
+
+  std::atomic<std::size_t> fProcessedEvents{ 0 };
+  std::size_t fLastProcessedEvents = 0;
+  const std::size_t fMaxEvents;
+  const std::size_t fIncrement;
+
+  std::array<double, 20> fEventsPerSecondStatistics;
+  std::size_t fEventsPerSecondStatisticsIndex = 0;
+
+  const unsigned int fBarWidth;
+
+  std::mutex fPrintMutex;
+  const bool fUseShellColours;
+};
 
 } // namespace RDF
 } // namespace ROOT
