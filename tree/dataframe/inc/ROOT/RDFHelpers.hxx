@@ -199,16 +199,14 @@ public:
   /// \param maxEvent If known, pass the number of events in the dataset. This will allow for computing completion
   /// statistics.
   /// \param progressBarWidth Number of characters the progress bar will occupy.
-  /// \param useShellColours Use shell colour codes to colour the output.
+  /// \param printInterval Update every stats every `n` seconds.
+  /// \param useShellColors Use shell colour codes to colour the output. Automatically disabled when
+  /// we are not writing to a tty.
   ProgressHelper(std::size_t increment,
       std::size_t maxEvent,
       unsigned int progressBarWidth = 40,
-      bool useShellColours = true) :
-  fMaxEvents{maxEvent},
-  fIncrement{increment},
-  fBarWidth{progressBarWidth},
-  fUseShellColours{useShellColours}
-  { }
+      unsigned int printInterval = 1,
+      bool useShellColors = true);
 
   ~ProgressHelper() = default;
 
@@ -234,23 +232,26 @@ public:
     // ***************************************************
     fProcessedEvents += fIncrement;
 
-    // We only print every 1s, and only one thread does it. Try to take the lock:
-    if (duration_cast<seconds>(system_clock::now() - fLastPrintTime).count() == 0 || !fPrintMutex.try_lock())
-      return;
+    // We only print every n seconds.
+    if (duration_cast<seconds>(system_clock::now() - fLastPrintTime) < fPrintInterval) return;
 
     // ***************************************************
     // Protected by lock from here:
     // ***************************************************
+    if (!fPrintMutex.try_lock()) return;
     std::lock_guard<std::mutex> lockGuard(fPrintMutex, std::adopt_lock);
 
     std::size_t eventCount;
     seconds elapsedSeconds;
     std::tie(eventCount, elapsedSeconds) = RecordEvtCountAndTime();
 
-    std::cout << "\r";
+    if (fIsTTY) std::cout << "\r";
+
     PrintProgressbar(std::cout, eventCount);
     PrintStats(std::cout, eventCount, elapsedSeconds);
-    std::cout << std::flush;
+
+    if (fIsTTY) std::cout << std::flush;
+    else        std::cout << std::endl;
   }
 
 
@@ -262,6 +263,7 @@ private:
 
   const std::chrono::time_point<std::chrono::system_clock> fBeginTime = std::chrono::system_clock::now();
   std::chrono::time_point<std::chrono::system_clock> fLastPrintTime = fBeginTime;
+  std::chrono::seconds fPrintInterval{ 1 };
 
   std::atomic<std::size_t> fProcessedEvents{ 0 };
   std::size_t fLastProcessedEvents = 0;
@@ -274,6 +276,7 @@ private:
   const unsigned int fBarWidth;
 
   std::mutex fPrintMutex;
+  const bool fIsTTY;
   const bool fUseShellColours;
 };
 

@@ -20,6 +20,8 @@
 
 #include <set>
 #include <numeric>
+#include <unistd.h>
+#include <stdio.h>
 
 using ROOT::RDF::RResultHandle;
 
@@ -61,6 +63,21 @@ void ROOT::RDF::RunGraphs(std::vector<RResultHandle> handles)
       run(h);
 }
 
+
+ROOT::RDF::ProgressHelper::ProgressHelper(std::size_t increment,
+    std::size_t maxEvent,
+    unsigned int progressBarWidth,
+    unsigned int printInterval,
+    bool useShellColors) :
+fPrintInterval(printInterval),
+fMaxEvents{maxEvent},
+fIncrement{increment},
+fBarWidth{progressBarWidth},
+fIsTTY{isatty(fileno(stdout)) == 1},
+fUseShellColours{useShellColors && fIsTTY} // Control characters only with terminals.
+{
+
+}
 
 /// Compute a running mean of events/s.
 double ROOT::RDF::ProgressHelper::EvtPerSec() const {
@@ -162,9 +179,9 @@ void ROOT::RDF::ProgressHelper::PrintStats(std::ostream& stream, std::size_t cur
 
   // Time statistics:
   if (fMaxEvents != 0) {
-    if (fUseShellColours) stream << "\e[35m" << "  ";
+    if (fUseShellColours) stream << "\e[35m";
     const std::chrono::seconds remainingSeconds( static_cast<long long>((fMaxEvents - currentEventCount) / evtpersec) );
-    stream << remainingSeconds << " remaining";
+    stream << " " << remainingSeconds << " remaining";
     if (fUseShellColours) stream << "\e[0m";
   }
 
