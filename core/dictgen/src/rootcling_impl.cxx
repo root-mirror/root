@@ -3317,8 +3317,9 @@ static std::string GenerateFwdDeclString(const RScanner &scan,
                    selectedDecls.begin(),
                    [](const ROOT::TMetaUtils::AnnotatedRecordDecl& rcd){return rcd.GetRecordDecl();});
 
-   for (auto* TD: scan.fSelectedTypedefs)
-      selectedDecls.push_back(TD);
+   selectedDecls.insert(selectedDecls.begin(), scan.fSelectedNamespaces.begin(), scan.fSelectedNamespaces.end());
+   selectedDecls.insert(selectedDecls.begin(), scan.fSelectedTypedefs.begin(), scan.fSelectedTypedefs.end());
+   selectedDecls.insert(selectedDecls.begin(), scan.fSelectedEnums.begin(), scan.fSelectedEnums.end());
 
 //    for (auto* VAR: scan.fSelectedVariables)
 //       selectedDecls.push_back(VAR);
