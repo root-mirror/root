@@ -3,9 +3,9 @@
 
 
 
-#include "SOFIE_common.hxx"
-#include "RModel.hxx"
-#include "OperatorList.hxx"
+#include "TMVA/SOFIE_common.hxx"
+#include "TMVA/RModel.hxx"
+#include "TMVA/OperatorList.hxx"
 
 #include <string>
 #include <fstream>
