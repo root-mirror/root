@@ -1112,52 +1112,51 @@ TGNumberEntryField::TGNumberEntryField(const TGWindow * parent,
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the numeric value (floating point representation).
 
-void TGNumberEntryField::SetNumber(Double_t val)
+void TGNumberEntryField::SetNumber(Double_t val, Bool_t emit)
 {
    switch (fNumStyle) {
    case kNESInteger:
-      SetIntNumber(Round(val));
+      SetIntNumber(Round(val), emit);
       break;
    case kNESRealOne:
-      SetIntNumber(Round(10.0 * val));
+      SetIntNumber(Round(10.0 * val), emit);
       break;
    case kNESRealTwo:
-      SetIntNumber(Round(100.0 * val));
+      SetIntNumber(Round(100.0 * val), emit);
       break;
    case kNESRealThree:
-      SetIntNumber(Round(1000.0 * val));
+      SetIntNumber(Round(1000.0 * val), emit);
       break;
    case kNESRealFour:
-      SetIntNumber(Round(10000.0 * val));
-
+      SetIntNumber(Round(10000.0 * val), emit);
       break;
    case kNESReal:
       {
          char text[256];
          snprintf(text, 255, "%g", val);
-         SetText(text);
+         SetText(text, emit);
          break;
       }
    case kNESDegree:
-      SetIntNumber(Round(val));
+      SetIntNumber(Round(val), emit);
       break;
    case kNESHourMinSec:
-      SetIntNumber(Round(val));
+      SetIntNumber(Round(val), emit);
       break;
    case kNESMinSec:
-      SetIntNumber(Round(val));
+      SetIntNumber(Round(val), emit);
       break;
    case kNESHourMin:
-      SetIntNumber(Round(val));
+      SetIntNumber(Round(val), emit);
       break;
    case kNESDayMYear:
-      SetIntNumber(Round(val));
+      SetIntNumber(Round(val), emit);
       break;
    case kNESMDayYear:
-      SetIntNumber(Round(val));
+      SetIntNumber(Round(val), emit);
       break;
    case kNESHex:
-      SetIntNumber((UInt_t) (TMath::Abs(val) + 0.5));
+      SetIntNumber((UInt_t) (TMath::Abs(val) + 0.5), emit);
       break;
    }
 }
@@ -1165,7 +1164,7 @@ void TGNumberEntryField::SetNumber(Double_t val)
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the numeric value (integer representation).
 
-void TGNumberEntryField::SetIntNumber(Long_t val)
+void TGNumberEntryField::SetIntNumber(Long_t val, Bool_t emit)
 {
    char text[256];
    RealInfo_t ri;
@@ -1174,26 +1173,26 @@ void TGNumberEntryField::SetIntNumber(Long_t val)
    } else {
       TranslateToStr(text, val, fNumStyle, ri);
    }
-   SetText(text);
+   SetText(text, emit);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the numeric value (time format).
 
-void TGNumberEntryField::SetTime(Int_t hour, Int_t min, Int_t sec)
+void TGNumberEntryField::SetTime(Int_t hour, Int_t min, Int_t sec, Bool_t emit)
 {
    switch (fNumStyle) {
    case kNESHourMinSec:
       SetIntNumber(3600 * TMath::Abs(hour) + 60 * TMath::Abs(min) +
-                   TMath::Abs(sec));
+                   TMath::Abs(sec), emit);
       break;
    case kNESMinSec:
       {
-         SetIntNumber(60 * min + sec);
+         SetIntNumber(60 * min + sec, emit);
          break;
       }
    case kNESHourMin:
-      SetIntNumber(60 * TMath::Abs(hour) + TMath::Abs(min));
+      SetIntNumber(60 * TMath::Abs(hour) + TMath::Abs(min), emit);
       break;
    default:
       break;
@@ -1203,14 +1202,14 @@ void TGNumberEntryField::SetTime(Int_t hour, Int_t min, Int_t sec)
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the numeric value (date format).
 
-void TGNumberEntryField::SetDate(Int_t year, Int_t month, Int_t day)
+void TGNumberEntryField::SetDate(Int_t year, Int_t month, Int_t day, Bool_t emit)
 {
    switch (fNumStyle) {
    case kNESDayMYear:
    case kNESMDayYear:
       {
          SetIntNumber(10000 * TMath::Abs(year) + 100 * TMath::Abs(month) +
-                      TMath::Abs(day));
+                      TMath::Abs(day), emit);
       }
    default:
       {
@@ -1222,9 +1221,9 @@ void TGNumberEntryField::SetDate(Int_t year, Int_t month, Int_t day)
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the numeric value (hex format).
 
-void TGNumberEntryField::SetHexNumber(ULong_t val)
+void TGNumberEntryField::SetHexNumber(ULong_t val, Bool_t emit)
 {
-   SetIntNumber((Long_t) val);
+   SetIntNumber((Long_t) val, emit);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

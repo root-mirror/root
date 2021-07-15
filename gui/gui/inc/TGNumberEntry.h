@@ -86,11 +86,11 @@ public:
                       ELimit limits = kNELNoLimits,
                       Double_t min = 0, Double_t max = 1);
 
-   virtual void SetNumber(Double_t val);
-   virtual void SetIntNumber(Long_t val);
-   virtual void SetTime(Int_t hour, Int_t min, Int_t sec);
-   virtual void SetDate(Int_t year, Int_t month, Int_t day);
-   virtual void SetHexNumber(ULong_t val);
+   virtual void SetNumber(Double_t val, Bool_t emit = kTRUE);
+   virtual void SetIntNumber(Long_t val, Bool_t emit = kTRUE);
+   virtual void SetTime(Int_t hour, Int_t min, Int_t sec, Bool_t emit = kTRUE);
+   virtual void SetDate(Int_t year, Int_t month, Int_t day, Bool_t emit = kTRUE);
+   virtual void SetHexNumber(ULong_t val, Bool_t emit = kTRUE);
    virtual void SetText(const char* text, Bool_t emit = kTRUE);
 
    virtual Double_t GetNumber() const;
