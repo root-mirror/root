@@ -37,13 +37,18 @@ dh = ROOT.RooDataHist("dh", "dh", ROOT.RooArgList(x), Import=("SampleA", histo))
 */
 """
 
-from ._utils import _kwargs_to_roocmdargs
+from ._utils import _kwargs_to_roocmdargs, _dict_to_std_map
 
 
 class RooDataHist(object):
     def __init__(self, *args, **kwargs):
-        # Redefinition of `RooDataHist` constructor for keyword arguments.
+        # Redefinition of `RooDataHist` constructor for keyword arguments and converting python dict to std::map.
         # The keywords must correspond to the CmdArg of the constructor function.
+        # The instances in dict must correspond to the template argument in std::map of the constructor.
+        if len(args) > 4 and isinstance(args[4], dict):
+            args = list(args)
+            args[4] = _dict_to_std_map(args[4])
+
         args, kwargs = _kwargs_to_roocmdargs(*args, **kwargs)
         self._init(*args, **kwargs)
 

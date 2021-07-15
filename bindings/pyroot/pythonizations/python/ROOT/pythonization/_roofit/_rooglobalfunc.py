@@ -37,7 +37,7 @@ ROOT.RooMCStudy(model, ROOT.RooArgSet(x), FitOptions=dict(Save=True, PrintEvalEr
 */
 """
 
-from ._utils import _kwargs_to_roocmdargs, _string_to_root_attribute
+from ._utils import _kwargs_to_roocmdargs, _string_to_root_attribute, _dict_to_std_map
 
 
 # Color and Style dictionary to define matplotlib conventions
@@ -115,6 +115,48 @@ def ZVar(*args, **kwargs):
         del kwargs["var"]
     args, kwargs = _kwargs_to_roocmdargs(*args, **kwargs)
     return RooFit._ZVar(*args, **kwargs)
+
+
+def Slice(*args, **kwargs):
+    # Redefinition of `Slice` for keyword arguments and converting python dict to std::map.
+    # The keywords must correspond to the CmdArg of the `Slice` function.
+    # The instances in the dict must correspond to the template argument in std::map of the `Slice` function.
+    from cppyy.gbl import RooFit
+
+    if len(args) == 1 and len(kwargs) == 0 and isinstance(args[0], dict):
+        args = list(args)
+        args[0] = _dict_to_std_map(args[0])
+        return RooFit._Slice(args[0])
+
+    return RooFit._Slice(*args, **kwargs)
+
+
+def Import(*args, **kwargs):
+    # Redefinition of `Import` for keyword arguments and converting python dict to std::map.
+    # The keywords must correspond to the CmdArg of the `Import` function.
+    # The instances in the dict must correspond to the template argument in std::map of the `Import` function.
+    from cppyy.gbl import RooFit
+
+    if len(args) == 1 and len(kwargs) == 0 and isinstance(args[0], dict):
+        args = list(args)
+        args[0] = _dict_to_std_map(args[0])
+        return RooFit._Import(args[0])
+
+    return RooFit._Import(*args, **kwargs)
+
+
+def Link(*args, **kwargs):
+    # Redefinition of `Link` for keyword arguments and converting python dict to std::map.
+    # The keywords must correspond to the CmdArg of the `Link` function.
+    # The instances in the dict must correspond to the template argument in std::map of the `Link` function.
+    from cppyy.gbl import RooFit
+
+    if len(args) == 1 and len(kwargs) == 0 and isinstance(args[0], dict):
+        args = list(args)
+        args[0] = _dict_to_std_map(args[0])
+        return RooFit._Import(args[0])
+
+    return RooFit._Link(*args, **kwargs)
 
 
 def LineColor(color):
