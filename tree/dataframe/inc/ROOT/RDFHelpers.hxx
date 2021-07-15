@@ -241,7 +241,7 @@ public:
     // ***************************************************
     // Protected by lock from here:
     // ***************************************************
-    std::lock_guard<std::mutex> lockGuard(fPrintMutex, std::adopt_lock_t{});
+    std::lock_guard<std::mutex> lockGuard(fPrintMutex, std::adopt_lock);
 
     std::size_t eventCount;
     seconds elapsedSeconds;
