@@ -18,14 +18,9 @@ dt = ROOT.RooRealVar("dt", "dt", -20, 20)
 
 # Discrete observables mixState (B0tag==B0reco?) and tagFlav
 # (B0tag==B0(bar)?)
-mixState = ROOT.RooCategory("mixState", "B0/B0bar mixing state")
-tagFlav = ROOT.RooCategory("tagFlav", "Flavour of the tagged B0")
-
 # Define state labels of discrete observables
-mixState.defineType("mixed", -1)
-mixState.defineType("unmixed", 1)
-tagFlav.defineType("B0", 1)
-tagFlav.defineType("B0bar", -1)
+mixState = ROOT.RooCategory("mixState", "B0/B0bar mixing state", {"mixed": -1, "unmixed": 1})
+tagFlav = ROOT.RooCategory("tagFlav", "Flavour of the tagged B0", {"B0": 1, "B0bar": -1})
 
 # Model parameters
 dm = ROOT.RooRealVar("dm", "delta m(B)", 0.472, 0.0, 1.0)

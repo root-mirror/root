@@ -30,9 +30,7 @@ effFunc = ROOT.RooFormulaVar("effFunc", "(1-a)+a*cos((x-c)/b)", ROOT.RooArgList(
 # ------------------------------------------------------------------------------------------
 
 # Acceptance state cut (1 or 0)
-cut = ROOT.RooCategory("cut", "cutr")
-cut.defineType("accept", 1)
-cut.defineType("reject", 0)
+cut = ROOT.RooCategory("cut", "cutr", {"accept": 1, "reject": 0})
 
 # Construct efficiency pdf eff(cut|x)
 effPdf = ROOT.RooEfficiency("effPdf", "effPdf", effFunc, cut, "accept")

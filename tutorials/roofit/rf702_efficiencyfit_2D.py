@@ -36,9 +36,7 @@ effFunc = ROOT.RooFormulaVar(
 )
 
 # Acceptance state cut (1 or 0)
-cut = ROOT.RooCategory("cut", "cutr")
-cut.defineType("accept", 1)
-cut.defineType("reject", 0)
+cut = ROOT.RooCategory("cut", "cutr", {"accept": 1, "reject": 0})
 
 # Construct conditional efficiency pdf E(cut|x,y)
 # ---------------------------------------------------------------------------------------------
