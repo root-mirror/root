@@ -29,68 +29,72 @@
 #include <RooMsgService.h>
 #include <RooGlobalFunc.h> // RooFit::ERROR
 
-TEST(GradMinimizer, Gaussian1D)
+class GradMinimizerParSeed : public testing::TestWithParam<unsigned long> {};
+
+TEST_P(GradMinimizerParSeed, Gaussian1D)
 {
    RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
 
    // produce the same random stuff every time
-   RooRandom::randomGenerator()->SetSeed(1);
+   RooRandom::randomGenerator()->SetSeed(GetParam());
 
-   for (int i = 0; i < 10; ++i) {
-      RooWorkspace w = RooWorkspace();
+   RooWorkspace w = RooWorkspace();
 
-      std::unique_ptr<RooAbsReal> nll;
-      std::unique_ptr<RooArgSet> values;
-      RooAbsPdf *pdf;
-      RooDataSet *data;
-      std::tie(nll, pdf, data, values) = generate_1D_gaussian_pdf_nll(w, 10000);
-      // when c++17 support arrives, change to this:
-      //  auto [nll, values] = generate_1D_gaussian_pdf_nll(w, 10000);
-      RooRealVar *mu = w.var("mu");
+   std::unique_ptr<RooAbsReal> nll;
+   std::unique_ptr<RooArgSet> values;
+   RooAbsPdf *pdf;
+   RooDataSet *data;
+   std::tie(nll, pdf, data, values) = generate_1D_gaussian_pdf_nll(w, 10000);
+   // when c++17 support arrives, change to this:
+   //  auto [nll, values] = generate_1D_gaussian_pdf_nll(w, 10000);
+   RooRealVar *mu = w.var("mu");
 
-      RooArgSet *savedValues = dynamic_cast<RooArgSet *>(values->snapshot());
-      if (savedValues == nullptr) {
-         throw std::runtime_error("params->snapshot() cannot be casted to RooArgSet!");
-      }
-
-      // --------
-
-      RooMinimizer m0(*nll);
-      m0.setMinimizerType("Minuit2");
-
-      m0.setStrategy(0);
-      m0.setPrintLevel(-1);
-
-      m0.migrad();
-
-      RooFitResult *m0result = m0.lastMinuitFit();
-      double minNll0 = m0result->minNll();
-      double edm0 = m0result->edm();
-      double mu0 = mu->getVal();
-      double muerr0 = mu->getError();
-
-      *values = *savedValues;
-
-      std::unique_ptr<RooMinimizer> m1 = RooMinimizer::create(*nll, RooMinimizer::FcnMode::gradient);
-      m1->setMinimizerType("Minuit2");
-
-      m1->setStrategy(0);
-      m1->setPrintLevel(-1);
-
-      m1->migrad();
-
-      RooFitResult *m1result = m1->lastMinuitFit();
-      double minNll1 = m1result->minNll();
-      double edm1 = m1result->edm();
-      double mu1 = mu->getVal();
-      double muerr1 = mu->getError();
-
-      EXPECT_EQ(minNll0, minNll1);
-      EXPECT_EQ(mu0, mu1);
-      EXPECT_EQ(muerr0, muerr1);
-      EXPECT_EQ(edm0, edm1);
+   RooArgSet *savedValues = dynamic_cast<RooArgSet *>(values->snapshot());
+   if (savedValues == nullptr) {
+      throw std::runtime_error("params->snapshot() cannot be casted to RooArgSet!");
    }
+
+   // --------
+
+   RooMinimizer m0(*nll);
+   m0.setMinimizerType("Minuit2");
+
+   m0.setStrategy(0);
+   m0.setPrintLevel(-1);
+
+   m0.migrad();
+
+   RooFitResult *m0result = m0.lastMinuitFit();
+   double minNll0 = m0result->minNll();
+   double edm0 = m0result->edm();
+   double mu0 = mu->getVal();
+   double muerr0 = mu->getError();
+
+   *values = *savedValues;
+
+   std::unique_ptr<RooMinimizer> m1 = RooMinimizer::create<RooGradMinimizerFcn>(*nll);
+   m1->setMinimizerType("Minuit2");
+
+   m1->setStrategy(0);
+   m1->setPrintLevel(-1);
+
+   m1->migrad();
+
+   RooFitResult *m1result = m1->lastMinuitFit();
+   double minNll1 = m1result->minNll();
+   double edm1 = m1result->edm();
+   double mu1 = mu->getVal();
+   double muerr1 = mu->getError();
+
+   EXPECT_EQ(minNll0, minNll1);
+   EXPECT_EQ(mu0, mu1);
+   EXPECT_EQ(muerr0, muerr1);
+   EXPECT_EQ(edm0, edm1);
 }
+
+INSTANTIATE_TEST_SUITE_P(Seeds,
+                         GradMinimizerParSeed,
+                         testing::Range<unsigned long>(1, 11));
 
 TEST(GradMinimizerDebugging, DISABLED_Gaussian1DNominal)
 {

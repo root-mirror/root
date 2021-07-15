@@ -41,6 +41,8 @@ public:
    virtual ~FCNGradientBase() {}
 
    virtual std::vector<double> Gradient(const std::vector<double> &) const = 0;
+   virtual std::vector<double> Gradient(const std::vector<double> &parameters, double */*previous_grad*/, double */*previous_g2*/,
+                                        double */*previous_gstep*/) const { return Gradient(parameters); };
 
    virtual bool CheckGradient() const { return true; }
 
