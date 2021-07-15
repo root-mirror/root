@@ -120,11 +120,27 @@ namespace {
         << ":" << std::setw(2) << std::right << std::setfill('0') << elapsedSeconds.count() % 60;
     return stream << 'm' << std::setfill(' ');
   }
+
+  struct RestoreStreamState {
+    RestoreStreamState(std::ostream& stream) :
+      fStream(stream),
+      fFlags(stream.flags()),
+      fFillChar(stream.fill()) { }
+    ~RestoreStreamState() {
+      fStream.setf(fFlags);
+      fStream.fill(fFillChar);
+    }
+
+    std::ostream& fStream;
+    std::ios_base::fmtflags fFlags;
+    std::ostream::char_type fFillChar;
+  };
 }
 
 /// Print event and time statistics.
 void ROOT::RDF::ProgressHelper::PrintStats(std::ostream& stream, std::size_t currentEventCount, std::chrono::seconds elapsedSeconds) const {
   const auto evtpersec = EvtPerSec();
+  RestoreStreamState restore(stream);
 
   stream << "[" << elapsedSeconds << "  ";
 
@@ -159,6 +175,7 @@ void ROOT::RDF::ProgressHelper::PrintStats(std::ostream& stream, std::size_t cur
 void ROOT::RDF::ProgressHelper::PrintProgressbar(std::ostream& stream, std::size_t currentEventCount) const {
   if (fMaxEvents == 0)
     return;
+  RestoreStreamState restore(stream);
 
   const double completion = double(currentEventCount) / fMaxEvents;
   const unsigned int nBar = completion * fBarWidth;
