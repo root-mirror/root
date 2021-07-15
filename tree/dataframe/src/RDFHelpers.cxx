@@ -20,7 +20,9 @@
 
 #include <set>
 #include <numeric>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include <stdio.h>
 
 using ROOT::RDF::RResultHandle;
@@ -73,8 +75,13 @@ fPrintInterval(printInterval),
 fMaxEvents{maxEvent},
 fIncrement{increment},
 fBarWidth{progressBarWidth},
+#ifdef _WIN32
+fIsTTY{_isatty(_fileno(stdout)) == 1},
+fUseShellColours{false && useShellColors}
+#else
 fIsTTY{isatty(fileno(stdout)) == 1},
 fUseShellColours{useShellColors && fIsTTY} // Control characters only with terminals.
+#endif
 {
 
 }
@@ -205,7 +212,7 @@ void ROOT::RDF::ProgressHelper::PrintProgressbar(std::ostream& stream, std::size
   if (fUseShellColours) stream << "\e[0m";
 }
 
-std::size_t ROOT::RDF::CountEvents(const char* treename, const char* fileUrl) {
+std::size_t ROOT::RDF::RetrieveNEvents(const char* treename, const char* fileUrl) {
   std::unique_ptr<TFile> file( TFile::Open(fileUrl, "READ") );
   if (!file)
     return 0u;

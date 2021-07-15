@@ -289,7 +289,7 @@ private:
 /// \param fileUrl Path or URL to a ROOT file.
 /// \return Event counts. Returns 0 in case of errors.
 // clang-format on
-std::size_t CountEvents(const char* treename, const char* fileUrl);
+std::size_t RetrieveNEvents(const char* treename, const char* fileUrl);
 
 } // namespace RDF
 } // namespace ROOT
