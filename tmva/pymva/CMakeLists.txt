@@ -20,7 +20,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(PyMVA
     TMVA/MethodPyRandomForest.h
     TMVA/MethodPyTorch.h
     TMVA/RModelParser_Keras.h
-    TMVA/PyConverters.h
     TMVA/PyMethodBase.h
   SOURCES
     src/MethodPyAdaBoost.cxx
@@ -29,7 +28,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(PyMVA
     src/MethodPyRandomForest.cxx
     src/MethodPyTorch.cxx
     src/RModelParser_Keras.cxx
-    src/PyConverters.cxx
     src/PyMethodBase.cxx
   LIBRARIES
   ${PYTHON_LIBRARIES_Development_Main}

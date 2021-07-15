@@ -11,5 +11,4 @@
 // the classifiers
 #pragma link C++ class TMVA::Experimental::SOFIE::RModel+;
 
-
 #endif

@@ -85,7 +85,6 @@ extern "C" void sgemm_(const char * transa, const char * transb, const int * m, 
 }//BLAS
 
 
-
 }//SOFIE
 }//Experimental
 }//TMVA

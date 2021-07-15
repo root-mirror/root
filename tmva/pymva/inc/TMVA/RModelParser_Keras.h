@@ -25,21 +25,7 @@
 #ifndef TMVA_SOFIE_RMODELPARSER_KERAS
 #define TMVA_SOFIE_RMODELPARSER_KERAS
 
-
-#include <Python.h>
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include <numpy/arrayobject.h>
-
-
-#include "TMVA/SOFIE_common.hxx"
-#include "TMVA/OperatorList.hxx"
-
-#include "TMVA/RModel.hxx"
-#include "Rtypes.h"
-#include "TString.h"
-#include <vector>
-
+#include "TMVA/RModelParser_Common.h"
 
 namespace TMVA{
 namespace Experimental{
@@ -49,7 +35,6 @@ enum class LayerType{
    DENSE = 0, RELU = 1, TRANSPOSE = 2 //order sensitive
 
 };
-
 
 namespace INTERNAL{
    std::unique_ptr<ROperator> make_ROperator_Gemm(std::string input,std::string output,std::string kernel,std::string bias,std::string dtype);
