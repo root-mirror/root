@@ -105,10 +105,18 @@ private:
    TUnuran & operator = (const TUnuran & rhs);
 
 public:
-
-
    /**
-      initialize with Unuran string interface
+      Initialize with Unuran string API interface.
+      See  https://statmath.wu.ac.at/unuran/doc/unuran.html#StringAPI
+
+      @param distr   : UNU.RAN distribution string
+      @param  method : UNU.RAN  method string
+
+      Here is an example using the string API:
+      ```
+      Tunuran unr;
+      unr.Init("normal(3.,0.75); domain = (0,inf)", "method = tdr; c = 0");
+      ```
    */
    bool Init(const std::string & distr, const std::string  & method);
 
@@ -119,6 +127,9 @@ public:
       For the list of available method for 1D cont. distribution see the
       <A href="http://statmath.wu-wien.ac.at/unuran/doc/unuran.html#Methods_005ffor_005fCONT">UnuRan doc</A>.
       A re-initialization is needed whenever distribution parameters have been changed.
+      Note that the method string can contain in addition to the method name all the specific method 
+      parameters specified using the UNURAN methiod string API. 
+      For example a valid string can be `"method=arou; max_segments=1000; max_sqhratio = 0.9"`
    */
    bool Init(const TUnuranContDist & distr, const std::string & method = "auto");
 
@@ -157,7 +168,7 @@ public:
 
 
    /**
-      Initialize method for the Poisson distribution
+      Initialize method for the Poisson distribution.
       Used to generate poisson numbers for a constant parameter mu of the Poisson distribution.
       Use after the method TUnuran::SampleDiscr to generate the numbers.
       The flag reinit perform a fast re-initialization when only the distribution parameters
@@ -167,7 +178,7 @@ public:
    bool InitPoisson(double mu, const std::string & method = "dstd");
 
    /**
-      Initialize method for the Binomial distribution
+      Initialize method for the Binomial distribution.
       Used to generate poisson numbers for a constant parameters (n,p) of the Binomial distribution.
       Use after the method TUnuran::SampleDiscr to generate the numbers.
       The flag reinit perform a fast re-initialization when only the distribution parameters
@@ -177,31 +188,31 @@ public:
    bool InitBinomial(unsigned int ntot, double prob, const std::string & method = "dstd");
 
    /**
-      Reinitialize UNURAN by changing the distribution parameters but mantaining same distribution and method
+      Reinitialize UNURAN by changing the distribution parameters but mantaining same distribution and method.
       It is implemented now only for predefined discrete distributions like the poisson or the binomial
    */
    bool ReInitDiscrDist(unsigned int npar, double * params);
 
    /**
-      Sample 1D distribution
+      Sample 1D distribution.
       User is responsible for having previously correctly initialized with TUnuran::Init
    */
    double Sample();
 
    /**
-      Sample multidimensional distributions
+      Sample multidimensional distributions.
       User is responsible for having previously correctly initialized with TUnuran::Init
    */
    bool SampleMulti(double * x);
 
    /**
-      Sample discrete distributions
+      Sample discrete distributions.
       User is responsible for having previously correctly initialized with TUnuran::Init
    */
    int SampleDiscr();
 
    /**
-      set the random engine.
+      Set the random engine.
       Must be called before init to have effect
     */
    void SetRandom(TRandom * r) {
@@ -209,11 +220,46 @@ public:
    }
 
    /**
-      return instance of the random engine used
+      Return instance of the random engine used.
     */
    TRandom * GetRandom() {
       return fRng;
    }
+
+   /**
+      Return an information string about used unuran generator method.
+      @param extended : if true return some help about the possible options for the the method.
+   */
+   std::string GetInfo(bool extended = false);
+
+   /**
+      Return an ID string about the unuran generator method.
+   */
+   std::string GetGenId() const;
+
+   /**
+      Return the dimension of unuran generator method.
+      For 1D method returns 1 and for the multi-dimensional case 
+      must be equal to the distribution dimension.
+   */
+   int GetDimension() const;
+
+   /**
+      Return the type of the distribution.
+      See documentation of `unuran_distr_get_type` for the possible
+      types of distributions.
+   */
+   int GetDistType() const; 
+
+   /// Return true for a univariate continous distribution.
+   bool IsDistCont() const; 
+   /// Return true for a multivariate continous distribution.
+   bool IsDistMultiCont() const;  
+    /// Return true for a discrete distribution.
+   bool IsDistDiscrete() const; 
+    /// Return true for an empirical distribution.
+   bool IsDistEmpirical() const; 
+   
 
 
    /**

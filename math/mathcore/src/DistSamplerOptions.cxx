@@ -111,6 +111,11 @@ void DistSamplerOptions::SetExtraOptions(const IOptions & opt) {
    fExtraOptions = opt.Clone();
 }
 
+void DistSamplerOptions::CreateExtraOptions() { 
+   if (fExtraOptions) return;
+   fExtraOptions = new ROOT::Math::GenAlgoOptions();
+}
+
 void DistSamplerOptions::Print(std::ostream & os) const {
    //print all the options
    os << std::setw(25) << "DistSampler Type"        << " : " << std::setw(15) << fSamplerType << std::endl;

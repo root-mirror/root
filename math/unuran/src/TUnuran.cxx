@@ -374,6 +374,50 @@ bool TUnuran::SetMethodAndInit() {
    return true;
  }
 
+std::string TUnuran::GetInfo(bool extended) 
+{
+   // get information string about Unuran generator
+   if (!fGen) return std::string();
+   return std::string(unur_gen_info(fGen, extended)); 
+}
+
+std::string TUnuran::GetGenId() const
+{
+   // get Unuran generator ID
+   if (!fGen) return std::string();
+   return std::string(unur_get_genid(fGen)); 
+}
+
+int TUnuran::GetDimension() const
+{
+   // get dimension of the UNURAN generator
+   if (!fGen) return 0;
+   return unur_get_dimension(fGen); 
+}
+
+int TUnuran::GetDistType() const
+{
+   // get type of distribution
+   if (!fGen) return -1;
+   return unur_distr_get_type (unur_get_distr(fGen));
+}
+
+bool TUnuran::IsDistCont() const { 
+   if (!fGen) return false;
+   return unur_distr_is_cont (unur_get_distr(fGen));
+}
+bool TUnuran::IsDistMultiCont() const { 
+   if (!fGen) return false;
+   return unur_distr_is_cvec (unur_get_distr(fGen));
+}
+bool TUnuran::IsDistDiscrete() const { 
+   if (!fGen) return false;
+   return unur_distr_is_discr (unur_get_distr(fGen));
+}
+bool TUnuran::IsDistEmpirical() const { 
+   if (!fGen) return false;
+   return unur_distr_is_cemp (unur_get_distr(fGen));
+}
 
 int TUnuran::SampleDiscr()
 {
@@ -429,7 +473,6 @@ bool TUnuran::InitPoisson(double mu, const std::string & method) {
    if (! SetRandomGenerator() ) return false;
    return true;
 }
-
 
 bool TUnuran::InitBinomial(unsigned int ntot, double prob, const std::string & method ) {
    // initializaton for a Binomial

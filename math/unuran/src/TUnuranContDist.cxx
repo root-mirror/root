@@ -30,7 +30,8 @@ TUnuranContDist::TUnuranContDist(const ROOT::Math::IGenFunction *pdf, const ROOT
    // Constructor from generic function interfaces
    // manage the functions and clone them if flag copyFunc is true
    if (fOwnFunc) {
-      fPdf = fPdf->Clone();
+      if (fPdf) 
+         fPdf = fPdf->Clone();
       if (fDPdf)
          fDPdf = fDPdf->Clone();
       if (fCdf)
