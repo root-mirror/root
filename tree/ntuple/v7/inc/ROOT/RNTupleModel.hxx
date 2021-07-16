@@ -166,6 +166,7 @@ public:
       std::unique_ptr<RNTupleModel> collectionModel);
 
    RFieldZero *GetFieldZero() const { return fFieldZero.get(); }
+   Detail::RFieldBase *GetField(std::string_view fieldName);
    REntry *GetDefaultEntry() { return fDefaultEntry.get(); }
    std::unique_ptr<REntry> CreateEntry();
    RNTupleVersion GetVersion() const { return RNTupleVersion(); }
