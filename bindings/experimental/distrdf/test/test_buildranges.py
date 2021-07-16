@@ -10,7 +10,7 @@ def emptysourceranges_to_tuples(ranges):
 
 def treeranges_to_tuples(ranges):
     """Convert TreeRange objects to tuples with the shape (start, end, filelist)"""
-    return [(r.start, r.end, r.filelist) for r in ranges]
+    return [(r.globalstart, r.globalend, r.localstarts, r.localends, r.filelist) for r in ranges]
 
 def create_dummy_headnode(*args):
     """Create dummy head node instance needed in the test"""
@@ -119,10 +119,10 @@ class BuildRangesTest(unittest.TestCase):
         clustersinfiles = Ranges.get_clusters(treename, filelist)
         friendinfo = None
 
-        crs = Ranges.get_clustered_ranges(clustersinfiles, npartitions, treename, friendinfo)
+        crs = Ranges.get_clustered_ranges(clustersinfiles, npartitions, friendinfo)
         ranges = treeranges_to_tuples(crs)
 
-        ranges_reqd = [(0, 10, ["backend/Slimmed_ntuple.root"])]
+        ranges_reqd = [(0, 10, [0], [10], ["backend/Slimmed_ntuple.root"])]
 
         self.assertListEqual(ranges, ranges_reqd)
 
@@ -138,7 +138,7 @@ class BuildRangesTest(unittest.TestCase):
         headnode = create_dummy_headnode(treename, filelist)
         headnode.npartitions = 2
 
-        ranges_reqd = [(0, 10, ["backend/Slimmed_ntuple.root"])]
+        ranges_reqd = [(0, 10, [0], [10], ["backend/Slimmed_ntuple.root"])]
 
         with warnings.catch_warnings(record=True) as w:
             # Trigger warning
@@ -168,8 +168,8 @@ class BuildRangesTest(unittest.TestCase):
         ranges = treeranges_to_tuples(crs)
 
         ranges_reqd = [
-            (0, 777, ["backend/2clusters.root"]),
-            (777, 1000, ["backend/2clusters.root"])
+            (0, 777, [0], [777], ["backend/2clusters.root"]),
+            (777, 1000, [777], [1000], ["backend/2clusters.root"])
         ]
 
         self.assertListEqual(ranges, ranges_reqd)
@@ -190,10 +190,10 @@ class BuildRangesTest(unittest.TestCase):
         ranges = treeranges_to_tuples(crs)
 
         ranges_reqd = [
-            (0, 250, ["backend/4clusters.root"]),
-            (250, 500, ["backend/4clusters.root"]),
-            (500, 750, ["backend/4clusters.root"]),
-            (750, 1000, ["backend/4clusters.root"])
+            (0, 250, [0], [250],["backend/4clusters.root"]),
+            (250, 500, [250], [500],["backend/4clusters.root"]),
+            (500, 750, [500], [750],["backend/4clusters.root"]),
+            (750, 1000, [750], [1000],["backend/4clusters.root"])
         ]
 
         self.assertListEqual(ranges, ranges_reqd)
@@ -214,10 +214,10 @@ class BuildRangesTest(unittest.TestCase):
         ranges = treeranges_to_tuples(crs)
 
         ranges_reqd = [
-            (0, 250, ["backend/1000clusters.root"]),
-            (250, 500, ["backend/1000clusters.root"]),
-            (500, 750, ["backend/1000clusters.root"]),
-            (750, 1000, ["backend/1000clusters.root"])
+            (0, 250, [0], [250],["backend/1000clusters.root"]),
+            (250, 500, [250], [500],["backend/1000clusters.root"]),
+            (500, 750, [500], [750],["backend/1000clusters.root"]),
+            (750, 1000, [750], [1000],["backend/1000clusters.root"])
         ]
 
         self.assertListEqual(ranges, ranges_reqd)
@@ -242,7 +242,7 @@ class BuildRangesTest(unittest.TestCase):
         end = 1000
         step = 1
 
-        ranges_reqd = [(a, b, filelist) for a, b in zip(range(start, end, step),
+        ranges_reqd = [(a, b, [a], [b], filelist) for a, b in zip(range(start, end, step),
                                               range(step, end + 1, step))]
 
         self.assertListEqual(ranges, ranges_reqd)
@@ -263,7 +263,7 @@ class BuildRangesTest(unittest.TestCase):
         end = 1000
         step = 1
 
-        ranges_reqd = [(a, b, ["backend/1000clusters.root"])
+        ranges_reqd = [(a, b, [a], [b], ["backend/1000clusters.root"])
                         for a, b in zip(range(start, end, step), range(step, end + 1, step))]
 
         self.assertListEqual(ranges, ranges_reqd)
@@ -302,8 +302,8 @@ class BuildRangesTest(unittest.TestCase):
         ranges = treeranges_to_tuples(crs)
 
         ranges_reqd = [
-            (0, 1250, ["backend/2clusters.root", "backend/4clusters.root"]),
-            (250, 1000, ["backend/4clusters.root"]),
+            (0, 1250, [0, 0], [1000, 250], ["backend/2clusters.root", "backend/4clusters.root"]),
+            (250, 1000, [250], [1000], ["backend/4clusters.root"]),
         ]
 
         self.assertListEqual(ranges, ranges_reqd)
