@@ -19,4 +19,5 @@ endif()
 
 if (tmva-sofie)
    add_subdirectory(sofie)
+   add_subdirectory(sofie_parsers)
 endif()

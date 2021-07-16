@@ -7,7 +7,7 @@
 ############################################################################
 # CMakeLists.txt file for PyMVA  package
 ############################################################################
-#Autor: Omar Zapata, Lorenzo Moneta, Sergei Glayzer 22/08/2015
+#Author: Omar Zapata, Lorenzo Moneta, Sergei Glayzer 22/08/2015
 #website:http://oproject.org
 
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS_Development_Main} ${NUMPY_INCLUDE_DIRS})

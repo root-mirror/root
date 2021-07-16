@@ -11,23 +11,26 @@
 
 #sofie is built only if protobuf is found
 
-ROOT_STANDARD_LIBRARY_PACKAGE(ROOTTMVASofie
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS "onnx_proto3")
+set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES GENERATED TRUE)
+
+ROOT_STANDARD_LIBRARY_PACKAGE(ROOTTMVASofieParser
   HEADERS
-   TMVA/OperatorList.hxx
-   TMVA/RModel.hxx
-   TMVA/ROperator.hxx
-   TMVA/ROperator_Gemm.hxx
-   TMVA/ROperator_Relu.hxx
-   TMVA/ROperator_Transpose.hxx
-   TMVA/SOFIE_common.hxx
+   TMVA/RModelParser_ONNX.hxx
+   ${PROTO_HDRS}
   SOURCES
-    src/RModel.cxx
-    src/SOFIE_common.cxx
+    src/RModelParser_ONNX.cxx
+    ${PROTO_SRCS}
+  LIBRARIES
+    ${Protobuf_LIBRARIES}
   DEPENDENCIES
     TMVA
+    ROOTTMVASofie
 )
 
-target_include_directories(ROOTTMVASofie PUBLIC
+target_include_directories(ROOTTMVASofieParser PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-set_target_properties(ROOTTMVASofie PROPERTIES
+target_include_directories(ROOTTMVASofieParser PUBLIC
+  ${Protobuf_INCLUDE_DIRS})
+set_target_properties(ROOTTMVASofieParser PROPERTIES
   POSITION_INDEPENDENT_CODE TRUE)
