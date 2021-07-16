@@ -18,6 +18,7 @@
 
 #include "RooAbsCollection.h"
 
+
 class RooArgList : public RooAbsCollection {
 public:
 
@@ -33,19 +34,36 @@ public:
   ///            when constructing a RooArgList, and another templated
   ///            constructor will be used where a RooConstVar is implicitly
   ///            created from the `double` value.
-  /// \param varsOrName Arbitrary number of
+  /// \param moreArgsOrName Arbitrary number of
   ///   - RooFit objects deriving from RooAbsArg.
   ///   - `double`s from which a RooConstVar is implicitly created via `RooFit::RooConst`.
   ///   - A c-string to name the set.
-  template<typename... Ts>
-  RooArgList(const RooAbsArg& arg, const Ts&... moreArgsOrName)
-  /*NB: Making this a delegating constructor led to linker errors with MSVC*/ {
-    processArgs(arg, moreArgsOrName...);
+
+  template<typename... Args_t>
+  RooArgList(RooAbsArg const& arg, Args_t &&... moreArgsOrName)
+  /*NB: Making this a delegating constructor led to linker errors with MSVC*/
+  {
+    // This constructor should cause a failed static_assert if any of the input
+    // arguments is a temporary (r-value reference), which will be checked in
+    // processArg. This works statically because of the universal reference
+    // mechanism with templated functions.
+    // Unfortunately, we can't check the first arg, because it's type can't be
+    // a template parameter and hence a universal reference can't be used.
+    // This problem is solved by introducing another templated constructor below,
+    // which accepts a RooAbsArg && as the first argument which is forwarded to
+    // be the second argument for this constructor.
+    processArgs(arg, std::forward<Args_t>(moreArgsOrName)...);
   }
 
-  template<typename... Ts>
-  explicit RooArgList(double arg, const Ts&... moreArgsOrName) {
-    processArgs(arg, moreArgsOrName...);
+  /// This constructor will provoke a `static_assert`, because passing a
+  /// RooAbsArg as r-value reference is not allowed.
+  template<typename... Args_t>
+  RooArgList(RooAbsArg && arg, Args_t &&... moreArgsOrName)
+    : RooArgList{arg, std::move(arg), std::forward<Args_t>(moreArgsOrName)...} {}
+
+  template<typename... Args_t>
+  explicit RooArgList(double arg, Args_t &&... moreArgsOrName) {
+    processArgs(arg, std::forward<Args_t>(moreArgsOrName)...);
   }
 
   /// Construct from iterators.
@@ -119,6 +137,12 @@ private:
   }
   void processArg(const RooAbsArg& arg) { add(arg); }
   void processArg(const RooAbsArg* arg) { add(*arg); }
+  void processArg(RooAbsArg* arg) { add(*arg); }
+  template<class Arg_t>
+  void processArg(Arg_t && arg) {
+    assert_is_no_temporary(std::forward<Arg_t>(arg));
+    add(arg);
+  }
   void processArg(const char* name) { _name = name; }
   void processArg(double value);
 

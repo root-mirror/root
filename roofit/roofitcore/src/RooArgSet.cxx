@@ -245,13 +245,6 @@ RooArgSet::~RooArgSet()
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Add contents of a RooArgList to the set.
-void RooArgSet::processArg(const RooArgList& list) {
-  add(list);
-  if (_name.Length() == 0)
-    _name = list.GetName();
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Get reference to an element using its name. Named element must exist in set.
