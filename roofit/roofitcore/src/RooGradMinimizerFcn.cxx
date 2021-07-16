@@ -64,7 +64,7 @@ ROOT::Math::IMultiGradFunction *RooGradMinimizerFcn::Clone() const
 void RooGradMinimizerFcn::synchronizeGradientParameterSettings(
    std::vector<ROOT::Fit::ParameterSettings> &parameter_settings) const
 {
-   _gradf.SetInitialGradient(_context->getMultiGenFcn(), parameter_settings, _grad);
+   _gradf.SetInitialGradient(parameter_settings, _grad);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

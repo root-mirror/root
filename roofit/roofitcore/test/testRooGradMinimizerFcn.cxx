@@ -72,7 +72,7 @@ TEST_P(GradMinimizerParSeed, Gaussian1D)
 
    *values = *savedValues;
 
-   std::unique_ptr<RooMinimizer> m1 = RooMinimizer::create<RooGradMinimizerFcn>(*nll);
+   std::unique_ptr<RooMinimizer> m1 = RooMinimizer::create(*nll, RooMinimizer::FcnMode::gradient);
    m1->setMinimizerType("Minuit2");
 
    m1->setStrategy(0);

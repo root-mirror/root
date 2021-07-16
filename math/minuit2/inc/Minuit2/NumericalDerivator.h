@@ -70,8 +70,7 @@ public:
    double Ext2int(const ROOT::Fit::ParameterSettings &parameter, double val) const;
    double DInt2Ext(const ROOT::Fit::ParameterSettings &parameter, double val) const;
 
-   void SetInitialGradient(const ROOT::Math::IBaseFunctionMultiDim *function,
-                           const std::vector<ROOT::Fit::ParameterSettings> &parameters,
+   void SetInitialGradient(const std::vector<ROOT::Fit::ParameterSettings> &parameters,
                            std::vector<DerivatorElement> &gradient);
 
    inline bool AlwaysExactlyMimicMinuit2() const { return fAlwaysExactlyMimicMinuit2; }
