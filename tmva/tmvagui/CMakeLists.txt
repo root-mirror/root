@@ -43,6 +43,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(TMVAGui
     TMVA/rulevis.h
     TMVA/rulevisCorr.h
     TMVA/rulevisHists.h
+    TMVA/RVariablePlotter.h
     TMVA/tmvaglob.h
     TMVA/training_history.h
     TMVA/variables.h
@@ -73,6 +74,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(TMVAGui
     src/network.cxx
     src/paracoor.cxx
     src/regression_averagedevs.cxx
+    src/RVariablePlotter.cxx
     src/rulevis.cxx
     src/rulevisCorr.cxx
     src/rulevisHists.cxx

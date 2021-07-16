@@ -25,7 +25,7 @@ void TMVA::variables(TString dataset, TString fin, TString dirName , TString tit
    // checks if file with name "fin" is already open, and if not opens one
    TFile* file = TMVAGlob::OpenFile( fin );
 
-   TDirectory* dir = (TDirectory*)file->GetDirectory(dataset.Data())->Get(dirName );
+   TDirectory* dir = (TDirectory*)file->GetDirectory(dataset.Data())->Get(dirName);
    if (dir==0) {
       cout << "No information about " << title << " available in directory " << dirName << " of file " << fin << endl;
       return;
