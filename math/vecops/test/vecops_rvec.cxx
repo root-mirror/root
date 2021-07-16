@@ -489,109 +489,6 @@ void CheckEq(const T0 &v, const T0 &ref)
    }
 }
 
-TEST(VecOps, InputOutputImpl)
-{
-   auto filename = "vecops_inputoutput_impl.root";
-   auto treename = "t";
-
-   const ROOT::VecOps::RVec<double>::Impl_t dref {1., 2., 3.};
-   const ROOT::VecOps::RVec<float>::Impl_t fref {1.f, 2.f, 3.f};
-   const ROOT::VecOps::RVec<UInt_t>::Impl_t uiref {1, 2, 3};
-   const ROOT::VecOps::RVec<ULong_t>::Impl_t ulref {1UL, 2UL, 3UL};
-   const ROOT::VecOps::RVec<ULong64_t>::Impl_t ullref {1ULL, 2ULL, 3ULL};
-   const ROOT::VecOps::RVec<UShort_t>::Impl_t usref {1, 2, 3};
-   const ROOT::VecOps::RVec<UChar_t>::Impl_t ucref {1, 2, 3};
-   const ROOT::VecOps::RVec<Int_t>::Impl_t iref {1, 2, 3};;
-   const ROOT::VecOps::RVec<Long_t>::Impl_t lref {1UL, 2UL, 3UL};;
-   const ROOT::VecOps::RVec<Long64_t>::Impl_t llref {1ULL, 2ULL, 3ULL};
-   const ROOT::VecOps::RVec<Short_t>::Impl_t sref {1, 2, 3};
-   const ROOT::VecOps::RVec<Char_t>::Impl_t cref {1, 2, 3};
-   const ROOT::VecOps::RVec<bool>::Impl_t bref {true, false, true};
-
-   {
-      auto d = dref;
-      auto f = fref;
-      auto ui = uiref;
-      auto ul = ulref;
-      auto ull = ullref;
-      auto us = usref;
-      auto uc = ucref;
-      auto i = iref;
-      auto l = lref;
-      auto ll = llref;
-      auto s = sref;
-      auto c = cref;
-      auto b = bref;
-      TFile file(filename, "RECREATE");
-      TTree t(treename, treename);
-      t.Branch("d", &d);
-      t.Branch("f", &f);
-      t.Branch("ui", &ui);
-      t.Branch("ul", &ul);
-      t.Branch("ull", &ull);
-      t.Branch("us", &us);
-      t.Branch("uc", &uc);
-      t.Branch("i", &i);
-      t.Branch("l", &l);
-      t.Branch("ll", &ll);
-      t.Branch("s", &s);
-      t.Branch("c", &c);
-      t.Branch("b", &b);
-      t.Fill();
-      t.Write();
-   }
-
-   auto d = new ROOT::VecOps::RVec<double>::Impl_t();
-   auto f = new ROOT::VecOps::RVec<float>::Impl_t;
-   auto ui = new ROOT::VecOps::RVec<UInt_t>::Impl_t();
-   auto ul = new ROOT::VecOps::RVec<ULong_t>::Impl_t();
-   auto ull = new ROOT::VecOps::RVec<ULong64_t>::Impl_t();
-   auto us = new ROOT::VecOps::RVec<UShort_t>::Impl_t();
-   auto uc = new ROOT::VecOps::RVec<UChar_t>::Impl_t();
-   auto i = new ROOT::VecOps::RVec<Int_t>::Impl_t();
-   auto l = new ROOT::VecOps::RVec<Long_t>::Impl_t();
-   auto ll = new ROOT::VecOps::RVec<Long64_t>::Impl_t();
-   auto s = new ROOT::VecOps::RVec<Short_t>::Impl_t();
-   auto c = new ROOT::VecOps::RVec<Char_t>::Impl_t();
-   auto b = new ROOT::VecOps::RVec<bool>::Impl_t();
-
-   TFile file(filename);
-   TTree *tp;
-   file.GetObject(treename, tp);
-   auto &t = *tp;
-
-   t.SetBranchAddress("d", &d);
-   t.SetBranchAddress("f", &f);
-   t.SetBranchAddress("ui", &ui);
-   t.SetBranchAddress("ul", &ul);
-   t.SetBranchAddress("ull", &ull);
-   t.SetBranchAddress("us", &us);
-   t.SetBranchAddress("uc", &uc);
-   t.SetBranchAddress("i", &i);
-   t.SetBranchAddress("l", &l);
-   t.SetBranchAddress("ll", &ll);
-   t.SetBranchAddress("s", &s);
-   t.SetBranchAddress("c", &c);
-   t.SetBranchAddress("b", &b);
-
-   t.GetEntry(0);
-   CheckEq(*d, dref);
-   CheckEq(*f, fref);
-   CheckEq(*d, dref);
-   CheckEq(*f, fref);
-   CheckEq(*d, dref);
-   CheckEq(*f, fref);
-   CheckEq(*d, dref);
-   CheckEq(*f, fref);
-   CheckEq(*d, dref);
-   CheckEq(*f, fref);
-   CheckEq(*b, bref);
-
-   gSystem->Unlink(filename);
-
-}
-
-
 TEST(VecOps, InputOutput)
 {
    auto filename = "vecops_inputoutput.root";
@@ -1191,3 +1088,95 @@ TEST(VecOps, Construct)
    EXPECT_TRUE(fourVects[2] == ref2);
 }
 
+bool IsSmall(const RVec<int> &v)
+{
+   // the first array element is right after the 3 data members of SmallVectorBase
+   return reinterpret_cast<std::uintptr_t>(v.begin()) - reinterpret_cast<std::uintptr_t>(&v) ==
+          sizeof(void *) + 2 * sizeof(int);
+}
+
+// this is a regression test for https://github.com/root-project/root/issues/6796
+TEST(VecOps, MemoryAdoptionAndClear)
+{
+   ROOT::RVec<int> v{1, 2, 3};
+   EXPECT_TRUE(IsSmall(v));
+   ROOT::RVec<int> v2(v.data(), v.size());
+   v2[0] = 0;
+   v2.clear();
+   EXPECT_TRUE(All(v == RVec<int>{0, 2, 3}));
+   v2.push_back(42);
+   EXPECT_FALSE(IsSmall(v2)); // currently RVec does not go back to a small state after `clear()`
+   EXPECT_TRUE(All(v2 == RVec<int>{42}));
+}
+
+// interaction between small buffer optimization and memory adoption
+TEST(VecOps, MemoryAdoptionAndSBO)
+{
+   int *values = new int[3]{1, 2, 3};
+   ROOT::RVec<int> v(values, 3);
+   auto check = [](const RVec<int> &mv) {
+      EXPECT_EQ(mv.size(), 3u);
+      EXPECT_EQ(mv[0], 1);
+      EXPECT_EQ(mv[1], 2);
+      EXPECT_EQ(mv[2], 3);
+   };
+   check(v);
+   EXPECT_FALSE(IsSmall(v));
+   ROOT::RVec<int> v2 = std::move(v);
+   EXPECT_TRUE(v.empty());
+   check(v2);
+   // this changes the RVec from memory adoption mode to "long" mode, even if the size is small
+   // currently we don't allow going from memory adoption to small buffer mode directly, it could be future optimization
+   v2.push_back(4);
+   EXPECT_FALSE(IsSmall(v2));
+   v2.clear();
+   v2.push_back(1);
+   v2.push_back(2);
+   v2.push_back(3);
+   check(v2);
+   delete[] values;
+   check(v2);
+}
+
+struct ThrowingCtor {
+   ThrowingCtor() { throw std::runtime_error("This exception should have been caught."); }
+};
+
+struct ThrowingMove {
+   ThrowingMove() {}
+   ThrowingMove(const ThrowingMove &) {}
+   ThrowingMove &operator=(const ThrowingMove &) { return *this; }
+   ThrowingMove(ThrowingMove &&) { throw std::runtime_error("This exception should have been caught."); }
+   ThrowingMove &operator=(const ThrowingMove &&) { return *this; }
+};
+
+// RVec does not guarantee exception safety, but we still want to test
+// that we don't segfault or otherwise crash if element construction or move throws.
+TEST(VecOps, NoExceptionSafety)
+{
+   EXPECT_NO_THROW(ROOT::RVec<ThrowingCtor>());
+
+   EXPECT_THROW(ROOT::RVec<ThrowingCtor>(1), std::runtime_error);
+   EXPECT_THROW(ROOT::RVec<ThrowingCtor>(42), std::runtime_error);
+   ROOT::RVec<ThrowingCtor> v1;
+   EXPECT_THROW(v1.push_back(ThrowingCtor{}), std::runtime_error);
+   ROOT::RVec<ThrowingCtor> v2;
+   EXPECT_THROW(v2.emplace_back(ThrowingCtor{}), std::runtime_error);
+
+   ROOT::RVec<ThrowingMove> v3(2);
+   ROOT::RVec<ThrowingMove> v4(42);
+   EXPECT_THROW(std::swap(v3, v4), std::runtime_error);
+   ThrowingMove tm;
+   EXPECT_THROW(v3.emplace_back(std::move(tm)), std::runtime_error);
+
+   // now with memory adoption
+   ThrowingCtor *p1 = new ThrowingCtor[0];
+   ROOT::RVec<ThrowingCtor> v5(p1, 0);
+   EXPECT_THROW(v5.push_back(ThrowingCtor{}), std::runtime_error);
+   delete[] p1;
+
+   ThrowingMove *p2 = new ThrowingMove[2];
+   ROOT::RVec<ThrowingMove> v6(p2, 2);
+   EXPECT_THROW(std::swap(v6, v3), std::runtime_error);
+   delete[] p2;
+}

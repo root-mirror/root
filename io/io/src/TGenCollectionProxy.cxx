@@ -1043,13 +1043,14 @@ void* TGenCollectionProxy::At(UInt_t idx)
    if ( fEnv && fEnv->fObject ) {
       switch (fSTL_type) {
       case ROOT::kSTLvector:
-      case ROOT::kROOTRVec:  // TODO will be unnecessary with RVec 2.0: RVec<bool> won't be a special case
          if ((*fValue).fKind == kBool_t) {
             auto vec = (std::vector<bool> *)(fEnv->fObject);
             fEnv->fLastValueVecBool = (*vec)[idx];
             fEnv->fIdx = idx;
             return &(fEnv->fLastValueVecBool);
          }
+      // intentional fall through
+      case ROOT::kROOTRVec:
          fEnv->fIdx = idx;
          switch( idx ) {
          case 0:
