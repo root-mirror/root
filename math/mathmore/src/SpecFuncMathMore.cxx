@@ -19,6 +19,7 @@
 
 #include "gsl/gsl_sf_bessel.h"
 #include "gsl/gsl_sf_legendre.h"
+#include "gsl/gsl_sf_lambert.h"
 #include "gsl/gsl_sf_laguerre.h"
 #include "gsl/gsl_sf_hyperg.h"
 #include "gsl/gsl_sf_ellint.h"
@@ -327,6 +328,18 @@ double laguerre(unsigned n, double x) {
 }
 
 
+// Lambert W function on branch 0
+
+double lambert_W0(double x) {
+   return gsl_sf_lambert_W0(x);
+}
+
+
+// Lambert W function on branch -1
+
+double lambert_Wm1(double x) {
+   return gsl_sf_lambert_Wm1(x);
+}
 
 
 // [5.2.1.19] Legendre polynomials

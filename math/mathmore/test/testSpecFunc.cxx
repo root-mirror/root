@@ -190,6 +190,10 @@ int testSpecFunc() {
 
    iret |= compare("laguerre(4, 1.) ", laguerre(4, 1.), -0.6250, 4); // need to find more precise value
 
+   iret |= compare("lambert_W0(-0.1) ", lambert_W0(-0.1), -0.1118325591589629648);
+
+   iret |= compare("lambert_Wm1(-0.1) ", lambert_Wm1(-0.1), -3.5771520639572972184);
+
    iret |= compare("legendre(10, -0.5) ", legendre(10, -0.5), -0.1882286071777345);
 
    iret |= compare("riemann_zeta(-0.5) ", riemann_zeta(-0.5), -0.207886224977354566017307, 16);

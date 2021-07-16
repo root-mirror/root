@@ -493,6 +493,51 @@ namespace Math {
 
   /**
 
+  Calculates the Lambert W function on branch 0
+
+  The Lambert W functions are defined to be the solution of the equation
+
+  \f[ W(x) \exp(W(x)) = x \f]
+
+  For detailed description see
+  <A HREF="https://mathworld.wolfram.com/LambertW-Function.html">Mathworld</A>
+  or <A HREF="https://en.wikipedia.org/wiki/Lambert_W_function">Wikipedia</A>.
+
+  This function implements the Lambert W function on branch 0, which is real
+  valued and defined for \f$ x \geq -1/e \f$ with \f$ W_0(x) \geq -1 \f$.
+
+  @ingroup SpecFunc
+
+  */
+
+  double lambert_W0(double x);
+
+
+  /**
+
+  Calculates the Lambert W function on branch -1
+
+  The Lambert W functions are defined to be the solution of the equation
+
+  \f[ W(x) \exp(W(x)) = x \f]
+
+  For detailed description see
+  <A HREF="https://mathworld.wolfram.com/LambertW-Function.html">Mathworld</A>
+  or <A HREF="https://en.wikipedia.org/wiki/Lambert_W_function">Wikipedia</A>.
+
+  This function implements the Lambert W function on branch -1, which is real
+  valued and defined for \f$ -1/e \seq x < 0 \f$ with
+  \f$ W_{-1}(x) \seq -1 \f$.
+
+  @ingroup SpecFunc
+
+  */
+
+  double lambert_Wm1(double x);
+
+
+  /**
+
   Calculates the Legendre polynomials.
 
   \f[ P_{l}(x) = \frac{1}{2^l l!} \frac{d^l}{dx^l}  (x^2 - 1)^l \f]
