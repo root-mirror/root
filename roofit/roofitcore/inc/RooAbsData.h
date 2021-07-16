@@ -117,9 +117,19 @@ public:
   virtual Double_t weight() const = 0 ; // DERIVED
   virtual Double_t weightSquared() const = 0 ; // DERIVED
   virtual Bool_t valid() const { return kTRUE ; }
+
   enum ErrorType { Poisson, SumW2, None, Auto, Expected } ;
-  virtual Double_t weightError(ErrorType etype=Poisson) const ;
-  virtual void weightError(Double_t& lo, Double_t& hi, ErrorType etype=Poisson) const ; 
+  /// Return the symmetric error on the current weight.
+  /// See also weightError(double&,double&,ErrorType) const for asymmetric errors.
+  /// \param[in] etype Type of error to compute. May throw if not supported.
+  virtual double weightError(ErrorType etype=Poisson) const = 0;
+  /// Return the asymmetric errors on the current weight.
+  /// See also weightError(ErrorType) const for symmetric error.
+  /// \param[out] lo Low error.
+  /// \param[out] hi High error.
+  /// \param[in] etype Type of error to compute. May throw if not supported.
+  virtual void weightError(double& lo, double& hi, ErrorType etype=Poisson) const = 0;
+
   virtual const RooArgSet* get(Int_t index) const ;
 
   /// Retrieve batches of data for each real-valued variable in this dataset.

@@ -116,9 +116,9 @@ public:
 
   TIterator* sliceIterator(RooAbsArg& sliceArg, const RooArgSet& otherArgs) ;
 
-  void weightError(Double_t& lo, Double_t& hi, ErrorType etype=Poisson) const override;
-  /// Return the error of the weight of the last-retrieved entry. See also weightError(Double_t&,Double_t&,ErrorType) const.
-  Double_t weightError(ErrorType etype=Poisson) const override {
+  void weightError(double& lo, double& hi, ErrorType etype=Poisson) const override;
+  /// \copydoc RooAbsData::weightError(RooAbsData::ErrorType) const
+  double weightError(ErrorType etype=Poisson) const override {
     // Return symmetric error on current bin calculated either from Poisson statistics or from SumOfWeights
     Double_t lo,hi ;
     weightError(lo,hi,etype) ;

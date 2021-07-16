@@ -1233,7 +1233,8 @@ double RooDataHist::weightInterpolated(const RooArgSet& bin, int intOrder, bool 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Return the error of current weight.
+/// Return the asymmetric errors on the current weight.
+/// \see weightError(ErrorType) const for symmetric error.
 /// \param[out] lo Low error.
 /// \param[out] hi High error.
 /// \param[in] etype Type of error to compute. May throw if not supported.
@@ -1241,7 +1242,7 @@ double RooDataHist::weightInterpolated(const RooArgSet& bin, int intOrder, bool 
 /// - `Poisson` Default. Asymmetric Poisson errors (68% CL).
 /// - `SumW2` The square root of the sum of weights. (Symmetric).
 /// - `None` Return zero.
-void RooDataHist::weightError(Double_t& lo, Double_t& hi, ErrorType etype) const 
+void RooDataHist::weightError(double& lo, double& hi, ErrorType etype) const
 { 
   checkInit() ;
 

@@ -352,20 +352,6 @@ RooVectorDataStore::~RooVectorDataStore()
 }
 
 
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return true if currently loaded coordinate is considered valid within
-/// the current range definitions of all observables
-
-Bool_t RooVectorDataStore::valid() const 
-{
-  return kTRUE ;
-}
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Interface function to TTree::Fill
 
@@ -465,18 +451,6 @@ const RooArgSet* RooVectorDataStore::getNative(Int_t index) const
 
   return &_vars;
 }
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Load data point at `index`, and return its weight.
-Double_t RooVectorDataStore::weight(Int_t index) const 
-{
-  get(index) ;
-  return weight() ;
-}
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////

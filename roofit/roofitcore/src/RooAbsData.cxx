@@ -527,22 +527,6 @@ RooAbsData* RooAbsData::reduce(const RooArgSet& varSubset, const RooFormulaVar& 
   return reduceEng(varSubset2,&cutVar,0,0,std::numeric_limits<std::size_t>::max(),kFALSE) ;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Return error on current weight (dummy implementation returning zero)
-
-Double_t RooAbsData::weightError(ErrorType) const
-{
-  return 0 ;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return asymmetric error on weight. (Dummy implementation returning zero)
-
-void RooAbsData::weightError(Double_t& lo, Double_t& hi, ErrorType) const
-{
-  lo=0 ; hi=0 ;
-}
-
 
 RooPlot* RooAbsData::plotOn(RooPlot* frame, const RooCmdArg& arg1, const RooCmdArg& arg2,
              const RooCmdArg& arg3, const RooCmdArg& arg4, const RooCmdArg& arg5,

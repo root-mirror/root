@@ -615,19 +615,6 @@ void RooTreeDataStore::loadValues(const RooAbsDataStore *ads, const RooFormulaVa
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return true if currently loaded coordinate is considered valid within
-/// the current range definitions of all observables
-
-Bool_t RooTreeDataStore::valid() const
-{
-  return kTRUE ;
-}
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Interface function to TTree::Fill
 
@@ -692,18 +679,6 @@ const RooArgSet* RooTreeDataStore::get(Int_t index) const
 
   return &_vars;
 }
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Return the weight of the n-th data point (n='index') in memory
-
-Double_t RooTreeDataStore::weight(Int_t index) const
-{
-  get(index) ;
-  return weight() ;
-}
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
