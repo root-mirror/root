@@ -31,10 +31,7 @@ model.Print("T")  # "T" prints the model as a tree
 
 
 # Build the categories
-sample = ROOT.RooCategory("sample", "sample")
-sample["Sample1"] = 1
-sample["Sample2"] = 2
-sample["Sample3"] = 3
+sample = ROOT.RooCategory("sample", "sample", {"Sample1": 1, "Sample2": 2, "Sample3": 3})
 
 
 # Start to customise the proto model that was defined above.

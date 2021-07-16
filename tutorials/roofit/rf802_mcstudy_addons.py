@@ -20,7 +20,7 @@ import ROOT
 # Observables, parameters
 x = ROOT.RooRealVar("x", "x", -10, 10)
 x.setBins(10)
-mean = ROOT.RooRealVar("mean", "mean of gaussian", 0, -2., 1.8)
+mean = ROOT.RooRealVar("mean", "mean of gaussian", 0, -2.0, 1.8)
 sigma = ROOT.RooRealVar("sigma", "width of gaussian", 5, 1, 10)
 
 # Create Gaussian pdf

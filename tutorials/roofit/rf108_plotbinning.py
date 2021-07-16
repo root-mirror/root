@@ -20,12 +20,8 @@ tau = ROOT.RooRealVar("tau", "tau", 1.547)
 w = ROOT.RooRealVar("w", "mistag rate", 0.1)
 dw = ROOT.RooRealVar("dw", "delta mistag rate", 0.0)
 
-mixState = ROOT.RooCategory("mixState", "B0/B0bar mixing state")
-mixState.defineType("mixed", -1)
-mixState.defineType("unmixed", 1)
-tagFlav = ROOT.RooCategory("tagFlav", "Flavour of the tagged B0")
-tagFlav.defineType("B0", 1)
-tagFlav.defineType("B0bar", -1)
+mixState = ROOT.RooCategory("mixState", "B0/B0bar mixing state", {"mixed": -1, "unmixed": 1})
+tagFlav = ROOT.RooCategory("tagFlav", "Flavour of the tagged B0", {"B0": 1, "B0bar": -1})
 
 # Build a gaussian resolution model
 dterr = ROOT.RooRealVar("dterr", "dterr", 0.1, 1.0)

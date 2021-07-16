@@ -27,9 +27,7 @@ tagCat.Print()
 # ------------------------------------------------
 
 # Define a category with explicitly numbered states
-b0flav = ROOT.RooCategory("b0flav", "B0 flavour eigenstate")
-b0flav.defineType("B0", -1)
-b0flav.defineType("B0bar", 1)
+b0flav = ROOT.RooCategory("b0flav", "B0 flavour eigenstate", {"B0": -1, "B0bar": 1})
 b0flav.Print()
 
 # Generate dummy data for tabulation demo

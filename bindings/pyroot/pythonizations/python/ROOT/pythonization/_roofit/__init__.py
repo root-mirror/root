@@ -23,6 +23,7 @@ from ._rooabsreal import RooAbsReal
 from ._rooabsreallvalue import RooAbsRealLValue
 from ._rooarglist import RooArgList
 from ._rooargset import RooArgSet
+from ._roocategory import RooCategory
 from ._roochi2var import RooChi2Var
 from ._roodatahist import RooDataHist
 from ._roodataset import RooDataSet
@@ -35,6 +36,9 @@ from ._rooglobalfunc import (
     MultiArg,
     YVar,
     ZVar,
+    Slice,
+    Import,
+    Link,
     LineColor,
     FillColor,
     MarkerColor,
@@ -64,6 +68,7 @@ python_classes = [
     RooBCPEffDecay,
     RooBDecay,
     RooBMixDecay,
+    RooCategory,
     RooChi2Var,
     RooDataHist,
     RooDataSet,
@@ -86,6 +91,9 @@ python_roofit_functions = [
     MultiArg,
     YVar,
     ZVar,
+    Slice,
+    Import,
+    Link,
     LineColor,
     FillColor,
     MarkerColor,

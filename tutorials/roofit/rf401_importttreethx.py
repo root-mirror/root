@@ -69,25 +69,13 @@ c.defineType("SampleC")
 # Create a binned dataset that imports contents of all ROOT.TH1 mapped by
 # index category c
 dh = ROOT.RooDataHist(
-    "dh",
-    "dh",
-    ROOT.RooArgList(x),
-    ROOT.RooFit.Import("SampleA", hh_1),
-    ROOT.RooFit.Import("SampleB", hh_2),
-    Import=("SampleC", hh_3),
-    Index=c,
+    "dh", "dh", ROOT.RooArgList(x), Index=c, Import={"SampleA": hh_1, "SampleB": hh_2, "SampleC": hh_3}
 )
 dh.Print()
 
-# Alternative constructor form for importing multiple histograms
-ROOT.gInterpreter.GenerateDictionary("std::pair<std::string, TH1*>", "map;string;TH1.h")
-ROOT.gInterpreter.GenerateDictionary("std::map<std::string, TH1*>", "map;string;TH1.h")
-hmap = ROOT.std.map("string, TH1*")()
-hmap.keepalive = list()
-hmap.insert(hmap.cbegin(), ROOT.std.pair("const std::string,TH1*")("SampleA", hh_1))
-hmap.insert(hmap.cbegin(), ROOT.std.pair("const std::string,TH1*")("SampleB", hh_2))
-hmap.insert(hmap.cbegin(), ROOT.std.pair("const std::string,TH1*")("SampleC", hh_3))
-dh2 = ROOT.RooDataHist("dh", "dh", ROOT.RooArgList(x), c, hmap)
+dh2 = ROOT.RooDataHist(
+    "dh", "dh", ROOT.RooArgList(x), Index=c, Import={"SampleA": hh_1, "SampleB": hh_2, "SampleC": hh_3}
+)
 dh2.Print()
 
 # Importing a ROOT TTree into a RooDataSet with cuts
@@ -117,9 +105,7 @@ ds3 = ROOT.RooDataSet("ds3", "ds3", ROOT.RooArgSet(i, x), Import=tree)
 ds3.Print()
 
 # Define category i
-icat = ROOT.RooCategory("i", "i")
-icat.defineType("State0", 0)
-icat.defineType("State1", 1)
+icat = ROOT.RooCategory("i", "i", {"State0": 0, "State1": 1})
 
 # Import integer tree branch as ROOT.RooCategory (only events with i==0 and i==1
 # will be imported as those are the only defined states)

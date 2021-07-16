@@ -23,9 +23,7 @@ tagCat.defineType("NetTagger-2")
 tagCat.Print()
 
 # Define a category with explicitly numbered states
-b0flav = ROOT.RooCategory("b0flav", "B0 flavour eigenstate")
-b0flav.defineType("B0", -1)
-b0flav.defineType("B0bar", 1)
+b0flav = ROOT.RooCategory("b0flav", "B0 flavour eigenstate", {"B0": -1, "B0bar": 1})
 b0flav.Print()
 
 # Construct a dummy dataset with random values of tagCat and b0flav

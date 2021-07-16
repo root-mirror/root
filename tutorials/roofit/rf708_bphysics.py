@@ -27,13 +27,9 @@ tau = ROOT.RooRealVar("tau", "tau (B0)", 1.547)
 w = ROOT.RooRealVar("w", "flavour mistag rate", 0.1)
 dw = ROOT.RooRealVar("dw", "delta mistag rate for B0/B0bar", 0.1)
 
-mixState = ROOT.RooCategory("mixState", "B0/B0bar mixing state")
-mixState.defineType("mixed", -1)
-mixState.defineType("unmixed", 1)
+mixState = ROOT.RooCategory("mixState", "B0/B0bar mixing state", {"mixed": -1, "unmixed": 1})
+tagFlav = ROOT.RooCategory("tagFlav", "Flavour of the tagged B0", {"B0": 1, "B0bar": -1})
 
-tagFlav = ROOT.RooCategory("tagFlav", "Flavour of the tagged B0")
-tagFlav.defineType("B0", 1)
-tagFlav.defineType("B0bar", -1)
 
 # Use delta function resolution model
 tm = ROOT.RooTruthModel("tm", "truth model", dt)
@@ -62,19 +58,19 @@ bmix.plotOn(frame1, Slice=(tagFlav, "B0bar"), LineColor="c")
 frame2 = dt.frame(Title="B decay distribution of mixed events (B0/B0bar)")
 
 data.plotOn(frame2, Cut="mixState==mixState::mixed&&tagFlav==tagFlav::B0")
-bmix.plotOn(frame2, ROOT.RooFit.Slice(tagFlav, "B0"), Slice=(mixState, "mixed"))
+bmix.plotOn(frame2, Slice={tagFlav: "B0", mixState: "mixed"})
 
 data.plotOn(frame2, Cut="mixState==mixState::mixed&&tagFlav==tagFlav::B0bar", MarkerColor="c")
-bmix.plotOn(frame2, ROOT.RooFit.Slice(tagFlav, "B0bar"), Slice=(mixState, "mixed"), LineColor="c")
+bmix.plotOn(frame2, Slice={tagFlav: "B0bar", mixState: "mixed"}, LineColor="c")
 
 # Plot unmixed slice for B0 and B0bar tagged data separately
 frame3 = dt.frame(Title="B decay distribution of unmixed events (B0/B0bar)")
 
 data.plotOn(frame3, Cut="mixState==mixState::unmixed&&tagFlav==tagFlav::B0")
-bmix.plotOn(frame3, ROOT.RooFit.Slice(tagFlav, "B0"), Slice=(mixState, "unmixed"))
+bmix.plotOn(frame3, Slice={tagFlav: "B0", mixState: "unmixed"})
 
 data.plotOn(frame3, Cut="mixState==mixState::unmixed&&tagFlav==tagFlav::B0bar", MarkerColor="c")
-bmix.plotOn(frame3, ROOT.RooFit.Slice(tagFlav, "B0bar"), Slice=(mixState, "unmixed"), LineColor="c")
+bmix.plotOn(frame3, Slice={tagFlav: "B0bar", mixState: "unmixed"}, LineColor="c")
 
 # B-decay with CP violation
 # -------------------------
