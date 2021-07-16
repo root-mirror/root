@@ -164,7 +164,7 @@ class BaseBackend(ABC):
                 chain = ROOT.TChain(treename)
                 for start, end, filename in zip(current_range.localstarts, current_range.localends,
                                                 current_range.filelist):
-                    elist = ROOT.TEntryList("e","e", treename, filename)
+                    elist = ROOT.TEntryList("", "", treename, filename)
                     for entry in range(start, end):
                         elist.Enter(entry)
                     elists.Add(elist)
