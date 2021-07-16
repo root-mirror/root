@@ -285,7 +285,7 @@ def get_balanced_ranges(nentries, npartitions):
     return ranges
 
 
-def get_clustered_ranges(clustersinfiles, npartitions, friend_info):
+def get_clustered_ranges(clustersinfiles, npartitions, friendinfo):
     """
     Builds ``TreeRange`` objects taking into account the clusters of the
     dataset. Each range will represent the entries processed within a single
@@ -299,7 +299,7 @@ def get_clustered_ranges(clustersinfiles, npartitions, friend_info):
 
         treename (str): Name of the tree.
 
-        friend_info (ROOT.Internal.TreeUtils.RFriendInfo): Information about friend
+        friendinfo (ROOT.Internal.TreeUtils.RFriendInfo): Information about friend
             trees.
 
     Returns:
@@ -314,12 +314,12 @@ def get_clustered_ranges(clustersinfiles, npartitions, friend_info):
                     end=1500,
                     filelist=['filename_1.root',
                               'filename_2.root'],
-                    friend_info=None),
+                    friendinfo=None),
                 TreeRange(start=1500,
                     end=3000,
                     filelist=['filename_2..root',
                               'filename_3.root'],
-                    friend_info=None)
+                    friendinfo=None)
             ]
 
     """
@@ -390,14 +390,14 @@ def get_clustered_ranges(clustersinfiles, npartitions, friend_info):
         #                 localends = [10000, 10000],
         #                 filelist=['tree10000entries10clusters.root',
         #                         'tree20000entries10clusters.root'],
-        #                 friend_info=None)
+        #                 friendinfo=None)
         #         TreeRange(globalstart=10000,
         #                 globalend=50000,
         #                 localstarts = [10000, 0],
         #                 localends = [20000, 30000],
         #                 filelist=['tree20000entries10clusters.root',
         #                         'tree30000entries10clusters.root'],
-        #                 friend_info=None)
+        #                 friendinfo=None)
         #   The first `TreeRange` will read the first 10000 entries from the
         #   first file, then switch to the second file and read the first 10000
         #   entries. The second `TreeRange` will start from entry number 10000
@@ -412,7 +412,7 @@ def get_clustered_ranges(clustersinfiles, npartitions, friend_info):
         globalstart = firstclusterinpartition.start # + firstclusterinpartition.offset - partitionoffset
         globalend = lastclusterinpartition.end + lastclusterinpartition.offset - partitionoffset
 
-        clustered_ranges.append(TreeRange(rangeid, globalstart, globalend, localstarts, localends, filelist, friend_info))
+        clustered_ranges.append(TreeRange(rangeid, globalstart, globalend, localstarts, localends, filelist, friendinfo))
         rangeid += 1
 
     return clustered_ranges
