@@ -126,6 +126,7 @@ class BaseBackend(ABC):
         else:
             # Only other head node type is EmptySourceHeadNode at the moment
             treename = None
+            nentries = headnode.nentries
 
         # Avoid having references to the instance inside the mapper
         initialization = self.initialization
@@ -218,8 +219,9 @@ class BaseBackend(ABC):
 
             else:
                 # Only other head node type is EmptySourceHeadNode at the moment
-                # Initialize an RDataFrame with the entries of this range
-                rdf = ROOT.RDataFrame(current_range.end - current_range.start)
+                # Initialize an RDataFrame with number of entries requested by
+                # user, then limit processing to the entries in this range.
+                rdf = ROOT.RDataFrame(nentries).Range(current_range.start, current_range.end)
 
 
             # Output of the callable
