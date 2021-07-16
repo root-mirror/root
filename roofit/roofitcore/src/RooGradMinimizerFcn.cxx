@@ -64,7 +64,7 @@ ROOT::Math::IMultiGradFunction *RooGradMinimizerFcn::Clone() const
 void RooGradMinimizerFcn::synchronizeGradientParameterSettings(
    std::vector<ROOT::Fit::ParameterSettings> &parameter_settings) const
 {
-   _gradf.SetInitialGradient(_context->getMultiGenFcn(), parameter_settings, _grad);
+   _gradf.SetInitialGradient(parameter_settings, _grad);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,6 +212,18 @@ double RooGradMinimizerFcn::DoDerivative(const double *x, unsigned int i_compone
 {
    syncParameters(x);
    runDerivator(i_component);
+   return _grad[i_component].derivative;
+}
+
+double RooGradMinimizerFcn::DoDerivative(const double *x, unsigned int i_component, double *previous_grad,
+                                         double *previous_g2, double *previous_gstep) const
+{
+   syncParameters(x);
+   _grad[i_component] = {previous_grad[i_component], previous_g2[i_component], previous_gstep[i_component]};
+   runDerivator(i_component);
+   previous_grad[i_component] = _grad[i_component].derivative;
+   previous_g2[i_component] = _grad[i_component].second_derivative;
+   previous_gstep[i_component] = _grad[i_component].step_size;
    return _grad[i_component].derivative;
 }
 

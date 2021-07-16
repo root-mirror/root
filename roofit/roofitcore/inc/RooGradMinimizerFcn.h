@@ -70,6 +70,8 @@ private:
    // IMultiGradFunction overrides
    double DoEval(const double *x) const override;
    double DoDerivative(const double *x, unsigned int icoord) const override;
+   double DoDerivative(const double *x, unsigned int i_component, double *previous_grad,
+                       double *previous_g2, double *previous_gstep) const override;
 
    // members
    // mutable because ROOT::Math::IMultiGradFunction::DoDerivative is const

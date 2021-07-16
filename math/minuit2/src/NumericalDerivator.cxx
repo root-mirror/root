@@ -221,14 +221,11 @@ double NumericalDerivator::DInt2Ext(const ROOT::Fit::ParameterSettings &paramete
 // MODIFIED:
 /// This function was not implemented as in Minuit2. Now it copies the behavior
 /// of InitialGradientCalculator. See https://github.com/roofit-dev/root/issues/10
-void NumericalDerivator::SetInitialGradient(const ROOT::Math::IBaseFunctionMultiDim *function,
-                                            const std::vector<ROOT::Fit::ParameterSettings> &parameters,
+void NumericalDerivator::SetInitialGradient(const std::vector<ROOT::Fit::ParameterSettings> &parameters,
                                             std::vector<DerivatorElement> &gradient)
 {
    // set an initial gradient using some given steps
    // (used in the first iteration)
-
-   assert(function != nullptr && "function is a nullptr");
 
    double eps2 = fPrecision.Eps2();
 

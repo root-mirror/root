@@ -215,6 +215,14 @@ namespace ROOT {
             Return the partial derivative with respect to the passed coordinate
          */
          T Derivative(const T *x, unsigned int icoord = 0) const { return DoDerivative(x, icoord); }
+         /// In some cases, the derivative algorithm will use information from the previous step, these can be passed
+         /// in with this overload. The `previous_*` arrays can also be used to return second derivative and step size
+         /// so that these can be passed forward again as well at the call site, if necessary.
+         T Derivative(const T *x, unsigned int icoord, T *previous_grad, T *previous_g2,
+                      T *previous_gstep) const
+         {
+            return DoDerivative(x, icoord, previous_grad, previous_g2, previous_gstep);
+         }
 
          /**
              Optimized method to evaluate at the same time the function value and derivative at a point x.
@@ -232,6 +240,14 @@ namespace ROOT {
             function to evaluate the derivative with respect each coordinate. To be implemented by the derived class
          */
          virtual T DoDerivative(const T *x, unsigned int icoord) const = 0;
+         /// In some cases, the derivative algorithm will use information from the previous step, these can be passed
+         /// in with this overload. The `previous_*` arrays can also be used to return second derivative and step size
+         /// so that these can be passed forward again as well at the call site, if necessary.
+         virtual T DoDerivative(const T *x, unsigned int icoord, T * /*previous_grad*/, T * /*previous_g2*/,
+                                T * /*previous_gstep*/) const
+         {
+            return DoDerivative(x, icoord);
+         };
       };
 
 //___________________________________________________________________________________
@@ -344,6 +360,16 @@ namespace ROOT {
             unsigned int ndim = NDim();
             for (unsigned int icoord  = 0; icoord < ndim; ++icoord)
                grad[icoord] = BaseGrad::Derivative(x, icoord);
+         }
+
+         /// In some cases, the gradient algorithm will use information from the previous step, these can be passed
+         /// in with this overload. The `previous_*` arrays can also be used to return second derivative and step size
+         /// so that these can be passed forward again as well at the call site, if necessary.
+         virtual void Gradient(const T *x, T *grad, T *previous_grad, T *previous_g2, T *previous_gstep) const
+         {
+            unsigned int ndim = NDim();
+            for (unsigned int icoord  = 0; icoord < ndim; ++icoord)
+               grad[icoord] = BaseGrad::Derivative(x, icoord, previous_grad, previous_g2, previous_gstep);
          }
 
          using  BaseFunc::NDim;
