@@ -289,10 +289,26 @@ public:
 /// The field for a class with dictionary
 class RClassField : public Detail::RFieldBase {
 private:
+   enum ESubFieldRole {
+      kBaseClass,
+      kDataMember,
+   };
+   struct RSubFieldInfo {
+      ESubFieldRole fRole;
+      std::size_t fOffset;
+   };
+   /// Prefix used in the subfield names generated for base classes
+   static constexpr const char *kPrefixInherited{":"};
+
    TClass* fClass;
+   /// Additional information kept for each entry in `fSubFields`
+   std::vector<RSubFieldInfo> fSubFieldsInfo;
    std::size_t fMaxAlignment = 1;
 
 protected:
+   RClassField(std::string_view fieldName, std::string_view className, TClass *classp);
+   void Attach(std::unique_ptr<Detail::RFieldBase> child, RSubFieldInfo info);
+
    std::unique_ptr<Detail::RFieldBase> CloneImpl(std::string_view newName) const final;
    void AppendImpl(const Detail::RFieldValue& value) final;
    void ReadGlobalImpl(NTupleSize_t globalIndex, Detail::RFieldValue *value) final;

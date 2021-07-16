@@ -24,6 +24,7 @@
 #include <ROOT/RNTuple.hxx>
 #include <ROOT/RNTupleModel.hxx>
 
+#include <TBaseClass.h>
 #include <TClass.h>
 #include <TCollection.h>
 #include <TDataMember.h>
@@ -756,8 +757,13 @@ void ROOT::Experimental::RField<std::string>::AcceptVisitor(Detail::RFieldVisito
 
 
 ROOT::Experimental::RClassField::RClassField(std::string_view fieldName, std::string_view className)
+   : RClassField(fieldName, className, TClass::GetClass(std::string(className).c_str()))
+{
+}
+
+ROOT::Experimental::RClassField::RClassField(std::string_view fieldName, std::string_view className, TClass *classp)
    : ROOT::Experimental::Detail::RFieldBase(fieldName, className, ENTupleStructure::kRecord, false /* isSimple */)
-   , fClass(TClass::GetClass(std::string(className).c_str()))
+   , fClass(classp)
 {
    if (fClass == nullptr) {
       throw std::runtime_error("RField: no I/O support for type " + std::string(className));
@@ -766,50 +772,62 @@ ROOT::Experimental::RClassField::RClassField(std::string_view fieldName, std::st
    if (fClass->Property() & kIsDefinedInStd) {
       throw RException(R__FAIL(std::string(className) + " is not supported"));
    }
-   TIter next(fClass->GetListOfDataMembers());
-   while (auto dataMember = static_cast<TDataMember *>(next())) {
-      //printf("Now looking at %s %s\n", dataMember->GetName(), dataMember->GetFullTypeName());
-      auto subField = Detail::RFieldBase::Create(dataMember->GetName(), dataMember->GetFullTypeName()).Unwrap();
-      fMaxAlignment = std::max(fMaxAlignment, subField->GetAlignment());
-      Attach(std::move(subField));
+
+   for (auto baseClass : ROOT::Detail::TRangeStaticCast<TBaseClass>(*fClass->GetListOfBases())) {
+      TClass *c = baseClass->GetClassPointer();
+      auto subField = std::unique_ptr<RClassField>(new RClassField(std::string(kPrefixInherited) + c->GetName(),
+                                                                   c->GetName(), c));
+      Attach(std::move(subField),
+	     RSubFieldInfo{kBaseClass, static_cast<std::size_t>(baseClass->GetDelta())});
    }
+   for (auto dataMember : ROOT::Detail::TRangeStaticCast<TDataMember>(*fClass->GetListOfDataMembers())) {
+      if (!dataMember->IsPersistent())
+         continue;
+      auto subField = Detail::RFieldBase::Create(dataMember->GetName(), dataMember->GetFullTypeName()).Unwrap();
+      Attach(std::move(subField),
+	     RSubFieldInfo{kDataMember, static_cast<std::size_t>(dataMember->GetOffset())});
+   }
+}
+
+void ROOT::Experimental::RClassField::Attach(std::unique_ptr<Detail::RFieldBase> child, RSubFieldInfo info)
+{
+   fMaxAlignment = std::max(fMaxAlignment, child->GetAlignment());
+   fSubFieldsInfo.push_back(info);
+   RFieldBase::Attach(std::move(child));
 }
 
 std::unique_ptr<ROOT::Experimental::Detail::RFieldBase>
 ROOT::Experimental::RClassField::CloneImpl(std::string_view newName) const
 {
-   return std::make_unique<RClassField>(newName, GetType());
+   return std::unique_ptr<RClassField>(new RClassField(newName, GetType(), fClass));
 }
 
 void ROOT::Experimental::RClassField::AppendImpl(const Detail::RFieldValue& value) {
-   TIter next(fClass->GetListOfDataMembers());
-   unsigned i = 0;
-   while (auto dataMember = static_cast<TDataMember *>(next())) {
-      auto memberValue = fSubFields[i]->CaptureValue(value.Get<unsigned char>() + dataMember->GetOffset());
+   for (unsigned i = 0; i < fSubFields.size(); i++) {
+      auto memberValue = fSubFields[i]->CaptureValue(value.Get<unsigned char>() + fSubFieldsInfo[i].fOffset);
       fSubFields[i]->Append(memberValue);
-      i++;
    }
 }
 
 void ROOT::Experimental::RClassField::ReadGlobalImpl(NTupleSize_t globalIndex, Detail::RFieldValue *value)
 {
-   TIter next(fClass->GetListOfDataMembers());
-   unsigned i = 0;
-   while (auto dataMember = static_cast<TDataMember *>(next())) {
-      auto memberValue = fSubFields[i]->GenerateValue(value->Get<unsigned char>() + dataMember->GetOffset());
+   for (unsigned i = 0; i < fSubFields.size(); i++) {
+      auto ptr = value->Get<unsigned char>() + fSubFieldsInfo[i].fOffset;
+      // A constructor of a derived class may also initialize base classes; call `CaptureValue()` instead.
+      auto memberValue = (fSubFieldsInfo[i].fRole == kBaseClass)
+         ? fSubFields[i]->CaptureValue(ptr) : fSubFields[i]->GenerateValue(ptr);
       fSubFields[i]->Read(globalIndex, &memberValue);
-      i++;
    }
 }
 
 void ROOT::Experimental::RClassField::ReadInClusterImpl(const RClusterIndex &clusterIndex, Detail::RFieldValue *value)
 {
-   TIter next(fClass->GetListOfDataMembers());
-   unsigned i = 0;
-   while (auto dataMember = static_cast<TDataMember *>(next())) {
-      auto memberValue = fSubFields[i]->GenerateValue(value->Get<unsigned char>() + dataMember->GetOffset());
+   for (unsigned i = 0; i < fSubFields.size(); i++) {
+      auto ptr = value->Get<unsigned char>() + fSubFieldsInfo[i].fOffset;
+      // A constructor of a derived class may also initialize base classes; call `CaptureValue()` instead.
+      auto memberValue = (fSubFieldsInfo[i].fRole == kBaseClass)
+         ? fSubFields[i]->CaptureValue(ptr) : fSubFields[i]->GenerateValue(ptr);
       fSubFields[i]->Read(clusterIndex, &memberValue);
-      i++;
    }
 }
 
@@ -842,13 +860,10 @@ ROOT::Experimental::Detail::RFieldValue ROOT::Experimental::RClassField::Capture
 std::vector<ROOT::Experimental::Detail::RFieldValue>
 ROOT::Experimental::RClassField::SplitValue(const Detail::RFieldValue &value) const
 {
-   TIter next(fClass->GetListOfDataMembers());
-   unsigned i = 0;
    std::vector<Detail::RFieldValue> result;
-   while (auto dataMember = static_cast<TDataMember *>(next())) {
-      auto memberValue = fSubFields[i]->CaptureValue(value.Get<unsigned char>() + dataMember->GetOffset());
+   for (unsigned i = 0; i < fSubFields.size(); i++) {
+      auto memberValue = fSubFields[i]->CaptureValue(value.Get<unsigned char>() + fSubFieldsInfo[i].fOffset);
       result.emplace_back(memberValue);
-      i++;
    }
    return result;
 }

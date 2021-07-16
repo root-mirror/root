@@ -71,6 +71,49 @@ TEST(RNTuple, Extended)
    EXPECT_EQ(chksumRead, chksumWrite);
 }
 
+TEST(RNTuple, TClass)
+{
+   FileRaii fileGuard("test_ntuple_tclass.ntuple");
+   {
+      auto model = RNTupleModel::Create();
+      auto fieldKlass = model->MakeField<DerivedB>("klass");
+      RNTupleWriteOptions options;
+      auto ntuple = RNTupleWriter::Recreate(std::move(model), "f", fileGuard.GetPath(), options);
+      for (int i = 0; i < 20000; i++) {
+         DerivedB klass;
+         klass.a = static_cast<float>(i);
+         klass.v1.emplace_back(static_cast<float>(i));
+         klass.v2.emplace_back(std::vector<float>(3, static_cast<float>(i)));
+         klass.s = "hi" + std::to_string(i);
+
+         klass.a_v.emplace_back(static_cast<float>(i + 1));
+         klass.a_s = "bye" + std::to_string(i);
+
+         klass.b_f1 = static_cast<float>(i + 2);
+         klass.b_f2 = static_cast<float>(i + 3);
+         *fieldKlass = klass;
+         ntuple->Fill();
+      }
+   }
+
+   auto ntuple = RNTupleReader::Open("f", fileGuard.GetPath());
+   EXPECT_EQ(20000U, ntuple->GetNEntries());
+   auto viewKlass = ntuple->GetView<DerivedB>("klass");
+   for (auto i : ntuple->GetEntryRange()) {
+      float fi = static_cast<float>(i);
+      EXPECT_EQ(fi, viewKlass(i).a);
+      EXPECT_EQ(std::vector<float>{fi}, viewKlass(i).v1);
+      EXPECT_EQ((std::vector<float>(3, fi)), viewKlass(i).v2.at(0));
+      EXPECT_EQ("hi" + std::to_string(i), viewKlass(i).s);
+
+      EXPECT_EQ(std::vector<float>{fi + 1}, viewKlass(i).a_v);
+      EXPECT_EQ("bye" + std::to_string(i), viewKlass(i).a_s);
+
+      EXPECT_EQ((fi + 2), viewKlass(i).b_f1);
+      EXPECT_EQ(0.0, viewKlass(i).b_f2);
+   }
+}
+
 TEST(RPageSinkBuf, Basics)
 {
    struct TestModel {
