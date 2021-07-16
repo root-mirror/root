@@ -104,12 +104,13 @@ ROOT::RDF::ProgressHelper::RecordEvtCountAndTime() {
   fLastProcessedEvents = currentEventCount;
 
   const auto oldPrintTime = fLastPrintTime;
+  const auto newPrintTime = system_clock::now();
   fLastPrintTime = system_clock::now();
 
-  const duration<double> secondsCurrentInterval = fLastPrintTime - oldPrintTime;
+  const duration<double> secondsCurrentInterval = newPrintTime - oldPrintTime;
   fEventsPerSecondStatistics[fEventsPerSecondStatisticsIndex++ % fEventsPerSecondStatistics.size()] = eventsPerTimeInterval / secondsCurrentInterval.count();
 
-  return {currentEventCount, duration_cast<seconds>(fLastPrintTime - fBeginTime)};
+  return {currentEventCount, duration_cast<seconds>(newPrintTime - fBeginTime)};
 }
 
 namespace {
