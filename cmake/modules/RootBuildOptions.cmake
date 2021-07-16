@@ -142,7 +142,7 @@ ROOT_BUILD_OPTION(macos_native OFF "Disable looking for libraries, includes and 
 ROOT_BUILD_OPTION(mathmore ON "Build libMathMore extended math library (requires GSL)")
 ROOT_BUILD_OPTION(memory_termination OFF "Free internal ROOT memory before process termination (experimental, used for leak checking)")
 ROOT_BUILD_OPTION(mlp ON "Enable support for TMultilayerPerceptron classes' federation")
-ROOT_BUILD_OPTION(minuit2 OFF "Build Minuit2 minimization library")
+ROOT_BUILD_OPTION(minuit2 ON "Build Minuit2 minimization library")
 ROOT_BUILD_OPTION(monalisa OFF "Enable support for monitoring with Monalisa (requires libapmoncpp)")
 ROOT_BUILD_OPTION(mpi OFF "Enable support for Message Passing Interface (MPI)")
 ROOT_BUILD_OPTION(mysql ON "Enable support for MySQL databases")
