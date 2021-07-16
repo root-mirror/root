@@ -376,10 +376,10 @@ def get_clustered_ranges(clustersinfiles, npartitions, friendinfo):
         # - Then to make them "global with respect to the chain of files in the
         #   current partition", we need to subtract the offset of the first
         #   cluster in the current partition. That is equal to the amount of
-        #   entries in the chain up to the beginning of that cluster. This is
-        #   needed to maintain a reference of the entries of the range with
-        #   respect to the list of files that hold them. For example, given the
-        #   following files:
+        #   entries in the chain up to the beginning of the file that cluster
+        #   belongs to. This is needed to maintain a reference of the entries of
+        #   the range with respect to the list of files that hold them. For
+        #   example, given the following files:
         #         tree10000entries10clusters.root --> 10000 entries, 10 clusters
         #         tree20000entries10clusters.root --> 20000 entries, 10 clusters
         #         tree30000entries10clusters.root --> 30000 entries, 10 clusters
@@ -404,10 +404,10 @@ def get_clustered_ranges(clustersinfiles, npartitions, friendinfo):
         #   of the second file up until the end of that file (entry number
         #   20000), then switch to the third file and read the whole 30000
         #   entries there.
-        firstclusterinpartition = min(partition)
+        firstclusterinpartition = partition[0]
         partitionoffset = firstclusterinpartition.offset
 
-        lastclusterinpartition = max(partition)
+        lastclusterinpartition = partition[-1]
 
         globalstart = firstclusterinpartition.start # + firstclusterinpartition.offset - partitionoffset
         globalend = lastclusterinpartition.end + lastclusterinpartition.offset - partitionoffset
