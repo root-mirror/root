@@ -1528,7 +1528,6 @@ Bool_t TGMainFrame::SaveFrameAsCodeOrImage()
       repeat_save = kFALSE;
 
       TGFileInfo fi;
-      TGMainFrame *main = (TGMainFrame*)GetMainFrame();
       fi.fFileTypes = gSaveMacroTypes;
       fi.SetIniDir(dir);
       fi.fOverwrite = overwr;
@@ -1536,42 +1535,64 @@ Bool_t TGMainFrame::SaveFrameAsCodeOrImage()
       if (!fi.fFilename) return kFALSE;
       dir = fi.fIniDir;
       overwr = fi.fOverwrite;
-      TString fname = gSystem->UnixPathName(fi.fFilename);
-      if (fname.EndsWith(".C"))
-         main->SaveSource(fname.Data(), "");
-      else {
-         TImage::EImageFileTypes gtype = TImage::kUnknown;
-         if (fname.EndsWith("gif")) {
-            gtype = TImage::kGif;
-         } else if (fname.EndsWith(".png")) {
-            gtype = TImage::kPng;
-         } else if (fname.EndsWith(".jpg")) {
-            gtype = TImage::kJpeg;
-         } else if (fname.EndsWith(".tiff")) {
-            gtype = TImage::kTiff;
-         } else if (fname.EndsWith(".xpm")) {
-            gtype = TImage::kXpm;
-         }
-         if (gtype != TImage::kUnknown) {
-            Int_t saver = gErrorIgnoreLevel;
-            gErrorIgnoreLevel = kFatal;
-            TImage *img = TImage::Create();
-            RaiseWindow();
-            img->FromWindow(GetId());
-            img->WriteImage(fname, gtype);
-            gErrorIgnoreLevel = saver;
-            delete img;
-         }
-         else {
-            Int_t retval;
-            new TGMsgBox(fClient->GetDefaultRoot(), this, "Error...",
-                         TString::Format("file (%s) cannot be saved with this extension",
-                                         fname.Data()), kMBIconExclamation,
-                         kMBRetry | kMBCancel, &retval);
-            repeat_save = (retval == kMBRetry);
-         }
+      const Bool_t res = SaveFrameAsCodeOrImage(fi.fFilename);
+      if(!res)
+      {
+         Int_t retval;
+         new TGMsgBox(fClient->GetDefaultRoot(), this, "Error...",
+                      TString::Format("file (%s) cannot be saved with this extension",
+                                      fi.fFilename),
+                      kMBIconExclamation, kMBRetry | kMBCancel, &retval);
+         repeat_save = (retval == kMBRetry);
       }
    } while (repeat_save);
+
+   return kTRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Saves the frame contents as a ROOT macro or as an image,
+/// depending on the extension of the fileName argument.
+/// If preexisting, the file is overwritten.
+/// Returns kTRUE if something was saved.
+
+Bool_t TGMainFrame::SaveFrameAsCodeOrImage(const TString fileName)
+{
+   static TString dir(".");
+
+   const TString fname = gSystem->UnixPathName(fileName);
+   if (fname.EndsWith(".C")) {
+      TGMainFrame *main = (TGMainFrame*)GetMainFrame();
+      main->SaveSource(fname.Data(), "");
+   }
+   else {
+      TImage::EImageFileTypes gtype = TImage::kUnknown;
+      if (fname.EndsWith("gif")) {
+         gtype = TImage::kGif;
+      } else if (fname.EndsWith(".png")) {
+         gtype = TImage::kPng;
+      } else if (fname.EndsWith(".jpg")) {
+         gtype = TImage::kJpeg;
+      } else if (fname.EndsWith(".tiff")) {
+         gtype = TImage::kTiff;
+      } else if (fname.EndsWith(".xpm")) {
+         gtype = TImage::kXpm;
+      }
+      if (gtype != TImage::kUnknown) {
+         Int_t saver = gErrorIgnoreLevel;
+         gErrorIgnoreLevel = kFatal;
+         TImage *img = TImage::Create();
+         RaiseWindow();
+         img->FromWindow(GetId());
+         img->WriteImage(fname, gtype);
+         gErrorIgnoreLevel = saver;
+         delete img;
+      }
+      else {
+         Error("SaveFrameAsCodeOrImage", "File cannot be saved with this extension");
+         return kFALSE;
+      }
+   }
 
    return kTRUE;
 }
