@@ -392,6 +392,8 @@ public:
    /// Ensure that the data from the so far seen Fill calls has been written to storage
    void CommitCluster();
 
+   std::unique_ptr<REntry> CreateEntry() { return fModel->CreateEntry(); }
+
    void EnableMetrics() { fMetrics.Enable(); }
    const Detail::RNTupleMetrics &GetMetrics() const { return fMetrics; }
 };
