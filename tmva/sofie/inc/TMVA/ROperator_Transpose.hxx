@@ -45,7 +45,7 @@ public:
       if (input.size() > 1) throw std::runtime_error("TMVA SOFIE Tranpose Op Shape Inference only need 1 input tensor");
       auto& data = input[0];
       std::vector<size_t> output_shape(fAttrPerm.size());
-      for (int i = 0; i < fAttrPerm.size(); i++){
+      for (size_t i = 0; i < fAttrPerm.size(); i++){
          output_shape[fAttrPerm[i]] = data[i];
       }
       std::vector<std::vector<size_t>> ret;
@@ -66,7 +66,7 @@ public:
       }
 
       std::vector<size_t> output_shape(fAttrPerm.size());
-      for (int i = 0; i < fAttrPerm.size(); i++){
+      for (size_t i = 0; i < fAttrPerm.size(); i++){
          output_shape[fAttrPerm[i]] = fShapeData[i];
       }
 

@@ -1,3 +1,5 @@
+#include <limits>
+
 #include "TMVA/RModel.hxx"
 
 
@@ -187,7 +189,7 @@ namespace SOFIE{
             fGC += "float tensor_" + i.first + "[" + std::to_string(length) + "] = {";
             std::shared_ptr<float> data = std::static_pointer_cast<float>(i.second.data);
             std::stringstream floats;
-            for (int idx = 0; idx < length-1; idx++){
+            for (size_t idx = 0; idx < length-1; idx++){
                floats << std::setprecision(std::numeric_limits<float>::max_digits10) << data.get()[idx] << ", ";
             }
             floats << std::setprecision(std::numeric_limits<float>::max_digits10) << data.get()[length-1];
@@ -231,7 +233,7 @@ namespace SOFIE{
       fGC.pop_back(); //remove last ","
       fGC += "){\n";
 
-      for (int id = 0; id < fOperators.size() ; id++){
+      for (size_t id = 0; id < fOperators.size() ; id++){
          fGC+= (fOperators[id]->Generate(std::to_string(id)));
       }
       if (fOutputTensorNames.size() == 1){
@@ -252,7 +254,7 @@ namespace SOFIE{
          std::cout << "Parameterised Tensor name: " << inputInfo.first << "\t";
          std::cout << "type: " << ConvertTypeToString(inputInfo.second.type) << "\t";
          std::cout << "shape: [";
-         for (int i = 0; i < inputInfo.second.shape.size(); i++){
+         for (size_t i = 0; i < inputInfo.second.shape.size(); i++){
             if (inputInfo.second.shape[i].isParam){
                std::cout << inputInfo.second.shape[i].param;
             }else{
@@ -267,7 +269,7 @@ namespace SOFIE{
          std::cout << "Fully Specified Tensor name: " << inputInfo.first << "\t";
          std::cout << "type: " << ConvertTypeToString(inputInfo.second.type) << "\t";
          std::cout << "shape: [";
-         for (int i = 0; i < inputInfo.second.shape.size(); i++){
+         for (size_t i = 0; i < inputInfo.second.shape.size(); i++){
             std::cout << inputInfo.second.shape[i];
             if (i < inputInfo.second.shape.size() - 1) std::cout << ",";
          }
@@ -282,7 +284,7 @@ namespace SOFIE{
          std::cout << "Tensor name: \"" << it.first << "\"\t";
          std::cout << "type: " << ConvertTypeToString(it.second.type) << "\t";
          std::cout << "shape: [";
-         for (int i = 0; i < it.second.shape.size(); i++){
+         for (size_t i = 0; i < it.second.shape.size(); i++){
             std::cout << it.second.shape[i];
             if (i < it.second.shape.size() - 1) std::cout << ",";
          }
@@ -296,7 +298,7 @@ namespace SOFIE{
          std::cout << "Tensor name: \"" << it.first << "\"\t";
          std::cout << "type: " << ConvertTypeToString(it.second.type) << "\t";
          std::cout << "shape: [";
-         for (int i = 0; i < it.second.shape.size(); i++){
+         for (size_t i = 0; i < it.second.shape.size(); i++){
             std::cout << it.second.shape[i];
             if (i < it.second.shape.size() - 1) std::cout << ",";
          }
@@ -313,9 +315,9 @@ namespace SOFIE{
 
       std::cout << "Tensor name: " << it->first << "\t";
       std::cout << "type: " << ConvertTypeToString(it->second.type) << "\t";
-      std::size_t length =1;
+      int length =1;
       std::cout << "shape: [";
-      for (int i = 0; i < it->second.shape.size(); i++){
+      for (size_t i = 0; i < it->second.shape.size(); i++){
          std::cout << it->second.shape[i];
          length *= it->second.shape[i];
          if (i < it->second.shape.size() - 1) std::cout << ",";
@@ -328,15 +330,16 @@ namespace SOFIE{
       }
 
       std::cout << "data: [" << std::endl;
-      switch(it->second.type){
-         case ETensorType::FLOAT : {
-            auto converted_data = std::static_pointer_cast<float>(it->second.data).get();
-            for (int i =0; i < n_print; i++){
-               std::cout << converted_data[i];
-               if (i < n_print - 1) std::cout << " ,";
-            }
-            break;
+      //switch(it->second.type){
+      //   case ETensorType::FLOAT : {
+      if (it->second.type == ETensorType::FLOAT) {
+         auto converted_data = std::static_pointer_cast<float>(it->second.data).get();
+         for (int i =0; i < n_print; i++){
+            std::cout << converted_data[i];
+            if (i < n_print - 1) std::cout << " ,";
          }
+         //   break;
+         // }
       }
       if (ellipsis) std::cout << ", ...";
       std::cout << "]" << std::endl;

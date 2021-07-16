@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <iomanip>
+#include <limits>
 
 namespace TMVA{
 namespace Experimental{
@@ -120,7 +121,7 @@ namespace SOFIE{
             fShapeC = model.GetTensorShape(fNC);
 
             bool broadcast_needed = false;
-            for (int i =0; i < fShapeC.size(); i++){
+            for (size_t i =0; i < fShapeC.size(); i++){
                if (fShapeC[i]!=fShapeY[i]){
                   broadcast_needed = true;
                   break;
