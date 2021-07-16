@@ -333,7 +333,9 @@ Bool_t TX11GLManager::CreateGLPixmap(TGLContext_t &ctx)
 
    // XImage part here.
    XVisualInfo *visInfo = fPimpl->fGLWindows[ctx.fWindowIndex];
-   XImage *testIm = XCreateImage(fPimpl->fDpy, visInfo->visual, visInfo->depth, ZPixmap, 0, 0, ctx.fW, ctx.fH, 32, 0);
+   XImage *testIm = XCreateImage(fPimpl->fDpy, visInfo->visual, visInfo->depth, ZPixmap,
+                                 0, 0, ctx.fW, ctx.fH,
+                                 visInfo->depth <= 8 ? 8 : (visInfo->depth <= 16 ? 16 : 32), 0);
 
    if (testIm) {
       TXImageGuard imGuard(testIm);

@@ -481,7 +481,8 @@ void TGX11TTF::RenderString(Int_t x, Int_t y, ETextMode mode)
    XImage *xim  = 0;
    xim = XCreateImage((Display*)fDisplay, fVisual,
                       depth, ZPixmap, 0, 0, w, h,
-                      depth == 24 ? 32 : (depth==15?16:depth), 0);
+                      depth <= 8 ? 8 : (depth <= 16 ? 16 : 32), 0);
+   //bitmap_pad should be 8, 16 or 32 https://www.x.org/releases/X11R7.5/doc/man/man3/XPutPixel.3.html
    if (!xim) return;
 
    // use malloc since Xlib will use free() in XDestroyImage
@@ -840,4 +841,3 @@ void TGX11TTF::DrawString(Drawable_t xwindow, GContext_t gc, Int_t x, Int_t y,
 }
 
 #endif // R__HAS_XFT
-
