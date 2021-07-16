@@ -111,65 +111,7 @@ namespace TMVA {
       return null_t<F>();
    }
 
-
-
-   template <typename F, typename G, typename H>
-      class compose_binary_t : public std::binary_function<typename G::argument_type,
-      typename H::argument_type,
-      typename F::result_type>
-         {
-         private:
-            const F& f;    // f(g(argG),h(argH))
-            const G& g;
-            const H& h;
-         public:
-         compose_binary_t(const F& _f, const G& _g, const H& _h) : f(_f), g(_g), h(_h) 
-            {
-            }
-
-            typename F::result_type operator()(const typename G::argument_type& argG,
-                                               const typename H::argument_type& argH) const 
-               {
-                  return f(g(argG),h(argH));
-               }
-         };
-
-   template <typename F, typename G, typename H>
-      inline compose_binary_t<F,G,H> compose_binary(const F& _f, const G& _g, const H& _h) {
-      return compose_binary_t<F,G,H>(_f,_g,_h);
-   }
-
-
-
-
-   template <typename F, typename G>
-      class compose_unary_t : public std::unary_function<typename G::argument_type,
-      typename F::result_type>
-         {
-         private:
-            const F& f;    // f(g(argG))
-            const G& g;
-         public:
-         compose_unary_t(const F& _f, const G& _g) : f(_f), g(_g) 
-            {
-            }
-
-            typename F::result_type operator()(const typename G::argument_type&  argG) const 
-               {
-                  return f(g(argG));
-               }
-         };
-
-   template <typename F, typename G>
-      inline compose_unary_t<F,G> compose_unary(const F& _f, const G& _g) {
-      return compose_unary_t<F,G>(_f,_g);
-   }
-
-   // =============== functors =======================
-
-
    // =========================================================
-
 
    class DataSetFactory:public TObject {
 
