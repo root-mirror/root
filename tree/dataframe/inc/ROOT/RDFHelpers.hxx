@@ -26,6 +26,9 @@
 #include <type_traits>
 #include <utility> // std::index_sequence
 #include <vector>
+#include <mutex>
+#include <chrono>
+#include <array>
 
 namespace ROOT {
 namespace Internal {
@@ -180,6 +183,113 @@ RNode AsRNode(NodeType node)
 /// ~~~
 // clang-format on
 void RunGraphs(std::vector<RResultHandle> handles);
+
+
+// clang-format off
+/// RDF progress helper.
+/// This class provides callback functions to RDataFrame, which record event statistics
+/// and print them to the terminal every second.
+/// ProgressHelper::operator()(unsigned int, T&) is thread safe, and can be used as callback in MT mode.
+// clang-format on
+class ProgressHelper {
+public:
+
+  /// Create a progress helper.
+  /// \param increment RDF callbacks are called every `n` events. Pass this `n` here.
+  /// \param maxEvent If known, pass the number of events in the dataset. This will allow for computing completion
+  /// statistics.
+  /// \param progressBarWidth Number of characters the progress bar will occupy.
+  /// \param printInterval Update every stats every `n` seconds.
+  /// \param useShellColors Use shell colour codes to colour the output. Automatically disabled when
+  /// we are not writing to a tty.
+  ProgressHelper(std::size_t increment,
+      std::size_t maxEvent,
+      unsigned int progressBarWidth = 40,
+      unsigned int printInterval = 1,
+      bool useShellColors = true);
+
+  ~ProgressHelper() = default;
+
+  // clang-format off
+  /// Thread-safe callback for RDataFrame.
+  /// It will record elapsed times and event statistics, and print a progress bar every second.
+  /// \param slot Ignored.
+  /// \param value Ignored.
+  // clang-format on
+  template<typename T>
+  void operator()(unsigned int /*slot*/, T& value) { operator()(value); }
+
+  // clang-format off
+  /// Thread-safe callback for RDataFrame.
+  /// It will record elapsed times and event statistics, and print a progress bar every second.
+  /// \param value Ignored.
+  // clang-format on
+  template<typename T>
+  void operator()(T& /*value*/) {
+    using namespace std::chrono;
+    // ***************************************************
+    // Warning: Here, everything needs to be thread safe:
+    // ***************************************************
+    fProcessedEvents += fIncrement;
+
+    // We only print every n seconds.
+    if (duration_cast<seconds>(system_clock::now() - fLastPrintTime) < fPrintInterval) return;
+
+    // ***************************************************
+    // Protected by lock from here:
+    // ***************************************************
+    if (!fPrintMutex.try_lock()) return;
+    std::lock_guard<std::mutex> lockGuard(fPrintMutex, std::adopt_lock);
+
+    std::size_t eventCount;
+    seconds elapsedSeconds;
+    std::tie(eventCount, elapsedSeconds) = RecordEvtCountAndTime();
+
+    if (fIsTTY) std::cout << "\r";
+
+    PrintProgressbar(std::cout, eventCount);
+    PrintStats(std::cout, eventCount, elapsedSeconds);
+
+    if (fIsTTY) std::cout << std::flush;
+    else        std::cout << std::endl;
+  }
+
+
+private:
+  double EvtPerSec() const;
+  std::pair<std::size_t, std::chrono::seconds> RecordEvtCountAndTime();
+  void PrintStats(std::ostream& stream, std::size_t currentEventCount, std::chrono::seconds totalElapsedSeconds) const;
+  void PrintProgressbar(std::ostream& stream, std::size_t currentEventCount) const;
+
+  const std::chrono::time_point<std::chrono::system_clock> fBeginTime = std::chrono::system_clock::now();
+  std::chrono::time_point<std::chrono::system_clock> fLastPrintTime = fBeginTime;
+  std::chrono::seconds fPrintInterval{ 1 };
+
+  std::atomic<std::size_t> fProcessedEvents{ 0 };
+  std::size_t fLastProcessedEvents = 0;
+  const std::size_t fMaxEvents;
+  const std::size_t fIncrement;
+
+  std::array<double, 20> fEventsPerSecondStatistics;
+  std::size_t fEventsPerSecondStatisticsIndex = 0;
+
+  const unsigned int fBarWidth;
+
+  std::mutex fPrintMutex;
+  const bool fIsTTY;
+  const bool fUseShellColours;
+};
+
+
+// clang-format off
+/// Count events in a tree in the file described by `fileUrl`.
+/// \note This will open and close the file, so don't use this in loops.
+///
+/// \param treename Name of the tree.
+/// \param fileUrl Path or URL to a ROOT file.
+/// \return Event counts. Returns 0 in case of errors.
+// clang-format on
+std::size_t RetrieveNEvents(const char* treename, const char* fileUrl);
 
 } // namespace RDF
 } // namespace ROOT
