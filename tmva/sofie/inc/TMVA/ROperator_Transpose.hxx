@@ -4,9 +4,7 @@
 #include "TMVA/SOFIE_common.hxx"
 #include "TMVA/ROperator.hxx"
 #include "TMVA/RModel.hxx"
-
 #include <sstream>
-
 namespace TMVA{
 namespace Experimental{
 namespace SOFIE{
@@ -28,10 +26,11 @@ private:
 
 public:
 
-   ROperator_Transpose() = delete;
+   ROperator_Transpose(){}
    ROperator_Transpose(std::vector<int_t> attr_perm, std::string nameData, std::string nameOutput):
       fAttrPerm(attr_perm), fNData(UTILITY::Clean_name(nameData)), fNOutput(UTILITY::Clean_name(nameOutput)) {
    }
+
 
    ROperator_Transpose(std::string nameData, std::string nameOutput):
       fNData(UTILITY::Clean_name(nameData)), fNOutput(UTILITY::Clean_name(nameOutput)) {
@@ -108,7 +107,6 @@ public:
       out << "\t}\n";
       return out.str();
    }
-
 
 };
 

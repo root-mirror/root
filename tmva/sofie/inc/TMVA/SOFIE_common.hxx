@@ -2,13 +2,14 @@
 #define TMVA_SOFIE_SOFIE_COMMON
 
 #include "TMVA/RTensor.hxx"
-
+#include "TMVA/Types.h"
 #include <type_traits>
 #include <cstdint>
 #include <string>
 #include <vector>
 #include <memory>
 #include <regex>
+
 
 namespace TMVA{
 namespace Experimental{
@@ -48,9 +49,32 @@ std::size_t ConvertShapeToLength(std::vector<size_t> shape);
 
 struct InitializedTensor{
    ETensorType type;
+   Int_t fSize;
    std::vector<std::size_t> shape;
-   std::shared_ptr<void> data;
-   //void* data;
+   std::shared_ptr<void> data;     //! Transient
+   char* pData=nullptr;           //[fSize] Persistent
+   InitializedTensor(){}
+   InitializedTensor(ETensorType ftype,std::vector<std::size_t> fshape,std::shared_ptr<void> fdata):
+    type(ftype),shape(fshape),data(fdata),pData((char*)fdata.get())
+   {
+      fSize=1;
+      for(auto item:shape){
+         fSize*=(Int_t)item;
+      }
+   }
+   void convertData(){
+     switch(type){
+       case ETensorType::FLOAT: {
+      std::shared_ptr<void> tData(malloc(fSize * sizeof(float)), free);
+      std::memcpy(tData.get(), pData,fSize * sizeof(float));
+      data=tData;
+      break;
+      }
+      default: {
+          throw std::runtime_error("TMVA::SOFIE doesn't yet supports serialising data-type " + ConvertTypeToString(type));
+      }
+      }
+     } 
 };
 
 template <typename T>
@@ -82,8 +106,6 @@ extern "C" void sgemm_(const char * transa, const char * transb, const int * m, 
                        const float * alpha, const float * A, const int * lda, const float * B, const int * ldb,
                        const float * beta, float * C, const int * ldc);
 }//BLAS
-
-
 }//SOFIE
 }//Experimental
 }//TMVA

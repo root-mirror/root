@@ -355,6 +355,18 @@ namespace SOFIE{
       f << fGC;
       f.close();
    }
+   
+   void RModel::Streamer(TBuffer &R__b){
+       if (R__b.IsReading()) {
+           RModel::Class()->ReadBuffer(R__b, this);
+           for(auto i=RModel::fInitializedTensors.begin(); i!=RModel::fInitializedTensors.end();++i){
+               i->second.convertData();
+           }
+       }
+       else {
+          RModel::Class()->WriteBuffer(R__b, this);
+       }
+   }
 
 }//SOFIE
 }//Experimental

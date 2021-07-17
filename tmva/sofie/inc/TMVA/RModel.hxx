@@ -10,15 +10,15 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
-
 #include "TMVA/SOFIE_common.hxx"
 #include "TMVA/ROperator.hxx"
+#include "TBuffer.h"
 
 namespace TMVA{
 namespace Experimental{
 namespace SOFIE{
 
-class RModel{
+class RModel: public TObject{
 
 private:
 
@@ -110,7 +110,7 @@ public:
       }
       */
    }
-
+   ClassDef(RModel,1);
 };
 
 }//SOFIE

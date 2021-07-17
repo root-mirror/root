@@ -4,7 +4,6 @@
 #include "TMVA/SOFIE_common.hxx"
 #include "TMVA/ROperator.hxx"
 #include "TMVA/RModel.hxx"
-
 #include <sstream>
 
 namespace TMVA{
@@ -22,9 +21,10 @@ private:
    std::vector<size_t> fShape;
 
 public:
-   ROperator_Relu() = delete;
+   ROperator_Relu(){}
    ROperator_Relu(std::string nameX, std::string nameY):
       fNX(UTILITY::Clean_name(nameX)), fNY(UTILITY::Clean_name(nameY)){}
+
 
    std::vector<ETensorType> TypeInference(std::vector<ETensorType> input){
       return input;
@@ -60,6 +60,7 @@ public:
       return out.str();
    }
 
+
 };
 
 }//SOFIE
@@ -67,4 +68,4 @@ public:
 }//TMVA
 
 
-#endif //TMVA_SOFIE_ROPERATOR_TRANSPOSE
+#endif //TMVA_SOFIE_ROPERATOR_RELU

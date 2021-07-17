@@ -5,7 +5,6 @@
 #include "TMVA/SOFIE_common.hxx"
 #include "TMVA/ROperator.hxx"
 #include "TMVA/RModel.hxx"
-
 #include <sstream>
 #include <algorithm>
 #include <iterator>
@@ -39,7 +38,7 @@ namespace SOFIE{
 
    public:
 
-      ROperator_Gemm() = delete;
+      ROperator_Gemm(){}
       ROperator_Gemm(float alpha, float beta, int_t transA, int_t transB, std::string nameA, std::string nameB, std::string nameY):
          fAttrAlpha(alpha), fAttrBeta(beta), fAttrTransA(transA), fAttrTransB(transB), fNA(UTILITY::Clean_name(nameA)),
          fNB(UTILITY::Clean_name(nameB)), fNY(UTILITY::Clean_name(nameY)) {
@@ -61,6 +60,7 @@ namespace SOFIE{
             throw std::runtime_error("TMVA SOFIE Encountered unsupported type parsing a gemm operator");
          }
       }
+
 
       std::vector<ETensorType> TypeInference(std::vector<ETensorType> input){
          ETensorType out = input[0];
@@ -185,9 +185,6 @@ namespace SOFIE{
           return out.str();
 
          }
-
-
-
    };
 
 
