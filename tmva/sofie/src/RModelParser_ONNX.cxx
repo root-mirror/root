@@ -20,7 +20,7 @@ std::unique_ptr<ROperator> make_ROperator(size_t idx, const onnx::GraphProto& gr
    }
 }
 
-std::unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type){
+std::unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodeproto, const onnx::GraphProto& /*graphproto*/, std::unordered_map<std::string, ETensorType>& tensor_type){
 
    ETensorType input_type;
 
@@ -57,11 +57,10 @@ std::unique_ptr<ROperator> make_ROperator_Transpose(const onnx::NodeProto& nodep
       tensor_type[nodeproto.output(0)] = output_type;
    }
 
-
-   return std::move(op);
+   return op;
 }
 
-std::unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type){
+std::unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto, const onnx::GraphProto& /*graphproto */, std::unordered_map<std::string, ETensorType>& tensor_type){
 
    ETensorType input_type;
 
@@ -90,10 +89,10 @@ std::unique_ptr<ROperator> make_ROperator_Relu(const onnx::NodeProto& nodeproto,
       tensor_type[nodeproto.output(0)] = output_type;
    }
 
-   return std::move(op);
+   return op;
 }
 
-std::unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, const onnx::GraphProto& graphproto, std::unordered_map<std::string, ETensorType>& tensor_type){
+std::unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto, const onnx::GraphProto& /* graphproto */, std::unordered_map<std::string, ETensorType>& tensor_type){
 
    ETensorType input_type;
 
@@ -148,8 +147,7 @@ std::unique_ptr<ROperator> make_ROperator_Gemm(const onnx::NodeProto& nodeproto,
       tensor_type[nodeproto.output(0)] = output_type;
    }
 
-
-   return std::move(op);
+   return op;
 }
 
 } //INTERNAL
@@ -161,10 +159,10 @@ RModel RModelParser_ONNX::Parse(std::string filename){
    #ifdef _WIN32
       sep = '\\';
    #endif
-   size_t i = filename.rfind(sep, filename.length());
+   size_t isep = filename.rfind(sep, filename.length());
    std::string modelname;
-   if (i != std::string::npos){
-      filename = (filename.substr(i+1, filename.length() - i));
+   if (isep != std::string::npos){
+      filename = (filename.substr(isep+1, filename.length() - isep));
    }
 
 
@@ -214,14 +212,14 @@ RModel RModelParser_ONNX::Parse(std::string filename){
       std::vector<Dim> fShape;
       bool existParam = false;
       if (!valueinfoproto.type().tensor_type().has_shape()) throw std::runtime_error("TMVA::SOFIE datanode with no shape restrictions is not supported yet");
-      for (int i = 0; i < valueinfoproto.type().tensor_type().shape().dim_size(); i++){
+      for (int j = 0; j < valueinfoproto.type().tensor_type().shape().dim_size(); j++){
          Dim dim;
-         if (valueinfoproto.type().tensor_type().shape().dim(i).value_case() == onnx::TensorShapeProto_Dimension::ValueCase::kDimValue){
-            dim.dim = valueinfoproto.type().tensor_type().shape().dim(i).dim_value();
-         }else if (valueinfoproto.type().tensor_type().shape().dim(i).value_case() == onnx::TensorShapeProto_Dimension::ValueCase::kDimParam){
+         if (valueinfoproto.type().tensor_type().shape().dim(j).value_case() == onnx::TensorShapeProto_Dimension::ValueCase::kDimValue){
+            dim.dim = valueinfoproto.type().tensor_type().shape().dim(j).dim_value();
+         }else if (valueinfoproto.type().tensor_type().shape().dim(j).value_case() == onnx::TensorShapeProto_Dimension::ValueCase::kDimParam){
             dim.isParam = true;
             existParam = true;
-            dim.param = valueinfoproto.type().tensor_type().shape().dim(i).dim_param();
+            dim.param = valueinfoproto.type().tensor_type().shape().dim(j).dim_param();
          }else{
             throw std::runtime_error("TMVA::SOFIE ONNX file error: Valueinfoproto " + input_name + " has neither dim_value nor dim_param! \n");
          }
@@ -235,8 +233,8 @@ RModel RModelParser_ONNX::Parse(std::string filename){
 
       if (!existParam){
          std::vector<size_t> fShape_sizet;
-         for (auto& i: fShape){
-            fShape_sizet.push_back(i.dim);
+         for (auto& j: fShape){
+            fShape_sizet.push_back(j.dim);
          }
 
          rmodel.AddInputTensorInfo(input_name, type, fShape_sizet);
@@ -250,9 +248,9 @@ RModel RModelParser_ONNX::Parse(std::string filename){
       onnx::TensorProto* tensorproto = const_cast<onnx::TensorProto*>(&graph.initializer(i));
       std::vector<std::size_t> fShape;
       std::size_t fLength = 1;
-      for (int i = 0; i < tensorproto->dims_size(); i++){
-         fShape.push_back(tensorproto->dims(i));
-         fLength *= tensorproto->dims(i);
+      for (int j = 0; j < tensorproto->dims_size(); j++){
+         fShape.push_back(tensorproto->dims(j));
+         fLength *= tensorproto->dims(j);
       }
 
       std::string input_name = graph.initializer(i).name();
