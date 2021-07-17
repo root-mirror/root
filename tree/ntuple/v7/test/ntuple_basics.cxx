@@ -359,6 +359,18 @@ TEST(RNTupleModel, CollectionFieldDescriptions)
    EXPECT_EQ(std::string("muons after basic selection"), muon_desc.GetFieldDescription());
 }
 
+TEST(RNTupleModel, GetField)
+{
+   auto m = RNTupleModel::Create();
+   m->MakeField<int>("x");
+   m->MakeField<CustomStruct>("cs");
+   EXPECT_EQ(m->GetField("x")->GetName(), "x");
+   EXPECT_EQ(m->GetField("x")->GetType(), "std::int32_t");
+   EXPECT_EQ(m->GetField("cs.v1")->GetName(), "v1");
+   EXPECT_EQ(m->GetField("cs.v1")->GetType(), "std::vector<float>");
+   EXPECT_EQ(m->GetField("nonexistent"), nullptr);
+}
+
 TEST(RNTuple, EmptyString)
 {
    // empty storage string

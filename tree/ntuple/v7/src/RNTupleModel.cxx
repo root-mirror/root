@@ -77,6 +77,35 @@ std::shared_ptr<ROOT::Experimental::RCollectionNTupleWriter> ROOT::Experimental:
    return collectionNTuple;
 }
 
+ROOT::Experimental::Detail::RFieldBase *ROOT::Experimental::RNTupleModel::GetField(std::string_view fieldName)
+{
+   auto split_on_dot = [](std::string_view in) {
+      std::vector<std::string_view> splits;
+      for (std::size_t pos = in.find('.'); pos != std::string_view::npos; pos = in.find('.')) {
+         splits.push_back(in.substr(0, pos));
+         in.remove_prefix(pos + 1);
+      }
+      if (in.size() > 0)
+         splits.emplace_back(in);
+
+      return splits;
+   };
+
+   auto *field = static_cast<ROOT::Experimental::Detail::RFieldBase *>(fFieldZero.get());
+   for (auto subfieldName : split_on_dot(fieldName)) {
+      const auto it =
+         std::find_if(field->begin(), field->end(), [&](const auto &f) { return f.GetName() == subfieldName; });
+      if (it != field->end()) {
+         field = std::addressof(*it);
+      } else {
+         field = nullptr;
+         break;
+      }
+   }
+
+   return field;
+}
+
 std::unique_ptr<ROOT::Experimental::REntry> ROOT::Experimental::RNTupleModel::CreateEntry()
 {
    auto entry = std::make_unique<REntry>();
