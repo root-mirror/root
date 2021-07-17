@@ -5,9 +5,13 @@ from DistRDF import Proxy
 from DistRDF.Backends import Base
 
 
-def rangesToTuples(ranges):
-    """Convert range objects to tuples with the shape (start, end)"""
-    return list(map(lambda r: (r.start, r.end), ranges))
+def emptysourceranges_to_tuples(ranges):
+    """Convert EmptySourceRange objects to tuples with the shape (start, end)"""
+    return [(r.start, r.end) for r in ranges]
+
+def treeranges_to_tuples(ranges):
+    """Convert TreeRange objects to tuples with the shape (start, end, filelist)"""
+    return [(r.globalstart, r.globalend, r.localstarts, r.localends, r.filelist) for r in ranges]
 
 
 class BaseBackendInitTest(unittest.TestCase):
@@ -92,10 +96,10 @@ class DistRDataFrameInterface(unittest.TestCase):
             """getattr"""
             return getattr(self.headproxy, attr)
 
-    def get_ranges_from_rdataframe(self, rdf):
+    def get_ranges_from_empty_rdataframe(self, rdf):
         """
-        Common test setup to create ranges out of an RDataFrame instance based
-        on its parameters.
+        Common test setup to create ranges out of an empty source based
+        RDataFrame instance.
         """
         headnode = rdf.headnode
         headnode.npartitions = 2
@@ -108,7 +112,26 @@ class DistRDataFrameInterface(unittest.TestCase):
         # the RDataFrame head node
         hist.GetValue()
 
-        ranges = rangesToTuples(headnode.build_ranges())
+        ranges = emptysourceranges_to_tuples(headnode.build_ranges())
+        return ranges
+
+    def get_ranges_from_tree_rdataframe(self, rdf):
+        """
+        Common test setup to create ranges out of an TTree based RDataFrame
+        instance.
+        """
+        headnode = rdf.headnode
+        headnode.npartitions = 2
+
+        hist = rdf.Define("b1", "tdfentry_")\
+                  .Histo1D("b1")
+
+        # Trigger call to `execute` where number of entries, treename
+        # and input files are extracted from the arguments passed to
+        # the RDataFrame head node
+        hist.GetValue()
+
+        ranges = treeranges_to_tuples(headnode.build_ranges())
         return ranges
 
     def test_empty_rdataframe_with_number_of_entries(self):
@@ -119,7 +142,7 @@ class DistRDataFrameInterface(unittest.TestCase):
         """
         rdf = DistRDataFrameInterface.TestDataFrame(10)
 
-        ranges = self.get_ranges_from_rdataframe(rdf)
+        ranges = self.get_ranges_from_empty_rdataframe(rdf)
         ranges_reqd = [(0, 5), (5, 10)]
         self.assertListEqual(ranges, ranges_reqd)
 
@@ -133,8 +156,9 @@ class DistRDataFrameInterface(unittest.TestCase):
         filename = "2clusters.root"
         rdf = DistRDataFrameInterface.TestDataFrame(treename, filename)
 
-        ranges = self.get_ranges_from_rdataframe(rdf)
-        ranges_reqd = [(0, 777), (777, 1000)]
+        ranges = self.get_ranges_from_tree_rdataframe(rdf)
+        ranges_reqd = [(0, 777, [0], [777], ["2clusters.root"]),
+                       (777, 1000, [777], [1000], ["2clusters.root"])]
 
         self.assertListEqual(ranges, ranges_reqd)
 
@@ -148,8 +172,9 @@ class DistRDataFrameInterface(unittest.TestCase):
         filename = "2cluste*.root"
         rdf = DistRDataFrameInterface.TestDataFrame(treename, filename)
 
-        ranges = self.get_ranges_from_rdataframe(rdf)
-        ranges_reqd = [(0, 777), (777, 1000)]
+        ranges = self.get_ranges_from_tree_rdataframe(rdf)
+        ranges_reqd = [(0, 777, [0], [777], ["2clusters.root"]),
+                       (777, 1000, [777], [1000], ["2clusters.root"])]
 
         self.assertListEqual(ranges, ranges_reqd)
 
@@ -163,8 +188,9 @@ class DistRDataFrameInterface(unittest.TestCase):
         filelist = ["2clusters.root"]
         rdf = DistRDataFrameInterface.TestDataFrame(treename, filelist)
 
-        ranges = self.get_ranges_from_rdataframe(rdf)
-        ranges_reqd = [(0, 777), (777, 1000)]
+        ranges = self.get_ranges_from_tree_rdataframe(rdf)
+        ranges_reqd = [(0, 777, [0], [777], ["2clusters.root"]),
+                       (777, 1000, [777], [1000], ["2clusters.root"])]
 
         self.assertListEqual(ranges, ranges_reqd)
 
@@ -199,7 +225,10 @@ class DistRDataFrameInterface(unittest.TestCase):
 
         rdf = DistRDataFrameInterface.TestDataFrame(treename, filelist)
 
-        ranges = self.get_ranges_from_rdataframe(rdf)
-        ranges_reqd = [(0, 1250), (250, 1000)]
+        ranges = self.get_ranges_from_tree_rdataframe(rdf)
+        ranges_reqd = [
+            (0, 1250, [0, 0], [1000, 250], ["2clusters.root", "4clusters.root"]),
+            (250, 1000, [250], [1000], ["4clusters.root"]),
+        ]
 
         self.assertListEqual(ranges, ranges_reqd)

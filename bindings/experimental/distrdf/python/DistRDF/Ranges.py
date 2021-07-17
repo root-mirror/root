@@ -1,3 +1,4 @@
+import itertools
 import logging
 
 from functools import total_ordering
@@ -54,11 +55,13 @@ class TreeRange(object):
     friend_info (ROOT.Internal.TreeUtils.RFriendInfo): Information about friend trees.
     """
 
-    def __init__(self, rangeid, start, end, filelist, friend_info):
+    def __init__(self, rangeid, globalstart, globalend, localstarts, localends, filelist, friend_info):
         """set attributes"""
         self.id = rangeid
-        self.start = start
-        self.end = end
+        self.globalstart = globalstart
+        self.globalend = globalend
+        self.localstarts = localstarts
+        self.localends = localends
         self.filelist = filelist
         self.friend_info = friend_info
 
@@ -224,7 +227,7 @@ def get_clusters(treename, filelist):
 
         while start < entries:
             end = it()
-            clusters.append(ChainCluster(start + offset, end + offset, offset,
+            clusters.append(ChainCluster(start, end, offset,
                                     FileAndIndex(filename, fileindex)))
             start = end
 
@@ -282,7 +285,7 @@ def get_balanced_ranges(nentries, npartitions):
     return ranges
 
 
-def get_clustered_ranges(clustersinfiles, npartitions, treename, friend_info):
+def get_clustered_ranges(clustersinfiles, npartitions, friendinfo):
     """
     Builds ``TreeRange`` objects taking into account the clusters of the
     dataset. Each range will represent the entries processed within a single
@@ -296,7 +299,7 @@ def get_clustered_ranges(clustersinfiles, npartitions, treename, friend_info):
 
         treename (str): Name of the tree.
 
-        friend_info (ROOT.Internal.TreeUtils.RFriendInfo): Information about friend
+        friendinfo (ROOT.Internal.TreeUtils.RFriendInfo): Information about friend
             trees.
 
     Returns:
@@ -311,92 +314,105 @@ def get_clustered_ranges(clustersinfiles, npartitions, treename, friend_info):
                     end=1500,
                     filelist=['filename_1.root',
                               'filename_2.root'],
-                    friend_info=None),
+                    friendinfo=None),
                 TreeRange(start=1500,
                     end=3000,
                     filelist=['filename_2..root',
                               'filename_3.root'],
-                    friend_info=None)
+                    friendinfo=None)
             ]
 
     """
 
-    """
-    This list comprehension builds ``TreeRange`` tuples with the following
-    elements:
-    1. ``start``: The minimum entry among all the clusters considered in a
-        given partition. The offset of the first cluster of the list is
-        subtracted. This is useful to keep the reference of the range with
-        respect to the current files (see below).
-    2. ``end``: The maximum entry among all the clusters considered in a
-        given partition. The offset of the first cluster of the list is
-        subtracted. This is useful to keep the reference of the range with
-        respect to the current files (see below).
-    3. ``filelist``: The list of files that are span between entries
-        ``start`` and ``end``::
-            Filelist: [file_1,file_2,file_3,file_4]
-            Clustered range: [0,150]
-            file_1 holds entries [0, 100]
-            file_2 holds entries [101, 200]
-            Then the clustered range should open [file_1, file_2]
-            Clustered range: [150,350]
-            file_3 holds entris [201, 300]
-            file_4 holds entries [301, 400]
-            Then the clustered range should open [file_2, file_3, file_4]
-        Each ``cluster`` namedtuple has a ``fileandindex`` namedtuple. The
-        second element of this tuple corresponds to the index of the file in
-        the input `TChain`. This way all files can be uniquely identified,
-        even if there is some repetition (e.g. when building a TChain with
-        multiple instances of the same file). The algorithm to retrieve the
-        correct files for each range takes the unique filenames from the list
-        of clusters and sorts them by their index to keep the original order.
-        In each file only the clusters needed to process the clustered range
-        will be read.
-    4. ``friend_info``: Information about friend trees.
-    In each range, the offset of the first file is always subtracted to the
-    ``start`` and ``end`` entries. This is needed to maintain a reference of
-    the entries of the range with respect to the list of files that hold
-    them. For example, given the following files::
-        tree10000entries10clusters.root --> 10000 entries, 10 clusters
-        tree20000entries10clusters.root --> 20000 entries, 10 clusters
-        tree30000entries10clusters.root --> 30000 entries, 10 clusters
-    Building 2 ranges will lead to the following tuples::
-        TreeRange(start=0,
-                end=20000,
-                filelist=['tree10000entries10clusters.root',
-                        'tree20000entries10clusters.root'],
-                friend_info=None)
-        TreeRange(start=10000,
-                end=50000,
-                filelist=['tree20000entries10clusters.root',
-                        'tree30000entries10clusters.root'],
-                friend_info=None)
-    The first ``TreeRange`` will read the first 10000 entries from the first
-    file, then switch to the second file and read the first 10000 entries.
-    The second ``TreeRange`` will start from entry number 10000 of the second
-    file up until the end of that file (entry number 20000), then switch to
-    the third file and read the whole 30000 entries there.
-    """
+    clustersbypartition = _n_even_chunks(clustersinfiles, npartitions)
 
-    # TODO: Make this passage more clear. Maybe split the comprehension in more
-    # parts.
-    clustered_ranges = [
-        TreeRange(
-            rangeid,  # type: int
-            min(clusters).start - clusters[0].offset,  # type: int
-            max(clusters).end - clusters[0].offset,  # type: int
-            [
-                filetuple.filename
-                for filetuple in sorted(set([
-                    cluster.filetuple for cluster in clusters
-                ]), key=lambda curtuple: curtuple.fileindex)
-            ],  # type: list[str]
-            friend_info  # type: ROOT.Internal.TreeUtils.RFriendInfo
-        )  # type: DistRDF.Ranges.TreeRange
-        for rangeid, clusters in enumerate(_n_even_chunks(clustersinfiles, npartitions))
-    ]
 
-    logger.debug("Created following clustered ranges:\n%s",
-                 "\n\n".join(map(str, clustered_ranges)))
+    clustered_ranges = []
+    rangeid = 0 # Keep track of the current range id
+    for partition in clustersbypartition:
+
+        # One partition looks like:
+        #     [
+        #         (start_0_0, end_0_0, offset_0, (filename_0, 0)),
+        #         (start_0_1, end_0_1, offset_0, (filename_0, 0)),
+        #         ...,
+        #         (start_1_0, end_1_0, offset_1, (filename_1, 1)),
+        #         (start_1_1, end_1_1, offset_1, (filename_1, 1)),
+        #         ...,
+        #         (start_n_0, end_n_0, offset_n, (filename_n, n)),
+        #         (start_n_1, end_n_1, offset_n, (filename_n, n)),
+        #         ...
+        #     ],
+        # We need to retrieve:
+        # 1. The `start` and `end` entries "global" to the chain made with the
+        #    files of this partition.
+        # 2. The `starts` and `ends` lists, the elements of which are start and
+        #    end entries of a set of clusters in a certain file of the filelist
+        #    of this partition.
+
+        # Let's start with the start and end entries local to each file. We 
+        # group the current partition by the fileindex, so that we can process
+        # all the clusters belonging to the same file together.
+        localstarts = []
+        localends = []
+        filelist = []
+
+        for _, clustersinsamefileiter in itertools.groupby(partition, lambda cluster: cluster.filetuple.fileindex):
+            # Grab a list of clusters belonging to the same file to give as
+            # argument to min and max
+            clustersinsamefilelist = list(clustersinsamefileiter)
+
+            localstarts.append(min(clustersinsamefilelist).start)
+            localends.append(max(clustersinsamefilelist).end)
+            filelist.append(clustersinsamefilelist[0].filetuple.filename)
+
+        # The global start and end entries are retrieved as follows:
+        # - Take as start start the `start` attribute of the minimum
+        #   `ChainCluster` object in the current partition
+        # - Take as end the `end` attribute of the maximum `ChainCluster` object
+        #   in the current partition
+        # - Both values need to be shifted by the respective `offset` attribute
+        #   in the same `ChainCluster` instance
+        # - Then to make them "global with respect to the chain of files in the
+        #   current partition", we need to subtract the offset of the first
+        #   cluster in the current partition. That is equal to the amount of
+        #   entries in the chain up to the beginning of the file that cluster
+        #   belongs to. This is needed to maintain a reference of the entries of
+        #   the range with respect to the list of files that hold them. For
+        #   example, given the following files:
+        #         tree10000entries10clusters.root --> 10000 entries, 10 clusters
+        #         tree20000entries10clusters.root --> 20000 entries, 10 clusters
+        #         tree30000entries10clusters.root --> 30000 entries, 10 clusters
+        #   Building 2 ranges will lead to the following tuples::
+        #         TreeRange(globalstart=0,
+        #                 globalend=20000,
+        #                 localstarts = [0, 0],
+        #                 localends = [10000, 10000],
+        #                 filelist=['tree10000entries10clusters.root',
+        #                         'tree20000entries10clusters.root'],
+        #                 friendinfo=None)
+        #         TreeRange(globalstart=10000,
+        #                 globalend=50000,
+        #                 localstarts = [10000, 0],
+        #                 localends = [20000, 30000],
+        #                 filelist=['tree20000entries10clusters.root',
+        #                         'tree30000entries10clusters.root'],
+        #                 friendinfo=None)
+        #   The first `TreeRange` will read the first 10000 entries from the
+        #   first file, then switch to the second file and read the first 10000
+        #   entries. The second `TreeRange` will start from entry number 10000
+        #   of the second file up until the end of that file (entry number
+        #   20000), then switch to the third file and read the whole 30000
+        #   entries there.
+        firstclusterinpartition = partition[0]
+        partitionoffset = firstclusterinpartition.offset
+
+        lastclusterinpartition = partition[-1]
+
+        globalstart = firstclusterinpartition.start # + firstclusterinpartition.offset - partitionoffset
+        globalend = lastclusterinpartition.end + lastclusterinpartition.offset - partitionoffset
+
+        clustered_ranges.append(TreeRange(rangeid, globalstart, globalend, localstarts, localends, filelist, friendinfo))
+        rangeid += 1
 
     return clustered_ranges

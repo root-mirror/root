@@ -319,4 +319,4 @@ class TreeHeadNode(Node.Node):
 
         logger.debug("%s clusters will be split along %s partitions.",
                      numclusters, self.npartitions)
-        return Ranges.get_clustered_ranges(clustersinfiles, self.npartitions, self.treename, self.friendinfo)
+        return Ranges.get_clustered_ranges(clustersinfiles, self.npartitions, self.friendinfo)

@@ -72,7 +72,7 @@ class ComputationGraphGenerator(object):
         # Prune the graph to check user references
         self.headnode.graph_prune()
 
-        def generate_computation_graph(node_cpp, range_id, node_py=None, rdf_range=None):
+        def generate_computation_graph(node_cpp, range_id, node_py=None):
             """
             The callable that recurses through the DistRDF nodes and executes
             operations from a starting (PyROOT) RDF node.
@@ -84,9 +84,6 @@ class ComputationGraphGenerator(object):
                     file name to a partial Snapshot if it was requested.
                 node_py (optional): The current state's DistRDF node. If `None`,
                     it takes the value of `self.headnode`.
-                rdf_range (optional): The current range of the RDataFrame to run
-                    the analysis on. This is an helper parameter for the
-                    analysis in a distributed environment.
 
             Returns:
                 list: A list of :obj:`ROOT.RResultPtr` objects in DFS order of
@@ -94,10 +91,7 @@ class ComputationGraphGenerator(object):
             """
             return_vals = []
 
-            if rdf_range:
-                parent_node = node_cpp.Range(rdf_range.start, rdf_range.end)
-            else:
-                parent_node = node_cpp
+            parent_node = node_cpp
 
             if not node_py:
                 # In the first recursive state, just set the
@@ -133,7 +127,7 @@ class ComputationGraphGenerator(object):
                     # Collect all action nodes in order to return them
                     # If it's a distributed snapshot return only path to
                     # the file with the partial snapshot
-                    if rdf_range and operation.name == "Snapshot":
+                    if operation.name == "Snapshot":
                         return_vals.append([path_with_range])
                     else:
                         return_vals.append(pyroot_node)
@@ -141,7 +135,7 @@ class ComputationGraphGenerator(object):
             for n in node_py.children:
                 # Recurse through children and get their output
                 prev_vals = generate_computation_graph(
-                    parent_node, range_id, node_py=n, rdf_range=rdf_range)
+                    parent_node, range_id, node_py=n)
 
                 # Attach the output of the children node
                 return_vals.extend(prev_vals)
