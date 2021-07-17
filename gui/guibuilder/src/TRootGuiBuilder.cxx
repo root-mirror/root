@@ -70,6 +70,7 @@
 
   - Press Ctrl-Double-Click to start/stop edit mode
   - Press Double-Click to activate quick edit action (defined in root.mimes)
+  - Warning: some shortcuts might not work if NumLock is enabled
 
 ### Selection, grabbing, dropping
 
