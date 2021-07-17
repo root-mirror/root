@@ -513,6 +513,61 @@ void TEntryList::Add(const TEntryList *elist)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// \brief Add a sub entry list to the current list.
+/// \param[in] elist an entry list that should be added as a sub list of this list.
+///
+/// This function is specifically targeted at situations where there is a global
+/// TEntryList that should hold a bunch of sub TEntryList objects. For example,
+/// if one wants to create a one to one mapping between the sub entry lists and
+/// the trees in the files that make a TChain. Note that in such cases this
+/// configuration of the entry list should be used in pair with the option \p "sync"
+/// of the function TChain::SetEntryList
+///
+/// ~~~{.cpp}
+/// // Create a TChain with two files. Each contains a tree with 20 entries
+/// TChain chain{"entries"};
+/// chain.Add("file_20entries_1.root");
+/// chain.Add("file_20entries_2.root");
+///
+/// // Create a global, empty TEntryList. 
+/// TEntryList elists;
+/// // Create two entry lists. Each one will be referring to a different tree in the chain
+/// TEntryList elist1{"","","entries","file_20entries_1.root"};
+/// TEntryList elist2{"","","entries","file_20entries_2.root"};
+///
+/// // Select the first ten entries from the first tree and all entries from the second
+/// for(auto entry = 0; entry < 10; entry++){
+///     elist1.Enter(entry);
+/// }
+/// for(auto entry = 0; entry < 20; entry++){
+///     elist2.Enter(entry);
+/// }
+///
+/// // Add sub entry lists to the global list
+/// elists.AddSubList(elist1);
+/// elists.AddSubList(elist2);
+///
+/// // Set the entry list in the chain. Note the usage of option "sync"
+/// chain.SetEntryList(&elists, "sync"); 
+/// ~~~
+
+void TEntryList::AddSubList(const TEntryList &elist){
+
+   // This was the only way I could find to avoid errors like
+   // Error in <TList::Delete>: A list is accessing an object (0x7ffc67ad3540) already deleted (list name = TList)
+   // at runtime. Preferrably we wouldn't need to copy the argument elist into
+   // a new TEntryList inside this function
+   auto elistcopy = new TEntryList{elist};
+
+   fN += elistcopy->fN;
+
+   if (!fLists){
+      fLists = new TList();
+   }
+   fLists->Add(elistcopy);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// - When tree = 0, returns from the current list
 /// - When tree != 0, finds the list, corresponding to this tree
 /// - When tree is a chain, the entry is assumed to be global index and the local

@@ -28,6 +28,7 @@ the trees in the chain.
 
 #include <iostream>
 #include <cfloat>
+#include <sstream>
 
 #include "TBranch.h"
 #include "TBrowser.h"
@@ -2644,13 +2645,27 @@ void TChain::SetDirectory(TDirectory* dir)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Set the input entry list (processing the entries of the chain will then be
-/// limited to the entries in the list).
+/// \brief Set the input entry list (processing the entries of the chain will
+///        then be limited to the entries in the list).
+///
+/// \param[in] elist The entry list to be assigned to this chain.
+/// \param[in] opt An option string. Possible values are:
+///   - "" (default): both the file names of the chain elements and the file
+///     names of the TEntryList sublists are expanded to full path name.
+///   - "ne": the file names are taken as they are and not expanded
+///   - "sync": the function assumes the argument \p elist has exactly one sub
+///     entry list per file in the chain. Each sub entry list must have exactly
+///     the same treename and filename as the corresponding tree in the chain.
+/// \throws std::runtime_error If option "sync" was chosen and either:
+///           - \p elist doesn't have sub entry lists.
+///           - the number of sub entry lists in \p elist is different than the
+///             number of trees in the chain.
+///           - any of the sub entry lists in \p elist doesn't correspond to the
+///             tree of the chain with the same index (i.e. it doesn't share the
+///             same tree name and file name).
+///
 /// This function finds correspondence between the sub-lists of the TEntryList
 /// and the trees of the TChain.
-/// By default (opt=""), both the file names of the chain elements and
-/// the file names of the TEntryList sublists are expanded to full path name.
-/// If opt = "ne", the file names are taken as they are and not expanded
 
 void TChain::SetEntryList(TEntryList *elist, Option_t *opt)
 {
@@ -2692,11 +2707,53 @@ void TChain::SetEntryList(TEntryList *elist, Option_t *opt)
    TString treename, filename;
 
    TEntryList *templist = 0;
+
+   const auto *subentrylists = elist->GetLists();
+   if(strcmp(opt, "sync") == 0){
+      if(!subentrylists){
+         std::ostringstream err;
+         err << "In 'TChain::SetEntryList': ";
+         err << "the input TEntryList doesn't have sub entry lists. Please make sure too add them through ";
+         err << "TEntryList::AddSubList";
+         throw std::runtime_error(err.str());
+      }
+      const auto nsubelists = subentrylists->GetEntries();
+      if(nsubelists != ne){
+         std::ostringstream err;
+         err << "In 'TChain::SetEntryList': ";
+         err << "the number of sub entry lists in the input TEntryList (" << nsubelists << ") is not equal to the number ";
+         err << "of files in the chain (" << ne << ")";
+         throw std::runtime_error(err.str());
+      }
+   }
+
    for (Int_t ie = 0; ie<ne; ie++){
       auto chainElement = (TChainElement*)fFiles->UncheckedAt(ie);
       treename = chainElement->GetName();
       filename = chainElement->GetTitle();
-      templist = elist->GetEntryList(treename, filename, opt);
+
+      if(strcmp(opt, "sync") == 0){
+         // If the user asked for "sync" option, there should be a 1:1 mapping
+         // between trees in the chain and sub entry lists in the argument elist
+         // We have already checked that the input TEntryList has a number of
+         // sub entry lists equal to the number of files in the chain.
+         templist = static_cast<TEntryList*>(subentrylists->At(ie));
+         auto elisttreename = templist->GetTreeName();
+         auto elistfilename = templist->GetFileName();
+
+         if (strcmp(treename, elisttreename) != 0 || strcmp(filename, elistfilename) != 0){
+            std::ostringstream err;
+            err << "In 'TChain::SetEntryList': ";
+            err << "the sub entry list at index " << ie << " doesn't correspond to treename '" << treename;
+            err << "' and filename '" << filename << "': " << "it has treename '" << elisttreename;
+            err << "' and filename '" << elistfilename << "'";
+            throw std::runtime_error(err.str());
+         }
+
+      }else{
+         templist = elist->GetEntryList(treename, filename, opt);
+      }
+
       if (templist) {
          listfound++;
          templist->SetTreeNumber(ie);
