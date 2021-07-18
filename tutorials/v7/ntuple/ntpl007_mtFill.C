@@ -68,8 +68,7 @@ void FillData(std::unique_ptr<REntry> entry, RNTupleWriter *ntuple) {
       vpx->clear();
       vpy->clear();
       vpz->clear();
-
-      *id = threadId * kNEventsPerThread + i;
+      *id = threadId;
 
       int npx = static_cast<int>(prng->Rndm(1) * 15);
       // Set the field data for the current event
@@ -122,8 +121,12 @@ void Read()
    // TODO(jblomer): the "inner name" of the vector should become "vpx._0"
    auto viewVpx = ntuple->GetView<float>("vpx.float");
 
-   TCanvas *c2 = new TCanvas("c2", "Dynamic Filling Example", 200, 10, 700, 500);
+   gStyle->SetOptStat(0);
 
+   TCanvas *c1 = new TCanvas("c2", "Multi-Threaded Filling Example", 200, 10, 1500, 500);
+   c1->Divide(2, 1);
+
+   c1->cd(1);
    TH1F h("h", "This is the px distribution", 100, -4, 4);
    h.SetFillColor(48);
    // Iterate through all values of vpx in all events
@@ -132,9 +135,11 @@ void Read()
    // Prevent the histogram from disappearing
    h.DrawCopy();
 
+   c1->cd(2);
    auto nEvents = ntuple->GetNEntries();
    auto viewId = ntuple->GetView<std::uint32_t>("id");
-   TH2F hFillSequence("","Entry Id vs Event Id", 100, 0, nEvents, 100, 0, nEvents);
+   TH2F hFillSequence("","Entry Id vs Thread Id;Entry Sequence Number;Filling Thread",
+                      100, 0, nEvents, 100, 0, kNWriterThreads);
    for (auto i : ntuple->GetEntryRange())
       hFillSequence.Fill(i, viewId(i));
    hFillSequence.DrawCopy();
