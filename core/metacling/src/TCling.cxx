@@ -3358,7 +3358,7 @@ void TCling::RegisterLoadedSharedLibrary(const char* filename)
    // used to resolve symbols.
    cling::DynamicLibraryManager* DLM = fInterpreter->getDynamicLibraryManager();
    if (!DLM->isLibraryLoaded(filename)) {
-      DLM->loadLibrary(filename, true /*permanent*/);
+      DLM->loadLibrary(filename, true /*permanent*/, true /*resolved*/);
    }
 
 #if defined(R__MACOSX)
@@ -3444,7 +3444,7 @@ Int_t TCling::Load(const char* filename, Bool_t system)
       = cling::DynamicLibraryManager::kLoadLibNotFound;
    if (!canonLib.empty()) {
       if (system)
-         res = DLM->loadLibrary(filename, system);
+         res = DLM->loadLibrary(filename, system, true);
       else {
          // For the non system libs, we'd like to be able to unload them.
          // FIXME: Here we lose the information about kLoadLibAlreadyLoaded case.

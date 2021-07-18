@@ -30,7 +30,6 @@ ROOT_STANDARD_LIBRARY_PACKAGE(RInterface
     Matrix
     RIO
     Thread
-  NO_CXXMODULE
 )
 
 ROOT_ADD_CXX_FLAG(_R_FLAGS -Wno-cast-function-type)
@@ -45,6 +44,6 @@ target_compile_options(RInterface PUBLIC ${_R_FLAGS})
 target_include_directories(RInterface SYSTEM BEFORE PUBLIC ${R_INCLUDE_DIRS})
 if(x11)
   target_link_libraries(RInterface PUBLIC ${R_LIBRARIES} ${X11_LIBRARIES} readline)
-elseif()
+else()
   target_link_libraries(RInterface PUBLIC ${R_LIBRARIES} readline)
 endif()
